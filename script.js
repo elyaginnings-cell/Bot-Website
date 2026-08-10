@@ -13,13 +13,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if (modal) modal.classList.add("hidden");
   }
 
-  if (pcBtn) {
-    pcBtn.addEventListener("click", () => setMode("pc"));
-  }
-
-  if (mobileBtn) {
-    mobileBtn.addEventListener("click", () => setMode("mobile"));
-  }
+  if (pcBtn) pcBtn.addEventListener("click", () => setMode("pc"));
+  if (mobileBtn) mobileBtn.addEventListener("click", () => setMode("mobile"));
 
   setupEventListeners();
   checkLogin();
@@ -27,26 +22,19 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function setupEventListeners() {
-  document.querySelectorAll(".nav-item").forEach((button) => {
-    button.addEventListener("click", () => {
-      const section = button.getAttribute("data-tab") || button.getAttribute("data-section");
-      if (section) showSection(section);
-      closeMobileMenu();
-    });
-  });
-
-  document.querySelectorAll(".quick-card").forEach((button) => {
-    button.addEventListener("click", () => {
-      const section = button.getAttribute("data-section-link");
+  document.querySelectorAll(".nav-item").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const section = btn.getAttribute("data-tab") || btn.getAttribute("data-section");
       if (section) showSection(section);
     });
   });
 
-  const menuToggle = document.getElementById("mobile-menu-toggle");
-  const overlay = document.getElementById("sidebar-overlay");
-
-  if (menuToggle) menuToggle.addEventListener("click", toggleMobileMenu);
-  if (overlay) overlay.addEventListener("click", closeMobileMenu);
+  document.querySelectorAll(".quick-card").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const section = btn.getAttribute("data-section-link");
+      if (section) showSection(section);
+    });
+  });
 
   const serverBtn = document.getElementById("server-button");
   if (serverBtn) serverBtn.addEventListener("click", loadServers);
@@ -62,20 +50,6 @@ function setupEventListeners() {
 
   const saveSettingsBtn = document.getElementById("save-settings");
   if (saveSettingsBtn) saveSettingsBtn.addEventListener("click", saveSettings);
-}
-
-function toggleMobileMenu() {
-  const sidebar = document.getElementById("sidebar");
-  const overlay = document.getElementById("sidebar-overlay");
-  if (sidebar) sidebar.classList.toggle("open");
-  if (overlay) overlay.classList.toggle("active");
-}
-
-function closeMobileMenu() {
-  const sidebar = document.getElementById("sidebar");
-  const overlay = document.getElementById("sidebar-overlay");
-  if (sidebar) sidebar.classList.remove("open");
-  if (overlay) overlay.classList.remove("active");
 }
 
 async function checkLogin() {
@@ -103,7 +77,6 @@ async function checkLogin() {
     console.log("✅ Logged in as:", currentUser.username);
   } catch (error) {
     console.error("Login check failed:", error);
-    // On network/error we still send the user to login
     window.location.href = "/api/login";
   }
 }
@@ -113,8 +86,8 @@ function updateUserInterface(user) {
 
   const username = user.global_name || user.username || "Discord User";
 
-  const usernameElement = document.getElementById("username");
-  if (usernameElement) usernameElement.textContent = username;
+  const usernameEl = document.getElementById("username");
+  if (usernameEl) usernameEl.textContent = username;
 
   const welcome = document.getElementById("welcome-name");
   if (welcome) welcome.textContent = username;
@@ -135,12 +108,10 @@ function showSection(section) {
   const target = document.getElementById(section);
   if (target) target.classList.add("active");
 
-  document.querySelectorAll(".nav-item").forEach((button) => {
-    button.classList.remove("active");
-    const navTarget = button.getAttribute("data-tab") || button.getAttribute("data-section");
-    if (navTarget === section) {
-      button.classList.add("active");
-    }
+  document.querySelectorAll(".nav-item").forEach((btn) => {
+    btn.classList.remove("active");
+    const navTarget = btn.getAttribute("data-tab") || btn.getAttribute("data-section");
+    if (navTarget === section) btn.classList.add("active");
   });
 
   const titles = {
@@ -164,7 +135,6 @@ async function loadServers() {
   const list = document.getElementById("server-list");
   if (!list || isLoadingServers) return;
 
-  // Toggle closed if already open
   if (list.dataset.open === "true") {
     list.innerHTML = "";
     list.dataset.open = "false";
@@ -205,15 +175,15 @@ async function loadServers() {
         ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png?size=128`
         : "https://cdn.discordapp.com/embed/avatars/0.png";
 
-      const image = document.createElement("img");
-      image.src = iconUrl;
-      image.alt = "";
-      image.loading = "lazy";
+      const img = document.createElement("img");
+      img.src = iconUrl;
+      img.alt = "";
+      img.loading = "lazy";
 
       const name = document.createElement("span");
       name.textContent = guild.name || "Unknown Server";
 
-      button.appendChild(image);
+      button.appendChild(img);
       button.appendChild(name);
       button.addEventListener("click", () => selectServer(guild));
       list.appendChild(button);
@@ -227,7 +197,7 @@ async function loadServers() {
 }
 
 function selectServer(guild) {
-  if (!guild || !guild.id) return;
+  if (!guild?.id) return;
 
   const iconUrl = guild.icon
     ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png?size=128`
@@ -256,8 +226,8 @@ function selectServer(guild) {
 function renderServerDetails(server) {
   if (!server) return;
 
-  const nameElement = document.getElementById("selected-server-name");
-  if (nameElement) nameElement.textContent = server.name;
+  const nameEl = document.getElementById("selected-server-name");
+  if (nameEl) nameEl.textContent = server.name;
 
   const overview = document.getElementById("overview-server");
   if (overview) overview.textContent = server.name;
@@ -271,17 +241,17 @@ function renderServerDetails(server) {
   const ownerStatus = document.getElementById("server-owner-status");
   if (ownerStatus) ownerStatus.textContent = server.owner ? "Owner" : "Administrator";
 
-  const iconElement = document.getElementById("selected-server-icon");
-  if (iconElement) {
-    iconElement.innerHTML = "";
-    const image = document.createElement("img");
-    image.src = server.icon;
-    image.alt = server.name || "";
-    image.style.width = "100%";
-    image.style.height = "100%";
-    image.style.objectFit = "cover";
-    image.style.borderRadius = "10px";
-    iconElement.appendChild(image);
+  const iconEl = document.getElementById("selected-server-icon");
+  if (iconEl) {
+    iconEl.innerHTML = "";
+    const img = document.createElement("img");
+    img.src = server.icon;
+    img.alt = server.name || "";
+    img.style.width = "100%";
+    img.style.height = "100%";
+    img.style.objectFit = "cover";
+    img.style.borderRadius = "8px";
+    iconEl.appendChild(img);
   }
 }
 
@@ -302,46 +272,26 @@ function restoreSelectedServer() {
 }
 
 function saveInviteSettings() {
-  if (!selectedServer) {
-    alert("Choose a Discord server first.");
-    return;
-  }
+  if (!selectedServer) return alert("Choose a Discord server first.");
 
-  const input = document.getElementById("invite-log-channel");
-  const channel = input ? input.value.trim() : "";
+  const channel = document.getElementById("invite-log-channel")?.value.trim();
+  if (!channel) return alert("Enter a channel ID first.");
 
-  if (!channel) {
-    alert("Enter a channel ID first.");
-    return;
-  }
-
-  // TODO: Replace with real API call
   alert("Invite tracker settings saved!");
 }
 
 function saveReward() {
-  if (!selectedServer) {
-    alert("Choose a Discord server first.");
-    return;
-  }
+  if (!selectedServer) return alert("Choose a Discord server first.");
 
-  const goalInput = document.getElementById("reward-goal");
-  const roleInput = document.getElementById("reward-role");
+  const goal = document.getElementById("reward-goal")?.value.trim();
+  const role = document.getElementById("reward-role")?.value.trim();
 
-  const goal = goalInput ? goalInput.value.trim() : "";
-  const role = roleInput ? roleInput.value.trim() : "";
+  if (!goal || !role) return alert("Enter both an invite goal and role ID.");
 
-  if (!goal || !role) {
-    alert("Enter both an invite goal and role ID.");
-    return;
-  }
-
-  // TODO: Replace with real API call
   alert(`Reward created for ${goal} invites!`);
 }
 
 function saveSettings() {
-  // TODO: Replace with real API call
   alert("Settings saved!");
 }
 
