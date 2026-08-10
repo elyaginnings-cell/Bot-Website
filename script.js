@@ -2,339 +2,773 @@ let currentUser = null;
 let selectedServer = null;
 let isLoadingServers = false;
 
+/* =========================================================
+   STARTUP
+========================================================= */
+
 document.addEventListener("DOMContentLoaded", () => {
-  setupDeviceMode();
-  setupEventListeners();
-  checkLogin();
-  restoreSelectedServer();
+    console.log("✅ script.js loaded");
+
+    setupDeviceButtons();
+    setupEventListeners();
+    restoreSelectedServer();
+    checkLogin();
 });
 
-function setupDeviceMode() {
-  const pcBtn = document.getElementById("select-pc");
-  const mobileBtn = document.getElementById("select-mobile");
-  const modal = document.getElementById("device-modal");
 
-  const setMode = (mode) => {
-    document.body.classList.remove("mode-pc", "mode-mobile", "modal-active");
-    document.body.classList.add(`mode-${mode}`);
-    if (modal) modal.classList.add("hidden");
-    localStorage.setItem("dashboardMode", mode);
-  };
+/* =========================================================
+   DEVICE MODE
+========================================================= */
 
-  const savedMode = localStorage.getItem("dashboardMode");
-  if (savedMode === "pc" || savedMode === "mobile") {
-    setMode(savedMode);
-  } else {
-    document.body.classList.add("modal-active");
-  }
+function setupDeviceButtons() {
+    const pcBtn = document.getElementById("select-pc");
+    const mobileBtn = document.getElementById("select-mobile");
+    const modal = document.querySelector(".device-modal");
 
-  pcBtn?.addEventListener("click", () => setMode("pc"));
-  mobileBtn?.addEventListener("click", () => setMode("mobile"));
+    function setMode(mode) {
+        document.body.classList.remove(
+            "mode-pc",
+            "mode-mobile",
+            "modal-active"
+        );
+
+        document.body.classList.add(`mode-${mode}`);
+
+        if (modal) {
+            modal.classList.add("hidden");
+        }
+
+        localStorage.setItem("viewMode", mode);
+    }
+
+    const savedMode = localStorage.getItem("viewMode");
+
+    if (savedMode === "pc" || savedMode === "mobile") {
+        setMode(savedMode);
+    }
+
+    if (pcBtn) {
+        pcBtn.addEventListener("click", () => setMode("pc"));
+    }
+
+    if (mobileBtn) {
+        mobileBtn.addEventListener("click", () => setMode("mobile"));
+    }
 }
+
+
+/* =========================================================
+   EVENT LISTENERS
+========================================================= */
 
 function setupEventListeners() {
-  document.querySelectorAll(".nav-item").forEach((button) => {
-    button.addEventListener("click", () => {
-      const section = button.dataset.tab || button.dataset.section;
-      if (section) showSection(section);
+
+    document.querySelectorAll(".nav-item").forEach((button) => {
+        button.addEventListener("click", () => {
+            const section = button.dataset.tab;
+
+            if (section) {
+                showSection(section);
+            }
+        });
     });
-  });
 
-  document.querySelectorAll(".quick-card").forEach((button) => {
-    button.addEventListener("click", () => {
-      const section = button.dataset.sectionLink;
-      if (section) showSection(section);
+
+    document.querySelectorAll(".quick-card").forEach((button) => {
+        button.addEventListener("click", () => {
+            const section = button.dataset.sectionLink;
+
+            if (section) {
+                showSection(section);
+            }
+        });
     });
-  });
 
-  document.getElementById("server-button")?.addEventListener("click", loadServers);
-  document.getElementById("logout-button")?.addEventListener("click", logout);
-  document.getElementById("save-invite-settings")?.addEventListener("click", saveInviteSettings);
-  document.getElementById("save-reward")?.addEventListener("click", saveReward);
-  document.getElementById("save-settings")?.addEventListener("click", saveSettings);
 
-  document.addEventListener("click", (event) => {
-    const picker = document.querySelector(".server-picker");
-    const list = document.getElementById("server-list");
-    if (!picker || !list || list.hidden) return;
-    if (!picker.contains(event.target)) closeServerList();
-  });
+    const serverButton = document.getElementById("server-button");
 
-  window.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") closeServerList();
-  });
+    if (serverButton) {
+        serverButton.addEventListener("click", loadServers);
+    }
+
+
+    const logoutButton = document.getElementById("logout-button");
+
+    if (logoutButton) {
+        logoutButton.addEventListener("click", logout);
+    }
+
+
+    const inviteButton =
+        document.getElementById("save-invite-settings");
+
+    if (inviteButton) {
+        inviteButton.addEventListener(
+            "click",
+            saveInviteSettings
+        );
+    }
+
+
+    const rewardButton =
+        document.getElementById("save-reward");
+
+    if (rewardButton) {
+        rewardButton.addEventListener(
+            "click",
+            saveReward
+        );
+    }
+
+
+    const settingsButton =
+        document.getElementById("save-settings");
+
+    if (settingsButton) {
+        settingsButton.addEventListener(
+            "click",
+            saveSettings
+        );
+    }
+
+
+    document.addEventListener("click", (event) => {
+        const selector = document.querySelector(".server-selector");
+        const list = document.getElementById("server-list");
+
+        if (!selector || !list) return;
+
+        if (
+            list.dataset.open === "true" &&
+            !selector.contains(event.target)
+        ) {
+            closeServerList();
+        }
+    });
 }
+
+
+/* =========================================================
+   LOGIN
+========================================================= */
 
 async function checkLogin() {
-  try {
-    const response = await fetch("/api/user", {
-      credentials: "include",
-      cache: "no-store",
-    });
+    try {
+        const response = await fetch("/api/user", {
+            method: "GET",
+            credentials: "include",
+            cache: "no-store"
+        });
 
-    if (response.status === 401) {
-      window.location.href = "/api/login";
-      return;
+        if (!response.ok) {
+            window.location.href = "/api/login";
+            return;
+        }
+
+        const data = await response.json();
+
+        if (!data.authenticated || !data.user) {
+            window.location.href = "/api/login";
+            return;
+        }
+
+        currentUser = data.user;
+
+        updateUserInterface(currentUser);
+
+        console.log(
+            "✅ Logged in as:",
+            currentUser.global_name || currentUser.username
+        );
+
+    } catch (error) {
+        console.error("Login check failed:", error);
+
+        window.location.href = "/api/login";
     }
-
-    if (!response.ok) throw new Error("Unable to verify login.");
-
-    const data = await response.json();
-
-    if (!data?.authenticated || !data?.user) {
-      window.location.href = "/api/login";
-      return;
-    }
-
-    currentUser = data.user;
-    updateUserInterface(currentUser);
-  } catch (error) {
-    console.error("Login check failed:", error);
-    window.location.href = "/api/login";
-  }
 }
+
+
+/* =========================================================
+   USER UI
+========================================================= */
 
 function updateUserInterface(user) {
-  const username = user.global_name || user.username || "Discord User";
+    if (!user) return;
 
-  const usernameEl = document.getElementById("username");
-  if (usernameEl) usernameEl.textContent = username;
+    const username =
+        user.global_name ||
+        user.username ||
+        "Discord User";
 
-  const welcome = document.getElementById("welcome-name");
-  if (welcome) welcome.textContent = username;
 
-  const avatar = document.getElementById("user-avatar");
-  if (avatar) {
-    avatar.src = user.avatar
-      ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=128`
-      : "https://cdn.discordapp.com/embed/avatars/0.png";
-    avatar.hidden = false;
-  }
+    const usernameElement =
+        document.getElementById("username");
+
+    if (usernameElement) {
+        usernameElement.textContent = username;
+    }
+
+
+    const welcomeElement =
+        document.getElementById("welcome-name");
+
+    if (welcomeElement) {
+        welcomeElement.textContent = username;
+    }
+
+
+    const avatarElement =
+        document.getElementById("user-avatar");
+
+    if (avatarElement) {
+
+        avatarElement.src = user.avatar
+            ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=128`
+            : "https://cdn.discordapp.com/embed/avatars/0.png";
+
+        avatarElement.style.display = "block";
+    }
 }
+
+
+/* =========================================================
+   NAVIGATION
+========================================================= */
 
 function showSection(section) {
-  const target = document.getElementById(section);
-  if (!target) return;
 
-  document.querySelectorAll(".page-section").forEach((el) => {
-    el.classList.toggle("active", el.id === section);
-  });
+    const target =
+        document.getElementById(section);
 
-  document.querySelectorAll(".nav-item").forEach((button) => {
-    const navTarget = button.dataset.tab || button.dataset.section;
-    button.classList.toggle("active", navTarget === section);
-  });
+    if (!target) return;
 
-  const titles = {
-    overview: ["Overview", "Manage your Discord server."],
-    invites: ["Invite Tracker", "Track and manage member invites."],
-    rewards: ["Rewards", "Automatically reward your members."],
-    settings: ["Settings", "Configure your bot."],
-  };
 
-  const [titleText, descriptionText] = titles[section] || titles.overview;
+    document
+        .querySelectorAll(".page-section")
+        .forEach((element) => {
+            element.classList.remove("active");
+        });
 
-  const title = document.getElementById("page-title");
-  const description = document.getElementById("page-description");
 
-  if (title) title.textContent = titleText;
-  if (description) description.textContent = descriptionText;
+    target.classList.add("active");
+
+
+    document
+        .querySelectorAll(".nav-item")
+        .forEach((button) => {
+
+            button.classList.remove("active");
+
+            if (button.dataset.tab === section) {
+                button.classList.add("active");
+            }
+        });
+
+
+    const titles = {
+        overview: [
+            "Overview",
+            "Manage your Discord server."
+        ],
+
+        invites: [
+            "Invite Tracker",
+            "Track and manage member invites."
+        ],
+
+        rewards: [
+            "Rewards",
+            "Automatically reward your members."
+        ],
+
+        settings: [
+            "Settings",
+            "Configure your bot."
+        ]
+    };
+
+
+    const info = titles[section];
+
+    if (!info) return;
+
+
+    const title =
+        document.getElementById("page-title");
+
+    const description =
+        document.getElementById("page-description");
+
+
+    if (title) {
+        title.textContent = info[0];
+    }
+
+    if (description) {
+        description.textContent = info[1];
+    }
 }
+
+
+/* =========================================================
+   SERVER LIST
+========================================================= */
 
 async function loadServers() {
-  const list = document.getElementById("server-list");
-  const button = document.getElementById("server-button");
 
-  if (!list || !button || isLoadingServers) return;
+    const list =
+        document.getElementById("server-list");
 
-  if (!list.hidden) {
-    closeServerList();
-    return;
-  }
+    if (!list || isLoadingServers) return;
 
-  isLoadingServers = true;
-  list.hidden = false;
-  button.setAttribute("aria-expanded", "true");
-  list.innerHTML = `<div class="server-item"><span>Loading your servers...</span></div>`;
 
-  try {
-    const response = await fetch("/api/guilds", {
-      credentials: "include",
-      cache: "no-store",
-    });
-
-    if (response.status === 401) {
-      window.location.href = "/api/login";
-      return;
+    if (list.dataset.open === "true") {
+        closeServerList();
+        return;
     }
 
-    if (!response.ok) throw new Error("Failed to fetch guilds.");
 
-    const data = await response.json();
-    const guilds = Array.isArray(data.guilds) ? data.guilds : [];
+    isLoadingServers = true;
 
-    if (guilds.length === 0) {
-      list.innerHTML = `<div class="server-item"><span>No manageable servers found.</span></div>`;
-      return;
+    list.hidden = false;
+    list.dataset.open = "true";
+
+    list.innerHTML = `
+        <div class="server-loading">
+            Loading your servers...
+        </div>
+    `;
+
+
+    try {
+
+        const response = await fetch("/api/guilds", {
+            method: "GET",
+            credentials: "include",
+            cache: "no-store"
+        });
+
+
+        if (response.status === 401) {
+            window.location.href = "/api/login";
+            return;
+        }
+
+
+        if (!response.ok) {
+            throw new Error(
+                `Guild request failed: ${response.status}`
+            );
+        }
+
+
+        const data = await response.json();
+
+        const guilds =
+            Array.isArray(data.guilds)
+                ? data.guilds
+                : [];
+
+
+        if (guilds.length === 0) {
+
+            list.innerHTML = `
+                <div class="server-empty">
+                    No manageable servers found.
+                </div>
+            `;
+
+            return;
+        }
+
+
+        list.innerHTML = "";
+
+
+        guilds.forEach((guild) => {
+
+            const button =
+                document.createElement("button");
+
+            button.type = "button";
+            button.className = "server-item";
+
+
+            const iconUrl = guild.icon
+                ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png?size=128`
+                : "https://cdn.discordapp.com/embed/avatars/0.png";
+
+
+            const image =
+                document.createElement("img");
+
+            image.src = iconUrl;
+            image.alt = "";
+            image.loading = "lazy";
+
+
+            const name =
+                document.createElement("span");
+
+            name.textContent =
+                guild.name || "Unknown Server";
+
+
+            button.appendChild(image);
+            button.appendChild(name);
+
+
+            button.addEventListener(
+                "click",
+                () => selectServer(guild)
+            );
+
+
+            list.appendChild(button);
+        });
+
+    } catch (error) {
+
+        console.error(
+            "Server loading failed:",
+            error
+        );
+
+        list.innerHTML = `
+            <div class="server-empty">
+                ❌ Unable to load servers.
+            </div>
+        `;
+
+    } finally {
+
+        isLoadingServers = false;
     }
-
-    list.innerHTML = "";
-
-    guilds.forEach((guild) => {
-      const serverButton = document.createElement("button");
-      serverButton.type = "button";
-      serverButton.className = "server-item";
-
-      const img = document.createElement("img");
-      img.src = getGuildIconUrl(guild);
-      img.alt = "";
-      img.loading = "lazy";
-
-      const name = document.createElement("span");
-      name.textContent = guild.name || "Unknown Server";
-
-      serverButton.append(img, name);
-      serverButton.addEventListener("click", () => selectServer(guild));
-      list.appendChild(serverButton);
-    });
-  } catch (error) {
-    console.error("Server loading failed:", error);
-    list.innerHTML = `<div class="server-item"><span>❌ Unable to load servers.</span></div>`;
-  } finally {
-    isLoadingServers = false;
-  }
 }
 
-function getGuildIconUrl(guild) {
-  return guild?.icon
-    ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png?size=128`
-    : "https://cdn.discordapp.com/embed/avatars/0.png";
-}
+
+/* =========================================================
+   SELECT SERVER
+========================================================= */
 
 function selectServer(guild) {
-  if (!guild?.id) return;
 
-  selectedServer = {
-    id: guild.id,
-    name: guild.name || "Unknown Server",
-    icon: getGuildIconUrl(guild),
-    owner: Boolean(guild.owner),
-    members: Number(guild.approximate_member_count || 0),
-    online: Number(guild.approximate_presence_count || 0),
-  };
+    if (!guild?.id) return;
 
-  localStorage.setItem("selectedServer", JSON.stringify(selectedServer));
-  renderServerDetails(selectedServer);
-  closeServerList();
+
+    const iconUrl = guild.icon
+        ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png?size=128`
+        : "https://cdn.discordapp.com/embed/avatars/0.png";
+
+
+    selectedServer = {
+        id: guild.id,
+        name: guild.name || "Unknown Server",
+        icon: iconUrl,
+        owner: Boolean(guild.owner),
+        members: Number(
+            guild.approximate_member_count || 0
+        ),
+        online: Number(
+            guild.approximate_presence_count || 0
+        )
+    };
+
+
+    localStorage.setItem(
+        "selectedServer",
+        JSON.stringify(selectedServer)
+    );
+
+
+    renderServerDetails(selectedServer);
+
+    closeServerList();
+
+    console.log(
+        "✅ Selected server:",
+        selectedServer.name
+    );
 }
+
+
+/* =========================================================
+   SERVER DISPLAY
+========================================================= */
 
 function renderServerDetails(server) {
-  if (!server) return;
 
-  const nameEl = document.getElementById("selected-server-name");
-  if (nameEl) nameEl.textContent = server.name;
+    if (!server) return;
 
-  const memberCount = document.getElementById("server-member-count");
-  if (memberCount) memberCount.textContent = server.members.toLocaleString();
 
-  const onlineCount = document.getElementById("server-online-count");
-  if (onlineCount) onlineCount.textContent = server.online.toLocaleString();
+    const nameElement =
+        document.getElementById(
+            "selected-server-name"
+        );
 
-  const ownerStatus = document.getElementById("server-owner-status");
-  if (ownerStatus) ownerStatus.textContent = server.owner ? "Owner" : "Administrator";
+    if (nameElement) {
+        nameElement.textContent =
+            server.name;
+    }
 
-  const iconEl = document.getElementById("selected-server-icon");
-  if (iconEl) {
-    iconEl.replaceChildren();
-    const img = document.createElement("img");
-    img.src = server.icon;
-    img.alt = server.name;
-    iconEl.appendChild(img);
-  }
+
+    const overviewElement =
+        document.getElementById(
+            "overview-server"
+        );
+
+    if (overviewElement) {
+        overviewElement.textContent =
+            server.name;
+    }
+
+
+    const memberElement =
+        document.getElementById(
+            "server-member-count"
+        );
+
+    if (memberElement) {
+        memberElement.textContent =
+            server.members.toLocaleString();
+    }
+
+
+    const onlineElement =
+        document.getElementById(
+            "server-online-count"
+        );
+
+    if (onlineElement) {
+        onlineElement.textContent =
+            server.online.toLocaleString();
+    }
+
+
+    const ownerElement =
+        document.getElementById(
+            "server-owner-status"
+        );
+
+    if (ownerElement) {
+        ownerElement.textContent =
+            server.owner
+                ? "Owner"
+                : "Administrator";
+    }
+
+
+    const iconElement =
+        document.getElementById(
+            "selected-server-icon"
+        );
+
+    if (iconElement) {
+
+        iconElement.innerHTML = "";
+
+        const image =
+            document.createElement("img");
+
+        image.src = server.icon;
+        image.alt = server.name;
+        image.loading = "lazy";
+
+        iconElement.appendChild(image);
+    }
 }
+
+
+/* =========================================================
+   RESTORE SERVER
+========================================================= */
 
 function restoreSelectedServer() {
-  try {
-    const saved = localStorage.getItem("selectedServer");
-    if (!saved) return;
 
-    const server = JSON.parse(saved);
-    if (!server?.id || !server?.name) throw new Error("Invalid saved server.");
+    try {
 
-    selectedServer = server;
-    renderServerDetails(server);
-  } catch (error) {
-    console.warn("Could not restore selected server:", error);
-    localStorage.removeItem("selectedServer");
-  }
+        const saved =
+            localStorage.getItem(
+                "selectedServer"
+            );
+
+        if (!saved) return;
+
+
+        const server =
+            JSON.parse(saved);
+
+
+        if (!server?.id || !server?.name) {
+            localStorage.removeItem(
+                "selectedServer"
+            );
+
+            return;
+        }
+
+
+        selectedServer = server;
+
+        renderServerDetails(
+            selectedServer
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Could not restore server:",
+            error
+        );
+
+        localStorage.removeItem(
+            "selectedServer"
+        );
+    }
 }
+
+
+/* =========================================================
+   CLOSE SERVER LIST
+========================================================= */
 
 function closeServerList() {
-  const list = document.getElementById("server-list");
-  const button = document.getElementById("server-button");
 
-  if (list) {
-    list.hidden = true;
+    const list =
+        document.getElementById(
+            "server-list"
+        );
+
+    if (!list) return;
+
+
     list.innerHTML = "";
-  }
-
-  if (button) button.setAttribute("aria-expanded", "false");
+    list.dataset.open = "false";
+    list.hidden = true;
 }
 
-function requireServer() {
-  if (selectedServer?.id) return true;
-  alert("Choose a Discord server first.");
-  return false;
-}
 
-function setStatus(id, message) {
-  const element = document.getElementById(id);
-  if (element) element.textContent = message;
-}
+/* =========================================================
+   INVITE SETTINGS
+========================================================= */
 
 function saveInviteSettings() {
-  if (!requireServer()) return;
 
-  const channel = document.getElementById("invite-log-channel")?.value.trim();
-  if (!channel) {
-    setStatus("invite-status", "Enter a channel ID first.");
-    return;
-  }
+    if (!selectedServer) {
+        alert(
+            "Choose a Discord server first."
+        );
 
-  localStorage.setItem(`inviteSettings:${selectedServer.id}`, JSON.stringify({ channel }));
-  setStatus("invite-status", "✓ Invite tracker settings saved.");
+        return;
+    }
+
+
+    const channel =
+        document
+            .getElementById(
+                "invite-log-channel"
+            )
+            ?.value
+            .trim();
+
+
+    if (!channel) {
+        alert(
+            "Enter a channel ID first."
+        );
+
+        return;
+    }
+
+
+    alert(
+        `Invite tracker settings saved for ${selectedServer.name}!`
+    );
 }
+
+
+/* =========================================================
+   REWARDS
+========================================================= */
 
 function saveReward() {
-  if (!requireServer()) return;
 
-  const goal = Number(document.getElementById("reward-goal")?.value);
-  const role = document.getElementById("reward-role")?.value.trim();
+    if (!selectedServer) {
+        alert(
+            "Choose a Discord server first."
+        );
 
-  if (!Number.isInteger(goal) || goal < 1) {
-    setStatus("reward-status", "Enter a valid invite goal.");
-    return;
-  }
+        return;
+    }
 
-  if (!role) {
-    setStatus("reward-status", "Enter a reward role ID.");
-    return;
-  }
 
-  localStorage.setItem(
-    `rewardSettings:${selectedServer.id}`,
-    JSON.stringify({ goal, role })
-  );
+    const goal =
+        document
+            .getElementById(
+                "reward-goal"
+            )
+            ?.value
+            .trim();
 
-  setStatus("reward-status", `✓ Reward saved for ${goal} invites.`);
+
+    const role =
+        document
+            .getElementById(
+                "reward-role"
+            )
+            ?.value
+            .trim();
+
+
+    if (!goal || !role) {
+        alert(
+            "Enter both an invite goal and role ID."
+        );
+
+        return;
+    }
+
+
+    alert(
+        `Reward created for ${goal} invites!`
+    );
 }
+
+
+/* =========================================================
+   BOT SETTINGS
+========================================================= */
 
 function saveSettings() {
-  const status = document.getElementById("bot-status")?.value || "online";
-  localStorage.setItem("botStatus", status);
-  setStatus("settings-status", "✓ Settings saved.");
+
+    const status =
+        document
+            .getElementById(
+                "bot-status"
+            )
+            ?.value;
+
+
+    if (!status) {
+        alert(
+            "Choose a bot status first."
+        );
+
+        return;
+    }
+
+
+    alert(
+        `Bot status set to ${status}.`
+    );
 }
 
+
+/* =========================================================
+   LOGOUT
+========================================================= */
+
 function logout() {
-  window.location.href = "/api/logout";
+    window.location.href = "/api/logout";
 }
