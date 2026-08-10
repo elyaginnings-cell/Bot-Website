@@ -1,988 +1,626 @@
-let currentGuild = null;
 let currentUser = null;
 
+document.addEventListener("DOMContentLoaded", () => {
+    checkLogin();
+});
 
-/* =========================================
-   AUTH
-========================================= */
-
-async function checkAuthentication() {
-
-    console.log("Checking authentication...");
-
+async function checkLogin() {
     try {
+        const response = await fetch("/api/user", {
+            method: "GET",
+            credentials: "include",
+            cache: "no-store"
+        });
 
-        const response = await fetch(
-            "/api/user",
-            {
-                method: "GET",
-                credentials: "include",
-                cache: "no-store"
-            }
-        );
-
+        if (!response.ok) {
+            showLogin();
+            return;
+        }
 
         const data = await response.json();
 
-
-        console.log(
-            "Auth result:",
-            data
-        );
-
-
-        if (
-            response.ok &&
-            data.authenticated === true
-        ) {
-
-            currentUser = data.user;
-
-            showAuthenticatedUI();
-
-            await loadGuilds();
-
-            return true;
+        if (!data.authenticated || !data.user) {
+            showLogin();
+            return;
         }
 
+        currentUser = data.user;
 
-        showLoggedOutUI();
-
-        return false;
+        showDashboard(currentUser);
 
     } catch (error) {
-
-        console.error(
-            "Authentication check failed:",
-            error
-        );
-
-        showLoggedOutUI();
-
-        return false;
+        console.error("Login check failed:", error);
+        showLogin();
     }
 }
 
+function showLogin() {
+    document.body.innerHTML = `
+        <div class="login-container">
 
-/* =========================================
-   LOGGED IN UI
-========================================= */
+            <div class="login-card">
 
-function showAuthenticatedUI() {
+                <div class="login-icon">
+                    🤖
+                </div>
 
-    const loginButton =
-        document.getElementById(
-            "login-button"
-        );
+                <h1>
+                    Discord Bot Dashboard
+                </h1>
 
-    const userInfo =
-        document.getElementById(
-            "user-info"
-        );
+                <p>
+                    Connect your Discord account to manage
+                    your bot and server.
+                </p>
 
-    const serverSelector =
-        document.getElementById(
-            "server-selector"
-        );
+                <a
+                    href="/api/login"
+                    class="discord-login-button"
+                >
+                    Login with Discord
+                </a>
 
+            </div>
 
-    loginButton.classList.add(
-        "hidden"
-    );
-
-    userInfo.classList.remove(
-        "hidden"
-    );
-
-    serverSelector.classList.remove(
-        "hidden"
-    );
-
-
-    const username =
-        document.getElementById(
-            "username"
-        );
-
-    const avatar =
-        document.getElementById(
-            "user-avatar"
-        );
-
-
-    username.textContent =
-        currentUser.global_name ||
-        currentUser.username;
-
-
-    if (currentUser.avatar) {
-
-        avatar.innerHTML = `
-            <img
-                src="https://cdn.discordapp.com/avatars/${currentUser.id}/${currentUser.avatar}.png?size=128"
-                alt=""
-            >
-        `;
-
-    } else {
-
-        avatar.textContent =
-            (
-                currentUser.global_name ||
-                currentUser.username ||
-                "?"
-            )
-                .charAt(0)
-                .toUpperCase();
-    }
-}
-
-
-/* =========================================
-   LOGGED OUT UI
-========================================= */
-
-function showLoggedOutUI() {
-
-    const loginButton =
-        document.getElementById(
-            "login-button"
-        );
-
-    const userInfo =
-        document.getElementById(
-            "user-info"
-        );
-
-    const serverSelector =
-        document.getElementById(
-            "server-selector"
-        );
-
-
-    loginButton.classList.remove(
-        "hidden"
-    );
-
-    userInfo.classList.add(
-        "hidden"
-    );
-
-    serverSelector.classList.add(
-        "hidden"
-    );
-}
-
-
-/* =========================================
-   LOGIN
-========================================= */
-
-function loginWithDiscord() {
-
-    window.location.assign(
-        "/api/login"
-    );
-}
-
-
-/* =========================================
-   SERVERS
-========================================= */
-
-async function loadGuilds() {
-
-    console.log(
-        "Loading Discord servers..."
-    );
-
-
-    const selector =
-        document.getElementById(
-            "server-selector"
-        );
-
-
-    selector.innerHTML = `
-        <div class="loading-server">
-            Loading servers...
         </div>
     `;
+}
 
+function showDashboard(user) {
+
+    const username =
+        user.global_name ||
+        user.username ||
+        "Discord User";
+
+    const avatar = user.avatar
+        ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=128`
+        : `https://cdn.discordapp.com/embed/avatars/0.png`;
+
+    document.body.innerHTML = `
+        <div class="dashboard">
+
+            <header class="topbar">
+
+                <div class="brand">
+                    <span class="brand-icon">
+                        🤖
+                    </span>
+
+                    <span>
+                        Bot Dashboard
+                    </span>
+                </div>
+
+                <div class="user-area">
+
+                    <img
+                        src="${avatar}"
+                        class="user-avatar"
+                        alt="Discord Avatar"
+                    >
+
+                    <span class="username">
+                        ${escapeHtml(username)}
+                    </span>
+
+                    <a
+                        href="/api/logout"
+                        class="logout-button"
+                    >
+                        Logout
+                    </a>
+
+                </div>
+
+            </header>
+
+
+            <main class="dashboard-content">
+
+                <section class="welcome">
+
+                    <h1>
+                        Welcome, ${escapeHtml(username)}! 👋
+                    </h1>
+
+                    <p>
+                        Your Discord account is connected.
+                        Choose what you want to configure below.
+                    </p>
+
+                </section>
+
+
+                <section class="stats-grid">
+
+                    <div class="dashboard-card">
+
+                        <div class="card-icon">
+                            📊
+                        </div>
+
+                        <h2>
+                            Invite Tracker
+                        </h2>
+
+                        <p>
+                            Track member invites, invite counts,
+                            and rewards.
+                        </p>
+
+                        <button
+                            onclick="openInviteTracker()"
+                        >
+                            Configure
+                        </button>
+
+                    </div>
+
+
+                    <div class="dashboard-card">
+
+                        <div class="card-icon">
+                            🎁
+                        </div>
+
+                        <h2>
+                            Rewards
+                        </h2>
+
+                        <p>
+                            Automatically reward members when
+                            they reach invite goals.
+                        </p>
+
+                        <button
+                            onclick="openRewards()"
+                        >
+                            Configure
+                        </button>
+
+                    </div>
+
+
+                    <div class="dashboard-card">
+
+                        <div class="card-icon">
+                            ⚙️
+                        </div>
+
+                        <h2>
+                            Bot Settings
+                        </h2>
+
+                        <p>
+                            Configure your Discord bot and
+                            server settings.
+                        </p>
+
+                        <button
+                            onclick="openSettings()"
+                        >
+                            Configure
+                        </button>
+
+                    </div>
+
+
+                    <div class="dashboard-card">
+
+                        <div class="card-icon">
+                            🛡️
+                        </div>
+
+                        <h2>
+                            Server
+                        </h2>
+
+                        <p>
+                            Select and manage the Discord
+                            servers connected to your account.
+                        </p>
+
+                        <button
+                            onclick="loadServers()"
+                        >
+                            Select Server
+                        </button>
+
+                    </div>
+
+                </section>
+
+
+                <section
+                    id="dashboard-panel"
+                    class="dashboard-panel"
+                >
+
+                    <h2>
+                        Select an option
+                    </h2>
+
+                    <p>
+                        Choose a dashboard section above
+                        to get started.
+                    </p>
+
+                </section>
+
+            </main>
+
+        </div>
+    `;
+}
+
+
+async function loadServers() {
+
+    const panel =
+        document.getElementById("dashboard-panel");
+
+    if (!panel) return;
+
+    panel.innerHTML = `
+        <h2>
+            Loading servers...
+        </h2>
+
+        <p>
+            Getting your Discord servers.
+        </p>
+    `;
 
     try {
 
-        const response = await fetch(
-            "/api/guilds",
-            {
-                method: "GET",
+        const response =
+            await fetch("/api/guilds", {
                 credentials: "include",
                 cache: "no-store"
-            }
-        );
+            });
 
+        if (!response.ok) {
+
+            panel.innerHTML = `
+                <h2>
+                    ❌ Couldn't load servers
+                </h2>
+
+                <p>
+                    Your Discord session may have expired.
+                </p>
+            `;
+
+            return;
+        }
 
         const data =
             await response.json();
 
+        if (!data.guilds || data.guilds.length === 0) {
 
-        console.log(
-            "Guilds:",
-            data
-        );
+            panel.innerHTML = `
+                <h2>
+                    No Servers Found
+                </h2>
 
-
-        if (!response.ok) {
-
-            selector.innerHTML = `
-                <div class="loading-server">
-                    Unable to load servers.
-                </div>
+                <p>
+                    Discord didn't return any servers
+                    that you can manage.
+                </p>
             `;
 
             return;
         }
 
+        panel.innerHTML = `
+            <h2>
+                Select Your Server
+            </h2>
 
-        if (
-            !Array.isArray(data) ||
-            data.length === 0
-        ) {
+            <div class="server-list">
 
-            selector.innerHTML = `
-                <div class="loading-server">
-                    No manageable servers.
-                </div>
-            `;
+                ${data.guilds.map(guild => {
 
-            return;
-        }
+                    const icon = guild.icon
+                        ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png?size=128`
+                        : `https://cdn.discordapp.com/embed/avatars/0.png`;
 
+                    return `
+                        <button
+                            class="server-item"
+                            onclick="selectServer('${guild.id}')"
+                        >
 
-        createGuildSelector(
-            data
-        );
+                            <img
+                                src="${icon}"
+                                alt=""
+                                class="server-icon"
+                            >
+
+                            <span>
+                                ${escapeHtml(guild.name)}
+                            </span>
+
+                        </button>
+                    `;
+
+                }).join("")}
+
+            </div>
+        `;
 
     } catch (error) {
 
         console.error(
-            "Guild loading error:",
+            "Server loading error:",
             error
         );
 
-        selector.innerHTML = `
-            <div class="loading-server">
-                Failed to load servers.
-            </div>
+        panel.innerHTML = `
+            <h2>
+                ❌ Something went wrong
+            </h2>
+
+            <p>
+                We couldn't retrieve your servers.
+            </p>
         `;
     }
 }
 
 
-function createGuildSelector(
-    guilds
-) {
-
-    const selector =
-        document.getElementById(
-            "server-selector"
-        );
-
-
-    const saved =
-        localStorage.getItem(
-            "selectedGuild"
-        );
-
-
-    let selected =
-        guilds.find(
-            guild =>
-                guild.id === saved
-        );
-
-
-    if (!selected) {
-
-        selected =
-            guilds[0];
-
-    }
-
-
-    currentGuild =
-        selected.id;
-
+function selectServer(serverId) {
 
     localStorage.setItem(
-        "selectedGuild",
-        currentGuild
+        "selectedServer",
+        serverId
     );
 
+    const panel =
+        document.getElementById(
+            "dashboard-panel"
+        );
 
-    selector.innerHTML = `
+    if (!panel) return;
 
-        <div class="server-select-wrapper">
+    panel.innerHTML = `
+        <h2>
+            ✅ Server Selected
+        </h2>
 
-            <div class="server-icon">
+        <p>
+            Server ID:
+            <code>${serverId}</code>
+        </p>
 
-                ${
-                    selected.icon
-
-                    ? `
-                        <img
-                            src="https://cdn.discordapp.com/icons/${selected.id}/${selected.icon}.png?size=128"
-                            alt=""
-                        >
-                    `
-
-                    : escapeHtml(
-                        selected.name
-                            .charAt(0)
-                            .toUpperCase()
-                    )
-                }
-
-            </div>
+        <p>
+            You can now configure your bot
+            for this server.
+        </p>
+    `;
+}
 
 
-            <select
-                id="guild-select"
-                class="server-select"
+function openInviteTracker() {
+
+    const panel =
+        document.getElementById(
+            "dashboard-panel"
+        );
+
+    if (!panel) return;
+
+    panel.innerHTML = `
+        <h2>
+            📊 Invite Tracker
+        </h2>
+
+        <p>
+            Configure how your bot tracks invites.
+        </p>
+
+        <div class="settings-form">
+
+            <label>
+                Invite Tracking
+            </label>
+
+            <select id="inviteTracking">
+                <option value="enabled">
+                    Enabled
+                </option>
+
+                <option value="disabled">
+                    Disabled
+                </option>
+            </select>
+
+
+            <label>
+                Invite Log Channel ID
+            </label>
+
+            <input
+                id="inviteLogChannel"
+                type="text"
+                placeholder="Channel ID"
             >
 
-                ${guilds.map(
-                    guild => `
 
-                        <option
-                            value="${guild.id}"
-                            ${
-                                guild.id ===
-                                currentGuild
-                                    ? "selected"
-                                    : ""
-                            }
-                        >
-                            ${escapeHtml(
-                                guild.name
-                            )}
-                        </option>
+            <button
+                onclick="saveInviteSettings()"
+            >
+                Save Invite Settings
+            </button>
 
-                    `
-                ).join("")}
+        </div>
+    `;
+}
 
+
+function openRewards() {
+
+    const panel =
+        document.getElementById(
+            "dashboard-panel"
+        );
+
+    if (!panel) return;
+
+    panel.innerHTML = `
+        <h2>
+            🎁 Automatic Rewards
+        </h2>
+
+        <p>
+            Create rewards for members when they
+            reach specific invite goals.
+        </p>
+
+        <div class="settings-form">
+
+            <label>
+                Invite Goal
+            </label>
+
+            <input
+                id="rewardGoal"
+                type="number"
+                min="1"
+                placeholder="Example: 10"
+            >
+
+
+            <label>
+                Reward Role ID
+            </label>
+
+            <input
+                id="rewardRole"
+                type="text"
+                placeholder="Role ID"
+            >
+
+
+            <button
+                onclick="saveReward()"
+            >
+                Save Reward
+            </button>
+
+        </div>
+    `;
+}
+
+
+function openSettings() {
+
+    const panel =
+        document.getElementById(
+            "dashboard-panel"
+        );
+
+    if (!panel) return;
+
+    panel.innerHTML = `
+        <h2>
+            ⚙️ Bot Settings
+        </h2>
+
+        <p>
+            General bot configuration will go here.
+        </p>
+
+        <div class="settings-form">
+
+            <label>
+                Bot Status
+            </label>
+
+            <select>
+                <option>
+                    Online
+                </option>
+
+                <option>
+                    Idle
+                </option>
+
+                <option>
+                    Do Not Disturb
+                </option>
             </select>
 
         </div>
     `;
+}
 
 
-    const guildSelect =
+function saveInviteSettings() {
+
+    const tracking =
         document.getElementById(
-            "guild-select"
-        );
+            "inviteTracking"
+        )?.value;
 
-
-    guildSelect.addEventListener(
-        "change",
-        () => {
-
-            currentGuild =
-                guildSelect.value;
-
-
-            localStorage.setItem(
-                "selectedGuild",
-                currentGuild
-            );
-
-
-            const guild =
-                guilds.find(
-                    item =>
-                        item.id ===
-                        currentGuild
-                );
-
-
-            if (guild) {
-
-                updateServerIcon(
-                    guild
-                );
-
-            }
-
-
-            loadServerData(
-                currentGuild
-            );
-        }
-    );
-
-
-    loadServerData(
-        currentGuild
-    );
-}
-
-
-function updateServerIcon(
-    guild
-) {
-
-    const icon =
-        document.querySelector(
-            ".server-icon"
-        );
-
-
-    if (!icon)
-        return;
-
-
-    if (guild.icon) {
-
-        icon.innerHTML = `
-            <img
-                src="https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png?size=128"
-                alt=""
-            >
-        `;
-
-    } else {
-
-        icon.textContent =
-            guild.name
-                .charAt(0)
-                .toUpperCase();
-    }
-}
-
-
-/* =========================================
-   SERVER DATA
-========================================= */
-
-async function loadServerData(
-    guildId
-) {
-
-    console.log(
-        "Selected server:",
-        guildId
-    );
-
-
-    /*
-     * This is where we connect
-     * the website to the Railway bot API.
-     *
-     * Authentication itself is already
-     * handled separately.
-     */
-}
-
-
-/* =========================================
-   NAVIGATION
-========================================= */
-
-function showPage(
-    page
-) {
-
-    document
-        .querySelectorAll(".page")
-        .forEach(
-            element =>
-                element.classList.remove(
-                    "active-page"
-                )
-        );
-
-
-    const target =
+    const channel =
         document.getElementById(
-            page
-        );
-
-
-    if (target) {
-
-        target.classList.add(
-            "active-page"
-        );
-    }
-
-
-    document
-        .querySelectorAll(".nav-item")
-        .forEach(
-            button =>
-                button.classList.remove(
-                    "active"
-                )
-        );
-
-
-    const active =
-        document.querySelector(
-            `.nav-item[data-page="${page}"]`
-        );
-
-
-    if (active) {
-
-        active.classList.add(
-            "active"
-        );
-    }
-
-
-    const titles = {
-
-        overview: [
-            "Overview",
-            "Manage your Discord server."
-        ],
-
-        invites: [
-            "Invite Tracker",
-            "Track who is bringing members into your server."
-        ],
-
-        rewards: [
-            "Automatic Rewards",
-            "Give members roles when they reach invite milestones."
-        ],
-
-        settings: [
-            "Settings",
-            "Configure your bot dashboard."
-        ]
-
-    };
-
-
-    if (titles[page]) {
-
-        document.getElementById(
-            "page-title"
-        ).textContent =
-            titles[page][0];
-
-
-        document.getElementById(
-            "page-description"
-        ).textContent =
-            titles[page][1];
-    }
-}
-
-
-/* =========================================
-   MODALS
-========================================= */
-
-function openModal(
-    id
-) {
-
-    document
-        .getElementById(id)
-        ?.classList.add("open");
-}
-
-
-function closeModal(
-    id
-) {
-
-    document
-        .getElementById(id)
-        ?.classList.remove("open");
-}
-
-
-/* =========================================
-   INVITES
-========================================= */
-
-function adjustInvites() {
-
-    const user =
-        document
-            .getElementById(
-                "invite-user"
-            )
-            .value
-            .trim();
-
-
-    const amount =
-        Number(
-            document
-                .getElementById(
-                    "invite-amount"
-                )
-                .value
-        );
-
-
-    if (!currentGuild) {
-
-        alert(
-            "Select a server first."
-        );
-
-        return;
-    }
-
-
-    if (!user) {
-
-        alert(
-            "Enter a Discord User ID."
-        );
-
-        return;
-    }
-
-
-    if (
-        !Number.isInteger(amount) ||
-        amount === 0
-    ) {
-
-        alert(
-            "Enter a valid amount."
-        );
-
-        return;
-    }
-
+            "inviteLogChannel"
+        )?.value;
 
     console.log({
-        guildId:
-            currentGuild,
-
-        user,
-
-        amount
+        tracking,
+        channel
     });
 
-
     alert(
-        "Ready to connect to the bot API."
-    );
-
-
-    closeModal(
-        "invite-modal"
+        "Invite settings saved!"
     );
 }
 
 
-/* =========================================
-   REWARDS
-========================================= */
-
-function addReward() {
+function saveReward() {
 
     const goal =
-        Number(
-            document
-                .getElementById(
-                    "reward-goal"
-                )
-                .value
-        );
-
+        document.getElementById(
+            "rewardGoal"
+        )?.value;
 
     const role =
-        document
-            .getElementById(
-                "reward-role"
-            )
-            .value
-            .trim();
+        document.getElementById(
+            "rewardRole"
+        )?.value;
 
-
-    if (!currentGuild) {
+    if (!goal || !role) {
 
         alert(
-            "Select a server first."
+            "Please enter an invite goal and role ID."
         );
 
         return;
     }
-
-
-    if (
-        !Number.isInteger(goal) ||
-        goal <= 0
-    ) {
-
-        alert(
-            "Enter a valid invite goal."
-        );
-
-        return;
-    }
-
-
-    if (!role) {
-
-        alert(
-            "Enter a Discord Role ID."
-        );
-
-        return;
-    }
-
 
     console.log({
-
-        guildId:
-            currentGuild,
-
         goal,
-
         role
-
     });
 
-
     alert(
-        "Reward ready to connect to the bot API."
-    );
-
-
-    closeModal(
-        "reward-modal"
+        `Reward saved! Members will receive the role after ${goal} invites.`
     );
 }
 
 
-/* =========================================
-   ESCAPE HTML
-========================================= */
+function escapeHtml(value) {
 
-function escapeHtml(
-    value
-) {
+    const div =
+        document.createElement("div");
 
-    return String(value)
+    div.textContent =
+        String(value);
 
-        .replaceAll(
-            "&",
-            "&amp;"
-        )
-
-        .replaceAll(
-            "<",
-            "&lt;"
-        )
-
-        .replaceAll(
-            ">",
-            "&gt;"
-        )
-
-        .replaceAll(
-            '"',
-            "&quot;"
-        )
-
-        .replaceAll(
-            "'",
-            "&#039;"
-        );
+    return div.innerHTML;
 }
-
-
-/* =========================================
-   START
-========================================= */
-
-document.addEventListener(
-    "DOMContentLoaded",
-    () => {
-
-        /* Navigation */
-
-        document
-            .querySelectorAll(
-                ".nav-item"
-            )
-            .forEach(
-                button => {
-
-                    button.addEventListener(
-                        "click",
-                        () => {
-
-                            showPage(
-                                button.dataset.page
-                            );
-
-                        }
-                    );
-
-                }
-            );
-
-
-        /* Dashboard buttons */
-
-        document
-            .querySelectorAll(
-                "[data-page-button]"
-            )
-            .forEach(
-                button => {
-
-                    button.addEventListener(
-                        "click",
-                        () => {
-
-                            showPage(
-                                button.dataset.pageButton
-                            );
-
-                        }
-                    );
-
-                }
-            );
-
-
-        /* Login */
-
-        document
-            .getElementById(
-                "login-button"
-            )
-            .addEventListener(
-                "click",
-                loginWithDiscord
-            );
-
-
-        /* Invite modal */
-
-        document
-            .getElementById(
-                "open-invite-modal"
-            )
-            .addEventListener(
-                "click",
-                () =>
-                    openModal(
-                        "invite-modal"
-                    )
-            );
-
-
-        /* Reward modal */
-
-        document
-            .getElementById(
-                "open-reward-modal"
-            )
-            .addEventListener(
-                "click",
-                () =>
-                    openModal(
-                        "reward-modal"
-                    )
-            );
-
-
-        /* Close modal */
-
-        document
-            .querySelectorAll(
-                "[data-close]"
-            )
-            .forEach(
-                button => {
-
-                    button.addEventListener(
-                        "click",
-                        () =>
-                            closeModal(
-                                button.dataset.close
-                            )
-                    );
-
-                }
-            );
-
-
-        /* Invite adjustment */
-
-        document
-            .getElementById(
-                "adjust-invites"
-            )
-            .addEventListener(
-                "click",
-                adjustInvites
-            );
-
-
-        /* Reward */
-
-        document
-            .getElementById(
-                "add-reward"
-            )
-            .addEventListener(
-                "click",
-                addReward
-            );
-
-
-        /* Outside modal */
-
-        document
-            .querySelectorAll(
-                ".modal"
-            )
-            .forEach(
-                modal => {
-
-                    modal.addEventListener(
-                        "click",
-                        event => {
-
-                            if (
-                                event.target ===
-                                modal
-                            ) {
-
-                                modal.classList.remove(
-                                    "open"
-                                );
-
-                            }
-
-                        }
-                    );
-
-                }
-            );
-
-
-        /*
-         * THIS IS THE ONLY AUTH CHECK.
-         *
-         * There is no login page.
-         */
-
-        checkAuthentication();
-
-    }
-);
+`
