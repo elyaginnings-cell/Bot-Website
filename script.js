@@ -3,67 +3,81 @@ let selectedServer = null;
 let isLoadingServers = false;
 
 document.addEventListener("DOMContentLoaded", () => {
-  const pcBtn = document.getElementById("select-pc");
-  const mobileBtn = document.getElementById("select-mobile");
-  const modal = document.querySelector(".device-modal");
-
-  function setMode(mode) {
-    document.body.classList.remove("mode-pc", "mode-mobile", "modal-active");
-    document.body.classList.add("mode-" + mode);
-    if (modal) modal.classList.add("hidden");
-  }
-
-  if (pcBtn) pcBtn.addEventListener("click", () => setMode("pc"));
-  if (mobileBtn) mobileBtn.addEventListener("click", () => setMode("mobile"));
-
+  setupDeviceMode();
   setupEventListeners();
   checkLogin();
   restoreSelectedServer();
 });
 
+function setupDeviceMode() {
+  const pcBtn = document.getElementById("select-pc");
+  const mobileBtn = document.getElementById("select-mobile");
+  const modal = document.getElementById("device-modal");
+
+  const setMode = (mode) => {
+    document.body.classList.remove("mode-pc", "mode-mobile", "modal-active");
+    document.body.classList.add(`mode-${mode}`);
+    if (modal) modal.classList.add("hidden");
+    localStorage.setItem("dashboardMode", mode);
+  };
+
+  const savedMode = localStorage.getItem("dashboardMode");
+  if (savedMode === "pc" || savedMode === "mobile") {
+    setMode(savedMode);
+  } else {
+    document.body.classList.add("modal-active");
+  }
+
+  pcBtn?.addEventListener("click", () => setMode("pc"));
+  mobileBtn?.addEventListener("click", () => setMode("mobile"));
+}
+
 function setupEventListeners() {
-  document.querySelectorAll(".nav-item").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const section = btn.getAttribute("data-tab") || btn.getAttribute("data-section");
+  document.querySelectorAll(".nav-item").forEach((button) => {
+    button.addEventListener("click", () => {
+      const section = button.dataset.tab || button.dataset.section;
       if (section) showSection(section);
     });
   });
 
-  document.querySelectorAll(".quick-card").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const section = btn.getAttribute("data-section-link");
+  document.querySelectorAll(".quick-card").forEach((button) => {
+    button.addEventListener("click", () => {
+      const section = button.dataset.sectionLink;
       if (section) showSection(section);
     });
   });
 
-  const serverBtn = document.getElementById("server-button");
-  if (serverBtn) serverBtn.addEventListener("click", loadServers);
+  document.getElementById("server-button")?.addEventListener("click", loadServers);
+  document.getElementById("logout-button")?.addEventListener("click", logout);
+  document.getElementById("save-invite-settings")?.addEventListener("click", saveInviteSettings);
+  document.getElementById("save-reward")?.addEventListener("click", saveReward);
+  document.getElementById("save-settings")?.addEventListener("click", saveSettings);
 
-  const logoutBtn = document.getElementById("logout-button");
-  if (logoutBtn) logoutBtn.addEventListener("click", logout);
+  document.addEventListener("click", (event) => {
+    const picker = document.querySelector(".server-picker");
+    const list = document.getElementById("server-list");
+    if (!picker || !list || list.hidden) return;
+    if (!picker.contains(event.target)) closeServerList();
+  });
 
-  const saveInviteBtn = document.getElementById("save-invite-settings");
-  if (saveInviteBtn) saveInviteBtn.addEventListener("click", saveInviteSettings);
-
-  const saveRewardBtn = document.getElementById("save-reward");
-  if (saveRewardBtn) saveRewardBtn.addEventListener("click", saveReward);
-
-  const saveSettingsBtn = document.getElementById("save-settings");
-  if (saveSettingsBtn) saveSettingsBtn.addEventListener("click", saveSettings);
+  window.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") closeServerList();
+  });
 }
 
 async function checkLogin() {
   try {
     const response = await fetch("/api/user", {
-      method: "GET",
       credentials: "include",
       cache: "no-store",
     });
 
-    if (!response.ok) {
+    if (response.status === 401) {
       window.location.href = "/api/login";
       return;
     }
+
+    if (!response.ok) throw new Error("Unable to verify login.");
 
     const data = await response.json();
 
@@ -74,7 +88,6 @@ async function checkLogin() {
 
     currentUser = data.user;
     updateUserInterface(currentUser);
-    console.log("✅ Logged in as:", currentUser.username);
   } catch (error) {
     console.error("Login check failed:", error);
     window.location.href = "/api/login";
@@ -82,8 +95,6 @@ async function checkLogin() {
 }
 
 function updateUserInterface(user) {
-  if (!user) return;
-
   const username = user.global_name || user.username || "Discord User";
 
   const usernameEl = document.getElementById("username");
@@ -97,21 +108,21 @@ function updateUserInterface(user) {
     avatar.src = user.avatar
       ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=128`
       : "https://cdn.discordapp.com/embed/avatars/0.png";
+    avatar.hidden = false;
   }
 }
 
 function showSection(section) {
+  const target = document.getElementById(section);
+  if (!target) return;
+
   document.querySelectorAll(".page-section").forEach((el) => {
-    el.classList.remove("active");
+    el.classList.toggle("active", el.id === section);
   });
 
-  const target = document.getElementById(section);
-  if (target) target.classList.add("active");
-
-  document.querySelectorAll(".nav-item").forEach((btn) => {
-    btn.classList.remove("active");
-    const navTarget = btn.getAttribute("data-tab") || btn.getAttribute("data-section");
-    if (navTarget === section) btn.classList.add("active");
+  document.querySelectorAll(".nav-item").forEach((button) => {
+    const navTarget = button.dataset.tab || button.dataset.section;
+    button.classList.toggle("active", navTarget === section);
   });
 
   const titles = {
@@ -121,40 +132,43 @@ function showSection(section) {
     settings: ["Settings", "Configure your bot."],
   };
 
-  const info = titles[section];
-  if (!info) return;
+  const [titleText, descriptionText] = titles[section] || titles.overview;
 
   const title = document.getElementById("page-title");
   const description = document.getElementById("page-description");
 
-  if (title) title.textContent = info[0];
-  if (description) description.textContent = info[1];
+  if (title) title.textContent = titleText;
+  if (description) description.textContent = descriptionText;
 }
 
 async function loadServers() {
   const list = document.getElementById("server-list");
-  if (!list || isLoadingServers) return;
+  const button = document.getElementById("server-button");
 
-  if (list.dataset.open === "true") {
-    list.innerHTML = "";
-    list.dataset.open = "false";
-    list.hidden = true;
+  if (!list || !button || isLoadingServers) return;
+
+  if (!list.hidden) {
+    closeServerList();
     return;
   }
 
   isLoadingServers = true;
   list.hidden = false;
-  list.dataset.open = "true";
+  button.setAttribute("aria-expanded", "true");
   list.innerHTML = `<div class="server-item"><span>Loading your servers...</span></div>`;
 
   try {
     const response = await fetch("/api/guilds", {
-      method: "GET",
       credentials: "include",
       cache: "no-store",
     });
 
-    if (!response.ok) throw new Error("Failed to fetch guilds");
+    if (response.status === 401) {
+      window.location.href = "/api/login";
+      return;
+    }
+
+    if (!response.ok) throw new Error("Failed to fetch guilds.");
 
     const data = await response.json();
     const guilds = Array.isArray(data.guilds) ? data.guilds : [];
@@ -167,26 +181,21 @@ async function loadServers() {
     list.innerHTML = "";
 
     guilds.forEach((guild) => {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "server-item";
-
-      const iconUrl = guild.icon
-        ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png?size=128`
-        : "https://cdn.discordapp.com/embed/avatars/0.png";
+      const serverButton = document.createElement("button");
+      serverButton.type = "button";
+      serverButton.className = "server-item";
 
       const img = document.createElement("img");
-      img.src = iconUrl;
+      img.src = getGuildIconUrl(guild);
       img.alt = "";
       img.loading = "lazy";
 
       const name = document.createElement("span");
       name.textContent = guild.name || "Unknown Server";
 
-      button.appendChild(img);
-      button.appendChild(name);
-      button.addEventListener("click", () => selectServer(guild));
-      list.appendChild(button);
+      serverButton.append(img, name);
+      serverButton.addEventListener("click", () => selectServer(guild));
+      list.appendChild(serverButton);
     });
   } catch (error) {
     console.error("Server loading failed:", error);
@@ -196,31 +205,27 @@ async function loadServers() {
   }
 }
 
-function selectServer(guild) {
-  if (!guild?.id) return;
-
-  const iconUrl = guild.icon
+function getGuildIconUrl(guild) {
+  return guild?.icon
     ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png?size=128`
     : "https://cdn.discordapp.com/embed/avatars/0.png";
+}
+
+function selectServer(guild) {
+  if (!guild?.id) return;
 
   selectedServer = {
     id: guild.id,
     name: guild.name || "Unknown Server",
-    icon: iconUrl,
-    owner: !!guild.owner,
-    members: guild.approximate_member_count || 0,
-    online: guild.approximate_presence_count || 0,
+    icon: getGuildIconUrl(guild),
+    owner: Boolean(guild.owner),
+    members: Number(guild.approximate_member_count || 0),
+    online: Number(guild.approximate_presence_count || 0),
   };
 
   localStorage.setItem("selectedServer", JSON.stringify(selectedServer));
   renderServerDetails(selectedServer);
-
-  const list = document.getElementById("server-list");
-  if (list) {
-    list.innerHTML = "";
-    list.dataset.open = "false";
-    list.hidden = true;
-  }
+  closeServerList();
 }
 
 function renderServerDetails(server) {
@@ -229,28 +234,21 @@ function renderServerDetails(server) {
   const nameEl = document.getElementById("selected-server-name");
   if (nameEl) nameEl.textContent = server.name;
 
-  const overview = document.getElementById("overview-server");
-  if (overview) overview.textContent = server.name;
-
   const memberCount = document.getElementById("server-member-count");
-  if (memberCount) memberCount.textContent = (server.members || 0).toLocaleString();
+  if (memberCount) memberCount.textContent = server.members.toLocaleString();
 
   const onlineCount = document.getElementById("server-online-count");
-  if (onlineCount) onlineCount.textContent = (server.online || 0).toLocaleString();
+  if (onlineCount) onlineCount.textContent = server.online.toLocaleString();
 
   const ownerStatus = document.getElementById("server-owner-status");
   if (ownerStatus) ownerStatus.textContent = server.owner ? "Owner" : "Administrator";
 
   const iconEl = document.getElementById("selected-server-icon");
   if (iconEl) {
-    iconEl.innerHTML = "";
+    iconEl.replaceChildren();
     const img = document.createElement("img");
     img.src = server.icon;
-    img.alt = server.name || "";
-    img.style.width = "100%";
-    img.style.height = "100%";
-    img.style.objectFit = "cover";
-    img.style.borderRadius = "8px";
+    img.alt = server.name;
     iconEl.appendChild(img);
   }
 }
@@ -261,38 +259,80 @@ function restoreSelectedServer() {
     if (!saved) return;
 
     const server = JSON.parse(saved);
-    if (!server?.id || !server?.name) return;
+    if (!server?.id || !server?.name) throw new Error("Invalid saved server.");
 
     selectedServer = server;
-    renderServerDetails(selectedServer);
+    renderServerDetails(server);
   } catch (error) {
-    console.error("Could not restore server:", error);
+    console.warn("Could not restore selected server:", error);
     localStorage.removeItem("selectedServer");
   }
 }
 
+function closeServerList() {
+  const list = document.getElementById("server-list");
+  const button = document.getElementById("server-button");
+
+  if (list) {
+    list.hidden = true;
+    list.innerHTML = "";
+  }
+
+  if (button) button.setAttribute("aria-expanded", "false");
+}
+
+function requireServer() {
+  if (selectedServer?.id) return true;
+  alert("Choose a Discord server first.");
+  return false;
+}
+
+function setStatus(id, message) {
+  const element = document.getElementById(id);
+  if (element) element.textContent = message;
+}
+
 function saveInviteSettings() {
-  if (!selectedServer) return alert("Choose a Discord server first.");
+  if (!requireServer()) return;
 
   const channel = document.getElementById("invite-log-channel")?.value.trim();
-  if (!channel) return alert("Enter a channel ID first.");
+  if (!channel) {
+    setStatus("invite-status", "Enter a channel ID first.");
+    return;
+  }
 
-  alert("Invite tracker settings saved!");
+  localStorage.setItem(`inviteSettings:${selectedServer.id}`, JSON.stringify({ channel }));
+  setStatus("invite-status", "✓ Invite tracker settings saved.");
 }
 
 function saveReward() {
-  if (!selectedServer) return alert("Choose a Discord server first.");
+  if (!requireServer()) return;
 
-  const goal = document.getElementById("reward-goal")?.value.trim();
+  const goal = Number(document.getElementById("reward-goal")?.value);
   const role = document.getElementById("reward-role")?.value.trim();
 
-  if (!goal || !role) return alert("Enter both an invite goal and role ID.");
+  if (!Number.isInteger(goal) || goal < 1) {
+    setStatus("reward-status", "Enter a valid invite goal.");
+    return;
+  }
 
-  alert(`Reward created for ${goal} invites!`);
+  if (!role) {
+    setStatus("reward-status", "Enter a reward role ID.");
+    return;
+  }
+
+  localStorage.setItem(
+    `rewardSettings:${selectedServer.id}`,
+    JSON.stringify({ goal, role })
+  );
+
+  setStatus("reward-status", `✓ Reward saved for ${goal} invites.`);
 }
 
 function saveSettings() {
-  alert("Settings saved!");
+  const status = document.getElementById("bot-status")?.value || "online";
+  localStorage.setItem("botStatus", status);
+  setStatus("settings-status", "✓ Settings saved.");
 }
 
 function logout() {
