@@ -457,4 +457,6 @@ function escapeHtml(value) {
    START
 ================================ */
 
-loadUser();
+window.addEventListener("DOMContentLoaded", () => {
+    loadUser();
+});
