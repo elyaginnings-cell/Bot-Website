@@ -1,31 +1,23 @@
 :root {
     --bg-dark: #07030d;
-    --bg-card: rgba(22, 10, 36, 0.75);
-
+    --bg-card: rgba(22, 10, 36, 0.85);
     --accent: #ff4df0;
     --accent-hover: #e032d1;
     --accent-glow: rgba(255, 77, 240, 0.35);
-
-    --border: rgba(255, 77, 240, 0.2);
-    --border-hover: rgba(255, 77, 240, 0.5);
-
+    --border: rgba(255, 77, 240, 0.25);
     --text: #f5e9ff;
     --text-muted: #b89cd9;
     --text-dim: #7a5e99;
-
     --radius-sm: 8px;
     --radius: 16px;
     --radius-lg: 24px;
-
-    --shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
-    --transition: 0.2s ease;
 }
 
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-family: system-ui, -apple-system, sans-serif;
 }
 
 body {
@@ -35,7 +27,6 @@ body {
     min-height: 100vh;
 }
 
-/* MODAL OVERLAY */
 body.modal-active #app {
     filter: blur(12px);
     pointer-events: none;
@@ -47,9 +38,8 @@ body.modal-active #app {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(7, 3, 13, 0.88);
+    background: rgba(7, 3, 13, 0.9);
     backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
     z-index: 9999;
     display: flex;
     align-items: center;
@@ -65,32 +55,31 @@ body.modal-active #app {
     background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
-    padding: 36px 28px;
-    max-width: 420px;
+    padding: 32px 24px;
+    max-width: 400px;
     width: 100%;
     text-align: center;
-    box-shadow: var(--shadow);
 }
 
 .device-modal-icon {
-    font-size: 48px;
+    font-size: 40px;
     margin-bottom: 12px;
 }
 
 .device-modal-card h2 {
-    font-size: 22px;
+    font-size: 20px;
     margin-bottom: 6px;
 }
 
 .device-modal-card p {
     color: var(--text-muted);
-    font-size: 14px;
-    margin-bottom: 24px;
+    font-size: 13px;
+    margin-bottom: 20px;
 }
 
 .device-buttons {
     display: flex;
-    gap: 14px;
+    gap: 12px;
 }
 
 .device-btn {
@@ -98,113 +87,99 @@ body.modal-active #app {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
-    padding: 16px;
+    gap: 6px;
+    padding: 14px;
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid var(--border);
     border-radius: var(--radius);
     color: var(--text);
     cursor: pointer;
-    transition: var(--transition);
 }
 
 .device-btn:hover {
     background: var(--accent);
     border-color: var(--accent);
-    box-shadow: 0 0 20px var(--accent-glow);
-    transform: translateY(-2px);
 }
 
-/* APP LAYOUT */
 #app {
     display: flex;
     min-height: 100vh;
-    padding: 24px;
-    gap: 24px;
+    padding: 20px;
+    gap: 20px;
 }
 
 .sidebar {
-    width: 280px;
+    width: 260px;
     background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
-    padding: 24px;
+    padding: 20px;
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 20px;
     flex-shrink: 0;
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
 }
 
 .sidebar-brand {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding-bottom: 18px;
+    padding-bottom: 16px;
     border-bottom: 1px solid var(--border);
 }
 
 .brand-icon {
-    font-size: 28px;
+    font-size: 24px;
 }
 
 .sidebar-brand strong {
     display: block;
-    font-size: 18px;
+    font-size: 16px;
     color: var(--accent);
 }
 
 .sidebar-brand span {
-    font-size: 12px;
+    font-size: 11px;
     color: var(--text-dim);
 }
 
 .navigation {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
     flex: 1;
 }
 
 .nav-item {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 12px 16px;
+    gap: 10px;
+    padding: 10px 14px;
     background: transparent;
     border: 1px solid transparent;
     border-radius: var(--radius-sm);
     color: var(--text-muted);
-    font-size: 14px;
-    font-weight: 500;
+    font-size: 13px;
     cursor: pointer;
-    transition: var(--transition);
     text-align: left;
-}
-
-.nav-item:hover {
-    background: rgba(255, 255, 255, 0.05);
-    color: var(--text);
 }
 
 .nav-item.active {
     background: var(--accent);
     color: #ffffff;
     border-color: var(--accent);
-    box-shadow: 0 0 16px var(--accent-glow);
 }
 
 .sidebar-bottom {
-    padding-top: 16px;
+    padding-top: 14px;
     border-top: 1px solid var(--border);
 }
 
 .connection-status {
     display: flex;
     align-items: center;
-    gap: 10px;
-    font-size: 13px;
+    gap: 8px;
+    font-size: 12px;
     color: var(--text-muted);
 }
 
@@ -213,15 +188,13 @@ body.modal-active #app {
     height: 8px;
     background: #23a55a;
     border-radius: 50%;
-    box-shadow: 0 0 10px #23a55a;
 }
 
-/* MAIN AREA */
 .main {
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 16px;
     min-width: 0;
 }
 
@@ -229,10 +202,7 @@ body.modal-active #app {
     background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 20px 24px;
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    box-shadow: var(--shadow);
+    padding: 18px 20px;
 }
 
 .header {
@@ -242,37 +212,31 @@ body.modal-active #app {
 }
 
 .header h1 {
-    font-size: 22px;
+    font-size: 20px;
 }
 
 .header p {
-    font-size: 13px;
+    font-size: 12px;
     color: var(--text-muted);
 }
 
 .account {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     background: rgba(255, 255, 255, 0.04);
-    padding: 8px 14px;
+    padding: 6px 12px;
     border-radius: var(--radius-sm);
     border: 1px solid var(--border);
 }
 
-.account img {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-}
-
 .account-info strong {
     display: block;
-    font-size: 13px;
+    font-size: 12px;
 }
 
 .account-info span {
-    font-size: 11px;
+    font-size: 10px;
     color: var(--text-dim);
 }
 
@@ -280,9 +244,9 @@ body.modal-active #app {
     background: rgba(242, 63, 67, 0.15);
     color: #f23f43;
     border: 1px solid rgba(242, 63, 67, 0.3);
-    padding: 6px 12px;
+    padding: 4px 10px;
     border-radius: 6px;
-    font-size: 12px;
+    font-size: 11px;
     cursor: pointer;
 }
 
@@ -295,32 +259,31 @@ body.modal-active #app {
 .server-current {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 12px;
 }
 
 .server-icon {
-    width: 42px;
-    height: 42px;
+    width: 36px;
+    height: 36px;
     background: rgba(255, 255, 255, 0.05);
     border-radius: var(--radius-sm);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 20px;
+    font-size: 18px;
     border: 1px solid var(--border);
 }
 
 .label {
     display: block;
-    font-size: 11px;
+    font-size: 10px;
     color: var(--text-dim);
-    letter-spacing: 0.5px;
 }
 
 .page-section {
     display: none;
     flex-direction: column;
-    gap: 20px;
+    gap: 16px;
 }
 
 .page-section.active {
@@ -332,141 +295,117 @@ body.modal-active #app {
     justify-content: space-between;
     align-items: center;
     background: linear-gradient(135deg, rgba(255, 77, 240, 0.15) 0%, rgba(22, 10, 36, 0.8) 100%);
-    border-color: var(--border-hover);
 }
 
 .eyebrow {
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 700;
     color: var(--accent);
-    letter-spacing: 1px;
 }
 
 .hero h2 {
-    font-size: 24px;
-    margin: 4px 0;
+    font-size: 20px;
+    margin: 2px 0;
 }
 
 .hero p {
     color: var(--text-muted);
-    font-size: 14px;
+    font-size: 13px;
 }
 
 .hero-icon {
-    font-size: 44px;
+    font-size: 36px;
 }
 
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
+    gap: 12px;
 }
 
 .stat-card {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 12px;
 }
 
 .stat-icon {
-    font-size: 24px;
-}
-
-.section-title {
-    margin-top: 8px;
+    font-size: 20px;
 }
 
 .section-title h3 {
-    font-size: 18px;
+    font-size: 16px;
 }
 
 .section-title p {
-    font-size: 13px;
+    font-size: 12px;
     color: var(--text-muted);
 }
 
 .quick-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
+    gap: 12px;
 }
 
 .quick-card {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 12px;
     cursor: pointer;
-    transition: var(--transition);
-}
-
-.quick-card:hover {
-    border-color: var(--border-hover);
-    transform: translateY(-2px);
-    box-shadow: 0 0 20px rgba(255, 77, 240, 0.15);
 }
 
 .quick-card p {
-    font-size: 12px;
+    font-size: 11px;
     color: var(--text-muted);
 }
 
 .arrow {
     color: var(--accent);
-    font-size: 18px;
+    font-size: 16px;
     margin-left: auto;
 }
 
 .form-card {
     display: flex;
     flex-direction: column;
-    gap: 14px;
-    max-width: 500px;
+    gap: 12px;
+    max-width: 450px;
 }
 
 .input-group {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 4px;
 }
 
 .input-group label {
-    font-size: 12px;
+    font-size: 11px;
     color: var(--text-muted);
 }
 
 input, select {
-    background: rgba(0, 0, 0, 0.3);
+    background: rgba(0, 0, 0, 0.4);
     border: 1px solid var(--border);
-    padding: 10px 14px;
+    padding: 8px 12px;
     border-radius: var(--radius-sm);
     color: var(--text);
     outline: none;
-    font-size: 14px;
-}
-
-input:focus, select:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 10px var(--accent-glow);
+    font-size: 13px;
 }
 
 .button {
     background: var(--accent);
     color: #ffffff;
     border: none;
-    padding: 10px 18px;
+    padding: 8px 16px;
     border-radius: var(--radius-sm);
     font-weight: 600;
     cursor: pointer;
-    transition: var(--transition);
     align-self: flex-start;
 }
 
-.button:hover {
-    background: var(--accent-hover);
-    box-shadow: 0 0 16px var(--accent-glow);
-}
-
-@media (max-width: 850px) {
+@media (max-width: 800px) {
     #app {
         flex-direction: column;
     }
