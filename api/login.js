@@ -13,7 +13,7 @@ export default function handler(req, res) {
         scope: "identify guilds"
     });
 
-    res.redirect(
+    return res.redirect(
         302,
         `https://discord.com/oauth2/authorize?${params.toString()}`
     );
