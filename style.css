@@ -1,11 +1,6 @@
-/* =========================================================
-   DARK PURPLE NEON GLASSMORPHISM THEME
-   ========================================================= */
-
 :root {
     --bg-dark: #07030d;
     --bg-card: rgba(22, 10, 36, 0.75);
-    --bg-card-hover: rgba(35, 16, 58, 0.85);
 
     --accent: #ff4df0;
     --accent-hover: #e032d1;
@@ -23,10 +18,9 @@
     --radius-lg: 24px;
 
     --shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
-    --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition: 0.2s ease;
 }
 
-/* RESET */
 * {
     margin: 0;
     padding: 0;
@@ -41,7 +35,7 @@ body {
     min-height: 100vh;
 }
 
-/* DEVICE SELECTION MODAL */
+/* MODAL OVERLAY */
 body.modal-active #app {
     filter: blur(12px);
     pointer-events: none;
@@ -55,6 +49,7 @@ body.modal-active #app {
     height: 100vh;
     background: rgba(7, 3, 13, 0.88);
     backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     z-index: 9999;
     display: flex;
     align-items: center;
@@ -139,6 +134,7 @@ body.modal-active #app {
     gap: 24px;
     flex-shrink: 0;
     backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
 }
 
 .sidebar-brand {
@@ -235,6 +231,7 @@ body.modal-active #app {
     border-radius: var(--radius);
     padding: 20px 24px;
     backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     box-shadow: var(--shadow);
 }
 
@@ -289,7 +286,6 @@ body.modal-active #app {
     cursor: pointer;
 }
 
-/* SERVER BAR */
 .server-bar {
     display: flex;
     justify-content: space-between;
@@ -321,7 +317,6 @@ body.modal-active #app {
     letter-spacing: 0.5px;
 }
 
-/* TAB CONTENT */
 .page-section {
     display: none;
     flex-direction: column;
@@ -361,7 +356,6 @@ body.modal-active #app {
     font-size: 44px;
 }
 
-/* GRIDS */
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -422,7 +416,6 @@ body.modal-active #app {
     margin-left: auto;
 }
 
-/* FORM STYLES */
 .form-card {
     display: flex;
     flex-direction: column;
@@ -473,7 +466,6 @@ input:focus, select:focus {
     box-shadow: 0 0 16px var(--accent-glow);
 }
 
-/* MOBILE RESPONSIVE */
 @media (max-width: 850px) {
     #app {
         flex-direction: column;
