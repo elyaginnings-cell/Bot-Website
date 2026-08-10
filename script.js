@@ -3,10 +3,33 @@ let selectedServer = null;
 
 document.addEventListener("DOMContentLoaded", function () {
     console.log("✅ script.js loaded");
+    setupDeviceSelection();
     checkLogin();
     restoreSelectedServer();
     setupEventListeners();
 });
+
+function setupDeviceSelection() {
+    const pcBtn = document.getElementById("select-pc");
+    const mobileBtn = document.getElementById("select-mobile");
+    const modal = document.getElementById("device-modal");
+
+    if (pcBtn) {
+        pcBtn.addEventListener("click", () => {
+            document.body.classList.remove("modal-active", "mode-mobile");
+            document.body.classList.add("mode-pc");
+            if (modal) modal.classList.add("hidden");
+        });
+    }
+
+    if (mobileBtn) {
+        mobileBtn.addEventListener("click", () => {
+            document.body.classList.remove("modal-active", "mode-pc");
+            document.body.classList.add("mode-mobile");
+            if (modal) modal.classList.add("hidden");
+        });
+    }
+}
 
 function setupEventListeners() {
     // Nav buttons
