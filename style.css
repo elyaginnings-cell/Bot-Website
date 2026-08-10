@@ -1,5 +1,5 @@
 /* =========================================================
-   ULTRA DARK NEON PURPLE THEME — GITHUB SAFE
+   ULTRA DARK NEON PURPLE THEME — GITHUB & VERCEL SAFE
    ========================================================= */
 
 :root {
@@ -97,7 +97,7 @@ body {
 
 .nav-item.active {
     background: var(--accent);
-    color: #fff;
+    color: #ffffff;
     box-shadow: 0 0 12px rgba(255, 77, 240, 0.6);
     border-color: var(--accent);
 }
@@ -214,7 +214,7 @@ body {
 
 .button {
     background: var(--accent);
-    color: #fff;
+    color: #ffffff;
     padding: 14px 24px;
     border-radius: var(--radius);
     font-weight: 600;
