@@ -16,10 +16,13 @@ body.modal-active #app {
   pointer-events: none;
 }
 
-/* ===== Device Modal ===== */
+/* Device Modal */
 .device-modal {
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
   background-color: rgba(7, 3, 13, 0.9);
   z-index: 9999;
   display: flex;
@@ -75,21 +78,15 @@ body.modal-active #app {
   border-radius: 16px;
   color: #f5e9ff;
   cursor: pointer;
-  transition: background-color 0.2s, border-color 0.2s, transform 0.15s;
+  transition: background-color 0.2s, border-color 0.2s;
 }
 
 .device-btn:hover {
   background-color: #ff4df0;
   border-color: #ff4df0;
-  transform: translateY(-1px);
 }
 
-.device-btn:focus-visible {
-  outline: 2px solid #ff4df0;
-  outline-offset: 2px;
-}
-
-/* ===== App Layout ===== */
+/* App Layout */
 #app {
   display: flex;
   min-height: 100vh;
@@ -97,7 +94,7 @@ body.modal-active #app {
   gap: 20px;
 }
 
-/* ===== Sidebar ===== */
+/* Sidebar */
 .sidebar {
   width: 260px;
   background-color: #160a24;
@@ -152,7 +149,7 @@ body.modal-active #app {
   font-size: 13px;
   cursor: pointer;
   text-align: left;
-  transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+  transition: background-color 0.2s, color 0.2s;
 }
 
 .nav-item:hover {
@@ -164,11 +161,6 @@ body.modal-active #app {
   background-color: #ff4df0;
   color: #ffffff;
   border-color: #ff4df0;
-}
-
-.nav-item:focus-visible {
-  outline: 2px solid #ff4df0;
-  outline-offset: 2px;
 }
 
 .sidebar-bottom {
@@ -191,7 +183,7 @@ body.modal-active #app {
   border-radius: 50%;
 }
 
-/* ===== Main Content ===== */
+/* Main */
 .main {
   flex: 1;
   display: flex;
@@ -250,11 +242,6 @@ body.modal-active #app {
   border-radius: 6px;
   font-size: 11px;
   cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.logout-btn:hover {
-  background-color: rgba(242, 63, 67, 0.3);
 }
 
 .server-bar {
@@ -287,18 +274,18 @@ body.modal-active #app {
   color: #7a5e99;
 }
 
-/* ===== Page Sections ===== */
+/* Page sections */
 .page-section {
   display: none;
+  flex-direction: column;
   gap: 16px;
 }
 
 .page-section.active {
   display: flex;
-  flex-direction: column;
 }
 
-/* ===== Hero & Stats ===== */
+/* Hero & Stats */
 .hero {
   display: flex;
   justify-content: space-between;
@@ -310,8 +297,6 @@ body.modal-active #app {
   font-size: 10px;
   font-weight: 700;
   color: #ff4df0;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
 }
 
 .hero h2 {
@@ -364,11 +349,6 @@ body.modal-active #app {
   align-items: center;
   gap: 12px;
   cursor: pointer;
-  transition: background-color 0.2s, border-color 0.2s;
-}
-
-.quick-card:hover {
-  background-color: rgba(255, 77, 240, 0.08);
 }
 
 .quick-card p {
@@ -382,7 +362,7 @@ body.modal-active #app {
   margin-left: auto;
 }
 
-/* ===== Forms ===== */
+/* Forms */
 .form-card {
   display: flex;
   flex-direction: column;
@@ -410,12 +390,6 @@ select {
   color: #f5e9ff;
   outline: none;
   font-size: 13px;
-  transition: border-color 0.2s;
-}
-
-input:focus,
-select:focus {
-  border-color: #ff4df0;
 }
 
 .button {
@@ -427,20 +401,9 @@ select:focus {
   font-weight: 600;
   cursor: pointer;
   align-self: flex-start;
-  transition: background-color 0.2s, transform 0.15s;
 }
 
-.button:hover {
-  background-color: #e03dd8;
-  transform: translateY(-1px);
-}
-
-.button:focus-visible {
-  outline: 2px solid #ff4df0;
-  outline-offset: 2px;
-}
-
-/* ===== Responsive ===== */
+/* Responsive */
 @media (max-width: 800px) {
   #app {
     flex-direction: column;
