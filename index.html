@@ -19,14 +19,7 @@
 
 <body>
 
-    <!-- =========================
-         APP
-    ========================== -->
-
-    <div
-        id="app"
-        class="app"
-    >
+    <div class="app">
 
         <!-- SIDEBAR -->
 
@@ -40,13 +33,9 @@
 
                 <div class="brand-text">
 
-                    <h1>
-                        Gatto Bot
-                    </h1>
+                    <h1>Gatto Bot</h1>
 
-                    <span>
-                        Dashboard
-                    </span>
+                    <span>Dashboard</span>
 
                 </div>
 
@@ -59,35 +48,32 @@
                     class="nav-item active"
                     data-page="overview"
                 >
-                    <span>📊</span>
-                    Overview
+                    📊
+                    <span>Overview</span>
                 </button>
-
 
                 <button
                     class="nav-item"
                     data-page="invites"
                 >
-                    <span>📨</span>
-                    Invites
+                    📨
+                    <span>Invites</span>
                 </button>
-
 
                 <button
                     class="nav-item"
                     data-page="rewards"
                 >
-                    <span>🎁</span>
-                    Rewards
+                    🎁
+                    <span>Rewards</span>
                 </button>
-
 
                 <button
                     class="nav-item"
                     data-page="settings"
                 >
-                    <span>⚙️</span>
-                    Settings
+                    ⚙️
+                    <span>Settings</span>
                 </button>
 
             </nav>
@@ -101,9 +87,7 @@
 
                     <div>
 
-                        <strong>
-                            Bot Online
-                        </strong>
+                        <strong>Bot Online</strong>
 
                         <small>
                             Connected
@@ -116,7 +100,6 @@
             </div>
 
         </aside>
-
 
 
         <!-- MAIN -->
@@ -138,15 +121,56 @@
                 </div>
 
 
-                <!-- SERVER SELECTOR -->
+                <div class="topbar-right">
 
-                <div
-                    id="server-selector"
-                    class="server-selector"
-                >
+                    <!-- LOGIN BUTTON -->
+                    <button
+                        id="login-button"
+                        class="primary-button"
+                    >
+                        Login with Discord
+                    </button>
 
-                    <div class="loading-server">
-                        Loading servers...
+
+                    <!-- USER -->
+                    <div
+                        id="user-info"
+                        class="user-info hidden"
+                    >
+
+                        <div
+                            id="user-avatar"
+                            class="user-avatar"
+                        >
+                            ?
+                        </div>
+
+                        <div>
+
+                            <strong id="username">
+                                User
+                            </strong>
+
+                            <small>
+                                Discord
+                            </small>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- SERVER SELECTOR -->
+
+                    <div
+                        id="server-selector"
+                        class="server-selector hidden"
+                    >
+
+                        <div class="loading-server">
+                            Loading servers...
+                        </div>
+
                     </div>
 
                 </div>
@@ -154,10 +178,7 @@
             </header>
 
 
-
-            <!-- =========================
-                 OVERVIEW
-            ========================== -->
+            <!-- OVERVIEW -->
 
             <section
                 id="overview"
@@ -174,12 +195,10 @@
 
                         <div>
 
-                            <span>
-                                Members
-                            </span>
+                            <span>Members</span>
 
                             <strong id="member-count">
-                                0
+                                —
                             </strong>
 
                         </div>
@@ -195,12 +214,10 @@
 
                         <div>
 
-                            <span>
-                                Total Invites
-                            </span>
+                            <span>Total Invites</span>
 
                             <strong id="total-invites">
-                                0
+                                —
                             </strong>
 
                         </div>
@@ -216,12 +233,10 @@
 
                         <div>
 
-                            <span>
-                                Valid Invites
-                            </span>
+                            <span>Valid Invites</span>
 
                             <strong id="valid-invites">
-                                0
+                                —
                             </strong>
 
                         </div>
@@ -237,12 +252,10 @@
 
                         <div>
 
-                            <span>
-                                Rewards
-                            </span>
+                            <span>Rewards</span>
 
                             <strong id="reward-count">
-                                0
+                                —
                             </strong>
 
                         </div>
@@ -250,7 +263,6 @@
                     </div>
 
                 </div>
-
 
 
                 <div class="content-grid">
@@ -288,16 +300,15 @@
 
                             <div class="empty">
 
-                                <div>
-                                    📨
-                                </div>
+                                <div>📨</div>
 
                                 <strong>
-                                    No invite data yet
+                                    Login to view invites
                                 </strong>
 
                                 <span>
-                                    Invite data will appear here.
+                                    Your invite statistics
+                                    will appear here.
                                 </span>
 
                             </div>
@@ -305,7 +316,6 @@
                         </div>
 
                     </div>
-
 
 
                     <div class="card">
@@ -341,16 +351,15 @@
 
                             <div class="empty">
 
-                                <div>
-                                    🎁
-                                </div>
+                                <div>🎁</div>
 
                                 <strong>
                                     No rewards configured
                                 </strong>
 
                                 <span>
-                                    Create your first reward.
+                                    Configure invite rewards
+                                    for your server.
                                 </span>
 
                             </div>
@@ -364,10 +373,7 @@
             </section>
 
 
-
-            <!-- =========================
-                 INVITES
-            ========================== -->
+            <!-- INVITES -->
 
             <section
                 id="invites"
@@ -410,26 +416,14 @@
 
                                 <tr>
 
-                                    <th>
-                                        User
-                                    </th>
-
-                                    <th>
-                                        Total
-                                    </th>
-
-                                    <th>
-                                        Valid
-                                    </th>
-
-                                    <th>
-                                        Left
-                                    </th>
+                                    <th>User</th>
+                                    <th>Total</th>
+                                    <th>Valid</th>
+                                    <th>Left</th>
 
                                 </tr>
 
                             </thead>
-
 
                             <tbody id="invite-table">
 
@@ -439,7 +433,7 @@
                                         colspan="4"
                                         class="table-empty"
                                     >
-                                        No invite data yet.
+                                        Login to view invite data.
                                     </td>
 
                                 </tr>
@@ -455,10 +449,7 @@
             </section>
 
 
-
-            <!-- =========================
-                 REWARDS
-            ========================== -->
+            <!-- REWARDS -->
 
             <section
                 id="rewards"
@@ -474,8 +465,8 @@
                         </h2>
 
                         <p>
-                            Give members roles when
-                            they reach invite milestones.
+                            Give members roles when they
+                            reach invite milestones.
                         </p>
 
                     </div>
@@ -498,9 +489,7 @@
 
                     <div class="empty">
 
-                        <div>
-                            🎁
-                        </div>
+                        <div>🎁</div>
 
                         <strong>
                             No rewards configured
@@ -517,10 +506,7 @@
             </section>
 
 
-
-            <!-- =========================
-                 SETTINGS
-            ========================== -->
+            <!-- SETTINGS -->
 
             <section
                 id="settings"
@@ -612,47 +598,7 @@
     </div>
 
 
-
-    <!-- =========================
-         LOGIN SCREEN
-    ========================== -->
-
-    <div
-        id="login-screen"
-        class="login-screen"
-    >
-
-        <div class="login-card">
-
-            <div class="login-logo">
-                🤖
-            </div>
-
-            <h1>
-                Gatto Bot
-            </h1>
-
-            <p>
-                Manage your Discord bot
-                from one dashboard.
-            </p>
-
-            <button
-                id="login-button"
-                class="primary-button login-button"
-            >
-                Login with Discord
-            </button>
-
-        </div>
-
-    </div>
-
-
-
-    <!-- =========================
-         INVITE MODAL
-    ========================== -->
+    <!-- INVITE MODAL -->
 
     <div
         id="invite-modal"
@@ -676,7 +622,6 @@
                 Manually add or remove invites.
             </p>
 
-
             <label>
                 Discord User ID
             </label>
@@ -685,7 +630,6 @@
                 id="invite-user"
                 placeholder="123456789012345678"
             >
-
 
             <label>
                 Amount
@@ -696,7 +640,6 @@
                 type="number"
                 placeholder="1"
             >
-
 
             <button
                 id="adjust-invites"
@@ -710,10 +653,7 @@
     </div>
 
 
-
-    <!-- =========================
-         REWARD MODAL
-    ========================== -->
+    <!-- REWARD MODAL -->
 
     <div
         id="reward-modal"
@@ -738,7 +678,6 @@
                 reaches an invite goal.
             </p>
 
-
             <label>
                 Invite Goal
             </label>
@@ -749,7 +688,6 @@
                 placeholder="10"
             >
 
-
             <label>
                 Role ID
             </label>
@@ -758,7 +696,6 @@
                 id="reward-role"
                 placeholder="123456789012345678"
             >
-
 
             <button
                 id="add-reward"
@@ -770,7 +707,6 @@
         </div>
 
     </div>
-
 
 
     <script src="script.js"></script>
