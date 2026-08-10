@@ -5,12 +5,8 @@ let selectedServer = null;
 / START /
 / ================================================= */
 
-document.addEventListener(“DOMContentLoaded”, async () => {
-
-setupNavigation();
-setupButtons();
-await checkLogin();
-
+document.addEventListener(“DOMContentLoaded”, function () {
+checkLogin();
 });
 
 /* ================================================= /
@@ -21,33 +17,23 @@ async function checkLogin() {
 
 try {
     const response = await fetch("/api/user", {
-        method: "GET",
         credentials: "include",
         cache: "no-store"
     });
     if (!response.ok) {
-        console.error(
-            "Authentication failed:",
-            response.status
-        );
-        showAuthenticationError();
+        console.error("User API failed:", response.status);
         return;
     }
     const data = await response.json();
     if (!data.authenticated || !data.user) {
-        showAuthenticationError();
+        console.error("No authenticated Discord user.");
         return;
     }
     currentUser = data.user;
     showDashboard(data.user);
     restoreSelectedServer();
-}
-catch (error) {
-    console.error(
-        "Authentication request failed:",
-        error
-    );
-    showAuthenticationError();
+} catch (error) {
+    console.error("Authentication error:", error);
 }
 
 }
@@ -65,14 +51,12 @@ const username =
 const usernameElement =
     document.getElementById("username");
 if (usernameElement) {
-    usernameElement.textContent =
-        username;
+    usernameElement.textContent = username;
 }
 const welcome =
     document.getElementById("welcome-name");
 if (welcome) {
-    welcome.textContent =
-        username;
+    welcome.textContent = username;
 }
 const avatar =
     document.getElementById("user-avatar");
@@ -80,36 +64,11 @@ if (avatar) {
     if (user.avatar) {
         avatar.src =
             `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=128`;
-    }
-    else {
+    } else {
         avatar.src =
-            `https://cdn.discordapp.com/embed/avatars/${Number(user.discriminator || 0) % 5}.png`;
+            "https://cdn.discordapp.com/embed/avatars/0.png";
     }
 }
-
-}
-
-/* ================================================= /
-/ AUTH ERROR /
-/ ================================================= */
-
-function showAuthenticationError() {
-
-const username =
-    document.getElementById("username");
-if (username) {
-    username.textContent =
-        "Not authenticated";
-}
-const welcome =
-    document.getElementById("welcome-name");
-if (welcome) {
-    welcome.textContent =
-        "there";
-}
-console.warn(
-    "No valid Discord session was found."
-);
 
 }
 
@@ -117,59 +76,37 @@ console.warn(
 / NAVIGATION /
 / ================================================= */
 
-function setupNavigation() {
-
-document
-    .querySelectorAll(".nav-item")
-    .forEach(button => {
-        button.addEventListener(
-            "click",
-            () => {
-                const section =
-                    button.dataset.section;
-                showSection(section);
-            }
-        );
-    });
-document
-    .querySelectorAll("[data-section-link]")
-    .forEach(button => {
-        button.addEventListener(
-            "click",
-            () => {
-                showSection(
-                    button.dataset.sectionLink
-                );
-            }
-        );
-    });
-
-}
-
 function showSection(section) {
 
 document
     .querySelectorAll(".page-section")
-    .forEach(element => {
-        element.classList.remove(
-            "active"
-        );
+    .forEach(function (element) {
+        element.classList.remove("active");
     });
 const selected =
     document.getElementById(section);
 if (selected) {
-    selected.classList.add(
-        "active"
-    );
+    selected.classList.add("active");
 }
 document
     .querySelectorAll(".nav-item")
-    .forEach(button => {
-        button.classList.toggle(
-            "active",
-            button.dataset.section === section
-        );
+    .forEach(function (button) {
+        button.classList.remove("active");
     });
+const buttons =
+    document.querySelectorAll(".nav-item");
+buttons.forEach(function (button) {
+    const onclick =
+        button.getAttribute("onclick");
+    if (
+        onclick &&
+        onclick.includes(
+            `showSection('${section}')`
+        )
+    ) {
+        button.classList.add("active");
+    }
+});
 const titles = {
     overview: [
         "Overview",
@@ -188,134 +125,59 @@ const titles = {
         "Configure your bot."
     ]
 };
-const title =
-    titles[section];
-if (!title) return;
-const pageTitle =
-    document.getElementById("page-title");
-const pageDescription =
-    document.getElementById("page-description");
-if (pageTitle) {
-    pageTitle.textContent =
-        title[0];
-}
-if (pageDescription) {
-    pageDescription.textContent =
-        title[1];
+if (titles[section]) {
+    document.getElementById(
+        "page-title"
+    ).textContent = titles[section][0];
+    document.getElementById(
+        "page-description"
+    ).textContent = titles[section][1];
 }
 
 }
 
 /* ================================================= /
-/ BUTTON SETUP /
-/ ================================================= */
-
-function setupButtons() {
-
-const serverButton =
-    document.getElementById(
-        "server-button"
-    );
-if (serverButton) {
-    serverButton.addEventListener(
-        "click",
-        loadServers
-    );
-}
-const logoutButton =
-    document.getElementById(
-        "logout-button"
-    );
-if (logoutButton) {
-    logoutButton.addEventListener(
-        "click",
-        logout
-    );
-}
-const inviteButton =
-    document.getElementById(
-        "save-invite-settings"
-    );
-if (inviteButton) {
-    inviteButton.addEventListener(
-        "click",
-        saveInviteSettings
-    );
-}
-const rewardButton =
-    document.getElementById(
-        "save-reward"
-    );
-if (rewardButton) {
-    rewardButton.addEventListener(
-        "click",
-        saveReward
-    );
-}
-const settingsButton =
-    document.getElementById(
-        "save-settings"
-    );
-if (settingsButton) {
-    settingsButton.addEventListener(
-        "click",
-        saveSettings
-    );
-}
-
-}
-
-/* ================================================= /
-/ DISCORD SERVERS /
+/ SERVERS /
 / ================================================= */
 
 async function loadServers() {
 
 const list =
-    document.getElementById(
-        "server-list"
-    );
-if (!list) return;
-if (!list.hidden) {
-    list.hidden = true;
+    document.getElementById("server-list");
+if (!list) {
+    console.error("server-list element missing.");
+    return;
+}
+if (list.innerHTML.trim() !== "") {
     list.innerHTML = "";
     return;
 }
-list.hidden = false;
 list.innerHTML = `
     <div class="server-item">
-        <span>Loading your Discord servers...</span>
+        <span>Loading your servers...</span>
     </div>
 `;
 try {
     const response =
-        await fetch(
-            "/api/guilds",
-            {
-                method: "GET",
-                credentials: "include",
-                cache: "no-store"
-            }
-        );
+        await fetch("/api/guilds", {
+            credentials: "include",
+            cache: "no-store"
+        });
     if (!response.ok) {
-        const text =
-            await response.text();
         console.error(
-            "Guild request failed:",
-            response.status,
-            text
+            "Guild API failed:",
+            response.status
         );
         throw new Error(
-            `Guild request failed (${response.status})`
+            "Failed to load servers"
         );
     }
     const data =
         await response.json();
-    const guilds =
-        Array.isArray(data.guilds)
-            ? data.guilds
-            : [];
-    if (guilds.length === 0) {
+    if (
+        !data.guilds ||
+        data.guilds.length === 0
+    ) {
         list.innerHTML = `
             <div class="server-item">
                 <span>
@@ -326,7 +188,7 @@ try {
         return;
     }
     list.innerHTML = "";
-    guilds.forEach(guild => {
+    data.guilds.forEach(function (guild) {
         const button =
             document.createElement("button");
         button.className =
@@ -345,20 +207,16 @@ try {
             guild.name;
         button.appendChild(image);
         button.appendChild(name);
-        button.addEventListener(
-            "click",
-            () => {
-                selectServer(
-                    guild.id,
-                    guild.name,
-                    icon
-                );
-            }
-        );
+        button.onclick = function () {
+            selectServer(
+                guild.id,
+                guild.name,
+                icon
+            );
+        };
         list.appendChild(button);
     });
-}
-catch (error) {
+} catch (error) {
     console.error(
         "Server loading error:",
         error
@@ -366,7 +224,7 @@ catch (error) {
     list.innerHTML = `
         <div class="server-item">
             <span>
-                ❌ Unable to load your servers.
+                ❌ Unable to load servers.
             </span>
         </div>
     `;
@@ -375,33 +233,51 @@ catch (error) {
 }
 
 /* ================================================= /
-/ SELECT SERVER /
+/ SERVER SELECTION /
 / ================================================= */
 
-function selectServer(
-id,
-name,
-icon
-) {
+function selectServer(id, name, icon) {
 
 selectedServer = {
-    id,
-    name,
-    icon
+    id: id,
+    name: name,
+    icon: icon
 };
 localStorage.setItem(
     "selectedServer",
     JSON.stringify(selectedServer)
 );
-updateSelectedServerUI();
-const list =
+document.getElementById(
+    "selected-server-name"
+).textContent = name;
+document.getElementById(
+    "overview-server"
+).textContent = name;
+const serverIcon =
     document.getElementById(
-        "server-list"
+        "selected-server-icon"
     );
+if (serverIcon) {
+    serverIcon.innerHTML = "";
+    const image =
+        document.createElement("img");
+    image.src = icon;
+    image.alt = name;
+    image.style.width = "100%";
+    image.style.height = "100%";
+    image.style.objectFit = "cover";
+    image.style.borderRadius = "10px";
+    serverIcon.appendChild(image);
+}
+const list =
+    document.getElementById("server-list");
 if (list) {
-    list.hidden = true;
     list.innerHTML = "";
 }
+console.log(
+    "Selected server:",
+    selectedServer
+);
 
 }
 
@@ -419,71 +295,36 @@ try {
     if (!saved) return;
     selectedServer =
         JSON.parse(saved);
-    if (
-        !selectedServer ||
-        !selectedServer.id
-    ) {
-        return;
-    }
-    updateSelectedServerUI();
-}
-catch (error) {
-    console.error(
-        "Could not restore selected server:",
-        error
-    );
-    localStorage.removeItem(
-        "selectedServer"
-    );
-}
-
-}
-
-/* ================================================= /
-/ SERVER UI /
-/ ================================================= */
-
-function updateSelectedServerUI() {
-
-if (!selectedServer) return;
-const name =
+    if (!selectedServer) return;
     document.getElementById(
         "selected-server-name"
-    );
-if (name) {
-    name.textContent =
+    ).textContent =
         selectedServer.name;
-}
-const overview =
     document.getElementById(
         "overview-server"
-    );
-if (overview) {
-    overview.textContent =
+    ).textContent =
         selectedServer.name;
-}
-const icon =
-    document.getElementById(
-        "selected-server-icon"
-    );
-if (icon) {
-    icon.innerHTML = "";
-    const image =
-        document.createElement("img");
-    image.src =
-        selectedServer.icon;
-    image.alt =
-        selectedServer.name;
-    image.style.width =
-        "100%";
-    image.style.height =
-        "100%";
-    image.style.objectFit =
-        "cover";
-    image.style.borderRadius =
-        "10px";
-    icon.appendChild(
-        image
+    const serverIcon =
+        document.getElementById(
+            "selected-server-icon"
+        );
+    if (serverIcon && selectedServer.icon) {
+        serverIcon.innerHTML = `
+            <img
+                src="${selectedServer.icon}"
+                style="
+                    width:100%;
+                    height:100%;
+                    object-fit:cover;
+                    border-radius:10px;
+                "
+            >
+        `;
+    }
+} catch (error) {
+    console.error(
+        "Could not restore server:",
+        error
     );
 }
 
@@ -502,25 +343,19 @@ if (!selectedServer) {
     return;
 }
 const channel =
-    document
-        .getElementById(
-            "invite-log-channel"
-        )
-        .value
-        .trim();
+    document.getElementById(
+        "invite-log-channel"
+    ).value.trim();
 if (!channel) {
     alert(
         "Enter a channel ID first."
     );
     return;
 }
-console.log(
-    "Invite settings:",
-    {
-        guildId: selectedServer.id,
-        channelId: channel
-    }
-);
+console.log({
+    guildId: selectedServer.id,
+    channelId: channel
+});
 alert(
     "Invite tracker settings saved!"
 );
@@ -540,34 +375,24 @@ if (!selectedServer) {
     return;
 }
 const goal =
-    Number(
-        document
-            .getElementById(
-                "reward-goal"
-            )
-            .value
-    );
+    document.getElementById(
+        "reward-goal"
+    ).value;
 const role =
-    document
-        .getElementById(
-            "reward-role"
-        )
-        .value
-        .trim();
-if (!goal || goal < 1 || !role) {
+    document.getElementById(
+        "reward-role"
+    ).value.trim();
+if (!goal || !role) {
     alert(
         "Enter both an invite goal and role ID."
     );
     return;
 }
-console.log(
-    "Reward:",
-    {
-        guildId: selectedServer.id,
-        goal,
-        roleId: role
-    }
-);
+console.log({
+    guildId: selectedServer.id,
+    goal: goal,
+    roleId: role
+});
 alert(
     `Reward created for ${goal} invites!`
 );
@@ -575,29 +400,18 @@ alert(
 }
 
 /* ================================================= /
-/ BOT SETTINGS /
+/ SETTINGS /
 / ================================================= */
 
 function saveSettings() {
 
-if (!selectedServer) {
-    alert(
-        "Choose a Discord server first."
-    );
-    return;
-}
 const status =
-    document
-        .getElementById(
-            "bot-status"
-        )
-        .value;
+    document.getElementById(
+        "bot-status"
+    ).value;
 console.log(
     "Bot status:",
-    {
-        guildId: selectedServer.id,
-        status
-    }
+    status
 );
 alert(
     "Settings saved!"
