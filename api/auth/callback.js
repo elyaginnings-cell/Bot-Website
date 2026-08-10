@@ -1,79 +1,44 @@
-const crypto = require("crypto");
+export default async function handler(req, res) {
 
-function parseCookies(cookieHeader = "") {
-    const cookies = {};
+    const code = req.query.code;
 
-    cookieHeader.split(";").forEach(part => {
-        const [key, ...value] = part.trim().split("=");
+    if (!code) {
+        return res.status(400).send(
+            "Missing Discord authorization code."
+        );
+    }
 
-        if (key) {
-            cookies[key] = decodeURIComponent(value.join("="));
-        }
-    });
+    const params = new URLSearchParams();
 
-    return cookies;
-}
-
-function encrypt(text) {
-    const key = crypto
-        .createHash("sha256")
-        .update(process.env.SESSION_SECRET)
-        .digest();
-
-    const iv = crypto.randomBytes(12);
-
-    const cipher = crypto.createCipheriv(
-        "aes-256-gcm",
-        key,
-        iv
+    params.append(
+        "client_id",
+        process.env.DISCORD_CLIENT_ID
     );
 
-    const encrypted = Buffer.concat([
-        cipher.update(text, "utf8"),
-        cipher.final()
-    ]);
+    params.append(
+        "client_secret",
+        process.env.DISCORD_CLIENT_SECRET
+    );
 
-    const tag = cipher.getAuthTag();
+    params.append(
+        "grant_type",
+        "authorization_code"
+    );
 
-    return Buffer.concat([
-        iv,
-        tag,
-        encrypted
-    ]).toString("base64url");
-}
+    params.append(
+        "code",
+        code
+    );
 
-module.exports = async (req, res) => {
-    try {
-        const { code, state, error } = req.query;
+    params.append(
+        "redirect_uri",
+        process.env.DISCORD_REDIRECT_URI
+    );
 
-        if (error) {
-            return res.redirect(
-                302,
-                "/?error=discord_denied"
-            );
-        }
 
-        if (!code || !state) {
-            return res.status(400).send(
-                "Missing Discord authorization information."
-            );
-        }
-
-        const cookies = parseCookies(
-            req.headers.cookie
-        );
-
-        if (
-            !cookies.oauth_state ||
-            cookies.oauth_state !== state
-        ) {
-            return res.status(400).send(
-                "Invalid OAuth state."
-            );
-        }
-
-        const tokenResponse = await fetch(
-            "https://discord.com/api/v10/oauth2/token",
+    const tokenResponse =
+        await fetch(
+            "https://discord.com/api/oauth2/token",
             {
                 method: "POST",
 
@@ -82,113 +47,47 @@ module.exports = async (req, res) => {
                         "application/x-www-form-urlencoded"
                 },
 
-                body: new URLSearchParams({
-                    client_id:
-                        process.env.DISCORD_CLIENT_ID,
-
-                    client_secret:
-                        process.env.DISCORD_CLIENT_SECRET,
-
-                    grant_type:
-                        "authorization_code",
-
-                    code,
-
-                    redirect_uri:
-                        "https://bot-website-ruby-six.vercel.app/api/auth/callback"
-                })
+                body: params
             }
         );
 
-        if (!tokenResponse.ok) {
-            console.error(
-                await tokenResponse.text()
-            );
 
-            return res.status(500).send(
-                "Discord token exchange failed."
-            );
-        }
+    if (!tokenResponse.ok) {
 
-        const tokenData =
-            await tokenResponse.json();
+        const error =
+            await tokenResponse.text();
 
-        const userResponse = await fetch(
-            "https://discord.com/api/v10/users/@me",
-            {
-                headers: {
-                    Authorization:
-                        `Bearer ${tokenData.access_token}`
-                }
-            }
-        );
-
-        if (!userResponse.ok) {
-            return res.status(500).send(
-                "Could not retrieve Discord user."
-            );
-        }
-
-        const user =
-            await userResponse.json();
-
-        const guildResponse = await fetch(
-            "https://discord.com/api/v10/users/@me/guilds",
-            {
-                headers: {
-                    Authorization:
-                        `Bearer ${tokenData.access_token}`
-                }
-            }
-        );
-
-        const guilds =
-            guildResponse.ok
-                ? await guildResponse.json()
-                : [];
-
-        const session = {
-            user: {
-                id: user.id,
-                username: user.username,
-                global_name:
-                    user.global_name,
-                avatar: user.avatar
-            },
-
-            guilds: guilds.map(guild => ({
-                id: guild.id,
-                name: guild.name,
-                icon: guild.icon,
-                owner: guild.owner,
-                permissions: guild.permissions
-            })),
-
-            accessToken:
-                tokenData.access_token
-        };
-
-        const encryptedSession =
-            encrypt(
-                JSON.stringify(session)
-            );
-
-        res.setHeader(
-            "Set-Cookie",
-            [
-                `session=${encryptedSession}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=604800`,
-
-                `oauth_state=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0`
-            ]
-        );
-
-        res.redirect(302, "/");
-
-    } catch (error) {
         console.error(error);
 
-        res.status(500).send(
-            "Authentication failed."
+        return res.status(500).send(
+            "Discord authentication failed."
         );
     }
-};
+
+
+    const tokens =
+        await tokenResponse.json();
+
+
+    /*
+     * Store the OAuth token in a secure,
+     * HTTP-only cookie.
+     */
+
+    const cookie =
+        `discord_access_token=${tokens.access_token}; ` +
+        `HttpOnly; ` +
+        `Secure; ` +
+        `SameSite=Lax; ` +
+        `Path=/; ` +
+        `Max-Age=${tokens.expires_in}`;
+
+
+    res.setHeader(
+        "Set-Cookie",
+        cookie
+    );
+
+
+    res.redirect("/");
+}
