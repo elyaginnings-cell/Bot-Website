@@ -1,3 +1,5 @@
+alert("SCRIPT.JS LOADED");
+
 let currentUser = null;
 let selectedServer = null;
 
