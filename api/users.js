@@ -1,36 +1,56 @@
-export default async function handler(req, res) {
+export default async function handler(
+    req,
+    res
+) {
 
-    const token = getCookie(
-        req.headers.cookie,
-        "discord_access_token"
-    );
+    const token =
+        getCookie(
+            req.headers.cookie,
+            "discord_access_token"
+        );
+
 
     if (!token) {
 
         console.log(
-            "No Discord access token cookie found."
+            "No Discord access token cookie."
         );
 
+
         return res.status(401).json({
-            authenticated: false,
-            reason: "NO_COOKIE"
+
+            authenticated:
+                false,
+
+            reason:
+                "NO_COOKIE"
+
         });
+
     }
+
 
     try {
 
-        const response = await fetch(
-            "https://discord.com/api/users/@me",
-            {
-                headers: {
-                    Authorization:
-                        `Bearer ${token}`
+        const response =
+            await fetch(
+                "https://discord.com/api/users/@me",
+                {
+
+                    headers: {
+
+                        Authorization:
+                            `Bearer ${token}`
+
+                    }
+
                 }
-            }
-        );
+            );
+
 
         const data =
             await response.json();
+
 
         if (!response.ok) {
 
@@ -39,22 +59,39 @@ export default async function handler(req, res) {
                 data
             );
 
+
             return res.status(401).json({
-                authenticated: false,
-                reason: "INVALID_TOKEN"
+
+                authenticated:
+                    false,
+
+                reason:
+                    "INVALID_TOKEN"
+
             });
+
         }
+
 
         return res.status(200).json({
 
-            authenticated: true,
+            authenticated:
+                true,
 
             user: {
-                id: data.id,
-                username: data.username,
+
+                id:
+                    data.id,
+
+                username:
+                    data.username,
+
                 global_name:
                     data.global_name,
-                avatar: data.avatar
+
+                avatar:
+                    data.avatar
+
             }
 
         });
@@ -62,38 +99,60 @@ export default async function handler(req, res) {
     } catch (error) {
 
         console.error(
-            "User authentication error:",
+            "User API error:",
             error
         );
 
+
         return res.status(500).json({
-            authenticated: false,
-            reason: "SERVER_ERROR"
+
+            authenticated:
+                false,
+
+            reason:
+                "SERVER_ERROR"
+
         });
+
     }
 }
 
 
-function getCookie(cookieHeader, name) {
+function getCookie(
+    cookieHeader,
+    name
+) {
 
     if (!cookieHeader) {
         return null;
     }
 
+
     const cookies =
         cookieHeader.split(";");
 
-    for (const cookie of cookies) {
+
+    for (
+        const cookie
+        of cookies
+    ) {
 
         const trimmed =
             cookie.trim();
 
+
         const separator =
             trimmed.indexOf("=");
 
-        if (separator === -1) {
+
+        if (
+            separator === -1
+        ) {
+
             continue;
+
         }
+
 
         const key =
             trimmed.substring(
@@ -101,18 +160,25 @@ function getCookie(cookieHeader, name) {
                 separator
             );
 
+
         const value =
             trimmed.substring(
                 separator + 1
             );
 
-        if (key === name) {
+
+        if (
+            key === name
+        ) {
 
             return decodeURIComponent(
                 value
             );
+
         }
+
     }
+
 
     return null;
 }
