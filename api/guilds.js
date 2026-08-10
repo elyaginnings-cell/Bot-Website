@@ -38,7 +38,8 @@ export default async function handler(req, res) {
             return res.status(401).json({ error: "Invalid session" });
         }
 
-        const response = await fetch("https://discord.com/api/users/@me/guilds", {
+        // Added `with_counts=true` to get approximate member and online counts
+        const response = await fetch("https://discord.com/api/users/@me/guilds?with_counts=true", {
             method: "GET",
             headers: { Authorization: `Bearer ${discordToken}` }
         });
@@ -49,14 +50,23 @@ export default async function handler(req, res) {
         const ADMINISTRATOR = BigInt(0x8);
         const MANAGE_GUILD = BigInt(0x20);
 
-        const manageableGuilds = guilds.filter(guild => {
-            try {
-                const permissions = BigInt(guild.permissions || "0");
-                return (permissions & ADMINISTRATOR) !== BigInt(0) || (permissions & MANAGE_GUILD) !== BigInt(0);
-            } catch {
-                return false;
-            }
-        });
+        const manageableGuilds = guilds
+            .filter(guild => {
+                try {
+                    const permissions = BigInt(guild.permissions || "0");
+                    return (permissions & ADMINISTRATOR) !== BigInt(0) || (permissions & MANAGE_GUILD) !== BigInt(0);
+                } catch {
+                    return false;
+                }
+            })
+            .map(guild => ({
+                id: guild.id,
+                name: guild.name,
+                icon: guild.icon,
+                owner: guild.owner,
+                approximate_member_count: guild.approximate_member_count || 0,
+                approximate_presence_count: guild.approximate_presence_count || 0
+            }));
 
         return res.status(200).json({ guilds: manageableGuilds });
     } catch (error) {
