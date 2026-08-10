@@ -6,7 +6,26 @@
     <title>Bot Control</title>
     <link rel="stylesheet" href="/style.css">
 </head>
-<body>
+<body class="modal-active">
+
+<div id="device-modal" class="device-modal">
+    <div class="device-modal-card">
+        <div class="device-modal-icon">💻📱</div>
+        <h2>Select Your View Mode</h2>
+        <p>Choose your preferred layout for this session. (Selection will not be saved)</p>
+        <div class="device-buttons">
+            <button id="select-pc" class="device-btn">
+                <span>💻</span>
+                <strong>Desktop View</strong>
+            </button>
+            <button id="select-mobile" class="device-btn">
+                <span>📱</span>
+                <strong>Mobile View</strong>
+            </button>
+        </div>
+    </div>
+</div>
+
 <div id="app">
 <aside class="sidebar" id="sidebar">
     <div class="sidebar-brand">
@@ -202,6 +221,6 @@
     </div>
 </main>
 </div>
-<script src="/script.js?v=1002"></script>
+<script src="/script.js?v=1003"></script>
 </body>
 </html>
