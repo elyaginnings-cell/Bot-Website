@@ -1053,3 +1053,128 @@ td {
     }
 
 }
+/* ================================
+   LOGIN
+================================ */
+
+.login-screen {
+
+    min-height: 100vh;
+
+    display: grid;
+
+    place-items: center;
+
+    background: #0b0d12;
+
+}
+
+
+.login-card {
+
+    width: 400px;
+
+    max-width: calc(100% - 40px);
+
+    text-align: center;
+
+    background: #151922;
+
+    border:
+        1px solid #272c38;
+
+    border-radius: 16px;
+
+    padding: 40px;
+
+}
+
+
+.login-logo {
+
+    width: 70px;
+
+    height: 70px;
+
+    margin: 0 auto 20px;
+
+    display: grid;
+
+    place-items: center;
+
+    background: #5865f2;
+
+    border-radius: 18px;
+
+    font-size: 34px;
+
+}
+
+
+.login-card h1 {
+
+    font-size: 28px;
+
+    margin-bottom: 8px;
+
+}
+
+
+.login-card p {
+
+    color: #858d9b;
+
+    line-height: 1.5;
+
+    margin-bottom: 25px;
+
+}
+
+
+.login-button {
+
+    width: 100%;
+
+    padding: 13px;
+
+    font-size: 15px;
+
+}
+
+
+
+/* SERVER SELECT */
+
+.server-selector {
+
+    min-width: 220px;
+
+}
+
+
+.guild-select {
+
+    width: 100%;
+
+    border: 0;
+
+    outline: 0;
+
+    background: transparent;
+
+    color: white;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+}
+
+
+.guild-select option {
+
+    background: #151922;
+
+    color: white;
+
+}
