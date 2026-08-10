@@ -57,15 +57,20 @@ async function checkLogin() {
             credentials: "include",
             cache: "no-store"
         });
+
         if (!response.ok) {
-            console.log("Not authenticated:", response.status);
+            console.log("Not authenticated. Redirecting to login...");
+            window.location.href = "/api/login";
             return;
         }
+
         const data = await response.json();
         if (!data || !data.authenticated || !data.user) {
-            console.log("No authenticated user.");
+            console.log("No authenticated user. Redirecting to login...");
+            window.location.href = "/api/login";
             return;
         }
+
         currentUser = data.user;
         updateUserInterface(currentUser);
         console.log("✅ Logged in as:", currentUser.username);
@@ -144,7 +149,7 @@ async function loadServers() {
     console.log("🔎 Loading Discord servers...");
     const list = document.getElementById("server-list");
     if (!list) {
-        console.error("❌ server-list not found");
+        console.error("❌ server-list element not found");
         return;
     }
 
