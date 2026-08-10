@@ -1,14 +1,9 @@
 import crypto from "crypto";
 
-/* =========================================================
-DECRYPT SESSION
-========================================================= */
-
 function decrypt(data, secret) {
     const parts = data.split(".");
-    if (parts.length !== 2) {
-        throw new Error("Invalid session format");
-    }
+    if (parts.length !== 2) throw new Error("Invalid session format");
+
     const iv = Buffer.from(parts[0], "hex");
     const encrypted = parts[1];
     const key = crypto.createHash("sha256").update(secret).digest();
@@ -17,10 +12,6 @@ function decrypt(data, secret) {
     decrypted += decipher.final("utf8");
     return decrypted;
 }
-
-/* =========================================================
-COOKIE READER
-========================================================= */
 
 function getCookie(req, name) {
     const header = req.headers.cookie;
@@ -35,54 +26,24 @@ function getCookie(req, name) {
         const value = cookie.slice(index + 1).trim();
 
         if (key === name) {
-            try {
-                return decodeURIComponent(value);
-            } catch {
-                return value;
-            }
+            try { return decodeURIComponent(value); } catch { return value; }
         }
     }
     return null;
 }
 
-/* =========================================================
-USER API
-========================================================= */
-
 export default async function handler(req, res) {
     try {
-        console.log("🔐 /api/user called");
-
         const secret = process.env.SESSION_SECRET;
-        if (!secret) {
-            console.error("❌ SESSION_SECRET missing");
-            return res.status(500).json({
-                authenticated: false,
-                error: "SESSION_SECRET missing"
-            });
-        }
+        if (!secret) return res.status(500).json({ authenticated: false, error: "Missing SESSION_SECRET" });
 
         const session = getCookie(req, "discord_session");
-        if (!session) {
-            console.log("❌ discord_session cookie not found");
-            return res.status(401).json({
-                authenticated: false,
-                error: "No authentication session"
-            });
-        }
+        if (!session) return res.status(401).json({ authenticated: false });
 
         let token;
         try {
             token = decrypt(session, secret);
-        } catch (error) {
-            console.error("❌ Session decryption failed:", error);
-            return res.status(401).json({
-                authenticated: false,
-                error: "Invalid authentication session"
-            });
-        }
-
-        if (!token) {
+        } catch {
             return res.status(401).json({ authenticated: false });
         }
 
@@ -90,30 +51,22 @@ export default async function handler(req, res) {
             method: "GET",
             headers: { Authorization: `Bearer ${token}` }
         });
-        const data = await response.json();
 
         if (!response.ok) {
-            console.error("❌ Discord user request failed:", response.status, data);
-
-            const isProduction = process.env.NODE_ENV === "production";
-            const clearCookieFlags = [
+            const clearCookie = [
                 "discord_session=",
                 "Path=/",
                 "HttpOnly",
                 "Max-Age=0",
                 "SameSite=Lax",
-                ...(isProduction ? ["Secure"] : [])
+                ...(process.env.NODE_ENV === "production" ? ["Secure"] : [])
             ].join("; ");
 
-            res.setHeader("Set-Cookie", clearCookieFlags);
-
-            return res.status(401).json({
-                authenticated: false,
-                error: "Discord session expired"
-            });
+            res.setHeader("Set-Cookie", clearCookie);
+            return res.status(401).json({ authenticated: false });
         }
 
-        console.log("✅ Discord user authenticated:", data.username);
+        const data = await response.json();
         return res.status(200).json({
             authenticated: true,
             user: {
@@ -123,11 +76,7 @@ export default async function handler(req, res) {
                 avatar: data.avatar
             }
         });
-    } catch (error) {
-        console.error("❌ /api/user error:", error);
-        return res.status(500).json({
-            authenticated: false,
-            error: "Authentication server error"
-        });
+    } catch {
+        return res.status(500).json({ authenticated: false });
     }
 }
