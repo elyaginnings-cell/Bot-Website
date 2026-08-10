@@ -14,6 +14,7 @@ function setupEventListeners() {
         button.addEventListener("click", () => {
             const section = button.getAttribute("data-section");
             if (section) showSection(section);
+            closeMobileMenu();
         });
     });
 
@@ -24,6 +25,13 @@ function setupEventListeners() {
             if (section) showSection(section);
         });
     });
+
+    // Mobile menu toggle
+    const menuToggle = document.getElementById("mobile-menu-toggle");
+    const overlay = document.getElementById("sidebar-overlay");
+
+    if (menuToggle) menuToggle.addEventListener("click", toggleMobileMenu);
+    if (overlay) overlay.addEventListener("click", closeMobileMenu);
 
     // Buttons
     const serverBtn = document.getElementById("server-button");
@@ -40,6 +48,20 @@ function setupEventListeners() {
 
     const saveSettingsBtn = document.getElementById("save-settings");
     if (saveSettingsBtn) saveSettingsBtn.addEventListener("click", saveSettings);
+}
+
+function toggleMobileMenu() {
+    const sidebar = document.getElementById("sidebar");
+    const overlay = document.getElementById("sidebar-overlay");
+    if (sidebar) sidebar.classList.toggle("open");
+    if (overlay) overlay.classList.toggle("active");
+}
+
+function closeMobileMenu() {
+    const sidebar = document.getElementById("sidebar");
+    const overlay = document.getElementById("sidebar-overlay");
+    if (sidebar) sidebar.classList.remove("open");
+    if (overlay) overlay.classList.remove("active");
 }
 
 async function checkLogin() {
@@ -169,7 +191,7 @@ async function loadServers() {
 
             button.appendChild(image);
             button.appendChild(name);
-            button.addEventListener("click", () => selectServer(guild.id, guild.name, icon));
+            button.addEventListener("click", () => selectServer(guild));
             list.appendChild(button);
         });
     } catch (error) {
@@ -178,34 +200,58 @@ async function loadServers() {
     }
 }
 
-function selectServer(id, name, icon) {
-    selectedServer = { id, name, icon };
+function selectServer(guild) {
+    const icon = guild.icon
+        ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png?size=128`
+        : "https://cdn.discordapp.com/embed/avatars/0.png";
+
+    selectedServer = {
+        id: guild.id,
+        name: guild.name,
+        icon: icon,
+        owner: guild.owner,
+        members: guild.approximate_member_count || 0,
+        online: guild.approximate_presence_count || 0
+    };
+
     localStorage.setItem("selectedServer", JSON.stringify(selectedServer));
-
-    const nameElement = document.getElementById("selected-server-name");
-    if (nameElement) nameElement.textContent = name;
-
-    const overview = document.getElementById("overview-server");
-    if (overview) overview.textContent = name;
-
-    const iconElement = document.getElementById("selected-server-icon");
-    if (iconElement) {
-        iconElement.innerHTML = "";
-        const image = document.createElement("img");
-        image.src = icon;
-        image.alt = name;
-        image.style.width = "100%";
-        image.style.height = "100%";
-        image.style.objectFit = "cover";
-        image.style.borderRadius = "10px";
-        iconElement.appendChild(image);
-    }
+    renderServerDetails(selectedServer);
 
     const list = document.getElementById("server-list");
     if (list) {
         list.innerHTML = "";
         list.dataset.open = "false";
         list.hidden = true;
+    }
+}
+
+function renderServerDetails(server) {
+    const nameElement = document.getElementById("selected-server-name");
+    if (nameElement) nameElement.textContent = server.name;
+
+    const overview = document.getElementById("overview-server");
+    if (overview) overview.textContent = server.name;
+
+    const memberCount = document.getElementById("server-member-count");
+    if (memberCount) memberCount.textContent = (server.members || 0).toLocaleString();
+
+    const onlineCount = document.getElementById("server-online-count");
+    if (onlineCount) onlineCount.textContent = (server.online || 0).toLocaleString();
+
+    const ownerStatus = document.getElementById("server-owner-status");
+    if (ownerStatus) ownerStatus.textContent = server.owner ? "Owner" : "Administrator";
+
+    const iconElement = document.getElementById("selected-server-icon");
+    if (iconElement) {
+        iconElement.innerHTML = "";
+        const image = document.createElement("img");
+        image.src = server.icon;
+        image.alt = server.name;
+        image.style.width = "100%";
+        image.style.height = "100%";
+        image.style.objectFit = "cover";
+        image.style.borderRadius = "10px";
+        iconElement.appendChild(image);
     }
 }
 
@@ -217,24 +263,7 @@ function restoreSelectedServer() {
         if (!server || !server.id || !server.name) return;
 
         selectedServer = server;
-        const nameElement = document.getElementById("selected-server-name");
-        if (nameElement) nameElement.textContent = server.name;
-
-        const overview = document.getElementById("overview-server");
-        if (overview) overview.textContent = server.name;
-
-        const iconElement = document.getElementById("selected-server-icon");
-        if (iconElement && server.icon) {
-            const image = document.createElement("img");
-            image.src = server.icon;
-            image.alt = server.name;
-            image.style.width = "100%";
-            image.style.height = "100%";
-            image.style.objectFit = "cover";
-            image.style.borderRadius = "10px";
-            iconElement.innerHTML = "";
-            iconElement.appendChild(image);
-        }
+        renderServerDetails(selectedServer);
     } catch (error) {
         console.error("Could not restore server:", error);
     }
