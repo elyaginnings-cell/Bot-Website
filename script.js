@@ -2,34 +2,53 @@ let currentUser = null;
 let selectedServer = null;
 
 document.addEventListener("DOMContentLoaded", function () {
-    console.log("✅ script.js loaded");
-    setupDeviceSelection();
-    checkLogin();
-    restoreSelectedServer();
-    setupEventListeners();
-});
-
-function setupDeviceSelection() {
     const pcBtn = document.getElementById("select-pc");
     const mobileBtn = document.getElementById("select-mobile");
-    const modal = document.getElementById("device-modal");
+    const modal = document.querySelector(".device-modal");
+
+    function setMode(mode) {
+        document.body.classList.remove("mode-pc", "mode-mobile", "modal-active");
+        document.body.classList.add("mode-" + mode);
+        if (modal) {
+            modal.classList.add("hidden");
+        }
+    }
 
     if (pcBtn) {
-        pcBtn.addEventListener("click", () => {
-            document.body.classList.remove("modal-active", "mode-mobile");
-            document.body.classList.add("mode-pc");
-            if (modal) modal.classList.add("hidden");
+        pcBtn.addEventListener("click", function () {
+            setMode("pc");
         });
     }
 
     if (mobileBtn) {
-        mobileBtn.addEventListener("click", () => {
-            document.body.classList.remove("modal-active", "mode-pc");
-            document.body.classList.add("mode-mobile");
-            if (modal) modal.classList.add("hidden");
+        mobileBtn.addEventListener("click", function () {
+            setMode("mobile");
         });
     }
-}
+
+    const navItems = document.querySelectorAll(".nav-item");
+    const sections = document.querySelectorAll(".page-section");
+
+    navItems.forEach(function (item) {
+        item.addEventListener("click", function () {
+            const target = item.getAttribute("data-tab");
+
+            navItems.forEach(function (nav) {
+                nav.classList.remove("active");
+            });
+            sections.forEach(function (sec) {
+                sec.classList.remove("active");
+            });
+
+            item.classList.add("active");
+            const activeSection = document.getElementById(target);
+            if (activeSection) {
+                activeSection.classList.add("active");
+            }
+        });
+    });
+});
+
 
 function setupEventListeners() {
     // Nav buttons
