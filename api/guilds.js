@@ -2,14 +2,20 @@ import crypto from "crypto";
 
 function decrypt(text, secret) {
 
-    const parts = text.split(".");
+    const parts =
+        text.split(".");
 
     if (parts.length !== 2) {
-        throw new Error("Invalid session format");
+        throw new Error(
+            "Invalid session format"
+        );
     }
 
     const iv =
-        Buffer.from(parts[0], "hex");
+        Buffer.from(
+            parts[0],
+            "hex"
+        );
 
     const encrypted =
         parts[1];
@@ -77,15 +83,43 @@ export default async function handler(req, res) {
 
     try {
 
-        const secret =
+        // ==========================================
+        // SESSION SECRET
+        // ==========================================
+
+        const sessionSecret =
             process.env.SESSION_SECRET;
 
-        if (!secret) {
+        if (!sessionSecret) {
+
             return res.status(500).json({
-                error: "Missing SESSION_SECRET"
+                error:
+                    "Missing SESSION_SECRET"
             });
+
         }
 
+
+        // ==========================================
+        // DASHBOARD API SECRET
+        // ==========================================
+
+        const dashboardSecret =
+            process.env.DASHBOARD_API_SECRET;
+
+        if (!dashboardSecret) {
+
+            return res.status(500).json({
+                error:
+                    "Missing DASHBOARD_API_SECRET"
+            });
+
+        }
+
+
+        // ==========================================
+        // GET DISCORD SESSION
+        // ==========================================
 
         const session =
             getCookie(
@@ -94,29 +128,46 @@ export default async function handler(req, res) {
             );
 
         if (!session) {
+
             return res.status(401).json({
-                error: "Not authenticated"
+                error:
+                    "Not authenticated"
             });
+
         }
 
+
+        // ==========================================
+        // DECRYPT SESSION
+        // ==========================================
 
         let token;
 
         try {
-            token = decrypt(
-                session,
-                secret
-            );
+
+            token =
+                decrypt(
+                    session,
+                    sessionSecret
+                );
+
         } catch {
+
             return res.status(401).json({
-                error: "Invalid session"
+                error:
+                    "Invalid session"
             });
+
         }
 
 
-        const response =
+        // ==========================================
+        // VERIFY DISCORD USER
+        // ==========================================
+
+        const userResponse =
             await fetch(
-                "https://discord.com/api/users/@me/guilds?with_counts=true",
+                "https://discord.com/api/users/@me",
                 {
                     method: "GET",
 
@@ -128,78 +179,97 @@ export default async function handler(req, res) {
             );
 
 
-        if (!response.ok) {
+        if (!userResponse.ok) {
 
-            if (response.status === 401) {
-                return res.status(401).json({
-                    error: "Discord session expired"
-                });
-            }
-
-            return res.status(response.status).json({
-                error: "Discord rejected request"
+            return res.status(401).json({
+                error:
+                    "Discord session expired"
             });
+
         }
 
 
-        const guilds =
+        const user =
+            await userResponse.json();
+
+
+        // ==========================================
+        // ASK RAILWAY FOR GUILDS
+        // ==========================================
+
+        const railwayUrl =
+            process.env.RAILWAY_API_URL ||
+            "https://discord-bot-production-1488.up.railway.app";
+
+
+        const response =
+            await fetch(
+                `${railwayUrl}/api/guilds?userId=${encodeURIComponent(user.id)}`,
+                {
+                    method: "GET",
+
+                    headers: {
+                        Authorization:
+                            `Bearer ${dashboardSecret}`,
+
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    cache: "no-store"
+                }
+            );
+
+
+        // ==========================================
+        // RAILWAY ERROR
+        // ==========================================
+
+        if (!response.ok) {
+
+            const errorText =
+                await response.text();
+
+            console.error(
+                "Railway guild API error:",
+                response.status,
+                errorText
+            );
+
+            return res.status(
+                response.status
+            ).json({
+
+                error:
+                    "Failed to retrieve Discord servers"
+
+            });
+
+        }
+
+
+        // ==========================================
+        // GET RAILWAY DATA
+        // ==========================================
+
+        const data =
             await response.json();
 
 
-        const ADMINISTRATOR = BigInt(0x8);
-        const MANAGE_GUILD = BigInt(0x20);
+        const guilds =
+            Array.isArray(data.guilds)
+                ? data.guilds
+                : [];
 
 
-        const manageableGuilds =
-            guilds
-
-                .filter((guild) => {
-
-                    try {
-
-                        const permissions =
-                            BigInt(
-                                guild.permissions || "0"
-                            );
-
-                        return (
-                            (permissions &
-                                ADMINISTRATOR) !==
-                                BigInt(0)
-                        ) ||
-                        (
-                            (permissions &
-                                MANAGE_GUILD) !==
-                                BigInt(0)
-                        );
-
-                    } catch {
-                        return false;
-                    }
-                })
-
-
-                .map((guild) => ({
-                    id: guild.id,
-                    name: guild.name,
-                    icon: guild.icon,
-                    owner: Boolean(guild.owner),
-
-                    approximate_member_count:
-                        Number(
-                            guild.approximate_member_count || 0
-                        ),
-
-                    approximate_presence_count:
-                        Number(
-                            guild.approximate_presence_count || 0
-                        )
-                }));
-
+        // ==========================================
+        // RETURN TO DASHBOARD
+        // ==========================================
 
         return res.status(200).json({
-            guilds: manageableGuilds
+            guilds
         });
+
 
     } catch (error) {
 
@@ -212,5 +282,7 @@ export default async function handler(req, res) {
             error:
                 "Failed to retrieve Discord servers"
         });
+
     }
+
 }
