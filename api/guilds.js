@@ -1,21 +1,18 @@
 import crypto from "crypto";
 
+const RAILWAY_API =
+    "https://discord-bot-production-1488.up.railway.app";
+
 function decrypt(text, secret) {
 
-    const parts =
-        text.split(".");
+    const parts = text.split(".");
 
     if (parts.length !== 2) {
-        throw new Error(
-            "Invalid session format"
-        );
+        throw new Error("Invalid session format");
     }
 
     const iv =
-        Buffer.from(
-            parts[0],
-            "hex"
-        );
+        Buffer.from(parts[0], "hex");
 
     const encrypted =
         parts[1];
@@ -84,11 +81,15 @@ export default async function handler(req, res) {
     try {
 
         // ==========================================
-        // SESSION SECRET
+        // ENVIRONMENT VARIABLES
         // ==========================================
 
         const sessionSecret =
             process.env.SESSION_SECRET;
+
+        const dashboardSecret =
+            process.env.DASHBOARD_API_SECRET;
+
 
         if (!sessionSecret) {
 
@@ -99,13 +100,6 @@ export default async function handler(req, res) {
 
         }
 
-
-        // ==========================================
-        // DASHBOARD API SECRET
-        // ==========================================
-
-        const dashboardSecret =
-            process.env.DASHBOARD_API_SECRET;
 
         if (!dashboardSecret) {
 
@@ -118,7 +112,7 @@ export default async function handler(req, res) {
 
 
         // ==========================================
-        // GET DISCORD SESSION
+        // GET SESSION
         // ==========================================
 
         const session =
@@ -126,6 +120,7 @@ export default async function handler(req, res) {
                 req,
                 "discord_session"
             );
+
 
         if (!session) {
 
@@ -138,7 +133,7 @@ export default async function handler(req, res) {
 
 
         // ==========================================
-        // DECRYPT SESSION
+        // DECRYPT DISCORD TOKEN
         // ==========================================
 
         let token;
@@ -162,12 +157,12 @@ export default async function handler(req, res) {
 
 
         // ==========================================
-        // VERIFY DISCORD USER
+        // GET USER'S DISCORD SERVERS
         // ==========================================
 
-        const userResponse =
+        const discordResponse =
             await fetch(
-                "https://discord.com/api/users/@me",
+                "https://discord.com/api/users/@me/guilds?with_counts=true",
                 {
                     method: "GET",
 
@@ -179,41 +174,47 @@ export default async function handler(req, res) {
             );
 
 
-        if (!userResponse.ok) {
+        if (!discordResponse.ok) {
 
-            return res.status(401).json({
+            if (
+                discordResponse.status === 401
+            ) {
+
+                return res.status(401).json({
+                    error:
+                        "Discord session expired"
+                });
+
+            }
+
+
+            return res.status(
+                discordResponse.status
+            ).json({
                 error:
-                    "Discord session expired"
+                    "Discord rejected request"
             });
 
         }
 
 
-        const user =
-            await userResponse.json();
+        const userGuilds =
+            await discordResponse.json();
 
 
         // ==========================================
-        // ASK RAILWAY FOR GUILDS
+        // GET BOT'S SERVERS FROM RAILWAY
         // ==========================================
 
-        const railwayUrl =
-            process.env.RAILWAY_API_URL ||
-            "https://discord-bot-production-1488.up.railway.app";
-
-
-        const response =
+        const railwayResponse =
             await fetch(
-                `${railwayUrl}/api/guilds?userId=${encodeURIComponent(user.id)}`,
+                `${RAILWAY_API}/api/guilds`,
                 {
                     method: "GET",
 
                     headers: {
                         Authorization:
-                            `Bearer ${dashboardSecret}`,
-
-                        "Content-Type":
-                            "application/json"
+                            `Bearer ${dashboardSecret}`
                     },
 
                     cache: "no-store"
@@ -221,53 +222,164 @@ export default async function handler(req, res) {
             );
 
 
-        // ==========================================
-        // RAILWAY ERROR
-        // ==========================================
-
-        if (!response.ok) {
-
-            const errorText =
-                await response.text();
+        if (!railwayResponse.ok) {
 
             console.error(
-                "Railway guild API error:",
-                response.status,
-                errorText
+                "Railway guild request failed:",
+                railwayResponse.status
             );
 
-            return res.status(
-                response.status
-            ).json({
 
+            return res.status(502).json({
                 error:
-                    "Failed to retrieve Discord servers"
-
+                    "Could not contact Discord bot"
             });
 
         }
 
 
-        // ==========================================
-        // GET RAILWAY DATA
-        // ==========================================
-
-        const data =
-            await response.json();
+        const railwayData =
+            await railwayResponse.json();
 
 
-        const guilds =
-            Array.isArray(data.guilds)
-                ? data.guilds
+        const botGuilds =
+            Array.isArray(
+                railwayData.guilds
+            )
+                ? railwayData.guilds
                 : [];
 
 
         // ==========================================
-        // RETURN TO DASHBOARD
+        // CREATE BOT GUILD LOOKUP
+        // ==========================================
+
+        const botGuildMap =
+            new Map(
+                botGuilds.map(
+                    guild => [
+                        guild.id,
+                        guild
+                    ]
+                )
+            );
+
+
+        // ==========================================
+        // FILTER USER SERVERS
+        //
+        // User must:
+        // 1. Have Administrator OR Manage Server
+        // 2. Have the bot in the server
+        // ==========================================
+
+        const ADMINISTRATOR =
+            BigInt(0x8);
+
+        const MANAGE_GUILD =
+            BigInt(0x20);
+
+
+        const manageableGuilds =
+            userGuilds
+
+                .filter(guild => {
+
+                    try {
+
+                        const permissions =
+                            BigInt(
+                                guild.permissions ||
+                                "0"
+                            );
+
+
+                        const canManage =
+                            (
+                                (
+                                    permissions &
+                                    ADMINISTRATOR
+                                ) !== BigInt(0)
+                            ) ||
+                            (
+                                (
+                                    permissions &
+                                    MANAGE_GUILD
+                                ) !== BigInt(0)
+                            );
+
+
+                        const botIsInServer =
+                            botGuildMap.has(
+                                guild.id
+                            );
+
+
+                        return (
+                            canManage &&
+                            botIsInServer
+                        );
+
+                    } catch {
+
+                        return false;
+
+                    }
+
+                })
+
+
+                .map(guild => {
+
+                    const botGuild =
+                        botGuildMap.get(
+                            guild.id
+                        );
+
+
+                    return {
+
+                        id:
+                            guild.id,
+
+                        name:
+                            guild.name,
+
+                        icon:
+                            guild.icon,
+
+                        owner:
+                            Boolean(
+                                guild.owner
+                            ),
+
+                        approximate_member_count:
+                            Number(
+                                guild.approximate_member_count ||
+                                botGuild?.memberCount ||
+                                0
+                            ),
+
+                        approximate_presence_count:
+                            Number(
+                                guild.approximate_presence_count ||
+                                0
+                            )
+
+                    };
+
+                });
+
+
+        // ==========================================
+        // SEND TO DASHBOARD
         // ==========================================
 
         return res.status(200).json({
-            guilds
+
+            guilds:
+                manageableGuilds
+
         });
 
 
@@ -278,9 +390,12 @@ export default async function handler(req, res) {
             error
         );
 
+
         return res.status(500).json({
+
             error:
                 "Failed to retrieve Discord servers"
+
         });
 
     }
