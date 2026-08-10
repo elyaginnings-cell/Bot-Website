@@ -1,14 +1,19 @@
 export default async function handler(req, res) {
 
-    const token =
-        getCookie(
-            req.headers.cookie,
-            "discord_access_token"
-        );
+    const token = getCookie(
+        req.headers.cookie,
+        "discord_access_token"
+    );
 
     if (!token) {
+
+        console.log(
+            "No Discord access token cookie found."
+        );
+
         return res.status(401).json({
-            authenticated: false
+            authenticated: false,
+            reason: "NO_COOKIE"
         });
     }
 
@@ -24,38 +29,47 @@ export default async function handler(req, res) {
             }
         );
 
-        if (!response.ok) {
-
-            return res.status(401).json({
-                authenticated: false
-            });
-
-        }
-
-        const user =
+        const data =
             await response.json();
 
+        if (!response.ok) {
+
+            console.error(
+                "Discord rejected token:",
+                data
+            );
+
+            return res.status(401).json({
+                authenticated: false,
+                reason: "INVALID_TOKEN"
+            });
+        }
+
         return res.status(200).json({
+
             authenticated: true,
+
             user: {
-                id: user.id,
-                username: user.username,
-                global_name: user.global_name,
-                avatar: user.avatar
+                id: data.id,
+                username: data.username,
+                global_name:
+                    data.global_name,
+                avatar: data.avatar
             }
+
         });
 
     } catch (error) {
 
         console.error(
-            "User API error:",
+            "User authentication error:",
             error
         );
 
         return res.status(500).json({
-            authenticated: false
+            authenticated: false,
+            reason: "SERVER_ERROR"
         });
-
     }
 }
 
@@ -71,21 +85,32 @@ function getCookie(cookieHeader, name) {
 
     for (const cookie of cookies) {
 
-        const parts =
-            cookie.trim().split("=");
+        const trimmed =
+            cookie.trim();
+
+        const separator =
+            trimmed.indexOf("=");
+
+        if (separator === -1) {
+            continue;
+        }
 
         const key =
-            parts.shift();
+            trimmed.substring(
+                0,
+                separator
+            );
 
         const value =
-            parts.join("=");
+            trimmed.substring(
+                separator + 1
+            );
 
         if (key === name) {
 
             return decodeURIComponent(
                 value
             );
-
         }
     }
 
