@@ -2,391 +2,347 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bot Control</title>
-    <link
-        rel="stylesheet"
-        href="/style.css"
-    >
+    <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-    <!-- APP -->
-    <div id="app">
-        <!-- SIDEBAR -->
-        <aside class="sidebar">
-            <div class="sidebar-brand">
-                <div class="brand-logo">🤖</div>
-                <div>
-                    <strong>Bot Control</strong>
-                    <span>Discord Manager</span>
-                </div>
-            </div>
-            <nav class="navigation">
-                <button
-                    class="nav-item active"
-                    onclick="showSection('overview')"
-                >
-                    <span>⌂</span>
-                    Overview
-                </button>
-                <button
-                    class="nav-item"
-                    onclick="showSection('invites')"
-                >
-                    <span>↗</span>
-                    Invite Tracker
-                </button>
-                <button
-                    class="nav-item"
-                    onclick="showSection('rewards')"
-                >
-                    <span>🎁</span>
-                    Rewards
-                </button>
-                <button
-                    class="nav-item"
-                    onclick="showSection('settings')"
-                >
-                    <span>⚙</span>
-                    Settings
-                </button>
-            </nav>
-            <div class="sidebar-bottom">
-                <div class="connection-status">
-                    <span></span>
-                    Bot Online
-                </div>
-            </div>
-        </aside>
-        <!-- MAIN -->
-        <main class="main">
-            <!-- HEADER -->
-            <header class="header">
-                <div>
-                    <h1 id="page-title">
-                        Overview
-                    </h1>
-                    <p id="page-description">
-                        Manage your Discord server.
-                    </p>
-                </div>
-                <div class="account">
-                    <img
-                        id="user-avatar"
-                        src="https://cdn.discordapp.com/embed/avatars/0.png"
-                        alt="Avatar"
-                    >
-                    <div class="account-info">
-                        <strong id="username">
-                            Not logged in
-                        </strong>
-                        <span>
-                            Discord Account
-                        </span>
-                    </div>
-                    <button
-                        class="logout"
-                        onclick="logout()"
-                    >
-                        Logout
-                    </button>
-                </div>
-            </header>
-            <!-- CONTENT -->
-            <div class="content">
-                <!-- SERVER SELECTOR -->
-                <section class="server-bar">
-                    <div class="server-current">
-                        <div
-                            id="selected-server-icon"
-                            class="server-icon"
-                        >
-                            ?
-                        </div>
-                        <div>
-                            <span>
-                                Current Server
-                            </span>
-                            <strong id="selected-server-name">
-                                No server selected
-                            </strong>
-                        </div>
-                    </div>
-                    <button
-                        class="server-button"
-                        onclick="loadServers()"
-                    >
-                        Choose Server
-                        <span>⌄</span>
-                    </button>
-                </section>
-                <!-- SERVER LIST -->
-                <div
-                    id="server-list"
-                    class="server-list"
-                ></div>
-                <!-- OVERVIEW -->
-                <section
-                    id="overview"
-                    class="page-section active"
-                >
-                    <div class="hero">
-                        <div>
-                            <span class="eyebrow">
-                                DASHBOARD
-                            </span>
-                            <h2>
-                                Welcome back,
-                                <span id="welcome-name">
-                                    friend
-                                </span>.
-                            </h2>
-                            <p>
-                                Everything you need to manage
-                                your Discord bot in one place.
-                            </p>
-                        </div>
-                        <div class="hero-icon">
-                            🤖
-                        </div>
-                    </div>
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <span class="stat-icon">
-                                👥
-                            </span>
-                            <div>
-                                <span>Tracked Invites</span>
-                                <strong id="invite-count">
-                                    —
-                                </strong>
-                            </div>
-                        </div>
-                        <div class="stat-card">
-                            <span class="stat-icon">
-                                🎁
-                            </span>
-                            <div>
-                                <span>Reward Goals</span>
-                                <strong id="reward-count">
-                                    —
-                                </strong>
-                            </div>
-                        </div>
-                        <div class="stat-card">
-                            <span class="stat-icon">
-                                🛡️
-                            </span>
-                            <div>
-                                <span>Server</span>
-                                <strong id="overview-server">
-                                    None
-                                </strong>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="section-heading">
-                        <div>
-                            <h2>
-                                Quick Setup
-                            </h2>
-                            <p>
-                                Get your bot configured in a few clicks.
-                            </p>
-                        </div>
-                    </div>
-                    <div class="quick-grid">
-                        <button
-                            class="quick-card"
-                            onclick="showSection('invites')"
-                        >
-                            <span>📊</span>
-                            <div>
-                                <strong>
-                                    Invite Tracker
-                                </strong>
-                                <p>
-                                    Track who invited new members.
-                                </p>
-                            </div>
-                            <b>→</b>
-                        </button>
-                        <button
-                            class="quick-card"
-                            onclick="showSection('rewards')"
-                        >
-                            <span>🎁</span>
-                            <div>
-                                <strong>
-                                    Automatic Rewards
-                                </strong>
-                                <p>
-                                    Reward members for reaching goals.
-                                </p>
-                            </div>
-                            <b>→</b>
-                        </button>
-                    </div>
-                </section>
-                <!-- INVITES -->
-                <section
-                    id="invites"
-                    class="page-section"
-                >
-                    <div class="section-heading">
-                        <div>
-                            <span class="eyebrow">
-                                INVITE SYSTEM
-                            </span>
-                            <h2>
-                                Invite Tracker
-                            </h2>
-                            <p>
-                                Configure how your bot tracks invites.
-                            </p>
-                        </div>
-                    </div>
-                    <div class="settings-card">
-                        <label>
-                            Invite Log Channel ID
-                        </label>
-                        <input
-                            id="invite-log-channel"
-                            type="text"
-                            placeholder="Enter Discord channel ID"
-                        >
-                        <button
-                            class="primary-button"
-                            onclick="saveInviteSettings()"
-                        >
-                            Save Changes
-                        </button>
-                    </div>
-                </section>
-                <!-- REWARDS -->
-                <section
-                    id="rewards"
-                    class="page-section"
-                >
-                    <div class="section-heading">
-                        <div>
-                            <span class="eyebrow">
-                                AUTOMATION
-                            </span>
-                            <h2>
-                                Automatic Rewards
-                            </h2>
-                            <p>
-                                Give members roles automatically
-                                when they hit invite goals.
-                            </p>
-                        </div>
-                    </div>
-                    <div class="settings-card">
-                        <label>
-                            Invite Goal
-                        </label>
-                        <input
-                            id="reward-goal"
-                            type="number"
-                            min="1"
-                            placeholder="Example: 10"
-                        >
-                        <label>
-                            Reward Role ID
-                        </label>
-                        <input
-                            id="reward-role"
-                            type="text"
-                            placeholder="Enter Discord role ID"
-                        >
-                        <button
-                            class="primary-button"
-                            onclick="saveReward()"
-                        >
-                            Create Reward
-                        </button>
-                    </div>
-                </section>
-                <!-- SETTINGS -->
-                <section
-                    id="settings"
-                    class="page-section"
-                >
-                    <div class="section-heading">
-                        <div>
-                            <span class="eyebrow">
-                                CONFIGURATION
-                            </span>
-                            <h2>
-                                Bot Settings
-                            </h2>
-                            <p>
-                                Configure your bot's general behavior.
-                            </p>
-                        </div>
-                    </div>
-                    <div class="settings-card">
-                        <label>
-                            Bot Status
-                        </label>
-                        <select id="bot-status">
-                            <option>
-                                Online
-                            </option>
-                            <option>
-                                Idle
-                            </option>
-                            <option>
-                                Do Not Disturb
-                            </option>
-                        </select>
-                        <button
-                            class="primary-button"
-                            onclick="saveSettings()"
-                        >
-                            Save Settings
-                        </button>
-                    </div>
-                </section>
-            </div>
-        </main>
-    </div>
-    <!-- LOGIN OVERLAY -->
-    <div
-        id="login-overlay"
-        class="login-overlay"
-    >
-        <div class="login-modal">
-            <div class="login-logo">
-                🤖
-            </div>
-            <span class="eyebrow">
-                BOT CONTROL
-            </span>
-            <h1>
-                Welcome back
-            </h1>
-            <p>
-                Sign in with Discord to manage
-                your server and bot.
-            </p>
-            <a
-                href="/api/login"
-                class="discord-button"
-            >
-                <span>◎</span>
-                Continue with Discord
-            </a>
-            <small>
-                Your Discord account is only used
-                for authentication.
-            </small>
+<div id="app">
+<!-- SIDEBAR -->
+<aside class="sidebar">
+    <div class="sidebar-brand">
+        <div class="brand-logo">🤖</div>
+        <div>
+            <strong>Bot Control</strong>
+            <span>Discord Manager</span>
         </div>
     </div>
-    <script src="/script.js"></script>
+    <nav class="navigation">
+        <button class="nav-item active" data-section="overview">
+            <span>⌂</span>
+            <label>Overview</label>
+        </button>
+        <button class="nav-item" data-section="invites">
+            <span>↗</span>
+            <label>Invite Tracker</label>
+        </button>
+        <button class="nav-item" data-section="rewards">
+            <span>🎁</span>
+            <label>Rewards</label>
+        </button>
+        <button class="nav-item" data-section="settings">
+            <span>⚙</span>
+            <label>Settings</label>
+        </button>
+    </nav>
+    <div class="sidebar-bottom">
+        <div class="connection-status">
+            <span></span>
+            Bot Online
+        </div>
+    </div>
+</aside>
+<!-- MAIN -->
+<main class="main">
+    <!-- HEADER -->
+    <header class="header">
+        <div>
+            <h1 id="page-title">
+                Overview
+            </h1>
+            <p id="page-description">
+                Manage your Discord server.
+            </p>
+        </div>
+        <div class="account">
+            <img
+                id="user-avatar"
+                src="https://cdn.discordapp.com/embed/avatars/0.png"
+                alt="Discord avatar"
+            >
+            <div class="account-info">
+                <strong id="username">
+                    Loading...
+                </strong>
+                <span>
+                    Discord Account
+                </span>
+            </div>
+            <button
+                id="logout-button"
+                class="logout"
+            >
+                Logout
+            </button>
+        </div>
+    </header>
+    <!-- CONTENT -->
+    <div class="content">
+        <!-- SERVER SELECTOR -->
+        <section class="server-bar">
+            <div class="server-current">
+                <div
+                    id="selected-server-icon"
+                    class="server-icon"
+                >
+                    ?
+                </div>
+                <div>
+                    <span>
+                        Current Server
+                    </span>
+                    <strong id="selected-server-name">
+                        No server selected
+                    </strong>
+                </div>
+            </div>
+            <button
+                id="server-button"
+                class="server-button"
+            >
+                Choose Server
+                <span>⌄</span>
+            </button>
+        </section>
+        <!-- SERVER LIST -->
+        <div
+            id="server-list"
+            class="server-list"
+            hidden
+        ></div>
+        <!-- OVERVIEW -->
+        <section
+            id="overview"
+            class="page-section active"
+        >
+            <div class="hero">
+                <div>
+                    <span class="eyebrow">
+                        DASHBOARD
+                    </span>
+                    <h2>
+                        Welcome back,
+                        <span id="welcome-name">
+                            friend
+                        </span>.
+                    </h2>
+                    <p>
+                        Everything you need to manage
+                        your Discord bot in one place.
+                    </p>
+                </div>
+                <div class="hero-icon">
+                    🤖
+                </div>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-icon">
+                        👥
+                    </span>
+                    <div>
+                        <span>
+                            Tracked Invites
+                        </span>
+                        <strong id="invite-count">
+                            —
+                        </strong>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-icon">
+                        🎁
+                    </span>
+                    <div>
+                        <span>
+                            Reward Goals
+                        </span>
+                        <strong id="reward-count">
+                            —
+                        </strong>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-icon">
+                        🛡️
+                    </span>
+                    <div>
+                        <span>
+                            Server
+                        </span>
+                        <strong id="overview-server">
+                            None
+                        </strong>
+                    </div>
+                </div>
+            </div>
+            <div class="section-heading">
+                <div>
+                    <h2>
+                        Quick Setup
+                    </h2>
+                    <p>
+                        Get your bot configured in a few clicks.
+                    </p>
+                </div>
+            </div>
+            <div class="quick-grid">
+                <button
+                    class="quick-card"
+                    data-section-link="invites"
+                >
+                    <span>📊</span>
+                    <div>
+                        <strong>
+                            Invite Tracker
+                        </strong>
+                        <p>
+                            Track who invited new members.
+                        </p>
+                    </div>
+                    <b>→</b>
+                </button>
+                <button
+                    class="quick-card"
+                    data-section-link="rewards"
+                >
+                    <span>🎁</span>
+                    <div>
+                        <strong>
+                            Automatic Rewards
+                        </strong>
+                        <p>
+                            Reward members for reaching goals.
+                        </p>
+                    </div>
+                    <b>→</b>
+                </button>
+            </div>
+        </section>
+        <!-- INVITES -->
+        <section
+            id="invites"
+            class="page-section"
+        >
+            <div class="section-heading">
+                <div>
+                    <span class="eyebrow">
+                        INVITE SYSTEM
+                    </span>
+                    <h2>
+                        Invite Tracker
+                    </h2>
+                    <p>
+                        Configure how your bot tracks invites.
+                    </p>
+                </div>
+            </div>
+            <div class="settings-card">
+                <label for="invite-log-channel">
+                    Invite Log Channel ID
+                </label>
+                <input
+                    id="invite-log-channel"
+                    type="text"
+                    placeholder="Enter Discord channel ID"
+                >
+                <button
+                    id="save-invite-settings"
+                    class="primary-button"
+                >
+                    Save Changes
+                </button>
+            </div>
+        </section>
+        <!-- REWARDS -->
+        <section
+            id="rewards"
+            class="page-section"
+        >
+            <div class="section-heading">
+                <div>
+                    <span class="eyebrow">
+                        AUTOMATION
+                    </span>
+                    <h2>
+                        Automatic Rewards
+                    </h2>
+                    <p>
+                        Give members roles automatically
+                        when they hit invite goals.
+                    </p>
+                </div>
+            </div>
+            <div class="settings-card">
+                <label for="reward-goal">
+                    Invite Goal
+                </label>
+                <input
+                    id="reward-goal"
+                    type="number"
+                    min="1"
+                    placeholder="Example: 10"
+                >
+                <label for="reward-role">
+                    Reward Role ID
+                </label>
+                <input
+                    id="reward-role"
+                    type="text"
+                    placeholder="Enter Discord role ID"
+                >
+                <button
+                    id="save-reward"
+                    class="primary-button"
+                >
+                    Create Reward
+                </button>
+            </div>
+        </section>
+        <!-- SETTINGS -->
+        <section
+            id="settings"
+            class="page-section"
+        >
+            <div class="section-heading">
+                <div>
+                    <span class="eyebrow">
+                        CONFIGURATION
+                    </span>
+                    <h2>
+                        Bot Settings
+                    </h2>
+                    <p>
+                        Configure your bot's general behavior.
+                    </p>
+                </div>
+            </div>
+            <div class="settings-card">
+                <label for="bot-status">
+                    Bot Status
+                </label>
+                <select id="bot-status">
+                    <option value="online">
+                        Online
+                    </option>
+                    <option value="idle">
+                        Idle
+                    </option>
+                    <option value="dnd">
+                        Do Not Disturb
+                    </option>
+                </select>
+                <button
+                    id="save-settings"
+                    class="primary-button"
+                >
+                    Save Settings
+                </button>
+            </div>
+        </section>
+    </div>
+</main>
+</div>
+<script src="/script.js"></script>
 </body>
 </html>
