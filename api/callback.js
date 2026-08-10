@@ -30,16 +30,11 @@ export default async function handler(req, res) {
         });
 
         if (!tokenResponse.ok) {
-            const err = await tokenResponse.text();
-            console.error("Token exchange failed:", err);
             return res.status(401).send("Discord authentication failed.");
         }
 
         const tokenData = await tokenResponse.json();
-        const sessionSecret = process.env.SESSION_SECRET;
-
-        const encryptedToken = encrypt(tokenData.access_token, sessionSecret);
-        const isProduction = process.env.NODE_ENV === "production";
+        const encryptedToken = encrypt(tokenData.access_token, process.env.SESSION_SECRET);
 
         const cookieFlags = [
             `discord_session=${encryptedToken}`,
@@ -47,11 +42,10 @@ export default async function handler(req, res) {
             "HttpOnly",
             "SameSite=Lax",
             "Max-Age=604800",
-            ...(isProduction ? ["Secure"] : [])
+            ...(process.env.NODE_ENV === "production" ? ["Secure"] : [])
         ].join("; ");
 
         res.setHeader("Set-Cookie", cookieFlags);
-
         return res.redirect(302, "/");
     } catch (error) {
         console.error("Callback error:", error);
