@@ -10,23 +10,20 @@ export default async function handler(
         );
 
 
+    /*
+     * No cookie = not logged in.
+     *
+     * This is NOT an error.
+     */
+
     if (!token) {
-
-        console.log(
-            "No Discord access token cookie."
-        );
-
 
         return res.status(401).json({
 
             authenticated:
-                false,
-
-            reason:
-                "NO_COOKIE"
+                false
 
         });
-
     }
 
 
@@ -52,24 +49,24 @@ export default async function handler(
             await response.json();
 
 
+        /*
+         * Token is invalid/expired.
+         */
+
         if (!response.ok) {
 
-            console.error(
-                "Discord rejected token:",
-                data
+            res.setHeader(
+                "Set-Cookie",
+                "discord_access_token=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0"
             );
 
 
             return res.status(401).json({
 
                 authenticated:
-                    false,
-
-                reason:
-                    "INVALID_TOKEN"
+                    false
 
             });
-
         }
 
 
@@ -99,7 +96,7 @@ export default async function handler(
     } catch (error) {
 
         console.error(
-            "User API error:",
+            "User request failed:",
             error
         );
 
@@ -107,16 +104,16 @@ export default async function handler(
         return res.status(500).json({
 
             authenticated:
-                false,
-
-            reason:
-                "SERVER_ERROR"
+                false
 
         });
-
     }
 }
 
+
+/* =========================================
+   COOKIE PARSER
+========================================= */
 
 function getCookie(
     cookieHeader,
@@ -150,7 +147,6 @@ function getCookie(
         ) {
 
             continue;
-
         }
 
 
@@ -174,9 +170,7 @@ function getCookie(
             return decodeURIComponent(
                 value
             );
-
         }
-
     }
 
 
