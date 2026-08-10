@@ -19,7 +19,14 @@
 
 <body>
 
-    <div class="app">
+    <!-- =========================
+         APP
+    ========================== -->
+
+    <div
+        id="app"
+        class="app"
+    >
 
         <!-- SIDEBAR -->
 
@@ -31,9 +38,16 @@
                     🤖
                 </div>
 
-                <div>
-                    <h1>Gatto Bot</h1>
-                    <span>Dashboard</span>
+                <div class="brand-text">
+
+                    <h1>
+                        Gatto Bot
+                    </h1>
+
+                    <span>
+                        Dashboard
+                    </span>
+
                 </div>
 
             </div>
@@ -43,7 +57,7 @@
 
                 <button
                     class="nav-item active"
-                    onclick="showPage('overview')"
+                    data-page="overview"
                 >
                     <span>📊</span>
                     Overview
@@ -52,7 +66,7 @@
 
                 <button
                     class="nav-item"
-                    onclick="showPage('invites')"
+                    data-page="invites"
                 >
                     <span>📨</span>
                     Invites
@@ -61,7 +75,7 @@
 
                 <button
                     class="nav-item"
-                    onclick="showPage('rewards')"
+                    data-page="rewards"
                 >
                     <span>🎁</span>
                     Rewards
@@ -70,7 +84,7 @@
 
                 <button
                     class="nav-item"
-                    onclick="showPage('settings')"
+                    data-page="settings"
                 >
                     <span>⚙️</span>
                     Settings
@@ -87,7 +101,9 @@
 
                     <div>
 
-                        <strong>Bot Online</strong>
+                        <strong>
+                            Bot Online
+                        </strong>
 
                         <small>
                             Connected
@@ -107,8 +123,6 @@
 
         <main class="main">
 
-            <!-- HEADER -->
-
             <header class="topbar">
 
                 <div>
@@ -124,25 +138,16 @@
                 </div>
 
 
-                <div class="server-selector">
+                <!-- SERVER SELECTOR -->
 
-                    <div class="server-icon">
-                        S
+                <div
+                    id="server-selector"
+                    class="server-selector"
+                >
+
+                    <div class="loading-server">
+                        Loading servers...
                     </div>
-
-                    <div>
-
-                        <strong>
-                            Your Server
-                        </strong>
-
-                        <small>
-                            Discord Server
-                        </small>
-
-                    </div>
-
-                    <span>⌄</span>
 
                 </div>
 
@@ -150,7 +155,9 @@
 
 
 
-            <!-- OVERVIEW -->
+            <!-- =========================
+                 OVERVIEW
+            ========================== -->
 
             <section
                 id="overview"
@@ -171,7 +178,7 @@
                                 Members
                             </span>
 
-                            <strong>
+                            <strong id="member-count">
                                 0
                             </strong>
 
@@ -192,7 +199,7 @@
                                 Total Invites
                             </span>
 
-                            <strong>
+                            <strong id="total-invites">
                                 0
                             </strong>
 
@@ -213,7 +220,7 @@
                                 Valid Invites
                             </span>
 
-                            <strong>
+                            <strong id="valid-invites">
                                 0
                             </strong>
 
@@ -234,7 +241,7 @@
                                 Rewards
                             </span>
 
-                            <strong>
+                            <strong id="reward-count">
                                 0
                             </strong>
 
@@ -266,7 +273,7 @@
 
                             <button
                                 class="secondary-button"
-                                onclick="showPage('invites')"
+                                data-page-button="invites"
                             >
                                 View All
                             </button>
@@ -319,7 +326,7 @@
 
                             <button
                                 class="secondary-button"
-                                onclick="showPage('rewards')"
+                                data-page-button="rewards"
                             >
                                 Manage
                             </button>
@@ -358,7 +365,9 @@
 
 
 
-            <!-- INVITES -->
+            <!-- =========================
+                 INVITES
+            ========================== -->
 
             <section
                 id="invites"
@@ -382,8 +391,8 @@
 
 
                     <button
+                        id="open-invite-modal"
                         class="primary-button"
-                        onclick="openInviteModal()"
                     >
                         + Adjust Invites
                     </button>
@@ -422,9 +431,7 @@
                             </thead>
 
 
-                            <tbody
-                                id="invite-table"
-                            >
+                            <tbody id="invite-table">
 
                                 <tr>
 
@@ -449,7 +456,9 @@
 
 
 
-            <!-- REWARDS -->
+            <!-- =========================
+                 REWARDS
+            ========================== -->
 
             <section
                 id="rewards"
@@ -473,8 +482,8 @@
 
 
                     <button
+                        id="open-reward-modal"
                         class="primary-button"
-                        onclick="openRewardModal()"
                     >
                         + Add Reward
                     </button>
@@ -509,7 +518,9 @@
 
 
 
-            <!-- SETTINGS -->
+            <!-- =========================
+                 SETTINGS
+            ========================== -->
 
             <section
                 id="settings"
@@ -602,7 +613,46 @@
 
 
 
-    <!-- INVITE MODAL -->
+    <!-- =========================
+         LOGIN SCREEN
+    ========================== -->
+
+    <div
+        id="login-screen"
+        class="login-screen"
+    >
+
+        <div class="login-card">
+
+            <div class="login-logo">
+                🤖
+            </div>
+
+            <h1>
+                Gatto Bot
+            </h1>
+
+            <p>
+                Manage your Discord bot
+                from one dashboard.
+            </p>
+
+            <button
+                id="login-button"
+                class="primary-button login-button"
+            >
+                Login with Discord
+            </button>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =========================
+         INVITE MODAL
+    ========================== -->
 
     <div
         id="invite-modal"
@@ -613,7 +663,7 @@
 
             <button
                 class="close"
-                onclick="closeModal('invite-modal')"
+                data-close="invite-modal"
             >
                 ×
             </button>
@@ -649,8 +699,8 @@
 
 
             <button
+                id="adjust-invites"
                 class="primary-button full"
-                onclick="adjustInvites()"
             >
                 Save Changes
             </button>
@@ -661,7 +711,9 @@
 
 
 
-    <!-- REWARD MODAL -->
+    <!-- =========================
+         REWARD MODAL
+    ========================== -->
 
     <div
         id="reward-modal"
@@ -672,7 +724,7 @@
 
             <button
                 class="close"
-                onclick="closeModal('reward-modal')"
+                data-close="reward-modal"
             >
                 ×
             </button>
@@ -709,8 +761,8 @@
 
 
             <button
+                id="add-reward"
                 class="primary-button full"
-                onclick="addReward()"
             >
                 Create Reward
             </button>
