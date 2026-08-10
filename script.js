@@ -2,97 +2,76 @@ let currentUser = null;
 let selectedServer = null;
 
 /* =========================================================
-START
+STARTUP & EVENT LISTENERS
 ========================================================= */
 
-document.addEventListener(“DOMContentLoaded”, () => {
-console.log(“✅ Bot Control loaded”);
-
-checkLogin();
-restoreSelectedServer();
-
+document.addEventListener("DOMContentLoaded", function () {
+    console.log("✅ script.js loaded");
+    checkLogin();
+    restoreSelectedServer();
+    setupEventListeners();
 });
+
+function setupEventListeners() {
+    // Navigation items
+    document.querySelectorAll(".nav-item").forEach(button => {
+        button.addEventListener("click", () => {
+            const section = button.getAttribute("data-section");
+            if (section) showSection(section);
+        });
+    });
+
+    // Quick cards
+    document.querySelectorAll(".quick-card").forEach(button => {
+        button.addEventListener("click", () => {
+            const section = button.getAttribute("data-section-link");
+            if (section) showSection(section);
+        });
+    });
+
+    // Action buttons
+    const serverBtn = document.getElementById("server-button");
+    if (serverBtn) serverBtn.addEventListener("click", loadServers);
+
+    const logoutBtn = document.getElementById("logout-button");
+    if (logoutBtn) logoutBtn.addEventListener("click", logout);
+
+    const saveInviteBtn = document.getElementById("save-invite-settings");
+    if (saveInviteBtn) saveInviteBtn.addEventListener("click", saveInviteSettings);
+
+    const saveRewardBtn = document.getElementById("save-reward");
+    if (saveRewardBtn) saveRewardBtn.addEventListener("click", saveReward);
+
+    const saveSettingsBtn = document.getElementById("save-settings");
+    if (saveSettingsBtn) saveSettingsBtn.addEventListener("click", saveSettings);
+}
 
 /* =========================================================
 AUTHENTICATION
 ========================================================= */
 
 async function checkLogin() {
-
-console.log("🔐 Checking Discord login...");
-try {
-    const response = await fetch("/api/user", {
-        method: "GET",
-        credentials: "include",
-        cache: "no-store"
-    });
-    console.log(
-        "User API status:",
-        response.status
-    );
-    if (!response.ok) {
-        console.log(
-            "❌ User is not authenticated"
-        );
-        return;
+    try {
+        const response = await fetch("/api/user", {
+            method: "GET",
+            credentials: "include",
+            cache: "no-store"
+        });
+        if (!response.ok) {
+            console.log("Not authenticated:", response.status);
+            return;
+        }
+        const data = await response.json();
+        if (!data || !data.authenticated || !data.user) {
+            console.log("No authenticated user.");
+            return;
+        }
+        currentUser = data.user;
+        updateUserInterface(currentUser);
+        console.log("✅ Logged in as:", currentUser.username);
+    } catch (error) {
+        console.error("Login check failed:", error);
     }
-    const data = await response.json();
-    console.log(
-        "User API response:",
-        data
-    );
-    if (
-        !data ||
-        !data.authenticated ||
-        !data.user
-    ) {
-        console.log(
-            "❌ No authenticated user"
-        );
-        return;
-    }
-    currentUser = data.user;
-    updateUserInterface(
-        currentUser
-    );
-    hideLoginOverlay();
-    console.log(
-        "✅ Logged in as:",
-        currentUser.username
-    );
-} catch (error) {
-    console.error(
-        "❌ Login check error:",
-        error
-    );
-}
-
-}
-
-/* =========================================================
-LOGIN OVERLAY
-========================================================= */
-
-function hideLoginOverlay() {
-
-const overlay =
-    document.getElementById(
-        "login-overlay"
-    );
-if (!overlay) return;
-overlay.style.display = "none";
-
-}
-
-function showLoginOverlay() {
-
-const overlay =
-    document.getElementById(
-        "login-overlay"
-    );
-if (!overlay) return;
-overlay.style.display = "flex";
-
 }
 
 /* =========================================================
@@ -100,40 +79,19 @@ USER INTERFACE
 ========================================================= */
 
 function updateUserInterface(user) {
+    const username = user.global_name || user.username || "Discord User";
+    const usernameElement = document.getElementById("username");
+    if (usernameElement) usernameElement.textContent = username;
 
-const username =
-    user.global_name ||
-    user.username ||
-    "Discord User";
-const usernameElement =
-    document.getElementById(
-        "username"
-    );
-if (usernameElement) {
-    usernameElement.textContent =
-        username;
-}
-const welcome =
-    document.getElementById(
-        "welcome-name"
-    );
-if (welcome) {
-    welcome.textContent =
-        username;
-}
-const avatar =
-    document.getElementById(
-        "user-avatar"
-    );
-if (!avatar) return;
-if (user.avatar) {
-    avatar.src =
-        `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=128`;
-} else {
-    avatar.src =
-        "https://cdn.discordapp.com/embed/avatars/0.png";
-}
+    const welcome = document.getElementById("welcome-name");
+    if (welcome) welcome.textContent = username;
 
+    const avatar = document.getElementById("user-avatar");
+    if (avatar) {
+        avatar.src = user.avatar
+            ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=128`
+            : "https://cdn.discordapp.com/embed/avatars/0.png";
+    }
 }
 
 /* =========================================================
@@ -141,290 +99,164 @@ NAVIGATION
 ========================================================= */
 
 function showSection(section) {
+    console.log("Opening section:", section);
 
-console.log(
-    "📂 Opening section:",
-    section
-);
-document
-    .querySelectorAll(".page-section")
-    .forEach(element => {
-        element.classList.remove(
-            "active"
-        );
+    // Hide all page sections
+    document.querySelectorAll(".page-section").forEach(element => {
+        element.classList.remove("active");
     });
-const target =
-    document.getElementById(
-        section
-    );
-if (target) {
-    target.classList.add(
-        "active"
-    );
-}
-document
-    .querySelectorAll(".nav-item")
-    .forEach(button => {
-        button.classList.remove(
-            "active"
-        );
-    });
-const titles = {
-    overview: [
-        "Overview",
-        "Manage your Discord server."
-    ],
-    invites: [
-        "Invite Tracker",
-        "Track and manage member invites."
-    ],
-    rewards: [
-        "Rewards",
-        "Automatically reward your members."
-    ],
-    settings: [
-        "Settings",
-        "Configure your bot."
-    ]
-};
-if (!titles[section]) return;
-const title =
-    document.getElementById(
-        "page-title"
-    );
-const description =
-    document.getElementById(
-        "page-description"
-    );
-if (title) {
-    title.textContent =
-        titles[section][0];
-}
-if (description) {
-    description.textContent =
-        titles[section][1];
-}
 
+    // Show target page section
+    const target = document.getElementById(section);
+    if (target) target.classList.add("active");
+
+    // Update nav item active states
+    document.querySelectorAll(".nav-item").forEach(button => {
+        button.classList.remove("active");
+        if (button.getAttribute("data-section") === section) {
+            button.classList.add("active");
+        }
+    });
+
+    // Update section title & description
+    const titles = {
+        overview: ["Overview", "Manage your Discord server."],
+        invites: ["Invite Tracker", "Track and manage member invites."],
+        rewards: ["Rewards", "Automatically reward your members."],
+        settings: ["Settings", "Configure your bot."]
+    };
+
+    const info = titles[section];
+    if (!info) return;
+
+    const title = document.getElementById("page-title");
+    const description = document.getElementById("page-description");
+
+    if (title) title.textContent = info[0];
+    if (description) description.textContent = info[1];
 }
 
 /* =========================================================
-SERVER LIST
+DISCORD SERVERS
 ========================================================= */
 
 async function loadServers() {
-
-console.log(
-    "🌐 Loading Discord servers..."
-);
-const list =
-    document.getElementById(
-        "server-list"
-    );
-if (!list) {
-    console.error(
-        "❌ server-list does not exist"
-    );
-    return;
-}
-if (
-    list.dataset.open === "true"
-) {
-    list.innerHTML = "";
-    list.dataset.open =
-        "false";
-    return;
-}
-list.dataset.open =
-    "true";
-list.innerHTML = `
-    <div class="server-item">
-        <span>
-            Loading your servers...
-        </span>
-    </div>
-`;
-try {
-    const response =
-        await fetch(
-            "/api/guilds",
-            {
-                method: "GET",
-                credentials: "include",
-                cache: "no-store"
-            }
-        );
-    console.log(
-        "Guild API status:",
-        response.status
-    );
-    if (!response.ok) {
-        throw new Error(
-            `Guild API returned ${response.status}`
-        );
-    }
-    const data =
-        await response.json();
-    console.log(
-        "Guild data:",
-        data
-    );
-    const guilds =
-        Array.isArray(data.guilds)
-            ? data.guilds
-            : [];
-    if (
-        guilds.length === 0
-    ) {
-        list.innerHTML = `
-            <div class="server-item">
-                <span>
-                    No manageable servers found.
-                </span>
-            </div>
-        `;
+    console.log("🔎 Loading Discord servers...");
+    const list = document.getElementById("server-list");
+    if (!list) {
+        console.error("❌ server-list not found");
         return;
     }
-    list.innerHTML = "";
-    guilds.forEach(guild => {
-        const button =
-            document.createElement(
-                "button"
-            );
-        button.type =
-            "button";
-        button.className =
-            "server-item";
-        const icon =
-            guild.icon
-                ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png?size=128`
-                : "https://cdn.discordapp.com/embed/avatars/0.png";
-        const image =
-            document.createElement(
-                "img"
-            );
-        image.src =
-            icon;
-        image.alt =
-            "";
-        const name =
-            document.createElement(
-                "span"
-            );
-        name.textContent =
-            guild.name;
-        button.appendChild(
-            image
-        );
-        button.appendChild(
-            name
-        );
-        button.addEventListener(
-            "click",
-            () => {
-                selectServer(
-                    guild.id,
-                    guild.name,
-                    icon
-                );
-            }
-        );
-        list.appendChild(
-            button
-        );
-    });
-} catch (error) {
-    console.error(
-        "❌ Server loading failed:",
-        error
-    );
+
+    // Toggle visibility
+    if (list.dataset.open === "true") {
+        list.innerHTML = "";
+        list.dataset.open = "false";
+        list.hidden = true;
+        return;
+    }
+
+    list.hidden = false;
+    list.dataset.open = "true";
     list.innerHTML = `
         <div class="server-item">
-            <span>
-                ❌ Unable to load servers.
-            </span>
+            <span>Loading your servers...</span>
         </div>
     `;
-}
 
+    try {
+        const response = await fetch("/api/guilds", {
+            method: "GET",
+            credentials: "include",
+            cache: "no-store"
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error("Guild API error:", errorText);
+            throw new Error(`Guild API returned ${response.status}`);
+        }
+
+        const data = await response.json();
+        const guilds = Array.isArray(data.guilds) ? data.guilds : [];
+
+        if (guilds.length === 0) {
+            list.innerHTML = `
+                <div class="server-item">
+                    <span>No manageable servers found.</span>
+                </div>
+            `;
+            return;
+        }
+
+        list.innerHTML = "";
+        guilds.forEach(guild => {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "server-item";
+
+            const icon = guild.icon
+                ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png?size=128`
+                : "https://cdn.discordapp.com/embed/avatars/0.png";
+
+            const image = document.createElement("img");
+            image.src = icon;
+            image.alt = "";
+
+            const name = document.createElement("span");
+            name.textContent = guild.name;
+
+            button.appendChild(image);
+            button.appendChild(name);
+            button.addEventListener("click", () => {
+                selectServer(guild.id, guild.name, icon);
+            });
+            list.appendChild(button);
+        });
+    } catch (error) {
+        console.error("❌ Server loading failed:", error);
+        list.innerHTML = `
+            <div class="server-item">
+                <span>❌ Unable to load servers.</span>
+            </div>
+        `;
+    }
 }
 
 /* =========================================================
-SELECT SERVER
+SERVER SELECTION
 ========================================================= */
 
-function selectServer(
-id,
-name,
-icon
-) {
+function selectServer(id, name, icon) {
+    console.log("Selected server:", id, name);
+    selectedServer = { id, name, icon };
+    localStorage.setItem("selectedServer", JSON.stringify(selectedServer));
 
-console.log(
-    "🏠 Selected server:",
-    name
-);
-selectedServer = {
-    id,
-    name,
-    icon
-};
-localStorage.setItem(
-    "selectedServer",
-    JSON.stringify(
-        selectedServer
-    )
-);
-const serverName =
-    document.getElementById(
-        "selected-server-name"
-    );
-if (serverName) {
-    serverName.textContent =
-        name;
-}
-const overviewServer =
-    document.getElementById(
-        "overview-server"
-    );
-if (overviewServer) {
-    overviewServer.textContent =
-        name;
-}
-const iconContainer =
-    document.getElementById(
-        "selected-server-icon"
-    );
-if (iconContainer) {
-    iconContainer.innerHTML = "";
-    const image =
-        document.createElement(
-            "img"
-        );
-    image.src =
-        icon;
-    image.alt =
-        name;
-    image.style.width =
-        "100%";
-    image.style.height =
-        "100%";
-    image.style.objectFit =
-        "cover";
-    image.style.borderRadius =
-        "10px";
-    iconContainer.appendChild(
-        image
-    );
-}
-const list =
-    document.getElementById(
-        "server-list"
-    );
-if (list) {
-    list.innerHTML = "";
-    list.dataset.open =
-        "false";
-}
+    const nameElement = document.getElementById("selected-server-name");
+    if (nameElement) nameElement.textContent = name;
 
+    const overview = document.getElementById("overview-server");
+    if (overview) overview.textContent = name;
+
+    const iconElement = document.getElementById("selected-server-icon");
+    if (iconElement) {
+        iconElement.innerHTML = "";
+        const image = document.createElement("img");
+        image.src = icon;
+        image.alt = name;
+        image.style.width = "100%";
+        image.style.height = "100%";
+        image.style.objectFit = "cover";
+        image.style.borderRadius = "10px";
+        iconElement.appendChild(image);
+    }
+
+    const list = document.getElementById("server-list");
+    if (list) {
+        list.innerHTML = "";
+        list.dataset.open = "false";
+        list.hidden = true;
+    }
 }
 
 /* =========================================================
@@ -432,160 +264,93 @@ RESTORE SERVER
 ========================================================= */
 
 function restoreSelectedServer() {
+    try {
+        const saved = localStorage.getItem("selectedServer");
+        if (!saved) return;
+        const server = JSON.parse(saved);
+        if (!server || !server.id || !server.name) return;
 
-try {
-    const saved =
-        localStorage.getItem(
-            "selectedServer"
-        );
-    if (!saved) return;
-    selectedServer =
-        JSON.parse(
-            saved
-        );
-    if (
-        !selectedServer ||
-        !selectedServer.id
-    ) {
-        return;
-    }
-    const name =
-        document.getElementById(
-            "selected-server-name"
-        );
-    if (name) {
-        name.textContent =
-            selectedServer.name;
-    }
-    const overview =
-        document.getElementById(
-            "overview-server"
-        );
-    if (overview) {
-        overview.textContent =
-            selectedServer.name;
-    }
-} catch (error) {
-    console.error(
-        "Server restore failed:",
-        error
-    );
-}
+        selectedServer = server;
+        const nameElement = document.getElementById("selected-server-name");
+        if (nameElement) nameElement.textContent = server.name;
 
+        const overview = document.getElementById("overview-server");
+        if (overview) overview.textContent = server.name;
+
+        const iconElement = document.getElementById("selected-server-icon");
+        if (iconElement && server.icon) {
+            const image = document.createElement("img");
+            image.src = server.icon;
+            image.alt = server.name;
+            image.style.width = "100%";
+            image.style.height = "100%";
+            image.style.objectFit = "cover";
+            image.style.borderRadius = "10px";
+            iconElement.innerHTML = "";
+            iconElement.appendChild(image);
+        }
+    } catch (error) {
+        console.error("Could not restore server:", error);
+    }
 }
 
 /* =========================================================
 INVITE SETTINGS
 ========================================================= */
 
-function saveInviteSettings() {
-
-if (!selectedServer) {
-    alert(
-        "Choose a Discord server first."
-    );
-    return;
-}
-const input =
-    document.getElementById(
-        "invite-log-channel"
-    );
-const channel =
-    input
-        ? input.value.trim()
-        : "";
-if (!channel) {
-    alert(
-        "Enter a channel ID first."
-    );
-    return;
-}
-console.log(
-    "Invite settings:",
-    {
-        server:
-            selectedServer.id,
-        channel:
-            channel
+async function saveInviteSettings() {
+    if (!selectedServer) {
+        alert("Choose a Discord server first.");
+        return;
     }
-);
-alert(
-    "Invite tracker settings saved!"
-);
-
+    const input = document.getElementById("invite-log-channel");
+    const channel = input ? input.value.trim() : "";
+    if (!channel) {
+        alert("Enter a channel ID first.");
+        return;
+    }
+    console.log("Invite settings:", {
+        guildId: selectedServer.id,
+        channelId: channel
+    });
+    alert("Invite tracker settings saved!");
 }
 
 /* =========================================================
 REWARDS
 ========================================================= */
 
-function saveReward() {
-
-if (!selectedServer) {
-    alert(
-        "Choose a Discord server first."
-    );
-    return;
-}
-const goalInput =
-    document.getElementById(
-        "reward-goal"
-    );
-const roleInput =
-    document.getElementById(
-        "reward-role"
-    );
-const goal =
-    goalInput
-        ? goalInput.value.trim()
-        : "";
-const role =
-    roleInput
-        ? roleInput.value.trim()
-        : "";
-if (!goal || !role) {
-    alert(
-        "Enter both an invite goal and role ID."
-    );
-    return;
-}
-console.log(
-    "Reward created:",
-    {
-        server:
-            selectedServer.id,
-        goal:
-            Number(goal),
-        role:
-            role
+async function saveReward() {
+    if (!selectedServer) {
+        alert("Choose a Discord server first.");
+        return;
     }
-);
-alert(
-    `Reward created for ${goal} invites!`
-);
+    const goalInput = document.getElementById("reward-goal");
+    const roleInput = document.getElementById("reward-role");
+    const goal = goalInput ? goalInput.value.trim() : "";
+    const role = roleInput ? roleInput.value.trim() : "";
 
+    if (!goal || !role) {
+        alert("Enter both an invite goal and role ID.");
+        return;
+    }
+    console.log("Reward:", {
+        guildId: selectedServer.id,
+        goal: Number(goal),
+        roleId: role
+    });
+    alert(`Reward created for ${goal} invites!`);
 }
 
 /* =========================================================
 BOT SETTINGS
 ========================================================= */
 
-function saveSettings() {
-
-const status =
-    document.getElementById(
-        "bot-status"
-    );
-console.log(
-    "Bot status:",
-    status
-        ? status.value
-        : "Online"
-);
-alert(
-    "Settings saved!"
-);
-
+async function saveSettings() {
+    const input = document.getElementById("bot-status");
+    const status = input ? input.value : "online";
+    console.log("Bot status:", status);
+    alert("Settings saved!");
 }
 
 /* =========================================================
@@ -593,11 +358,6 @@ LOGOUT
 ========================================================= */
 
 function logout() {
-
-console.log(
-    "🚪 Logging out..."
-);
-window.location.href =
-    "/api/logout";
-
+    console.log("Logging out...");
+    window.location.href = "/api/logout";
 }
