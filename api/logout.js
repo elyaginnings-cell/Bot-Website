@@ -1,9 +1,15 @@
 export default function handler(req, res) {
+    const isProduction = process.env.NODE_ENV === "production";
 
-    res.setHeader(
-        "Set-Cookie",
-        "discord_session=; Path=/; HttpOnly; Secure; SameSite=None; Max-Age=0"
-    );
+    const cookieFlags = [
+        "discord_session=",
+        "Path=/",
+        "HttpOnly",
+        "Max-Age=0",
+        "SameSite=Lax",
+        ...(isProduction ? ["Secure"] : [])
+    ].join("; ");
 
-    res.redirect(302, "/");
+    res.setHeader("Set-Cookie", cookieFlags);
+    return res.redirect(302, "/");
 }
