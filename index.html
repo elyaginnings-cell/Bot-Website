@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <title>Gatto Bot Dashboard</title>
 
@@ -11,168 +14,496 @@
 
 <body>
 
-    <div class="app">
+<div class="app">
 
-        <!-- Sidebar -->
-        <aside class="sidebar">
+    <!-- SIDEBAR -->
 
-            <div class="brand">
+    <aside class="sidebar">
+
+        <div class="brand">
+            <div class="brand-icon">G</div>
+
+            <div>
                 <h1>Gatto Bot</h1>
                 <span>Dashboard</span>
             </div>
-
-            <nav>
-
-                <button class="nav-item active">
-                    🏠 Overview
-                </button>
-
-                <button class="nav-item">
-                    📨 Invites
-                </button>
-
-                <button class="nav-item">
-                    🎁 Rewards
-                </button>
-
-                <button class="nav-item">
-                    ⚙️ Settings
-                </button>
-
-            </nav>
-
-        </aside>
+        </div>
 
 
-        <!-- Main Content -->
-        <main class="main">
+        <div class="server-selector">
 
-            <header class="header">
+            <span class="section-label">
+                SERVER
+            </span>
 
-                <div>
-                    <p>Server Dashboard</p>
-                    <h2>Welcome back 👋</h2>
+            <button
+                id="serverButton"
+                class="server-button"
+            >
+                <div
+                    id="serverIcon"
+                    class="server-icon"
+                >
+                    ?
                 </div>
 
-                <button class="discord-login">
+                <div class="server-info">
+
+                    <strong id="serverName">
+                        Select a server
+                    </strong>
+
+                    <small>
+                        Choose a Discord server
+                    </small>
+
+                </div>
+
+                <span class="arrow">⌄</span>
+            </button>
+
+        </div>
+
+
+        <nav>
+
+            <span class="section-label">
+                MANAGEMENT
+            </span>
+
+            <button
+                class="nav-item active"
+                data-page="overview"
+            >
+                <span>🏠</span>
+                Overview
+            </button>
+
+            <button
+                class="nav-item"
+                data-page="invites"
+            >
+                <span>📨</span>
+                Invites
+            </button>
+
+            <button
+                class="nav-item"
+                data-page="rewards"
+            >
+                <span>🎁</span>
+                Rewards
+            </button>
+
+            <span class="section-label settings-label">
+                BOT
+            </span>
+
+            <button
+                class="nav-item"
+                data-page="settings"
+            >
+                <span>⚙️</span>
+                Settings
+            </button>
+
+        </nav>
+
+
+        <div class="account">
+
+            <div
+                id="userAvatar"
+                class="avatar"
+            >
+                ?
+            </div>
+
+            <div class="account-info">
+
+                <strong id="username">
+                    Not logged in
+                </strong>
+
+                <small>
+                    Discord account
+                </small>
+
+            </div>
+
+            <button
+                id="logoutButton"
+                class="logout"
+                title="Logout"
+            >
+                ↪
+            </button>
+
+        </div>
+
+    </aside>
+
+
+    <!-- MAIN -->
+
+    <main class="main">
+
+        <header class="topbar">
+
+            <div>
+                <span class="breadcrumb">
+                    Dashboard / Overview
+                </span>
+
+                <h2 id="pageTitle">
+                    Server Overview
+                </h2>
+            </div>
+
+            <div class="status">
+
+                <span class="status-dot"></span>
+
+                <span>
+                    Bot Online
+                </span>
+
+            </div>
+
+        </header>
+
+
+        <!-- LOGIN SCREEN -->
+
+        <section
+            id="loginScreen"
+            class="login-screen"
+        >
+
+            <div class="login-card">
+
+                <div class="login-logo">
+                    G
+                </div>
+
+                <h2>
+                    Welcome to Gatto Bot
+                </h2>
+
+                <p>
+                    Connect your Discord account to
+                    manage your server.
+                </p>
+
+                <button
+                    id="loginButton"
+                    class="discord-button"
+                >
+                    <span>Discord</span>
                     Login with Discord
                 </button>
 
-            </header>
+            </div>
+
+        </section>
 
 
-            <!-- Statistics -->
+        <!-- DASHBOARD -->
 
-            <section class="stats">
+        <section
+            id="dashboard"
+            class="dashboard hidden"
+        >
 
-                <div class="card">
-                    <span>Total Members</span>
-                    <strong>1,284</strong>
+            <!-- NO SERVER -->
+
+            <div
+                id="noServer"
+                class="empty-state hidden"
+            >
+
+                <div class="empty-icon">
+                    🏠
                 </div>
 
-                <div class="card">
-                    <span>Total Invites</span>
-                    <strong>463</strong>
-                </div>
+                <h2>
+                    No manageable servers found
+                </h2>
 
-                <div class="card">
-                    <span>Valid Invites</span>
-                    <strong>391</strong>
-                </div>
+                <p>
+                    You need administrator or server
+                    management permissions to manage
+                    a server with Gatto Bot.
+                </p>
 
-            </section>
+            </div>
 
 
-            <!-- Leaderboard -->
+            <!-- SERVER CONTENT -->
 
-            <section class="panel">
+            <div
+                id="serverContent"
+                class="hidden"
+            >
 
-                <div class="panel-header">
+                <!-- STATS -->
 
-                    <div>
-                        <h3>🏆 Invite Leaderboard</h3>
+                <div class="stats">
 
-                        <p>
-                            Your server's top inviters
-                        </p>
+                    <div class="stat-card">
+
+                        <div class="stat-icon">
+                            👥
+                        </div>
+
+                        <div>
+                            <span>
+                                Members
+                            </span>
+
+                            <strong id="memberCount">
+                                —
+                            </strong>
+                        </div>
+
+                    </div>
+
+
+                    <div class="stat-card">
+
+                        <div class="stat-icon">
+                            📨
+                        </div>
+
+                        <div>
+                            <span>
+                                Total Invites
+                            </span>
+
+                            <strong id="inviteCount">
+                                —
+                            </strong>
+                        </div>
+
+                    </div>
+
+
+                    <div class="stat-card">
+
+                        <div class="stat-icon">
+                            🎁
+                        </div>
+
+                        <div>
+                            <span>
+                                Rewards
+                            </span>
+
+                            <strong id="rewardCount">
+                                —
+                            </strong>
+                        </div>
+
                     </div>
 
                 </div>
 
 
-                <div class="leaderboard">
+                <!-- CONTENT GRID -->
 
-                    <div class="leader">
-                        <span>#1</span>
-                        <strong>Gatto</strong>
-                        <small>47 invites</small>
-                    </div>
+                <div class="content-grid">
 
-                    <div class="leader">
-                        <span>#2</span>
-                        <strong>User123</strong>
-                        <small>31 invites</small>
-                    </div>
+                    <section class="panel leaderboard-panel">
 
-                    <div class="leader">
-                        <span>#3</span>
-                        <strong>Bob</strong>
-                        <small>24 invites</small>
-                    </div>
+                        <div class="panel-header">
+
+                            <div>
+                                <h3>
+                                    🏆 Invite Leaderboard
+                                </h3>
+
+                                <p>
+                                    Your server's top inviters
+                                </p>
+                            </div>
+
+                        </div>
+
+
+                        <div
+                            id="leaderboard"
+                            class="leaderboard"
+                        >
+
+                            <div class="loading">
+                                Loading invite data...
+                            </div>
+
+                        </div>
+
+                    </section>
+
+
+                    <section class="panel bot-panel">
+
+                        <div class="panel-header">
+
+                            <div>
+                                <h3>
+                                    🤖 Bot Status
+                                </h3>
+
+                                <p>
+                                    Connection information
+                                </p>
+                            </div>
+
+                        </div>
+
+
+                        <div class="bot-status">
+
+                            <div class="bot-status-row">
+
+                                <span>
+                                    Status
+                                </span>
+
+                                <strong class="online">
+                                    ● Online
+                                </strong>
+
+                            </div>
+
+
+                            <div class="bot-status-row">
+
+                                <span>
+                                    Server
+                                </span>
+
+                                <strong id="botServerName">
+                                    —
+                                </strong>
+
+                            </div>
+
+
+                            <div class="bot-status-row">
+
+                                <span>
+                                    Bot ID
+                                </span>
+
+                                <strong id="botId">
+                                    —
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+                    </section>
 
                 </div>
 
-            </section>
 
+                <!-- REWARDS -->
 
-            <!-- Rewards -->
+                <section class="panel rewards-panel">
 
-            <section class="panel">
+                    <div class="panel-header">
 
-                <div class="panel-header">
+                        <div>
 
-                    <div>
-                        <h3>🎁 Invite Rewards</h3>
+                            <h3>
+                                🎁 Automatic Rewards
+                            </h3>
 
-                        <p>
-                            Automatic rewards for reaching invite goals
-                        </p>
+                            <p>
+                                Rewards configured for this server
+                            </p>
+
+                        </div>
+
+                        <button
+                            id="addReward"
+                            class="secondary-button"
+                        >
+                            + Add Reward
+                        </button>
+
                     </div>
 
-                    <button class="add-button">
-                        + Add Reward
-                    </button>
 
-                </div>
+                    <div
+                        id="rewards"
+                        class="rewards"
+                    >
 
+                        <div class="reward-empty">
+                            No rewards configured yet.
+                        </div>
 
-                <div class="rewards">
-
-                    <div class="reward">
-                        <span>5 Invites</span>
-                        <strong>Member</strong>
                     </div>
 
-                    <div class="reward">
-                        <span>10 Invites</span>
-                        <strong>Active Member</strong>
-                    </div>
+                </section>
 
-                    <div class="reward">
-                        <span>25 Invites</span>
-                        <strong>Trusted</strong>
-                    </div>
+            </div>
 
-                </div>
+        </section>
 
-            </section>
+    </main>
 
-        </main>
+</div>
+
+
+<!-- SERVER SELECTOR MODAL -->
+
+<div
+    id="serverModal"
+    class="modal hidden"
+>
+
+    <div class="modal-backdrop"></div>
+
+    <div class="modal-card">
+
+        <div class="modal-header">
+
+            <div>
+                <h2>
+                    Select a Server
+                </h2>
+
+                <p>
+                    Choose a server to manage
+                </p>
+            </div>
+
+            <button
+                id="closeModal"
+                class="close-button"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <div
+            id="serverList"
+            class="server-list"
+        >
+            Loading servers...
+        </div>
 
     </div>
 
+</div>
 
-    <script src="script.js"></script>
+
+<script src="script.js"></script>
 
 </body>
 </html>
