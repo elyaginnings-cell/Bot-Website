@@ -10,37 +10,62 @@ export default async function handler(
     if (!code) {
 
         return res.status(400).send(
-            "Missing Discord authorization code."
+            "No Discord authorization code was provided."
         );
+    }
 
+
+    const clientId =
+        process.env.DISCORD_CLIENT_ID;
+
+    const clientSecret =
+        process.env.DISCORD_CLIENT_SECRET;
+
+    const redirectUri =
+        process.env.DISCORD_REDIRECT_URI;
+
+
+    if (
+        !clientId ||
+        !clientSecret ||
+        !redirectUri
+    ) {
+
+        return res.status(500).send(
+            "Discord OAuth environment variables are missing."
+        );
     }
 
 
     try {
 
-        const params =
+        /*
+         * Exchange authorization code
+         * for Discord access token.
+         */
+
+        const body =
             new URLSearchParams({
 
                 client_id:
-                    process.env.DISCORD_CLIENT_ID,
+                    clientId,
 
                 client_secret:
-                    process.env.DISCORD_CLIENT_SECRET,
+                    clientSecret,
 
                 grant_type:
                     "authorization_code",
 
                 code:
-
                     code,
 
                 redirect_uri:
-                    process.env.DISCORD_REDIRECT_URI
+                    redirectUri
 
             });
 
 
-        const response =
+        const tokenResponse =
             await fetch(
                 "https://discord.com/api/oauth2/token",
                 {
@@ -56,44 +81,50 @@ export default async function handler(
                     },
 
                     body:
-                        params.toString()
+                        body.toString()
 
                 }
             );
 
 
-        const data =
-            await response.json();
+        const tokenData =
+            await tokenResponse.json();
 
 
-        if (!response.ok) {
+        console.log(
+            "Discord OAuth token response:",
+            tokenResponse.status
+        );
+
+
+        if (
+            !tokenResponse.ok ||
+            !tokenData.access_token
+        ) {
 
             console.error(
-                "Discord OAuth error:",
-                data
+                "Discord OAuth failed:",
+                tokenData
             );
+
 
             return res.status(500).send(
-                "Discord authentication failed."
+                "Discord authorization failed."
             );
-
         }
 
 
-        if (!data.access_token) {
-
-            return res.status(500).send(
-                "Discord did not return an access token."
-            );
-
-        }
-
+        /*
+         * Store the token in a secure cookie.
+         *
+         * JavaScript cannot read this cookie.
+         */
 
         const cookie = [
-
-            `discord_access_token=${encodeURIComponent(
-                data.access_token
-            )}`,
+            "discord_access_token=" +
+                encodeURIComponent(
+                    tokenData.access_token
+                ),
 
             "Path=/",
 
@@ -103,8 +134,9 @@ export default async function handler(
 
             "SameSite=Lax",
 
-            `Max-Age=${data.expires_in || 604800}`
-
+            `Max-Age=${
+                tokenData.expires_in || 604800
+            }`
         ].join("; ");
 
 
@@ -113,6 +145,14 @@ export default async function handler(
             cookie
         );
 
+
+        /*
+         * IMPORTANT:
+         *
+         * We return to the dashboard.
+         *
+         * There is NO login page.
+         */
 
         res.writeHead(
             302,
@@ -131,9 +171,9 @@ export default async function handler(
             error
         );
 
-        return res.status(500).send(
-            "Authentication failed."
-        );
 
+        return res.status(500).send(
+            "Something went wrong during Discord login."
+        );
     }
 }
