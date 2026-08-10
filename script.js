@@ -2,6 +2,7 @@ let currentUser = null;
 let selectedServer = null;
 
 document.addEventListener("DOMContentLoaded", function () {
+    // 1. Device Mode Modal Selection
     const pcBtn = document.getElementById("select-pc");
     const mobileBtn = document.getElementById("select-mobile");
     const modal = document.querySelector(".device-modal");
@@ -26,41 +27,24 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    const navItems = document.querySelectorAll(".nav-item");
-    const sections = document.querySelectorAll(".page-section");
-
-    navItems.forEach(function (item) {
-        item.addEventListener("click", function () {
-            const target = item.getAttribute("data-tab");
-
-            navItems.forEach(function (nav) {
-                nav.classList.remove("active");
-            });
-            sections.forEach(function (sec) {
-                sec.classList.remove("active");
-            });
-
-            item.classList.add("active");
-            const activeSection = document.getElementById(target);
-            if (activeSection) {
-                activeSection.classList.add("active");
-            }
-        });
-    });
+    // 2. Initialize App Functionality
+    setupEventListeners();
+    checkLogin();
+    restoreSelectedServer();
 });
 
-
+// Setup Main App Buttons & Handlers
 function setupEventListeners() {
-    // Nav buttons
+    // Navigation Tabs
     document.querySelectorAll(".nav-item").forEach(button => {
         button.addEventListener("click", () => {
-            const section = button.getAttribute("data-section");
+            const section = button.getAttribute("data-tab") || button.getAttribute("data-section");
             if (section) showSection(section);
             closeMobileMenu();
         });
     });
 
-    // Quick cards
+    // Dashboard Quick Cards
     document.querySelectorAll(".quick-card").forEach(button => {
         button.addEventListener("click", () => {
             const section = button.getAttribute("data-section-link");
@@ -68,14 +52,14 @@ function setupEventListeners() {
         });
     });
 
-    // Mobile menu toggle
+    // Mobile Navigation Controls
     const menuToggle = document.getElementById("mobile-menu-toggle");
     const overlay = document.getElementById("sidebar-overlay");
 
     if (menuToggle) menuToggle.addEventListener("click", toggleMobileMenu);
     if (overlay) overlay.addEventListener("click", closeMobileMenu);
 
-    // Buttons
+    // Interactive Action Buttons
     const serverBtn = document.getElementById("server-button");
     if (serverBtn) serverBtn.addEventListener("click", loadServers);
 
@@ -92,6 +76,7 @@ function setupEventListeners() {
     if (saveSettingsBtn) saveSettingsBtn.addEventListener("click", saveSettings);
 }
 
+// Mobile Sidebar Controls
 function toggleMobileMenu() {
     const sidebar = document.getElementById("sidebar");
     const overlay = document.getElementById("sidebar-overlay");
@@ -106,6 +91,7 @@ function closeMobileMenu() {
     if (overlay) overlay.classList.remove("active");
 }
 
+// User Authentication
 async function checkLogin() {
     try {
         const response = await fetch("/api/user", {
@@ -150,6 +136,7 @@ function updateUserInterface(user) {
     }
 }
 
+// Tab Switching & Page Section Headers
 function showSection(section) {
     document.querySelectorAll(".page-section").forEach(element => {
         element.classList.remove("active");
@@ -160,7 +147,8 @@ function showSection(section) {
 
     document.querySelectorAll(".nav-item").forEach(button => {
         button.classList.remove("active");
-        if (button.getAttribute("data-section") === section) {
+        const navTarget = button.getAttribute("data-tab") || button.getAttribute("data-section");
+        if (navTarget === section) {
             button.classList.add("active");
         }
     });
@@ -182,6 +170,7 @@ function showSection(section) {
     if (description) description.textContent = info[1];
 }
 
+// Discord Guild / Server Fetching & Rendering
 async function loadServers() {
     const list = document.getElementById("server-list");
     if (!list) return;
@@ -311,6 +300,7 @@ function restoreSelectedServer() {
     }
 }
 
+// Action Handlers
 function saveInviteSettings() {
     if (!selectedServer) return alert("Choose a Discord server first.");
     const input = document.getElementById("invite-log-channel");
