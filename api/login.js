@@ -10,18 +10,16 @@ export default function handler(req, res) {
     if (!clientId) {
 
         return res.status(500).send(
-            "DISCORD_CLIENT_ID is missing."
+            "Missing DISCORD_CLIENT_ID."
         );
-
     }
 
 
     if (!redirectUri) {
 
         return res.status(500).send(
-            "DISCORD_REDIRECT_URI is missing."
+            "Missing DISCORD_REDIRECT_URI."
         );
-
     }
 
 
@@ -34,9 +32,8 @@ export default function handler(req, res) {
     } catch {
 
         return res.status(500).send(
-            `Invalid redirect URI: ${redirectUri}`
+            "DISCORD_REDIRECT_URI is not a valid URL."
         );
-
     }
 
 
@@ -59,7 +56,8 @@ export default function handler(req, res) {
 
 
     const discordUrl =
-        `https://discord.com/oauth2/authorize?${params.toString()}`;
+        "https://discord.com/oauth2/authorize?" +
+        params.toString();
 
 
     res.redirect(
