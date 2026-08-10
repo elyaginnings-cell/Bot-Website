@@ -1,125 +1,70 @@
-export default async function handler(
-    req,
-    res
-) {
-
-    const token =
-        getCookie(
-            req.headers.cookie,
-            "discord_access_token"
-        );
-
-
-    if (!token) {
-
-        return res.status(401).json({
-
-            error:
-                "Not authenticated."
-
-        });
-
-    }
-
-
+export default async function handler(req, res) {
     try {
+        // Get the Discord access token from the authentication cookie
+        const token = req.cookies?.discord_token;
 
-        const response =
-            await fetch(
-                "https://discord.com/api/users/@me/guilds",
-                {
-
-                    headers: {
-
-                        Authorization:
-                            `Bearer ${token}`
-
-                    }
-
-                }
-            );
-
-
-        const guilds =
-            await response.json();
-
-
-        if (!response.ok) {
-
-            console.error(
-                "Discord guild error:",
-                guilds
-            );
-
-
+        if (!token) {
             return res.status(401).json({
-
-                error:
-                    "Discord authentication expired."
-
+                error: "Not authenticated"
             });
-
         }
 
-
-        /*
-         * Discord permissions:
-         *
-         * Administrator = 0x8
-         * Manage Server = 0x20
-         */
-
-        const manageableGuilds =
-            guilds.filter(
-                guild => {
-
-                    const permissions =
-                        BigInt(
-                            guild.permissions
-                        );
-
-
-                    const administrator =
-                        (
-                            permissions &
-                            0x8n
-                        ) !== 0n;
-
-
-                    const manageGuild =
-                        (
-                            permissions &
-                            0x20n
-                        ) !== 0n;
-
-
-                    return (
-                        administrator ||
-                        manageGuild
-                    );
-
+        // Ask Discord for the user's servers
+        const response = await fetch(
+            "https://discord.com/api/users/@me/guilds",
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`
                 }
+            }
+        );
+
+        if (!response.ok) {
+            const errorText = await response.text();
+
+            console.error(
+                "Discord guild request failed:",
+                errorText
             );
 
+            return res.status(response.status).json({
+                error: "Discord rejected the request"
+            });
+        }
 
-        return res.status(200).json(
+        const guilds = await response.json();
 
-            manageableGuilds.map(
-                guild => ({
+        /*
+         * Discord gives us every server the user belongs to.
+         *
+         * We only want servers where the user has
+         * permission to manage the bot.
+         *
+         * MANAGE_GUILD = 0x20
+         * ADMINISTRATOR = 0x8
+         */
 
-                    id:
-                        guild.id,
+        const manageableGuilds = guilds.filter(guild => {
 
-                    name:
-                        guild.name,
+            const permissions =
+                BigInt(guild.permissions || "0");
 
-                    icon:
-                        guild.icon
+            const ADMINISTRATOR =
+                BigInt(0x8);
 
-                })
-            )
+            const MANAGE_GUILD =
+                BigInt(0x20);
 
-        );
+            return (
+                (permissions & ADMINISTRATOR) !== BigInt(0) ||
+                (permissions & MANAGE_GUILD) !== BigInt(0)
+            );
+        });
+
+
+        return res.status(200).json({
+            guilds: manageableGuilds
+        });
 
     } catch (error) {
 
@@ -128,79 +73,8 @@ export default async function handler(
             error
         );
 
-
         return res.status(500).json({
-
-            error:
-                "Could not load Discord servers."
-
+            error: "Failed to retrieve Discord servers"
         });
-
     }
-}
-
-
-function getCookie(
-    cookieHeader,
-    name
-) {
-
-    if (!cookieHeader) {
-        return null;
-    }
-
-
-    const cookies =
-        cookieHeader.split(";");
-
-
-    for (
-        const cookie
-        of cookies
-    ) {
-
-        const trimmed =
-            cookie.trim();
-
-
-        const separator =
-            trimmed.indexOf("=");
-
-
-        if (
-            separator === -1
-        ) {
-
-            continue;
-
-        }
-
-
-        const key =
-            trimmed.substring(
-                0,
-                separator
-            );
-
-
-        const value =
-            trimmed.substring(
-                separator + 1
-            );
-
-
-        if (
-            key === name
-        ) {
-
-            return decodeURIComponent(
-                value
-            );
-
-        }
-
-    }
-
-
-    return null;
 }
