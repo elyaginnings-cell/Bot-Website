@@ -8,7 +8,7 @@
 </head>
 <body>
 <div id="app">
-<aside class="sidebar">
+<aside class="sidebar" id="sidebar">
     <div class="sidebar-brand">
         <div class="brand-logo">🤖</div>
         <div>
@@ -42,11 +42,18 @@
     </div>
 </aside>
 
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
 <main class="main">
     <header class="header">
-        <div>
-            <h1 id="page-title">Overview</h1>
-            <p id="page-description">Manage your Discord server.</p>
+        <div class="header-left">
+            <button id="mobile-menu-toggle" class="mobile-menu-toggle" aria-label="Toggle menu">
+                ☰
+            </button>
+            <div>
+                <h1 id="page-title">Overview</h1>
+                <p id="page-description">Manage your Discord server.</p>
+            </div>
         </div>
         <div class="account">
             <img id="user-avatar" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="Discord avatar">
@@ -84,29 +91,38 @@
                 </div>
                 <div class="hero-icon">🤖</div>
             </div>
+            
             <div class="stats-grid">
                 <div class="stat-card">
                     <span class="stat-icon">👥</span>
                     <div>
-                        <span>Tracked Invites</span>
-                        <strong id="invite-count">—</strong>
+                        <span>Server Members</span>
+                        <strong id="server-member-count">—</strong>
                     </div>
                 </div>
                 <div class="stat-card">
-                    <span class="stat-icon">🎁</span>
+                    <span class="stat-icon">🟢</span>
                     <div>
-                        <span>Reward Goals</span>
-                        <strong id="reward-count">—</strong>
+                        <span>Online Members</span>
+                        <strong id="server-online-count">—</strong>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-icon">👑</span>
+                    <div>
+                        <span>Your Role</span>
+                        <strong id="server-owner-status">—</strong>
                     </div>
                 </div>
                 <div class="stat-card">
                     <span class="stat-icon">🛡️</span>
                     <div>
-                        <span>Server</span>
+                        <span>Selected Server</span>
                         <strong id="overview-server">None</strong>
                     </div>
                 </div>
             </div>
+
             <div class="section-heading">
                 <div>
                     <h2>Quick Setup</h2>
@@ -186,6 +202,6 @@
     </div>
 </main>
 </div>
-<script src="/script.js?v=1001"></script>
+<script src="/script.js?v=1002"></script>
 </body>
 </html>
