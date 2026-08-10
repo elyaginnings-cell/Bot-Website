@@ -1,172 +1,60 @@
 import crypto from "crypto";
-function decrypt(encryptedText, secret) {
-    const [ivHex, encrypted] =
-        encryptedText.split(".");
-    const iv =
-        Buffer.from(ivHex, "hex");
-    const key =
-        crypto
-            .createHash("sha256")
-            .update(secret)
-            .digest();
-    const decipher =
-        crypto.createDecipheriv(
-            "aes-256-cbc",
-            key,
-            iv
-        );
-    let decrypted =
-        decipher.update(
-            encrypted,
-            "hex",
-            "utf8"
-        );
-    decrypted +=
-        decipher.final("utf8");
-    return decrypted;
+
+function encrypt(text, secret) {
+    const iv = crypto.randomBytes(16);
+    const key = crypto.createHash("sha256").update(secret).digest();
+    const cipher = crypto.createCipheriv("aes-256-cbc", key, iv);
+    let encrypted = cipher.update(text, "utf8", "hex");
+    encrypted += cipher.final("hex");
+    return `${iv.toString("hex")}.${encrypted}`;
 }
-function getCookie(req, name) {
-    const cookies =
-        req.headers.cookie || "";
-    const parts =
-        cookies.split(";");
-    for (const part of parts) {
-        const [key, ...value] =
-            part.trim().split("=");
-        if (key === name) {
-            return decodeURIComponent(
-                value.join("=")
-            );
-        }
-    }
-    return null;
-}
+
 export default async function handler(req, res) {
+    const { code } = req.query;
+
+    if (!code) {
+        return res.status(400).send("Missing authorization code.");
+    }
+
     try {
-        /*
-         * Get the encrypted Discord session
-         * from the HttpOnly cookie.
-         */
-        const encryptedSession =
-            getCookie(
-                req,
-                "discord_session"
-            );
-        if (!encryptedSession) {
-            return res.status(401).json({
-                error: "Not authenticated"
-            });
-        }
-        const sessionSecret =
-            process.env.SESSION_SECRET;
-        if (!sessionSecret) {
-            return res.status(500).json({
-                error:
-                    "SESSION_SECRET is missing"
-            });
-        }
-        /*
-         * Decrypt the Discord access token.
-         */
-        let discordToken;
-        try {
-            discordToken =
-                decrypt(
-                    encryptedSession,
-                    sessionSecret
-                );
-        } catch (error) {
-            console.error(
-                "Session decryption failed:",
-                error
-            );
-            return res.status(401).json({
-                error:
-                    "Invalid session"
-            });
-        }
-        /*
-         * Ask Discord for the servers
-         * belonging to the logged-in user.
-         */
-        const discordResponse =
-            await fetch(
-                "https://discord.com/api/users/@me/guilds",
-                {
-                    headers: {
-                        Authorization:
-                            `Bearer ${discordToken}`
-                    }
-                }
-            );
-        if (!discordResponse.ok) {
-            const errorText =
-                await discordResponse.text();
-            console.error(
-                "Discord guild request failed:",
-                errorText
-            );
-            return res.status(
-                discordResponse.status
-            ).json({
-                error:
-                    "Discord rejected the request"
-            });
-        }
-        const guilds =
-            await discordResponse.json();
-        /*
-         * Discord permissions:
-         *
-         * ADMINISTRATOR = 8
-         * MANAGE_GUILD = 32
-         *
-         * Only show servers where the
-         * user can actually manage the server.
-         */
-        const manageableGuilds =
-            guilds.filter(guild => {
-                const permissions =
-                    BigInt(
-                        guild.permissions || "0"
-                    );
-                const ADMINISTRATOR =
-                    BigInt(8);
-                const MANAGE_GUILD =
-                    BigInt(32);
-                return (
-                    (permissions &
-                        ADMINISTRATOR) !==
-                        BigInt(0)
-                ) ||
-                (
-                    (permissions &
-                        MANAGE_GUILD) !==
-                        BigInt(0)
-                );
-            });
-        /*
-         * Send the servers to the website.
-         */
-        return res.status(200).json({
-            guilds:
-                manageableGuilds.map(guild => ({
-                    id: guild.id,
-                    name: guild.name,
-                    icon: guild.icon,
-                    owner: guild.owner,
-                    permissions:
-                        guild.permissions
-                }))
+        const tokenResponse = await fetch("https://discord.com/api/oauth2/token", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({
+                client_id: process.env.DISCORD_CLIENT_ID,
+                client_secret: process.env.DISCORD_CLIENT_SECRET,
+                grant_type: "authorization_code",
+                code: code,
+                redirect_uri: process.env.DISCORD_REDIRECT_URI,
+            }),
         });
+
+        if (!tokenResponse.ok) {
+            const err = await tokenResponse.text();
+            console.error("Token exchange failed:", err);
+            return res.status(401).send("Discord authentication failed.");
+        }
+
+        const tokenData = await tokenResponse.json();
+        const sessionSecret = process.env.SESSION_SECRET;
+
+        const encryptedToken = encrypt(tokenData.access_token, sessionSecret);
+        const isProduction = process.env.NODE_ENV === "production";
+
+        const cookieFlags = [
+            `discord_session=${encryptedToken}`,
+            "Path=/",
+            "HttpOnly",
+            "SameSite=Lax",
+            "Max-Age=604800",
+            ...(isProduction ? ["Secure"] : [])
+        ].join("; ");
+
+        res.setHeader("Set-Cookie", cookieFlags);
+
+        return res.redirect(302, "/");
     } catch (error) {
-        console.error(
-            "Guild API error:",
-            error
-        );
-        return res.status(500).json({
-            error:
-                "Failed to retrieve Discord servers"
-        });
+        console.error("Callback error:", error);
+        return res.status(500).send("Internal server error.");
     }
 }
