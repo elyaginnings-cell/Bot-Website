@@ -1,24 +1,20 @@
-const crypto = require("crypto");
+export default function handler(req, res) {
+    const clientId = process.env.DISCORD_CLIENT_ID;
 
-module.exports = async (req, res) => {
-    const state = crypto.randomBytes(32).toString("hex");
+    const redirectUri =
+        process.env.DISCORD_REDIRECT_URI;
 
-    const params = new URLSearchParams({
-        client_id: process.env.DISCORD_CLIENT_ID,
-        redirect_uri:
-            "https://bot-website-ruby-six.vercel.app/api/auth/callback",
-        response_type: "code",
-        scope: "identify guilds",
-        state
-    });
+    const scopes = [
+        "identify",
+        "guilds"
+    ].join("%20");
 
-    res.setHeader(
-        "Set-Cookie",
-        `oauth_state=${state}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=600`
-    );
+    const url =
+        `https://discord.com/oauth2/authorize` +
+        `?client_id=${clientId}` +
+        `&response_type=code` +
+        `&redirect_uri=${encodeURIComponent(redirectUri)}` +
+        `&scope=${scopes}`;
 
-    res.redirect(
-        302,
-        `https://discord.com/oauth2/authorize?${params.toString()}`
-    );
-};
+    res.redirect(302, url);
+}
