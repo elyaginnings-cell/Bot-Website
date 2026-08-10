@@ -2,13 +2,13 @@ let currentGuild = null;
 let currentUser = null;
 
 
-/* ========================================
-   AUTHENTICATION
-======================================== */
+/* =========================================
+   AUTH
+========================================= */
 
-async function loadUser() {
+async function checkAuthentication() {
 
-    console.log("Checking Discord authentication...");
+    console.log("Checking authentication...");
 
     try {
 
@@ -16,9 +16,207 @@ async function loadUser() {
             "/api/user",
             {
                 method: "GET",
-
                 credentials: "include",
+                cache: "no-store"
+            }
+        );
 
+
+        const data = await response.json();
+
+
+        console.log(
+            "Auth result:",
+            data
+        );
+
+
+        if (
+            response.ok &&
+            data.authenticated === true
+        ) {
+
+            currentUser = data.user;
+
+            showAuthenticatedUI();
+
+            await loadGuilds();
+
+            return true;
+        }
+
+
+        showLoggedOutUI();
+
+        return false;
+
+    } catch (error) {
+
+        console.error(
+            "Authentication check failed:",
+            error
+        );
+
+        showLoggedOutUI();
+
+        return false;
+    }
+}
+
+
+/* =========================================
+   LOGGED IN UI
+========================================= */
+
+function showAuthenticatedUI() {
+
+    const loginButton =
+        document.getElementById(
+            "login-button"
+        );
+
+    const userInfo =
+        document.getElementById(
+            "user-info"
+        );
+
+    const serverSelector =
+        document.getElementById(
+            "server-selector"
+        );
+
+
+    loginButton.classList.add(
+        "hidden"
+    );
+
+    userInfo.classList.remove(
+        "hidden"
+    );
+
+    serverSelector.classList.remove(
+        "hidden"
+    );
+
+
+    const username =
+        document.getElementById(
+            "username"
+        );
+
+    const avatar =
+        document.getElementById(
+            "user-avatar"
+        );
+
+
+    username.textContent =
+        currentUser.global_name ||
+        currentUser.username;
+
+
+    if (currentUser.avatar) {
+
+        avatar.innerHTML = `
+            <img
+                src="https://cdn.discordapp.com/avatars/${currentUser.id}/${currentUser.avatar}.png?size=128"
+                alt=""
+            >
+        `;
+
+    } else {
+
+        avatar.textContent =
+            (
+                currentUser.global_name ||
+                currentUser.username ||
+                "?"
+            )
+                .charAt(0)
+                .toUpperCase();
+    }
+}
+
+
+/* =========================================
+   LOGGED OUT UI
+========================================= */
+
+function showLoggedOutUI() {
+
+    const loginButton =
+        document.getElementById(
+            "login-button"
+        );
+
+    const userInfo =
+        document.getElementById(
+            "user-info"
+        );
+
+    const serverSelector =
+        document.getElementById(
+            "server-selector"
+        );
+
+
+    loginButton.classList.remove(
+        "hidden"
+    );
+
+    userInfo.classList.add(
+        "hidden"
+    );
+
+    serverSelector.classList.add(
+        "hidden"
+    );
+}
+
+
+/* =========================================
+   LOGIN
+========================================= */
+
+function loginWithDiscord() {
+
+    window.location.assign(
+        "/api/login"
+    );
+}
+
+
+/* =========================================
+   SERVERS
+========================================= */
+
+async function loadGuilds() {
+
+    console.log(
+        "Loading Discord servers..."
+    );
+
+
+    const selector =
+        document.getElementById(
+            "server-selector"
+        );
+
+
+    selector.innerHTML = `
+        <div class="loading-server">
+            Loading servers...
+        </div>
+    `;
+
+
+    try {
+
+        const response = await fetch(
+            "/api/guilds",
+            {
+                method: "GET",
+                credentials: "include",
                 cache: "no-store"
             }
         );
@@ -29,128 +227,33 @@ async function loadUser() {
 
 
         console.log(
-            "Authentication response:",
-            data
-        );
-
-
-        if (
-            response.ok &&
-            data.authenticated === true
-        ) {
-
-            currentUser =
-                data.user;
-
-            hideLogin();
-
-            await loadGuilds();
-
-            return;
-        }
-
-
-        showLogin();
-
-    } catch (error) {
-
-        console.error(
-            "Authentication error:",
-            error
-        );
-
-        showLogin();
-    }
-}
-
-
-/* ========================================
-   LOGIN SCREEN
-======================================== */
-
-function showLogin() {
-
-    const login =
-        document.getElementById(
-            "login-screen"
-        );
-
-    if (!login)
-        return;
-
-
-    login.style.display =
-        "grid";
-}
-
-
-function hideLogin() {
-
-    const login =
-        document.getElementById(
-            "login-screen"
-        );
-
-    if (!login)
-        return;
-
-
-    login.style.display =
-        "none";
-}
-
-
-function loginWithDiscord() {
-
-    window.location.href =
-        "/api/login";
-}
-
-
-/* ========================================
-   GUILD LOADING
-======================================== */
-
-async function loadGuilds() {
-
-    console.log(
-        "Loading Discord servers..."
-    );
-
-
-    try {
-
-        const response =
-            await fetch(
-                "/api/guilds",
-                {
-                    credentials:
-                        "include",
-
-                    cache:
-                        "no-store"
-                }
-            );
-
-
-        const data =
-            await response.json();
-
-
-        console.log(
-            "Guild response:",
+            "Guilds:",
             data
         );
 
 
         if (!response.ok) {
 
-            console.error(
-                "Could not load guilds:",
-                data
-            );
+            selector.innerHTML = `
+                <div class="loading-server">
+                    Unable to load servers.
+                </div>
+            `;
 
-            showGuildError();
+            return;
+        }
+
+
+        if (
+            !Array.isArray(data) ||
+            data.length === 0
+        ) {
+
+            selector.innerHTML = `
+                <div class="loading-server">
+                    No manageable servers.
+                </div>
+            `;
 
             return;
         }
@@ -167,14 +270,14 @@ async function loadGuilds() {
             error
         );
 
-        showGuildError();
+        selector.innerHTML = `
+            <div class="loading-server">
+                Failed to load servers.
+            </div>
+        `;
     }
 }
 
-
-/* ========================================
-   SERVER SELECTOR
-======================================== */
 
 function createGuildSelector(
     guilds
@@ -186,49 +289,29 @@ function createGuildSelector(
         );
 
 
-    if (!selector)
-        return;
-
-
-    if (
-        !Array.isArray(guilds) ||
-        guilds.length === 0
-    ) {
-
-        selector.innerHTML = `
-            <div class="loading-server">
-                No manageable servers found.
-            </div>
-        `;
-
-        return;
-    }
-
-
-    const savedGuild =
+    const saved =
         localStorage.getItem(
             "selectedGuild"
         );
 
 
-    let selectedGuild =
+    let selected =
         guilds.find(
             guild =>
-                guild.id ===
-                savedGuild
+                guild.id === saved
         );
 
 
-    if (!selectedGuild) {
+    if (!selected) {
 
-        selectedGuild =
+        selected =
             guilds[0];
 
     }
 
 
     currentGuild =
-        selectedGuild.id;
+        selected.id;
 
 
     localStorage.setItem(
@@ -244,17 +327,17 @@ function createGuildSelector(
             <div class="server-icon">
 
                 ${
-                    selectedGuild.icon
+                    selected.icon
 
                     ? `
                         <img
-                            src="https://cdn.discordapp.com/icons/${selectedGuild.id}/${selectedGuild.icon}.png?size=128"
+                            src="https://cdn.discordapp.com/icons/${selected.id}/${selected.icon}.png?size=128"
                             alt=""
                         >
                     `
 
                     : escapeHtml(
-                        selectedGuild.name
+                        selected.name
                             .charAt(0)
                             .toUpperCase()
                     )
@@ -331,17 +414,6 @@ function createGuildSelector(
             }
 
 
-            console.log(
-                "Selected server:",
-                currentGuild
-            );
-
-
-            /*
-             * This is where we will
-             * load that server's bot data.
-             */
-
             loadServerData(
                 currentGuild
             );
@@ -372,12 +444,10 @@ function updateServerIcon(
     if (guild.icon) {
 
         icon.innerHTML = `
-
             <img
                 src="https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png?size=128"
                 alt=""
             >
-
         `;
 
     } else {
@@ -386,66 +456,44 @@ function updateServerIcon(
             guild.name
                 .charAt(0)
                 .toUpperCase();
-
     }
 }
 
 
-function showGuildError() {
-
-    const selector =
-        document.getElementById(
-            "server-selector"
-        );
-
-
-    if (!selector)
-        return;
-
-
-    selector.innerHTML = `
-        <div class="loading-server">
-            Unable to load servers.
-        </div>
-    `;
-}
-
-
-/* ========================================
+/* =========================================
    SERVER DATA
-======================================== */
+========================================= */
 
 async function loadServerData(
     guildId
 ) {
 
     console.log(
-        "Loading data for server:",
+        "Selected server:",
         guildId
     );
 
+
     /*
-     * Backend connection to the
-     * Railway bot will go here.
+     * This is where we connect
+     * the website to the Railway bot API.
      *
-     * For now the dashboard uses
-     * placeholder statistics.
+     * Authentication itself is already
+     * handled separately.
      */
 }
 
 
-/* ========================================
-   PAGE NAVIGATION
-======================================== */
+/* =========================================
+   NAVIGATION
+========================================= */
 
 function showPage(
     page
 ) {
 
     document
-        .querySelectorAll(
-            ".page"
-        )
+        .querySelectorAll(".page")
         .forEach(
             element =>
                 element.classList.remove(
@@ -465,14 +513,11 @@ function showPage(
         target.classList.add(
             "active-page"
         );
-
     }
 
 
     document
-        .querySelectorAll(
-            ".nav-item"
-        )
+        .querySelectorAll(".nav-item")
         .forEach(
             button =>
                 button.classList.remove(
@@ -481,18 +526,17 @@ function showPage(
         );
 
 
-    const activeButton =
+    const active =
         document.querySelector(
             `.nav-item[data-page="${page}"]`
         );
 
 
-    if (activeButton) {
+    if (active) {
 
-        activeButton.classList.add(
+        active.classList.add(
             "active"
         );
-
     }
 
 
@@ -515,7 +559,7 @@ function showPage(
 
         settings: [
             "Settings",
-            "Configure your Discord bot."
+            "Configure your bot dashboard."
         ]
 
     };
@@ -533,32 +577,21 @@ function showPage(
             "page-description"
         ).textContent =
             titles[page][1];
-
     }
 }
 
 
-/* ========================================
+/* =========================================
    MODALS
-======================================== */
+========================================= */
 
 function openModal(
     id
 ) {
 
-    const modal =
-        document.getElementById(
-            id
-        );
-
-
-    if (modal) {
-
-        modal.classList.add(
-            "open"
-        );
-
-    }
+    document
+        .getElementById(id)
+        ?.classList.add("open");
 }
 
 
@@ -566,40 +599,45 @@ function closeModal(
     id
 ) {
 
-    const modal =
-        document.getElementById(
-            id
-        );
-
-
-    if (modal) {
-
-        modal.classList.remove(
-            "open"
-        );
-
-    }
+    document
+        .getElementById(id)
+        ?.classList.remove("open");
 }
 
 
-/* ========================================
-   INVITE ADJUSTMENT
-======================================== */
+/* =========================================
+   INVITES
+========================================= */
 
 function adjustInvites() {
 
     const user =
-        document.getElementById(
-            "invite-user"
-        ).value.trim();
+        document
+            .getElementById(
+                "invite-user"
+            )
+            .value
+            .trim();
 
 
     const amount =
         Number(
-            document.getElementById(
-                "invite-amount"
-            ).value
+            document
+                .getElementById(
+                    "invite-amount"
+                )
+                .value
         );
+
+
+    if (!currentGuild) {
+
+        alert(
+            "Select a server first."
+        );
+
+        return;
+    }
 
 
     if (!user) {
@@ -625,21 +663,18 @@ function adjustInvites() {
     }
 
 
-    console.log(
-        "Invite adjustment:",
-        {
-            guildId:
-                currentGuild,
+    console.log({
+        guildId:
+            currentGuild,
 
-            user,
+        user,
 
-            amount
-        }
-    );
+        amount
+    });
 
 
     alert(
-        "Invite adjustment ready for the bot API."
+        "Ready to connect to the bot API."
     );
 
 
@@ -649,24 +684,39 @@ function adjustInvites() {
 }
 
 
-/* ========================================
+/* =========================================
    REWARDS
-======================================== */
+========================================= */
 
 function addReward() {
 
     const goal =
         Number(
-            document.getElementById(
-                "reward-goal"
-            ).value
+            document
+                .getElementById(
+                    "reward-goal"
+                )
+                .value
         );
 
 
     const role =
-        document.getElementById(
-            "reward-role"
-        ).value.trim();
+        document
+            .getElementById(
+                "reward-role"
+            )
+            .value
+            .trim();
+
+
+    if (!currentGuild) {
+
+        alert(
+            "Select a server first."
+        );
+
+        return;
+    }
 
 
     if (
@@ -692,21 +742,20 @@ function addReward() {
     }
 
 
-    console.log(
-        "Reward:",
-        {
-            guildId:
-                currentGuild,
+    console.log({
 
-            goal,
+        guildId:
+            currentGuild,
 
-            role
-        }
-    );
+        goal,
+
+        role
+
+    });
 
 
     alert(
-        "Reward configuration ready for the bot API."
+        "Reward ready to connect to the bot API."
     );
 
 
@@ -716,31 +765,36 @@ function addReward() {
 }
 
 
-/* ========================================
-   HTML ESCAPING
-======================================== */
+/* =========================================
+   ESCAPE HTML
+========================================= */
 
 function escapeHtml(
     value
 ) {
 
     return String(value)
+
         .replaceAll(
             "&",
             "&amp;"
         )
+
         .replaceAll(
             "<",
             "&lt;"
         )
+
         .replaceAll(
             ">",
             "&gt;"
         )
+
         .replaceAll(
             '"',
             "&quot;"
         )
+
         .replaceAll(
             "'",
             "&#039;"
@@ -748,17 +802,15 @@ function escapeHtml(
 }
 
 
-/* ========================================
-   EVENT LISTENERS
-======================================== */
+/* =========================================
+   START
+========================================= */
 
 document.addEventListener(
     "DOMContentLoaded",
     () => {
 
-        /*
-         * Navigation
-         */
+        /* Navigation */
 
         document
             .querySelectorAll(
@@ -782,9 +834,7 @@ document.addEventListener(
             );
 
 
-        /*
-         * Dashboard buttons
-         */
+        /* Dashboard buttons */
 
         document
             .querySelectorAll(
@@ -808,9 +858,7 @@ document.addEventListener(
             );
 
 
-        /*
-         * Login
-         */
+        /* Login */
 
         document
             .getElementById(
@@ -822,9 +870,7 @@ document.addEventListener(
             );
 
 
-        /*
-         * Invite modal
-         */
+        /* Invite modal */
 
         document
             .getElementById(
@@ -832,19 +878,14 @@ document.addEventListener(
             )
             .addEventListener(
                 "click",
-                () => {
-
+                () =>
                     openModal(
                         "invite-modal"
-                    );
-
-                }
+                    )
             );
 
 
-        /*
-         * Reward modal
-         */
+        /* Reward modal */
 
         document
             .getElementById(
@@ -852,19 +893,14 @@ document.addEventListener(
             )
             .addEventListener(
                 "click",
-                () => {
-
+                () =>
                     openModal(
                         "reward-modal"
-                    );
-
-                }
+                    )
             );
 
 
-        /*
-         * Close buttons
-         */
+        /* Close modal */
 
         document
             .querySelectorAll(
@@ -875,22 +911,17 @@ document.addEventListener(
 
                     button.addEventListener(
                         "click",
-                        () => {
-
+                        () =>
                             closeModal(
                                 button.dataset.close
-                            );
-
-                        }
+                            )
                     );
 
                 }
             );
 
 
-        /*
-         * Invite adjustment
-         */
+        /* Invite adjustment */
 
         document
             .getElementById(
@@ -902,9 +933,7 @@ document.addEventListener(
             );
 
 
-        /*
-         * Add reward
-         */
+        /* Reward */
 
         document
             .getElementById(
@@ -916,9 +945,7 @@ document.addEventListener(
             );
 
 
-        /*
-         * Click outside modal
-         */
+        /* Outside modal */
 
         document
             .querySelectorAll(
@@ -950,10 +977,12 @@ document.addEventListener(
 
 
         /*
-         * Finally check authentication.
+         * THIS IS THE ONLY AUTH CHECK.
+         *
+         * There is no login page.
          */
 
-        loadUser();
+        checkAuthentication();
 
     }
 );
