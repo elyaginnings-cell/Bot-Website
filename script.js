@@ -1,5 +1,289 @@
-let currentPage = "overview";
+let currentGuild = null;
 
+
+/* ================================
+   AUTHENTICATION
+================================ */
+
+async function loadUser() {
+
+    try {
+
+        const response =
+            await fetch("/api/user");
+
+
+        if (!response.ok) {
+
+            showLogin();
+
+            return;
+
+        }
+
+
+        const data =
+            await response.json();
+
+
+        if (!data.authenticated) {
+
+            showLogin();
+
+            return;
+
+        }
+
+
+        showDashboard(
+            data.user
+        );
+
+
+        await loadGuilds();
+
+    } catch (error) {
+
+        console.error(
+            "Authentication error:",
+            error
+        );
+
+        showLogin();
+
+    }
+
+}
+
+
+
+/* ================================
+   LOGIN
+================================ */
+
+function showLogin() {
+
+    document.body.innerHTML = `
+
+        <div class="login-screen">
+
+            <div class="login-card">
+
+                <div class="login-logo">
+                    🤖
+                </div>
+
+                <h1>
+                    Gatto Bot
+                </h1>
+
+                <p>
+                    Manage your Discord bot
+                    from one dashboard.
+                </p>
+
+                <button
+                    class="primary-button login-button"
+                    onclick="loginWithDiscord()"
+                >
+                    Login with Discord
+                </button>
+
+            </div>
+
+        </div>
+
+    `;
+
+}
+
+
+function loginWithDiscord() {
+
+    window.location.href =
+        "/api/login";
+
+}
+
+
+
+/* ================================
+   DASHBOARD
+================================ */
+
+function showDashboard(user) {
+
+    console.log(
+        "Logged in as:",
+        user
+    );
+
+}
+
+
+
+/* ================================
+   LOAD SERVERS
+================================ */
+
+async function loadGuilds() {
+
+    try {
+
+        const response =
+            await fetch("/api/guilds");
+
+
+        if (!response.ok) {
+
+            console.error(
+                "Could not load guilds."
+            );
+
+            return;
+
+        }
+
+
+        const guilds =
+            await response.json();
+
+
+        createGuildSelector(
+            guilds
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Guild loading error:",
+            error
+        );
+
+    }
+
+}
+
+
+
+/* ================================
+   SERVER SELECTOR
+================================ */
+
+function createGuildSelector(guilds) {
+
+    const selector =
+        document.querySelector(
+            ".server-selector"
+        );
+
+
+    if (!selector)
+        return;
+
+
+    if (!guilds.length) {
+
+        selector.innerHTML = `
+
+            <strong>
+                No manageable servers
+            </strong>
+
+        `;
+
+        return;
+
+    }
+
+
+    selector.innerHTML = `
+
+        <select
+            id="guild-select"
+            class="guild-select"
+        >
+
+            ${guilds.map(
+                guild => `
+
+                    <option
+                        value="${guild.id}"
+                    >
+                        ${escapeHtml(
+                            guild.name
+                        )}
+                    </option>
+
+                `
+            ).join("")}
+
+        </select>
+
+    `;
+
+
+    const select =
+        document.getElementById(
+            "guild-select"
+        );
+
+
+    select.addEventListener(
+        "change",
+        () => {
+
+            currentGuild =
+                select.value;
+
+            localStorage.setItem(
+                "selectedGuild",
+                currentGuild
+            );
+
+            console.log(
+                "Selected server:",
+                currentGuild
+            );
+
+        }
+    );
+
+
+    const saved =
+        localStorage.getItem(
+            "selectedGuild"
+        );
+
+
+    if (
+        saved &&
+        guilds.some(
+            guild =>
+                guild.id === saved
+        )
+    ) {
+
+        select.value =
+            saved;
+
+        currentGuild =
+            saved;
+
+    } else {
+
+        currentGuild =
+            guilds[0].id;
+
+    }
+
+}
+
+
+
+/* ================================
+   PAGE NAVIGATION
+================================ */
 
 function showPage(page) {
 
@@ -13,11 +297,19 @@ function showPage(page) {
         );
 
 
-    document
-        .getElementById(page)
-        .classList.add(
+    const target =
+        document.getElementById(
+            page
+        );
+
+
+    if (target) {
+
+        target.classList.add(
             "active-page"
         );
+
+    }
 
 
     document
@@ -36,7 +328,7 @@ function showPage(page) {
         );
 
 
-    const pageIndex = {
+    const indexes = {
 
         overview: 0,
 
@@ -50,11 +342,11 @@ function showPage(page) {
 
 
     if (
-        buttons[pageIndex[page]]
+        buttons[indexes[page]]
     ) {
 
         buttons[
-            pageIndex[page]
+            indexes[page]
         ].classList.add(
             "active"
         );
@@ -64,29 +356,25 @@ function showPage(page) {
 
     const titles = {
 
-        overview:
-            [
-                "Overview",
-                "Manage your Discord server."
-            ],
+        overview: [
+            "Overview",
+            "Manage your Discord server."
+        ],
 
-        invites:
-            [
-                "Invite Tracker",
-                "Track who is bringing members into your server."
-            ],
+        invites: [
+            "Invite Tracker",
+            "Track who is bringing members into your server."
+        ],
 
-        rewards:
-            [
-                "Automatic Rewards",
-                "Give members roles when they reach invite milestones."
-            ],
+        rewards: [
+            "Automatic Rewards",
+            "Give members roles when they reach invite milestones."
+        ],
 
-        settings:
-            [
-                "Settings",
-                "Configure your bot dashboard."
-            ]
+        settings: [
+            "Settings",
+            "Configure your bot dashboard."
+        ]
 
     };
 
@@ -101,9 +389,6 @@ function showPage(page) {
         "page-description"
     ).textContent =
         titles[page][1];
-
-
-    currentPage = page;
 
 }
 
@@ -152,169 +437,24 @@ function closeModal(id) {
 
 
 /* ================================
-   DEMO INVITE ADJUSTMENT
+   HELPERS
 ================================ */
 
-function adjustInvites() {
+function escapeHtml(value) {
 
-    const user =
-        document.getElementById(
-            "invite-user"
-        ).value.trim();
-
-
-    const amount =
-        Number(
-            document.getElementById(
-                "invite-amount"
-            ).value
-        );
-
-
-    if (!user) {
-
-        alert(
-            "Enter a Discord User ID."
-        );
-
-        return;
-
-    }
-
-
-    if (
-        !Number.isInteger(amount) ||
-        amount === 0
-    ) {
-
-        alert(
-            "Enter a valid amount."
-        );
-
-        return;
-
-    }
-
-
-    /*
-     * Backend connection comes next.
-     */
-
-    console.log(
-        "Adjust invites:",
-        {
-            user,
-            amount
-        }
-    );
-
-
-    alert(
-        `Would ${amount > 0 ? "add" : "remove"} ${Math.abs(amount)} invite(s).`
-    );
-
-
-    closeModal(
-        "invite-modal"
-    );
+    return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
 
 }
 
 
 
 /* ================================
-   DEMO REWARD
+   START
 ================================ */
 
-function addReward() {
-
-    const goal =
-        Number(
-            document.getElementById(
-                "reward-goal"
-            ).value
-        );
-
-
-    const role =
-        document.getElementById(
-            "reward-role"
-        ).value.trim();
-
-
-    if (
-        !Number.isInteger(goal) ||
-        goal <= 0
-    ) {
-
-        alert(
-            "Enter a valid invite goal."
-        );
-
-        return;
-
-    }
-
-
-    if (!role) {
-
-        alert(
-            "Enter a Discord Role ID."
-        );
-
-        return;
-
-    }
-
-
-    console.log(
-        "Create reward:",
-        {
-            goal,
-            role
-        }
-    );
-
-
-    alert(
-        `Reward created at ${goal} invites.`
-    );
-
-
-    closeModal(
-        "reward-modal"
-    );
-
-}
-
-
-
-/* ================================
-   CLOSE MODAL WHEN CLICKING OUTSIDE
-================================ */
-
-document
-    .querySelectorAll(".modal")
-    .forEach(
-        modal => {
-
-            modal.addEventListener(
-                "click",
-                event => {
-
-                    if (
-                        event.target ===
-                        modal
-                    ) {
-
-                        modal.classList.remove(
-                            "open"
-                        );
-
-                    }
-
-                }
-            );
-
-        }
-    );
+loadUser();
