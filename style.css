@@ -28,15 +28,17 @@ button {
     cursor: pointer;
 }
 
+.hidden {
+    display: none !important;
+}
+
 .app {
     display: flex;
     min-height: 100vh;
 }
 
 
-/* =========================
-   SIDEBAR
-========================= */
+/* SIDEBAR */
 
 .sidebar {
     width: 250px;
@@ -53,9 +55,7 @@ button {
     display: flex;
     align-items: center;
     gap: 12px;
-
-    padding:
-        4px 10px 25px;
+    padding: 4px 10px 25px;
 }
 
 .brand-icon {
@@ -140,8 +140,7 @@ nav {
 
     border-radius: 50%;
 
-    box-shadow:
-        0 0 10px #23c483;
+    box-shadow: 0 0 10px #23c483;
 }
 
 .bot-status strong {
@@ -155,9 +154,7 @@ nav {
 }
 
 
-/* =========================
-   MAIN
-========================= */
+/* MAIN */
 
 .main {
     flex: 1;
@@ -178,6 +175,8 @@ nav {
 
     justify-content: space-between;
 
+    gap: 20px;
+
     margin-bottom: 35px;
 }
 
@@ -190,10 +189,63 @@ nav {
     margin-top: 5px;
 }
 
+.topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
 
-/* =========================
-   SERVER SELECTOR
-========================= */
+
+/* USER */
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    background: #151922;
+
+    border: 1px solid #272c38;
+
+    border-radius: 10px;
+
+    padding: 7px 12px;
+}
+
+.user-info strong {
+    display: block;
+    font-size: 13px;
+}
+
+.user-info small {
+    color: #777f8c;
+    font-size: 11px;
+}
+
+.user-avatar {
+    width: 35px;
+    height: 35px;
+
+    border-radius: 50%;
+
+    background: #5865f2;
+
+    display: grid;
+    place-items: center;
+
+    font-weight: 700;
+
+    overflow: hidden;
+}
+
+.user-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+
+/* SERVER */
 
 .server-selector {
     min-width: 230px;
@@ -204,7 +256,7 @@ nav {
 
     border-radius: 10px;
 
-    padding: 9px 13px;
+    padding: 7px 10px;
 }
 
 .server-select-wrapper {
@@ -261,9 +313,7 @@ nav {
 }
 
 
-/* =========================
-   PAGES
-========================= */
+/* PAGES */
 
 .page {
     display: none;
@@ -274,9 +324,7 @@ nav {
 }
 
 
-/* =========================
-   STATS
-========================= */
+/* STATS */
 
 .stats {
     display: grid;
@@ -336,9 +384,7 @@ nav {
 }
 
 
-/* =========================
-   CARDS
-========================= */
+/* CARDS */
 
 .content-grid {
     display: grid;
@@ -385,9 +431,7 @@ nav {
 }
 
 
-/* =========================
-   BUTTONS
-========================= */
+/* BUTTONS */
 
 .primary-button {
     border: 0;
@@ -410,8 +454,7 @@ nav {
 .secondary-button {
     background: #202530;
 
-    border:
-        1px solid #303644;
+    border: 1px solid #303644;
 
     color: #d9dce2;
 
@@ -426,9 +469,7 @@ nav {
 }
 
 
-/* =========================
-   EMPTY
-========================= */
+/* EMPTY */
 
 .empty {
     padding: 45px 20px;
@@ -448,7 +489,6 @@ nav {
 
 .empty div {
     font-size: 30px;
-
     margin-bottom: 5px;
 }
 
@@ -457,9 +497,7 @@ nav {
 }
 
 
-/* =========================
-   PAGE HEADING
-========================= */
+/* PAGE HEADINGS */
 
 .page-heading {
     display: flex;
@@ -482,9 +520,7 @@ nav {
 }
 
 
-/* =========================
-   TABLE
-========================= */
+/* TABLE */
 
 .table-wrapper {
     overflow-x: auto;
@@ -492,7 +528,6 @@ nav {
 
 table {
     width: 100%;
-
     border-collapse: collapse;
 }
 
@@ -524,9 +559,7 @@ td {
 }
 
 
-/* =========================
-   REWARDS
-========================= */
+/* REWARDS */
 
 .reward-grid {
     display: grid;
@@ -561,9 +594,7 @@ td {
 }
 
 
-/* =========================
-   SETTINGS
-========================= */
+/* SETTINGS */
 
 .settings-card {
     padding: 0 20px;
@@ -599,9 +630,7 @@ td {
 }
 
 
-/* =========================
-   SWITCH
-========================= */
+/* SWITCH */
 
 .switch {
     position: relative;
@@ -649,14 +678,11 @@ td {
 }
 
 .switch input:checked + span::after {
-    transform:
-        translateX(20px);
+    transform: translateX(20px);
 }
 
 
-/* =========================
-   MODALS
-========================= */
+/* MODALS */
 
 .modal {
     position: fixed;
@@ -756,104 +782,17 @@ td {
 }
 
 
-/* =========================
-   LOGIN
-========================= */
+/* MOBILE */
 
-.login-screen {
-    position: fixed;
+@media (max-width: 1000px) {
 
-    inset: 0;
-
-    z-index: 999;
-
-    display: grid;
-
-    place-items: center;
-
-    background: #0b0d12;
-}
-
-.login-card {
-    width: 400px;
-
-    max-width:
-        calc(100% - 40px);
-
-    text-align: center;
-
-    background: #151922;
-
-    border:
-        1px solid #272c38;
-
-    border-radius: 16px;
-
-    padding: 40px;
-}
-
-.login-logo {
-    width: 70px;
-    height: 70px;
-
-    margin:
-        0 auto 20px;
-
-    display: grid;
-
-    place-items: center;
-
-    background: #5865f2;
-
-    border-radius: 18px;
-
-    font-size: 34px;
-}
-
-.login-card h1 {
-    font-size: 28px;
-
-    margin-bottom: 8px;
-}
-
-.login-card p {
-    color: #858d9b;
-
-    line-height: 1.5;
-
-    margin-bottom: 25px;
-}
-
-.login-button {
-    width: 100%;
-
-    padding: 13px;
-
-    font-size: 15px;
-}
-
-
-/* =========================
-   MOBILE
-========================= */
-
-@media (max-width: 900px) {
-
-    .sidebar {
-        width: 70px;
+    .topbar {
+        align-items: flex-start;
     }
 
-    .brand-text,
-    .bot-status div {
-        display: none;
-    }
-
-    .brand {
-        justify-content: center;
-    }
-
-    .nav-item {
-        justify-content: center;
+    .topbar-right {
+        flex-wrap: wrap;
+        justify-content: flex-end;
     }
 
     .stats {
@@ -871,7 +810,25 @@ td {
 }
 
 
-@media (max-width: 600px) {
+@media (max-width: 700px) {
+
+    .sidebar {
+        width: 70px;
+    }
+
+    .brand-text,
+    .bot-status div,
+    .nav-item span {
+        display: none;
+    }
+
+    .brand {
+        justify-content: center;
+    }
+
+    .nav-item {
+        justify-content: center;
+    }
 
     .main {
         padding: 20px;
@@ -879,17 +836,18 @@ td {
 
     .topbar {
         flex-direction: column;
-
-        align-items: flex-start;
-
-        gap: 15px;
     }
 
-    .stats {
-        grid-template-columns: 1fr;
+    .topbar-right {
+        width: 100%;
+        justify-content: flex-start;
     }
 
     .server-selector {
         width: 100%;
+    }
+
+    .stats {
+        grid-template-columns: 1fr;
     }
 }
