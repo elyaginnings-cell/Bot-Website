@@ -92,7 +92,7 @@
                     </div>
                     <div class="quick-grid three">
                         <button class="quick-card card" data-section-link="currency" type="button"><span class="quick-icon">☕</span><div><strong>Currency</strong><p>Beans &amp; rewards</p></div><span class="arrow">→</span></button>
-                        <button class="quick-card card" data-section-link="shop" type="button"><span class="quick-icon">🛒</span><div><strong>Shop</strong><p>Sell roles for Beans</p></div><span class="arrow">→</span></button>
+                        <button class="quick-card card" data-section-link="shop" type="button"><span class="quick-icon">🛒</span><div><strong>Shop</strong><p>Roles, boosts, packs</p></div><span class="arrow">→</span></button>
                         <button class="quick-card card" data-section-link="logs" type="button"><span class="quick-icon">📋</span><div><strong>Logs</strong><p>Confirm saves</p></div><span class="arrow">→</span></button>
                     </div>
                 </section>
@@ -195,33 +195,62 @@
                     </div>
                 </section>
 
-                <!-- SHOP -->
                 <section id="shop" class="page-section">
                     <div class="card form-card wide">
                         <span class="eyebrow">SHOP</span>
                         <h2>Server shop</h2>
                         <p>
-                            Members use <code>/shop</code> — only they see it.
-                            They can buy roles with currency. Bot role must be above shop roles.
+                            Members use <code>/shop</code> (private) and <code>/inventory</code> for boosts &amp; titles.
+                            Pick an item type below — extra fields appear when needed.
                         </p>
 
                         <label class="toggle"><input type="checkbox" id="shop-enabled" checked> <span>Shop enabled</span></label>
                         <button class="button" id="save-shop-toggle" type="button">Save Shop On/Off</button>
                         <p class="form-hint" id="shop-status"></p>
 
-                        <h3 class="subhead">Add role item</h3>
+                        <h3 class="subhead">Add item</h3>
+                        <div class="input-group">
+                            <label>Item type</label>
+                            <select id="shop-type">
+                                <option value="role">Permanent role</option>
+                                <option value="temp_role">Temporary role</option>
+                                <option value="xp_boost">XP boost (multiplier)</option>
+                                <option value="bean_boost">Bean boost (multiplier)</option>
+                                <option value="title">Profile title</option>
+                                <option value="xp_pack">Instant XP pack</option>
+                                <option value="bean_pack">Instant Bean pack</option>
+                                <option value="mystery">Mystery Bean box</option>
+                                <option value="work_skip">Skip work cooldown</option>
+                                <option value="daily_reset">Reset daily claim</option>
+                            </select>
+                        </div>
                         <div class="config-grid">
                             <div class="input-group"><label>Item name</label><input id="shop-name" type="text" placeholder="VIP Role"></div>
                             <div class="input-group"><label>Price</label><input id="shop-price" type="number" min="0" inputmode="numeric" placeholder="500"></div>
                         </div>
-                        <div class="input-group">
-                            <label>Role to give</label>
+                        <div class="input-group" id="shop-role-wrap">
+                            <label>Role</label>
                             <select id="shop-role"><option value="">Select a role...</option></select>
+                        </div>
+                        <div class="config-grid" id="shop-extra-grid">
+                            <div class="input-group" id="shop-duration-wrap" hidden>
+                                <label>Duration (hours)</label>
+                                <input id="shop-duration" type="number" min="1" inputmode="numeric" placeholder="24">
+                            </div>
+                            <div class="input-group" id="shop-amount-wrap" hidden>
+                                <label id="shop-amount-label">Amount</label>
+                                <input id="shop-amount" type="number" min="1" inputmode="numeric" placeholder="200">
+                            </div>
+                            <div class="input-group" id="shop-title-wrap" hidden>
+                                <label>Title text</label>
+                                <input id="shop-title-text" type="text" placeholder="Barista Elite" maxlength="40">
+                            </div>
                         </div>
                         <div class="input-group">
                             <label>Description (optional)</label>
-                            <input id="shop-desc" type="text" placeholder="Cool perks…">
+                            <input id="shop-desc" type="text" placeholder="Shown under the item">
                         </div>
+                        <p class="form-hint" id="shop-type-hint">Permanent role: member keeps the role forever.</p>
                         <button class="button" id="add-shop-item" type="button">Add to Shop</button>
 
                         <h3 class="subhead">Current items</h3>
@@ -249,7 +278,7 @@
                     <div class="card form-card">
                         <span class="eyebrow">INFO</span>
                         <h2>Settings</h2>
-                        <p>Pick a server, then configure each system. Shop items are private to the buyer when using /shop.</p>
+                        <p>Shop is private via /shop. Boosts and titles show on /inventory, /rank, and /balance.</p>
                     </div>
                 </section>
 
