@@ -6,7 +6,6 @@
     <title>Coffee Shop — Bot Control</title>
     <link rel="stylesheet" href="style.css">
 </head>
-
 <body class="mode-pc">
 
     <div id="login-screen" class="login-screen">
@@ -14,14 +13,11 @@
             <div class="login-icon">☕</div>
             <h1>Coffee Shop</h1>
             <p>Bot Control Dashboard</p>
-            <button class="button login-btn" id="login-button" type="button">
-                Login with Discord
-            </button>
+            <button class="button login-btn" id="login-button" type="button">Login with Discord</button>
         </div>
     </div>
 
     <div id="app" hidden>
-
         <aside class="sidebar">
             <div class="sidebar-brand">
                 <div class="brand-icon">☕</div>
@@ -30,47 +26,31 @@
                     <span>Bot Control</span>
                 </div>
             </div>
-
             <nav class="navigation">
-                <button class="nav-item active" data-tab="overview" type="button">
-                    <span>🏠</span> Overview
-                </button>
-                <button class="nav-item" data-tab="moderation" type="button">
-                    <span>⚖️</span> Moderation
-                </button>
-                <button class="nav-item" data-tab="invites" type="button">
-                    <span>📨</span> Invites
-                </button>
-                <button class="nav-item" data-tab="leveling" type="button">
-                    <span>📈</span> Leveling
-                </button>
-                <button class="nav-item" data-tab="logs" type="button">
-                    <span>📋</span> Logs
-                </button>
-                <button class="nav-item" data-tab="settings" type="button">
-                    <span>⚙️</span> Settings
-                </button>
+                <button class="nav-item active" data-tab="overview" type="button"><span>🏠</span> Overview</button>
+                <button class="nav-item" data-tab="moderation" type="button"><span>⚖️</span> Moderation</button>
+                <button class="nav-item" data-tab="invites" type="button"><span>📨</span> Invites</button>
+                <button class="nav-item" data-tab="leveling" type="button"><span>📈</span> Leveling</button>
+                <button class="nav-item" data-tab="currency" type="button"><span>☕</span> Currency</button>
+                <button class="nav-item" data-tab="logs" type="button"><span>📋</span> Logs</button>
+                <button class="nav-item" data-tab="settings" type="button"><span>⚙️</span> Settings</button>
             </nav>
-
             <div class="sidebar-bottom">
                 <div class="connection-status">
-                    <span class="status-dot" id="bot-status-dot"></span>
-                    <span id="bot-status-text">Checking...</span>
+                    <span class="status-dot"></span>
+                    <span>Dashboard</span>
                 </div>
             </div>
         </aside>
 
         <main class="main">
-
             <header class="header card">
                 <div>
                     <h1 id="page-title">Overview</h1>
                     <p id="page-description">Manage your Discord server systems.</p>
                 </div>
                 <div class="account">
-                    <div class="account-avatar">
-                        <img id="user-avatar" src="" alt="">
-                    </div>
+                    <div class="account-avatar"><img id="user-avatar" src="" alt=""></div>
                     <div class="account-info">
                         <strong id="username">Loading...</strong>
                         <span>Discord Account</span>
@@ -100,211 +80,164 @@
                         <div>
                             <span class="eyebrow">DASHBOARD</span>
                             <h2>Welcome back, <span id="welcome-name">...</span>.</h2>
-                            <p>Configure moderation, invites, leveling, and logs from here.</p>
+                            <p>Fully configure moderation, invites, leveling, and currency.</p>
                         </div>
                         <div class="hero-icon">☕</div>
                     </div>
-
                     <div class="stats-grid">
-                        <div class="stat-card card">
-                            <span class="stat-icon">👥</span>
-                            <div>
-                                <span class="label">Server Members</span>
-                                <strong id="server-member-count">0</strong>
-                            </div>
-                        </div>
-                        <div class="stat-card card">
-                            <span class="stat-icon">🟢</span>
-                            <div>
-                                <span class="label">Online Members</span>
-                                <strong id="server-online-count">0</strong>
-                            </div>
-                        </div>
-                        <div class="stat-card card">
-                            <span class="stat-icon">👑</span>
-                            <div>
-                                <span class="label">Your Role</span>
-                                <strong id="server-owner-status">-</strong>
-                            </div>
-                        </div>
+                        <div class="stat-card card"><span class="stat-icon">👥</span><div><span class="label">Members</span><strong id="server-member-count">0</strong></div></div>
+                        <div class="stat-card card"><span class="stat-icon">🟢</span><div><span class="label">Online</span><strong id="server-online-count">0</strong></div></div>
+                        <div class="stat-card card"><span class="stat-icon">👑</span><div><span class="label">Role</span><strong id="server-owner-status">-</strong></div></div>
                     </div>
-
-                    <div class="section-title">
-                        <h3>Systems</h3>
-                        <p>Open a system to configure it.</p>
-                    </div>
-
                     <div class="quick-grid three">
-                        <button class="quick-card card" data-section-link="moderation" type="button">
-                            <span class="quick-icon">⚖️</span>
-                            <div>
-                                <strong>Moderation</strong>
-                                <p>Warn channel &amp; logs</p>
-                            </div>
-                            <span class="arrow">→</span>
-                        </button>
-                        <button class="quick-card card" data-section-link="invites" type="button">
-                            <span class="quick-icon">📨</span>
-                            <div>
-                                <strong>Invites</strong>
-                                <p>Leaderboard channel</p>
-                            </div>
-                            <span class="arrow">→</span>
-                        </button>
-                        <button class="quick-card card" data-section-link="leveling" type="button">
-                            <span class="quick-icon">📈</span>
-                            <div>
-                                <strong>Leveling</strong>
-                                <p>XP &amp; level roles</p>
-                            </div>
-                            <span class="arrow">→</span>
-                        </button>
-                        <button class="quick-card card" data-section-link="logs" type="button">
-                            <span class="quick-icon">📋</span>
-                            <div>
-                                <strong>Logs</strong>
-                                <p>See when settings save</p>
-                            </div>
-                            <span class="arrow">→</span>
-                        </button>
+                        <button class="quick-card card" data-section-link="leveling" type="button"><span class="quick-icon">📈</span><div><strong>Leveling</strong><p>XP rates &amp; Bean rewards</p></div><span class="arrow">→</span></button>
+                        <button class="quick-card card" data-section-link="currency" type="button"><span class="quick-icon">☕</span><div><strong>Currency</strong><p>Daily, work, coinflip</p></div><span class="arrow">→</span></button>
+                        <button class="quick-card card" data-section-link="logs" type="button"><span class="quick-icon">📋</span><div><strong>Logs</strong><p>Confirm saves</p></div><span class="arrow">→</span></button>
                     </div>
                 </section>
 
                 <section id="moderation" class="page-section">
                     <div class="card form-card wide">
-                        <span class="eyebrow">PUNISHMENT SYSTEM</span>
+                        <span class="eyebrow">PUNISHMENT</span>
                         <h2>Moderation</h2>
-                        <p>Set where warn logs are posted. The bot posts as <em>Coffee Shop | Moderation</em>.</p>
-
                         <div class="input-group">
                             <label for="warn-channel">Warn log channel</label>
-                            <select id="warn-channel">
-                                <option value="">Select a channel...</option>
-                            </select>
+                            <select id="warn-channel"><option value="">Select a channel...</option></select>
                         </div>
-
-                        <button class="button" id="save-moderation" type="button">Save Moderation Settings</button>
+                        <button class="button" id="save-moderation" type="button">Save</button>
                         <p class="form-hint" id="moderation-status"></p>
-
-                        <div class="info-box" style="margin-top:16px">
-                            <strong>In Discord</strong>
-                            <ul>
-                                <li><code>/warn</code> · <code>/warnings</code> · <code>/unwarn</code></li>
-                                <li><code>/mute</code> · <code>/unmute</code> · <code>/kick</code> · <code>/ban</code></li>
-                                <li>Right-click message → Apps → Warn User</li>
-                            </ul>
-                        </div>
                     </div>
                 </section>
 
                 <section id="invites" class="page-section">
                     <div class="card form-card wide">
-                        <span class="eyebrow">INVITE SYSTEM</span>
-                        <h2>Invites</h2>
-                        <p>Auto-updating leaderboard channel. Posts as <em>Coffee Shop | Invites</em>.</p>
-
+                        <span class="eyebrow">INVITES</span>
+                        <h2>Invite Leaderboard</h2>
                         <div class="input-group">
                             <label for="invite-channel">Leaderboard channel</label>
-                            <select id="invite-channel">
-                                <option value="">Select a channel...</option>
-                            </select>
+                            <select id="invite-channel"><option value="">Select a channel...</option></select>
                         </div>
-
-                        <button class="button" id="save-invites" type="button">Save Invite Settings</button>
+                        <button class="button" id="save-invites" type="button">Save</button>
                         <p class="form-hint" id="invites-status"></p>
-
-                        <div class="info-box" style="margin-top:16px">
-                            <strong>Invite ranks (automatic roles)</strong>
-                            <ul>
-                                <li>10 invites → rank role</li>
-                                <li>20 invites → rank role</li>
-                                <li>50 invites → rank role</li>
-                            </ul>
-                        </div>
                     </div>
                 </section>
 
+                <!-- LEVELING -->
                 <section id="leveling" class="page-section">
                     <div class="card form-card wide">
-                        <span class="eyebrow">LEVELING SYSTEM</span>
-                        <h2>Leveling</h2>
-                        <p>Members gain XP by chatting. Add level roles — the bot gives them automatically.</p>
+                        <span class="eyebrow">LEVELING</span>
+                        <h2>Leveling settings</h2>
+                        <p>Tune XP, cooldowns, level-up messages, and Beans per level.</p>
 
-                        <div class="toggle-row">
-                            <label class="toggle">
-                                <input type="checkbox" id="leveling-enabled" checked>
-                                <span>Leveling enabled</span>
-                            </label>
+                        <label class="toggle"><input type="checkbox" id="lvl-enabled" checked> <span>Leveling enabled</span></label>
+                        <label class="toggle"><input type="checkbox" id="lvl-messages" checked> <span>Level-up messages in chat</span></label>
+                        <label class="toggle"><input type="checkbox" id="lvl-beans-enabled" checked> <span>Give Beans on level-up</span></label>
+
+                        <div class="config-grid">
+                            <div class="input-group"><label>XP min / message</label><input id="lvl-xp-min" type="number" min="1"></div>
+                            <div class="input-group"><label>XP max / message</label><input id="lvl-xp-max" type="number" min="1"></div>
+                            <div class="input-group"><label>XP cooldown (seconds)</label><input id="lvl-xp-cd" type="number" min="5"></div>
                         </div>
 
-                        <div class="level-role-form">
-                            <div class="input-group">
-                                <label for="level-number">Level</label>
-                                <input id="level-number" type="number" min="1" placeholder="e.g. 5">
-                            </div>
-                            <div class="input-group">
-                                <label for="level-role">Role</label>
-                                <select id="level-role">
-                                    <option value="">Select a role...</option>
-                                </select>
-                            </div>
-                            <button class="button" id="add-level-role" type="button">Add Level Role</button>
+                        <h3 class="subhead">Beans formula per level</h3>
+                        <p class="form-hint">Reward = Base + (Level × Linear) + (Level² × Quadratic)</p>
+                        <div class="config-grid">
+                            <div class="input-group"><label>Base</label><input id="lvl-beans-base" type="number" min="0"></div>
+                            <div class="input-group"><label>Linear</label><input id="lvl-beans-linear" type="number" min="0"></div>
+                            <div class="input-group"><label>Quadratic</label><input id="lvl-beans-quad" type="number" min="0"></div>
                         </div>
+                        <p class="form-hint" id="lvl-preview">Preview: Level 10 → …</p>
 
-                        <div id="level-roles-list" class="level-roles-list"></div>
+                        <button class="button" id="save-leveling" type="button">Save Leveling Settings</button>
                         <p class="form-hint" id="leveling-status"></p>
+
+                        <h3 class="subhead">Level roles</h3>
+                        <div class="level-role-form">
+                            <div class="input-group"><label>Level</label><input id="level-number" type="number" min="1"></div>
+                            <div class="input-group"><label>Role</label><select id="level-role"><option value="">Select role...</option></select></div>
+                            <button class="button" id="add-level-role" type="button">Add</button>
+                        </div>
+                        <div id="level-roles-list" class="level-roles-list"></div>
                     </div>
                 </section>
 
-                <!-- LOGS -->
-                <section id="logs" class="page-section">
+                <!-- CURRENCY -->
+                <section id="currency" class="page-section">
                     <div class="card form-card wide">
-                        <span class="eyebrow">DASHBOARD LOGS</span>
-                        <h2>Logs</h2>
-                        <p>
-                            Pick a channel. Every time you save settings from this dashboard,
-                            the bot posts a confirmation there so you can see it worked.
-                        </p>
+                        <span class="eyebrow">CURRENCY</span>
+                        <h2>Currency settings</h2>
+                        <p>Name, daily, work, chat drops, and coinflip — all adjustable.</p>
 
-                        <div class="input-group">
-                            <label for="dashboard-log-channel">Log channel</label>
-                            <select id="dashboard-log-channel">
-                                <option value="">Select a channel...</option>
-                            </select>
+                        <label class="toggle"><input type="checkbox" id="cur-enabled" checked> <span>Currency enabled</span></label>
+
+                        <div class="config-grid">
+                            <div class="input-group"><label>Currency name</label><input id="cur-name" type="text" placeholder="Beans"></div>
+                            <div class="input-group"><label>Emoji</label><input id="cur-emoji" type="text" placeholder="☕"></div>
                         </div>
 
+                        <h3 class="subhead">Daily</h3>
+                        <div class="config-grid">
+                            <div class="input-group"><label>Min</label><input id="cur-daily-min" type="number" min="1"></div>
+                            <div class="input-group"><label>Max</label><input id="cur-daily-max" type="number" min="1"></div>
+                            <div class="input-group"><label>Streak bonus / day</label><input id="cur-streak-bonus" type="number" min="0"></div>
+                            <div class="input-group"><label>Max streak days</label><input id="cur-max-streak" type="number" min="1"></div>
+                        </div>
+
+                        <h3 class="subhead">Work</h3>
+                        <div class="config-grid">
+                            <div class="input-group"><label>Min</label><input id="cur-work-min" type="number" min="1"></div>
+                            <div class="input-group"><label>Max</label><input id="cur-work-max" type="number" min="1"></div>
+                            <div class="input-group"><label>Cooldown (minutes)</label><input id="cur-work-cd" type="number" min="1"></div>
+                        </div>
+
+                        <h3 class="subhead">Chat drops</h3>
+                        <label class="toggle"><input type="checkbox" id="cur-chat-enabled" checked> <span>Random chat earnings</span></label>
+                        <div class="config-grid">
+                            <div class="input-group"><label>Chance %</label><input id="cur-chat-chance" type="number" min="0" max="100"></div>
+                            <div class="input-group"><label>Min</label><input id="cur-chat-min" type="number" min="1"></div>
+                            <div class="input-group"><label>Max</label><input id="cur-chat-max" type="number" min="1"></div>
+                            <div class="input-group"><label>Cooldown (sec)</label><input id="cur-chat-cd" type="number" min="5"></div>
+                        </div>
+
+                        <h3 class="subhead">Coinflip</h3>
+                        <label class="toggle"><input type="checkbox" id="cur-flip-enabled" checked> <span>Coinflip enabled</span></label>
+                        <div class="input-group" style="max-width:200px">
+                            <label>Max bet (0 = unlimited)</label>
+                            <input id="cur-flip-max" type="number" min="0">
+                        </div>
+
+                        <button class="button" id="save-currency" type="button">Save Currency Settings</button>
+                        <p class="form-hint" id="currency-status"></p>
+                    </div>
+                </section>
+
+                <section id="logs" class="page-section">
+                    <div class="card form-card wide">
+                        <span class="eyebrow">LOGS</span>
+                        <h2>Dashboard logs</h2>
+                        <div class="input-group">
+                            <label for="dashboard-log-channel">Log channel</label>
+                            <select id="dashboard-log-channel"><option value="">Select a channel...</option></select>
+                        </div>
                         <div style="display:flex;gap:10px;flex-wrap:wrap">
                             <button class="button" id="save-logs" type="button">Save Log Channel</button>
                             <button class="button secondary" id="test-log" type="button">Send Test Log</button>
                         </div>
-
                         <p class="form-hint" id="logs-status"></p>
-
-                        <div class="info-box" style="margin-top:16px">
-                            <strong>What gets logged</strong>
-                            <ul>
-                                <li>Warn channel changes</li>
-                                <li>Invite leaderboard channel changes</li>
-                                <li>Level roles added/removed</li>
-                                <li>Leveling on/off</li>
-                                <li>This log channel itself</li>
-                            </ul>
-                        </div>
                     </div>
                 </section>
 
                 <section id="settings" class="page-section">
                     <div class="card form-card">
-                        <span class="eyebrow">CONFIGURATION</span>
-                        <h2>Bot Settings</h2>
-                        <p>Select a server above to configure systems. Use the <strong>Logs</strong> tab to confirm saves in Discord.</p>
+                        <span class="eyebrow">INFO</span>
+                        <h2>Settings</h2>
+                        <p>Pick a server, then configure each system tab. Saves write to the live bot and log channel (if set).</p>
                     </div>
                 </section>
 
             </div>
         </main>
     </div>
-
     <script src="script.js"></script>
 </body>
 </html>
