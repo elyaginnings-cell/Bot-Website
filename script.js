@@ -20,9 +20,32 @@ const SHOP_TYPE_META = {
 };
 
 document.addEventListener("DOMContentLoaded", () => {
+  initViewMode();
   setupEventListeners();
   checkLogin();
 });
+
+function initViewMode() {
+  const select = document.getElementById("view-mode");
+  const saved = localStorage.getItem("dashboardViewMode") || "auto";
+  applyViewMode(saved);
+  if (select) {
+    select.value = saved;
+    select.addEventListener("change", () => {
+      applyViewMode(select.value);
+    });
+  }
+}
+
+function applyViewMode(mode) {
+  const allowed = ["auto", "desktop", "mobile"];
+  if (!allowed.includes(mode)) mode = "auto";
+  document.body.classList.remove("mode-auto", "mode-desktop", "mode-mobile");
+  document.body.classList.add(`mode-${mode}`);
+  localStorage.setItem("dashboardViewMode", mode);
+  const select = document.getElementById("view-mode");
+  if (select && select.value !== mode) select.value = mode;
+}
 
 function setupEventListeners() {
   document.getElementById("login-button")?.addEventListener("click", () => {
@@ -140,7 +163,7 @@ function showSection(section) {
     currency: ["Currency", "Daily, work, chat drops, coinflip."],
     shop: ["Shop", "Roles, boosts, packs, titles — private /shop."],
     logs: ["Logs", "Confirm dashboard saves in Discord."],
-    settings: ["Settings", "General info."],
+    settings: ["Settings", "Layout & general info."],
   };
   const info = titles[section];
   if (!info) return;
@@ -441,7 +464,7 @@ function renderLevelRolesList() {
 }
 
 function typePretty(t) {
-  return (SHOP_TYPE_META[t] && t) ? t.replace(/_/g, " ") : t;
+  return SHOP_TYPE_META[t] ? t.replace(/_/g, " ") : t;
 }
 
 function renderShopItems() {
