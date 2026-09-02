@@ -37,9 +37,11 @@ function setupEventListeners() {
   if (serverBtn) serverBtn.addEventListener("click", loadServers);
 
   const logoutBtn = document.getElementById("logout-button");
-  if (logoutBtn) logoutBtn.addEventListener("click", () => {
-    window.location.href = "/api/logout";
-  });
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", () => {
+      window.location.href = "/api/logout";
+    });
+  }
 
   const saveMod = document.getElementById("save-moderation");
   if (saveMod) saveMod.addEventListener("click", saveModeration);
@@ -50,17 +52,29 @@ function setupEventListeners() {
   const addLevel = document.getElementById("add-level-role");
   if (addLevel) addLevel.addEventListener("click", addLevelRole);
 
+  const saveLogs = document.getElementById("save-logs");
+  if (saveLogs) saveLogs.addEventListener("click", saveLogChannel);
+
+  const testLog = document.getElementById("test-log");
+  if (testLog) testLog.addEventListener("click", sendTestLog);
+
   const levelingEnabled = document.getElementById("leveling-enabled");
   if (levelingEnabled) {
     levelingEnabled.addEventListener("change", async () => {
       if (!selectedServer) return;
-      await saveConfig({ levelingEnabled: levelingEnabled.checked });
-      setStatus("leveling-status", levelingEnabled.checked ? "Leveling enabled" : "Leveling disabled", true);
+      try {
+        await saveConfig({ levelingEnabled: levelingEnabled.checked });
+        setStatus(
+          "leveling-status",
+          levelingEnabled.checked ? "Leveling enabled (logged)" : "Leveling disabled (logged)",
+          true
+        );
+      } catch (e) {
+        setStatus("leveling-status", "❌ " + e.message, false);
+      }
     });
   }
 }
-
-/* ===================== LOGIN ===================== */
 
 async function checkLogin() {
   const loginScreen = document.getElementById("login-screen");
@@ -74,7 +88,6 @@ async function checkLogin() {
     });
 
     if (!response.ok) {
-      // Not logged in — show login screen, DO NOT auto-redirect
       if (loginScreen) loginScreen.hidden = false;
       if (app) app.hidden = true;
       return;
@@ -88,7 +101,6 @@ async function checkLogin() {
       return;
     }
 
-    // Logged in
     currentUser = data.user;
     if (loginScreen) loginScreen.hidden = true;
     if (app) app.hidden = false;
@@ -121,8 +133,6 @@ function updateUserInterface(user) {
   }
 }
 
-/* ===================== NAV ===================== */
-
 function showSection(section) {
   document.querySelectorAll(".page-section").forEach((el) => el.classList.remove("active"));
   const target = document.getElementById(section);
@@ -138,6 +148,7 @@ function showSection(section) {
     moderation: ["Moderation", "Warn logs and punishment system."],
     invites: ["Invites", "Leaderboard and invite ranks."],
     leveling: ["Leveling", "XP and automatic level roles."],
+    logs: ["Logs", "Confirm dashboard saves in Discord."],
     settings: ["Settings", "General configuration."],
   };
 
@@ -149,8 +160,6 @@ function showSection(section) {
   if (title) title.textContent = info[0];
   if (description) description.textContent = info[1];
 }
-
-/* ===================== SERVERS ===================== */
 
 async function loadServers() {
   const list = document.getElementById("server-list");
@@ -234,7 +243,6 @@ async function selectServer(guild) {
   localStorage.setItem("selectedServer", JSON.stringify(selectedServer));
   renderServerDetails(selectedServer);
   closeServerList();
-
   await loadGuildData();
 }
 
@@ -319,8 +327,6 @@ async function refreshSelectedServer() {
   }
 }
 
-/* ===================== GUILD DATA ===================== */
-
 async function loadGuildData() {
   if (!selectedServer?.id) return;
 
@@ -354,7 +360,7 @@ async function loadGuildData() {
 }
 
 function fillChannelSelects() {
-  const selects = ["warn-channel", "invite-channel"];
+  const selects = ["warn-channel", "invite-channel", "dashboard-log-channel"];
 
   selects.forEach((id) => {
     const el = document.getElementById(id);
@@ -391,13 +397,16 @@ function applyConfigToForms() {
   if (!currentConfig) return;
 
   const warn = document.getElementById("warn-channel");
-  if (warn && currentConfig.warnChannelId) {
-    warn.value = currentConfig.warnChannelId;
-  }
+  if (warn && currentConfig.warnChannelId) warn.value = currentConfig.warnChannelId;
 
   const invite = document.getElementById("invite-channel");
   if (invite && currentConfig.inviteLeaderboardChannelId) {
     invite.value = currentConfig.inviteLeaderboardChannelId;
+  }
+
+  const logCh = document.getElementById("dashboard-log-channel");
+  if (logCh && currentConfig.dashboardLogChannelId) {
+    logCh.value = currentConfig.dashboardLogChannelId;
   }
 
   const levelingEnabled = document.getElementById("leveling-enabled");
@@ -436,15 +445,17 @@ function renderLevelRolesList() {
   list.querySelectorAll(".remove-btn").forEach((btn) => {
     btn.addEventListener("click", async () => {
       const level = Number(btn.getAttribute("data-level"));
-      await saveConfig({ removeLevelRole: level });
-      if (currentConfig?.levelRoles) delete currentConfig.levelRoles[String(level)];
-      renderLevelRolesList();
-      setStatus("leveling-status", `Removed level ${level} role`, true);
+      try {
+        await saveConfig({ removeLevelRole: level });
+        if (currentConfig?.levelRoles) delete currentConfig.levelRoles[String(level)];
+        renderLevelRolesList();
+        setStatus("leveling-status", `Removed level ${level} role (logged)`, true);
+      } catch (e) {
+        setStatus("leveling-status", "❌ " + e.message, false);
+      }
     });
   });
 }
-
-/* ===================== SAVE ===================== */
 
 async function saveConfig(body) {
   if (!selectedServer?.id) {
@@ -481,7 +492,7 @@ async function saveModeration() {
 
   try {
     await saveConfig({ warnChannelId: channelId || null });
-    setStatus("moderation-status", "✅ Moderation settings saved", true);
+    setStatus("moderation-status", "✅ Saved — check your log channel in Discord", true);
   } catch (e) {
     setStatus("moderation-status", "❌ " + e.message, false);
   }
@@ -493,7 +504,7 @@ async function saveInvites() {
 
   try {
     await saveConfig({ inviteLeaderboardChannelId: channelId || null });
-    setStatus("invites-status", "✅ Invite settings saved", true);
+    setStatus("invites-status", "✅ Saved — check your log channel in Discord", true);
   } catch (e) {
     setStatus("invites-status", "❌ " + e.message, false);
   }
@@ -514,8 +525,52 @@ async function addLevelRole() {
     currentConfig.levelRoles[String(level)] = roleId;
     renderLevelRolesList();
     document.getElementById("level-number").value = "";
-    setStatus("leveling-status", `✅ Level ${level} role saved`, true);
+    setStatus("leveling-status", `✅ Level ${level} role saved (logged)`, true);
   } catch (e) {
     setStatus("leveling-status", "❌ " + e.message, false);
+  }
+}
+
+async function saveLogChannel() {
+  if (!selectedServer) return alert("Choose a server first.");
+  const channelId = document.getElementById("dashboard-log-channel")?.value || null;
+
+  if (!channelId) {
+    return alert("Select a log channel first.");
+  }
+
+  try {
+    await saveConfig({ dashboardLogChannelId: channelId });
+    setStatus(
+      "logs-status",
+      "✅ Log channel saved — a confirmation should appear in that channel",
+      true
+    );
+  } catch (e) {
+    setStatus("logs-status", "❌ " + e.message, false);
+  }
+}
+
+async function sendTestLog() {
+  if (!selectedServer) return alert("Choose a server first.");
+
+  const channelId = document.getElementById("dashboard-log-channel")?.value;
+  if (!channelId && !currentConfig?.dashboardLogChannelId) {
+    return alert("Save a log channel first, then send a test.");
+  }
+
+  try {
+    // Ensure channel is set, then send test
+    const body = { testLog: true };
+    if (channelId) body.dashboardLogChannelId = channelId;
+
+    await saveConfig(body);
+    setStatus(
+      "logs-status",
+      "✅ Test log sent — open that channel in Discord to confirm",
+      true
+    );
+  } catch (e) {
+    setStatus("logs-status", "❌ " + e.message, false);
   }
 }

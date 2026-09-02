@@ -9,7 +9,6 @@
 
 <body class="mode-pc">
 
-    <!-- LOGIN SCREEN (shown until user clicks login) -->
     <div id="login-screen" class="login-screen">
         <div class="login-card">
             <div class="login-icon">☕</div>
@@ -44,6 +43,9 @@
                 </button>
                 <button class="nav-item" data-tab="leveling" type="button">
                     <span>📈</span> Leveling
+                </button>
+                <button class="nav-item" data-tab="logs" type="button">
+                    <span>📋</span> Logs
                 </button>
                 <button class="nav-item" data-tab="settings" type="button">
                     <span>⚙️</span> Settings
@@ -98,7 +100,7 @@
                         <div>
                             <span class="eyebrow">DASHBOARD</span>
                             <h2>Welcome back, <span id="welcome-name">...</span>.</h2>
-                            <p>Configure moderation, invites, and leveling from here.</p>
+                            <p>Configure moderation, invites, leveling, and logs from here.</p>
                         </div>
                         <div class="hero-icon">☕</div>
                     </div>
@@ -157,10 +159,17 @@
                             </div>
                             <span class="arrow">→</span>
                         </button>
+                        <button class="quick-card card" data-section-link="logs" type="button">
+                            <span class="quick-icon">📋</span>
+                            <div>
+                                <strong>Logs</strong>
+                                <p>See when settings save</p>
+                            </div>
+                            <span class="arrow">→</span>
+                        </button>
                     </div>
                 </section>
 
-                <!-- MODERATION -->
                 <section id="moderation" class="page-section">
                     <div class="card form-card wide">
                         <span class="eyebrow">PUNISHMENT SYSTEM</span>
@@ -188,7 +197,6 @@
                     </div>
                 </section>
 
-                <!-- INVITES -->
                 <section id="invites" class="page-section">
                     <div class="card form-card wide">
                         <span class="eyebrow">INVITE SYSTEM</span>
@@ -212,17 +220,15 @@
                                 <li>20 invites → rank role</li>
                                 <li>50 invites → rank role</li>
                             </ul>
-                            <p style="margin-top:8px;font-size:12px;color:#b89cd9">Managed in Discord with <code>/invite-ranks</code>. Roles are assigned automatically by the bot.</p>
                         </div>
                     </div>
                 </section>
 
-                <!-- LEVELING -->
                 <section id="leveling" class="page-section">
                     <div class="card form-card wide">
                         <span class="eyebrow">LEVELING SYSTEM</span>
                         <h2>Leveling</h2>
-                        <p>Members gain XP by chatting. Add level roles below — the bot gives them automatically.</p>
+                        <p>Members gain XP by chatting. Add level roles — the bot gives them automatically.</p>
 
                         <div class="toggle-row">
                             <label class="toggle">
@@ -247,25 +253,51 @@
 
                         <div id="level-roles-list" class="level-roles-list"></div>
                         <p class="form-hint" id="leveling-status"></p>
+                    </div>
+                </section>
+
+                <!-- LOGS -->
+                <section id="logs" class="page-section">
+                    <div class="card form-card wide">
+                        <span class="eyebrow">DASHBOARD LOGS</span>
+                        <h2>Logs</h2>
+                        <p>
+                            Pick a channel. Every time you save settings from this dashboard,
+                            the bot posts a confirmation there so you can see it worked.
+                        </p>
+
+                        <div class="input-group">
+                            <label for="dashboard-log-channel">Log channel</label>
+                            <select id="dashboard-log-channel">
+                                <option value="">Select a channel...</option>
+                            </select>
+                        </div>
+
+                        <div style="display:flex;gap:10px;flex-wrap:wrap">
+                            <button class="button" id="save-logs" type="button">Save Log Channel</button>
+                            <button class="button secondary" id="test-log" type="button">Send Test Log</button>
+                        </div>
+
+                        <p class="form-hint" id="logs-status"></p>
 
                         <div class="info-box" style="margin-top:16px">
-                            <strong>Commands</strong>
+                            <strong>What gets logged</strong>
                             <ul>
-                                <li><code>/rank</code> · <code>/levels</code></li>
-                                <li><code>/set-level-role</code> · <code>/level-roles</code></li>
-                                <li><code>/set-xp</code> (admin)</li>
+                                <li>Warn channel changes</li>
+                                <li>Invite leaderboard channel changes</li>
+                                <li>Level roles added/removed</li>
+                                <li>Leveling on/off</li>
+                                <li>This log channel itself</li>
                             </ul>
                         </div>
                     </div>
                 </section>
 
-                <!-- SETTINGS -->
                 <section id="settings" class="page-section">
                     <div class="card form-card">
                         <span class="eyebrow">CONFIGURATION</span>
                         <h2>Bot Settings</h2>
-                        <p>Select a server above to configure systems. Discord slash commands still work for day-to-day use.</p>
-                        <p class="form-hint">Dashboard saves go straight to the live bot.</p>
+                        <p>Select a server above to configure systems. Use the <strong>Logs</strong> tab to confirm saves in Discord.</p>
                     </div>
                 </section>
 
