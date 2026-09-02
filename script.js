@@ -42,6 +42,8 @@ function setupEventListeners() {
   document.getElementById("add-level-role")?.addEventListener("click", addLevelRole);
   document.getElementById("save-logs")?.addEventListener("click", saveLogChannel);
   document.getElementById("test-log")?.addEventListener("click", sendTestLog);
+  document.getElementById("save-shop-toggle")?.addEventListener("click", saveShopToggle);
+  document.getElementById("add-shop-item")?.addEventListener("click", addShopItem);
 
   ["lvl-beans-base", "lvl-beans-linear", "lvl-beans-quad"].forEach((id) => {
     document.getElementById(id)?.addEventListener("input", updateLevelPreview);
@@ -101,6 +103,7 @@ function showSection(section) {
     invites: ["Invites", "Leaderboard channel."],
     leveling: ["Leveling", "XP, Beans rewards, and level roles."],
     currency: ["Currency", "Daily, work, chat drops, coinflip."],
+    shop: ["Shop", "Sell roles for currency (private /shop)."],
     logs: ["Logs", "Confirm dashboard saves in Discord."],
     settings: ["Settings", "General info."],
   };
@@ -250,7 +253,7 @@ async function loadGuildData() {
     }
     if (rolesRes.ok) {
       rolesCache = (await rolesRes.json()).roles || [];
-      fillRoleSelect();
+      fillRoleSelects();
     }
     if (configRes.ok) {
       currentConfig = (await configRes.json()).config || {};
@@ -277,15 +280,19 @@ function fillChannelSelects() {
   });
 }
 
-function fillRoleSelect() {
-  const el = document.getElementById("level-role");
-  if (!el) return;
-  el.innerHTML = `<option value="">Select role...</option>`;
-  rolesCache.forEach((role) => {
-    const opt = document.createElement("option");
-    opt.value = role.id;
-    opt.textContent = role.name;
-    el.appendChild(opt);
+function fillRoleSelects() {
+  ["level-role", "shop-role"].forEach((id) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const current = el.value;
+    el.innerHTML = `<option value="">Select role...</option>`;
+    rolesCache.forEach((role) => {
+      const opt = document.createElement("option");
+      opt.value = role.id;
+      opt.textContent = role.name;
+      el.appendChild(opt);
+    });
+    if (current) el.value = current;
   });
 }
 
@@ -338,7 +345,11 @@ function applyConfigToForms() {
   setCheck("cur-flip-enabled", U.coinflipEnabled !== false);
   setVal("cur-flip-max", U.coinflipMaxBet ?? 0);
 
+  const S = c.shop || {};
+  setCheck("shop-enabled", S.enabled !== false);
+
   renderLevelRolesList();
+  renderShopItems();
 }
 
 function updateLevelPreview() {
@@ -385,6 +396,51 @@ function renderLevelRolesList() {
       }
     });
   });
+}
+
+function renderShopItems() {
+  const list = document.getElementById("shop-items-list");
+  if (!list) return;
+  const items = currentConfig?.shop?.items || [];
+  if (!items.length) {
+    list.innerHTML = `<p class="empty-list">No shop items yet. Add a role item above.</p>`;
+    return;
+  }
+  list.innerHTML = items
+    .map((item) => {
+      const role = rolesCache.find((r) => r.id === item.roleId);
+      const roleName = role ? role.name : item.roleId;
+      const desc = item.description ? `<br><span style="color:#b89cd9;font-size:12px">${escapeHtml(item.description)}</span>` : "";
+      return `<div class="level-role-row">
+        <span><strong>${escapeHtml(item.name)}</strong> — ${Number(item.price).toLocaleString()} · ${escapeHtml(roleName)}${desc}</span>
+        <button type="button" class="remove-btn" data-shop-id="${item.id}">Remove</button>
+      </div>`;
+    })
+    .join("");
+
+  list.querySelectorAll(".remove-btn").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const id = btn.getAttribute("data-shop-id");
+      try {
+        await saveConfig({ removeShopItem: id });
+        if (currentConfig?.shop?.items) {
+          currentConfig.shop.items = currentConfig.shop.items.filter((i) => i.id !== id);
+        }
+        renderShopItems();
+        setStatus("shop-status", "Item removed", true);
+      } catch (e) {
+        setStatus("shop-status", e.message, false);
+      }
+    });
+  });
+}
+
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 }
 
 function formatLogResult(data, fallbackOk) {
@@ -501,6 +557,43 @@ async function saveCurrency() {
   }
 }
 
+async function saveShopToggle() {
+  try {
+    const data = await saveConfig({
+      shopEnabled: document.getElementById("shop-enabled")?.checked !== false,
+    });
+    const r = formatLogResult(data, "✅ Shop setting saved");
+    setStatus("shop-status", r.text, r.ok);
+  } catch (e) {
+    setStatus("shop-status", "❌ " + e.message, false);
+  }
+}
+
+async function addShopItem() {
+  const name = document.getElementById("shop-name")?.value?.trim();
+  const price = Number(document.getElementById("shop-price")?.value);
+  const roleId = document.getElementById("shop-role")?.value;
+  const description = document.getElementById("shop-desc")?.value?.trim() || "";
+
+  if (!name) return alert("Enter an item name.");
+  if (!roleId) return alert("Select a role.");
+  if (!Number.isFinite(price) || price < 0) return alert("Enter a valid price.");
+
+  try {
+    const data = await saveConfig({
+      addShopItem: { name, price, roleId, description },
+    });
+    renderShopItems();
+    document.getElementById("shop-name").value = "";
+    document.getElementById("shop-price").value = "";
+    document.getElementById("shop-desc").value = "";
+    const r = formatLogResult(data, "✅ Shop item added");
+    setStatus("shop-status", r.text, r.ok);
+  } catch (e) {
+    setStatus("shop-status", "❌ " + e.message, false);
+  }
+}
+
 async function addLevelRole() {
   const level = Number(document.getElementById("level-number")?.value);
   const roleId = document.getElementById("level-role")?.value;
@@ -525,7 +618,7 @@ async function saveLogChannel() {
   try {
     const data = await saveConfig({ dashboardLogChannelId: channelId });
     if (data?.logResult?.ok) {
-      setStatus("logs-status", "✅ Log channel saved — check Discord for the confirmation embed", true);
+      setStatus("logs-status", "✅ Log channel saved — check Discord", true);
     } else {
       setStatus(
         "logs-status",
@@ -548,14 +641,9 @@ async function sendTestLog() {
     if (channelId) body.dashboardLogChannelId = channelId;
     const data = await saveConfig(body);
     if (data?.logResult?.ok) {
-      setStatus("logs-status", "✅ Test log posted — open that channel in Discord", true);
+      setStatus("logs-status", "✅ Test log posted", true);
     } else {
-      setStatus(
-        "logs-status",
-        "❌ Log failed: " + (data?.logResult?.error || "unknown") +
-          " — give the bot View Channel, Send Messages, and Embed Links",
-        false
-      );
+      setStatus("logs-status", "❌ Log failed: " + (data?.logResult?.error || "unknown"), false);
     }
   } catch (e) {
     setStatus("logs-status", "❌ " + e.message, false);
