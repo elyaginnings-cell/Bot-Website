@@ -78,8 +78,7 @@ async function checkLogin() {
 
 function updateUserInterface(user) {
   const username = user.global_name || user.username || "Discord User";
-  const usernameEl = document.getElementById("username");
-  if (usernameEl) usernameEl.textContent = username;
+  document.getElementById("username").textContent = username;
   const welcome = document.getElementById("welcome-name");
   if (welcome) welcome.textContent = username;
   const avatar = document.getElementById("user-avatar");
@@ -109,6 +108,7 @@ function showSection(section) {
   if (!info) return;
   document.getElementById("page-title").textContent = info[0];
   document.getElementById("page-description").textContent = info[1];
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 async function loadServers() {
@@ -387,6 +387,17 @@ function renderLevelRolesList() {
   });
 }
 
+function formatLogResult(data, fallbackOk) {
+  if (data?.logResult) {
+    if (data.logResult.ok) return { ok: true, text: "✅ Saved & logged in Discord" };
+    return {
+      ok: false,
+      text: "⚠️ Saved, but log failed: " + (data.logResult.error || "unknown error"),
+    };
+  }
+  return { ok: true, text: fallbackOk };
+}
+
 async function saveConfig(body) {
   if (!selectedServer?.id) {
     alert("Choose a server first.");
@@ -418,8 +429,9 @@ function num(id, fallback) {
 
 async function saveModeration() {
   try {
-    await saveConfig({ warnChannelId: document.getElementById("warn-channel")?.value || null });
-    setStatus("moderation-status", "✅ Saved", true);
+    const data = await saveConfig({ warnChannelId: document.getElementById("warn-channel")?.value || null });
+    const r = formatLogResult(data, "✅ Saved");
+    setStatus("moderation-status", r.text, r.ok);
   } catch (e) {
     setStatus("moderation-status", "❌ " + e.message, false);
   }
@@ -427,8 +439,11 @@ async function saveModeration() {
 
 async function saveInvites() {
   try {
-    await saveConfig({ inviteLeaderboardChannelId: document.getElementById("invite-channel")?.value || null });
-    setStatus("invites-status", "✅ Saved", true);
+    const data = await saveConfig({
+      inviteLeaderboardChannelId: document.getElementById("invite-channel")?.value || null,
+    });
+    const r = formatLogResult(data, "✅ Saved");
+    setStatus("invites-status", r.text, r.ok);
   } catch (e) {
     setStatus("invites-status", "❌ " + e.message, false);
   }
@@ -436,7 +451,7 @@ async function saveInvites() {
 
 async function saveLeveling() {
   try {
-    await saveConfig({
+    const data = await saveConfig({
       leveling: {
         enabled: document.getElementById("lvl-enabled")?.checked !== false,
         levelUpMessages: document.getElementById("lvl-messages")?.checked !== false,
@@ -449,7 +464,8 @@ async function saveLeveling() {
         beansQuadratic: num("lvl-beans-quad", 5),
       },
     });
-    setStatus("leveling-status", "✅ Leveling settings saved", true);
+    const r = formatLogResult(data, "✅ Leveling settings saved");
+    setStatus("leveling-status", r.text, r.ok);
   } catch (e) {
     setStatus("leveling-status", "❌ " + e.message, false);
   }
@@ -457,7 +473,7 @@ async function saveLeveling() {
 
 async function saveCurrency() {
   try {
-    await saveConfig({
+    const data = await saveConfig({
       currency: {
         enabled: document.getElementById("cur-enabled")?.checked !== false,
         currencyName: document.getElementById("cur-name")?.value?.trim() || "Beans",
@@ -478,7 +494,8 @@ async function saveCurrency() {
         coinflipMaxBet: num("cur-flip-max", 0),
       },
     });
-    setStatus("currency-status", "✅ Currency settings saved", true);
+    const r = formatLogResult(data, "✅ Currency settings saved");
+    setStatus("currency-status", r.text, r.ok);
   } catch (e) {
     setStatus("currency-status", "❌ " + e.message, false);
   }
@@ -490,12 +507,13 @@ async function addLevelRole() {
   if (!level || level < 1) return alert("Enter a level.");
   if (!roleId) return alert("Select a role.");
   try {
-    await saveConfig({ setLevelRole: { level, roleId } });
+    const data = await saveConfig({ setLevelRole: { level, roleId } });
     if (!currentConfig.levelRoles) currentConfig.levelRoles = {};
     currentConfig.levelRoles[String(level)] = roleId;
     renderLevelRolesList();
     document.getElementById("level-number").value = "";
-    setStatus("leveling-status", `✅ Level ${level} role saved`, true);
+    const r = formatLogResult(data, `✅ Level ${level} role saved`);
+    setStatus("leveling-status", r.text, r.ok);
   } catch (e) {
     setStatus("leveling-status", "❌ " + e.message, false);
   }
@@ -503,10 +521,18 @@ async function addLevelRole() {
 
 async function saveLogChannel() {
   const channelId = document.getElementById("dashboard-log-channel")?.value;
-  if (!channelId) return alert("Select a log channel.");
+  if (!channelId) return alert("Select a log channel first.");
   try {
-    await saveConfig({ dashboardLogChannelId: channelId });
-    setStatus("logs-status", "✅ Log channel saved — check Discord", true);
+    const data = await saveConfig({ dashboardLogChannelId: channelId });
+    if (data?.logResult?.ok) {
+      setStatus("logs-status", "✅ Log channel saved — check Discord for the confirmation embed", true);
+    } else {
+      setStatus(
+        "logs-status",
+        "⚠️ Channel saved, but message failed: " + (data?.logResult?.error || "unknown"),
+        false
+      );
+    }
   } catch (e) {
     setStatus("logs-status", "❌ " + e.message, false);
   }
@@ -514,11 +540,23 @@ async function saveLogChannel() {
 
 async function sendTestLog() {
   const channelId = document.getElementById("dashboard-log-channel")?.value;
+  if (!channelId && !currentConfig?.dashboardLogChannelId) {
+    return alert("Select and save a log channel first.");
+  }
   try {
     const body = { testLog: true };
     if (channelId) body.dashboardLogChannelId = channelId;
-    await saveConfig(body);
-    setStatus("logs-status", "✅ Test log sent", true);
+    const data = await saveConfig(body);
+    if (data?.logResult?.ok) {
+      setStatus("logs-status", "✅ Test log posted — open that channel in Discord", true);
+    } else {
+      setStatus(
+        "logs-status",
+        "❌ Log failed: " + (data?.logResult?.error || "unknown") +
+          " — give the bot View Channel, Send Messages, and Embed Links",
+        false
+      );
+    }
   } catch (e) {
     setStatus("logs-status", "❌ " + e.message, false);
   }
