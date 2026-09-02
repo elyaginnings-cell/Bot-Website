@@ -3,26 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bot Control Discord Manager</title>
+    <title>Coffee Shop — Bot Control</title>
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body class="modal-active mode-pc">
 
-    <!-- Device Selection -->
     <div class="device-modal">
         <div class="device-modal-card">
             <div class="device-modal-icon">🤖</div>
-
             <h2>Select Your View Mode</h2>
             <p>Choose your preferred layout for this session.</p>
-
             <div class="device-buttons">
                 <button class="device-btn" id="select-pc" type="button">
                     <span>💻</span>
                     <strong>Desktop View</strong>
                 </button>
-
                 <button class="device-btn" id="select-mobile" type="button">
                     <span>📱</span>
                     <strong>Mobile View</strong>
@@ -33,40 +29,31 @@
 
     <div id="app">
 
-        <!-- Sidebar -->
         <aside class="sidebar">
-
             <div class="sidebar-brand">
-                <div class="brand-icon">🤖</div>
-
+                <div class="brand-icon">☕</div>
                 <div>
-                    <strong>Bot Control</strong>
-                    <span>Discord Manager</span>
+                    <strong>Coffee Shop</strong>
+                    <span>Bot Control</span>
                 </div>
             </div>
 
             <nav class="navigation">
-
                 <button class="nav-item active" data-tab="overview" type="button">
-                    <span>🏠</span>
-                    Overview
+                    <span>🏠</span> Overview
                 </button>
-
+                <button class="nav-item" data-tab="moderation" type="button">
+                    <span>⚖️</span> Moderation
+                </button>
                 <button class="nav-item" data-tab="invites" type="button">
-                    <span>📊</span>
-                    Invite Tracker
+                    <span>📨</span> Invites
                 </button>
-
-                <button class="nav-item" data-tab="rewards" type="button">
-                    <span>🎁</span>
-                    Rewards
+                <button class="nav-item" data-tab="leveling" type="button">
+                    <span>📈</span> Leveling
                 </button>
-
                 <button class="nav-item" data-tab="settings" type="button">
-                    <span>⚙️</span>
-                    Settings
+                    <span>⚙️</span> Settings
                 </button>
-
             </nav>
 
             <div class="sidebar-bottom">
@@ -75,310 +62,252 @@
                     Bot Online
                 </div>
             </div>
-
         </aside>
 
-        <!-- Main -->
         <main class="main">
 
-            <!-- Header -->
             <header class="header card">
-
                 <div>
                     <h1 id="page-title">Overview</h1>
-                    <p id="page-description">Manage your Discord server.</p>
+                    <p id="page-description">Manage your Discord server systems.</p>
                 </div>
-
                 <div class="account">
-
                     <div class="account-avatar">
                         <img id="user-avatar" src="" alt="Discord avatar">
                     </div>
-
                     <div class="account-info">
                         <strong id="username">Loading...</strong>
                         <span>Discord Account</span>
                     </div>
-
-                    <button class="logout-btn" id="logout-button" type="button">
-                        Logout
-                    </button>
-
+                    <button class="logout-btn" id="logout-button" type="button">Logout</button>
                 </div>
-
             </header>
 
-            <!-- Server Selector -->
             <div class="server-bar card">
-
                 <div class="server-current">
-
-                    <div class="server-icon" id="selected-server-icon">
-                        ☕
-                    </div>
-
+                    <div class="server-icon" id="selected-server-icon">☕</div>
                     <div>
                         <span class="label">SELECTED SERVER</span>
-                        <strong id="selected-server-name">
-                            No server selected
-                        </strong>
+                        <strong id="selected-server-name">No server selected</strong>
                     </div>
-
                 </div>
-
                 <div class="server-selector">
-
-                    <button
-                        class="button"
-                        id="server-button"
-                        type="button"
-                    >
-                        Choose Server
-                    </button>
-
-                    <div
-                        class="server-list"
-                        id="server-list"
-                        hidden
-                    ></div>
-
+                    <button class="button" id="server-button" type="button">Choose Server</button>
+                    <div class="server-list" id="server-list" hidden></div>
                 </div>
-
             </div>
 
-            <!-- Content -->
             <div class="content">
 
-                <!-- Overview -->
+                <!-- OVERVIEW -->
                 <section id="overview" class="page-section active">
-
                     <div class="hero card">
-
                         <div>
                             <span class="eyebrow">DASHBOARD</span>
-
-                            <h2>
-                                Welcome back,
-                                <span id="welcome-name">Gatto</span>.
-                            </h2>
-
-                            <p>
-                                Everything you need to manage your Discord bot
-                                in one place.
-                            </p>
+                            <h2>Welcome back, <span id="welcome-name">Gatto</span>.</h2>
+                            <p>All your bot systems in one place — moderation, invites, and leveling.</p>
                         </div>
-
-                        <div class="hero-icon">
-                            🤖
-                        </div>
-
+                        <div class="hero-icon">☕</div>
                     </div>
 
                     <div class="stats-grid">
-
                         <div class="stat-card card">
                             <span class="stat-icon">👥</span>
-
                             <div>
                                 <span class="label">Server Members</span>
                                 <strong id="server-member-count">0</strong>
                             </div>
                         </div>
-
                         <div class="stat-card card">
                             <span class="stat-icon">🟢</span>
-
                             <div>
                                 <span class="label">Online Members</span>
                                 <strong id="server-online-count">0</strong>
                             </div>
                         </div>
-
                         <div class="stat-card card">
                             <span class="stat-icon">👑</span>
-
                             <div>
                                 <span class="label">Your Role</span>
                                 <strong id="server-owner-status">-</strong>
                             </div>
                         </div>
-
                     </div>
 
                     <div class="section-title">
-                        <h3>Quick Setup</h3>
-                        <p>Get your bot configured in a few clicks.</p>
+                        <h3>Systems</h3>
+                        <p>Jump into any system to configure it.</p>
                     </div>
 
-                    <div class="quick-grid">
-
-                        <button
-                            class="quick-card card"
-                            data-section-link="invites"
-                            type="button"
-                        >
-                            <span class="quick-icon">📊</span>
-
+                    <div class="quick-grid three">
+                        <button class="quick-card card" data-section-link="moderation" type="button">
+                            <span class="quick-icon">⚖️</span>
                             <div>
-                                <strong>Invite Tracker</strong>
-                                <p>Track who invited new members.</p>
+                                <strong>Moderation</strong>
+                                <p>Warns, mutes, bans &amp; logs</p>
                             </div>
-
                             <span class="arrow">→</span>
                         </button>
-
-                        <button
-                            class="quick-card card"
-                            data-section-link="rewards"
-                            type="button"
-                        >
-                            <span class="quick-icon">🎁</span>
-
+                        <button class="quick-card card" data-section-link="invites" type="button">
+                            <span class="quick-icon">📨</span>
                             <div>
-                                <strong>Automatic Rewards</strong>
-                                <p>Reward members for reaching goals.</p>
+                                <strong>Invites</strong>
+                                <p>Tracking, ranks &amp; leaderboard</p>
                             </div>
-
                             <span class="arrow">→</span>
                         </button>
-
+                        <button class="quick-card card" data-section-link="leveling" type="button">
+                            <span class="quick-icon">📈</span>
+                            <div>
+                                <strong>Leveling</strong>
+                                <p>XP, ranks &amp; level roles</p>
+                            </div>
+                            <span class="arrow">→</span>
+                        </button>
                     </div>
-
                 </section>
 
-                <!-- Invites -->
+                <!-- MODERATION -->
+                <section id="moderation" class="page-section">
+                    <div class="card form-card wide">
+                        <span class="eyebrow">PUNISHMENT SYSTEM</span>
+                        <h2>Moderation</h2>
+                        <p>Warn tracking, auto escalation, and mod logs. Configure in Discord with the commands below.</p>
+
+                        <div class="info-grid">
+                            <div class="info-box">
+                                <strong>Commands</strong>
+                                <ul>
+                                    <li><code>/warn</code> — Warn a user</li>
+                                    <li><code>/warnings</code> — View warns</li>
+                                    <li><code>/unwarn</code> — Remove a warn</li>
+                                    <li><code>/mute</code> / <code>/unmute</code></li>
+                                    <li><code>/kick</code> / <code>/ban</code></li>
+                                    <li><code>/set-warn-channel</code> — Log channel</li>
+                                </ul>
+                            </div>
+                            <div class="info-box">
+                                <strong>Auto escalation</strong>
+                                <ul>
+                                    <li>1 warn → Verbal Warning</li>
+                                    <li>2 warns → Official Warning</li>
+                                    <li>3 warns → Auto 10 min timeout</li>
+                                    <li>4+ warns → Kick stage</li>
+                                </ul>
+                            </div>
+                            <div class="info-box">
+                                <strong>Tips</strong>
+                                <ul>
+                                    <li>Right-click a message → <strong>Apps → Warn User</strong> for auto evidence</li>
+                                    <li>Logs post as <em>Coffee Shop | Moderation</em></li>
+                                    <li>Warns expire after 30 days</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- INVITES -->
                 <section id="invites" class="page-section">
-
-                    <div class="card form-card">
-
+                    <div class="card form-card wide">
                         <span class="eyebrow">INVITE SYSTEM</span>
+                        <h2>Invites</h2>
+                        <p>Track who invited who, leaderboard, and automatic invite ranks.</p>
 
-                        <h2>Invite Tracker</h2>
-
-                        <p>
-                            Configure how your bot tracks invites.
-                        </p>
-
-                        <div class="input-group">
-                            <label for="invite-log-channel">
-                                Invite Log Channel ID
-                            </label>
-
-                            <input
-                                id="invite-log-channel"
-                                type="text"
-                                placeholder="Enter Discord channel ID"
-                            >
+                        <div class="info-grid">
+                            <div class="info-box">
+                                <strong>Commands</strong>
+                                <ul>
+                                    <li><code>/invites</code> — Check stats</li>
+                                    <li><code>/invite-leaderboard</code></li>
+                                    <li><code>/invite-ranks</code> — Rank list</li>
+                                    <li><code>/add-invites</code> / <code>/remove-invites</code></li>
+                                    <li><code>/set-invite-leaderboard</code></li>
+                                </ul>
+                            </div>
+                            <div class="info-box">
+                                <strong>Invite ranks (auto roles)</strong>
+                                <ul>
+                                    <li>10 invites → rank role</li>
+                                    <li>20 invites → rank role</li>
+                                    <li>50 invites → rank role</li>
+                                </ul>
+                            </div>
+                            <div class="info-box">
+                                <strong>Tips</strong>
+                                <ul>
+                                    <li>Leaderboard auto-updates as <em>Coffee Shop | Invites</em></li>
+                                    <li>Fake = accounts under 7 days old</li>
+                                    <li>Valid = regular + bonus − left − fake</li>
+                                </ul>
+                            </div>
                         </div>
-
-                        <button
-                            class="button"
-                            id="save-invite-settings"
-                            type="button"
-                        >
-                            Save Changes
-                        </button>
-
                     </div>
-
                 </section>
 
-                <!-- Rewards -->
-                <section id="rewards" class="page-section">
+                <!-- LEVELING -->
+                <section id="leveling" class="page-section">
+                    <div class="card form-card wide">
+                        <span class="eyebrow">LEVELING SYSTEM</span>
+                        <h2>Leveling</h2>
+                        <p>Members earn XP by chatting. Set level roles and the bot gives them automatically.</p>
 
-                    <div class="card form-card">
-
-                        <span class="eyebrow">AUTOMATION</span>
-
-                        <h2>Automatic Rewards</h2>
-
-                        <p>
-                            Give members roles automatically when they hit
-                            invite goals.
-                        </p>
-
-                        <div class="input-group">
-                            <label for="reward-goal">
-                                Invite Goal
-                            </label>
-
-                            <input
-                                id="reward-goal"
-                                type="number"
-                                min="1"
-                                placeholder="Example: 10"
-                            >
+                        <div class="info-grid">
+                            <div class="info-box">
+                                <strong>Commands</strong>
+                                <ul>
+                                    <li><code>/rank</code> — Check level &amp; XP</li>
+                                    <li><code>/levels</code> — Leaderboard</li>
+                                    <li><code>/set-level-role</code> — Add reward</li>
+                                    <li><code>/remove-level-role</code></li>
+                                    <li><code>/level-roles</code> — List rewards</li>
+                                    <li><code>/set-xp</code> — Manual XP (admin)</li>
+                                </ul>
+                            </div>
+                            <div class="info-box">
+                                <strong>How XP works</strong>
+                                <ul>
+                                    <li>15–25 XP per message</li>
+                                    <li>1 minute cooldown</li>
+                                    <li>Level-up message in channel</li>
+                                    <li>Roles auto-applied at thresholds</li>
+                                </ul>
+                            </div>
+                            <div class="info-box">
+                                <strong>Setup level roles</strong>
+                                <ul>
+                                    <li>Use <code>/set-level-role level:5 role:@Role</code></li>
+                                    <li>Repeat for each level you want</li>
+                                    <li>Bot needs Manage Roles</li>
+                                    <li>Roles must be below the bot</li>
+                                </ul>
+                            </div>
                         </div>
-
-                        <div class="input-group">
-                            <label for="reward-role">
-                                Reward Role ID
-                            </label>
-
-                            <input
-                                id="reward-role"
-                                type="text"
-                                placeholder="Enter Discord role ID"
-                            >
-                        </div>
-
-                        <button
-                            class="button"
-                            id="save-reward"
-                            type="button"
-                        >
-                            Create Reward
-                        </button>
-
                     </div>
-
                 </section>
 
-                <!-- Settings -->
+                <!-- SETTINGS -->
                 <section id="settings" class="page-section">
-
                     <div class="card form-card">
-
                         <span class="eyebrow">CONFIGURATION</span>
-
                         <h2>Bot Settings</h2>
-
-                        <p>
-                            Configure your bot's general behavior.
-                        </p>
+                        <p>General bot configuration.</p>
 
                         <div class="input-group">
-
-                            <label for="bot-status">
-                                Bot Status
-                            </label>
-
+                            <label for="bot-status">Bot Status</label>
                             <select id="bot-status">
                                 <option value="online">Online</option>
                                 <option value="idle">Idle</option>
-                                <option value="dnd">
-                                    Do Not Disturb
-                                </option>
+                                <option value="dnd">Do Not Disturb</option>
                             </select>
-
                         </div>
 
-                        <button
-                            class="button"
-                            id="save-settings"
-                            type="button"
-                        >
-                            Save Settings
-                        </button>
-
+                        <button class="button" id="save-settings" type="button">Save Settings</button>
                     </div>
-
                 </section>
 
             </div>
-
         </main>
-
     </div>
 
     <script src="script.js"></script>
