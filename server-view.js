@@ -1,0 +1,239 @@
+/* Full-screen Discord-like server view through the bot */
+
+let svActiveChannelId = null;
+let svPollTimer = null;
+let svKnownIds = new Set();
+let svLoading = false;
+
+function initServerView() {
+  document.getElementById("open-server-view")?.addEventListener("click", openServerView);
+  document.getElementById("close-server-view")?.addEventListener("click", closeServerView);
+  document.getElementById("sv-refresh")?.addEventListener("click", () => loadSvMessages(true));
+  document.getElementById("sv-composer")?.addEventListener("submit", sendSvMessage);
+}
+
+function openServerView() {
+  if (!selectedServer?.id) {
+    alert("Choose a server first.");
+    return;
+  }
+  const app = document.getElementById("app");
+  const view = document.getElementById("server-view");
+  if (!view) return;
+  app.hidden = true;
+  view.hidden = false;
+  document.body.classList.add("server-view-open");
+  document.getElementById("sv-server-name").textContent = selectedServer.name || "Server";
+  renderSvChannels();
+  if (svActiveChannelId) {
+    loadSvMessages(true);
+  }
+  startSvPoll();
+}
+
+function closeServerView() {
+  stopSvPoll();
+  const app = document.getElementById("app");
+  const view = document.getElementById("server-view");
+  if (view) view.hidden = true;
+  if (app) app.hidden = false;
+  document.body.classList.remove("server-view-open");
+}
+
+function renderSvChannels() {
+  const list = document.getElementById("sv-channel-list");
+  if (!list) return;
+  const cats = channelsCache.filter((c) => c.type === 4);
+  const texts = channelsCache.filter((c) => c.type === 0 || c.type === 5);
+  if (!texts.length) {
+    list.innerHTML = `<p class="sv-empty">No text channels found.</p>`;
+    return;
+  }
+
+  const byParent = new Map();
+  texts.forEach((ch) => {
+    const key = ch.parentId || "_none";
+    if (!byParent.has(key)) byParent.set(key, []);
+    byParent.get(key).push(ch);
+  });
+
+  let html = "";
+  const orderedParents = ["_none", ...cats.map((c) => c.id)];
+  const seen = new Set();
+
+  for (const pid of orderedParents) {
+    const group = byParent.get(pid);
+    if (!group?.length) continue;
+    seen.add(pid);
+    const cat = cats.find((c) => c.id === pid);
+    if (cat) html += `<div class="sv-cat">${escapeHtml(cat.name)}</div>`;
+    else if (pid === "_none") html += `<div class="sv-cat">Channels</div>`;
+    group
+      .sort((a, b) => (a.position || 0) - (b.position || 0) || a.name.localeCompare(b.name))
+      .forEach((ch) => {
+        const active = ch.id === svActiveChannelId ? " active" : "";
+        html += `<button type="button" class="sv-ch${active}" data-id="${ch.id}"># ${escapeHtml(ch.name)}</button>`;
+      });
+  }
+
+  byParent.forEach((group, pid) => {
+    if (seen.has(pid)) return;
+    group.forEach((ch) => {
+      const active = ch.id === svActiveChannelId ? " active" : "";
+      html += `<button type="button" class="sv-ch${active}" data-id="${ch.id}"># ${escapeHtml(ch.name)}</button>`;
+    });
+  });
+
+  list.innerHTML = html;
+  list.querySelectorAll(".sv-ch").forEach((btn) => {
+    btn.addEventListener("click", () => selectSvChannel(btn.getAttribute("data-id"), btn.textContent));
+  });
+}
+
+function selectSvChannel(id, title) {
+  svActiveChannelId = id;
+  svKnownIds = new Set();
+  document.getElementById("sv-channel-title").textContent = title || "# channel";
+  document.getElementById("sv-input").disabled = false;
+  document.getElementById("sv-send").disabled = false;
+  renderSvChannels();
+  loadSvMessages(true);
+}
+
+async function loadSvMessages(full) {
+  if (!selectedServer?.id || !svActiveChannelId || svLoading) return;
+  svLoading = true;
+  try {
+    const params = new URLSearchParams({
+      guildId: selectedServer.id,
+      channelId: svActiveChannelId,
+      limit: "50",
+    });
+    const res = await fetch(`/api/messages?${params}`, {
+      credentials: "include",
+      cache: "no-store",
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      document.getElementById("sv-messages").innerHTML =
+        `<p class="sv-empty">❌ ${escapeHtml(data.error || "Failed to load")}</p>`;
+      return;
+    }
+    const messages = data.messages || [];
+    if (full) {
+      svKnownIds = new Set(messages.map((m) => m.id));
+      renderSvMessages(messages);
+    } else {
+      const box = document.getElementById("sv-messages");
+      const atBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 80;
+      const fresh = messages.filter((m) => !svKnownIds.has(m.id));
+      if (fresh.length) {
+        fresh.forEach((m) => {
+          svKnownIds.add(m.id);
+          box.insertAdjacentHTML("beforeend", messageHtml(m));
+        });
+        if (atBottom) box.scrollTop = box.scrollHeight;
+      }
+    }
+  } catch (e) {
+    console.error(e);
+  } finally {
+    svLoading = false;
+  }
+}
+
+function renderSvMessages(messages) {
+  const box = document.getElementById("sv-messages");
+  if (!messages.length) {
+    box.innerHTML = `<p class="sv-empty">No messages in this channel yet.</p>`;
+    return;
+  }
+  box.innerHTML = messages.map(messageHtml).join("");
+  box.scrollTop = box.scrollHeight;
+}
+
+function messageHtml(m) {
+  const name = m.author?.globalName || m.author?.username || "Unknown";
+  const bot = m.author?.bot ? `<span class="sv-bot">BOT</span>` : "";
+  const time = m.createdTimestamp
+    ? new Date(m.createdTimestamp).toLocaleString()
+    : "";
+  const av = m.author?.avatar
+    ? `<img class="sv-av" src="${escapeHtml(m.author.avatar)}" alt="">`
+    : `<div class="sv-av fallback">☕</div>`;
+  let body = escapeHtml(m.content || "");
+  if (!body && m.attachments?.length) body = "(attachment)";
+  if (!body && m.embedCount) body = "(embed)";
+  if (!body) body = "<em>(empty)</em>";
+  const atts = (m.attachments || [])
+    .map((a) => {
+      if (a.contentType && a.contentType.startsWith("image/")) {
+        return `<a href="${escapeHtml(a.url)}" target="_blank" rel="noopener"><img class="sv-img" src="${escapeHtml(a.url)}" alt=""></a>`;
+      }
+      return `<a class="sv-file" href="${escapeHtml(a.url)}" target="_blank" rel="noopener">📎 ${escapeHtml(a.name || "file")}</a>`;
+    })
+    .join("");
+  return `<div class="sv-msg" data-id="${m.id}">
+    ${av}
+    <div class="sv-msg-body">
+      <div class="sv-msg-meta"><strong>${escapeHtml(name)}</strong>${bot}<span class="sv-time">${escapeHtml(time)}</span></div>
+      <div class="sv-msg-text">${body}</div>
+      ${atts}
+    </div>
+  </div>`;
+}
+
+async function sendSvMessage(e) {
+  e.preventDefault();
+  const input = document.getElementById("sv-input");
+  const content = input?.value?.trim();
+  if (!content || !selectedServer?.id || !svActiveChannelId) return;
+  input.disabled = true;
+  try {
+    const params = new URLSearchParams({
+      guildId: selectedServer.id,
+      channelId: svActiveChannelId,
+    });
+    const res = await fetch(`/api/messages?${params}`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      alert(data.error || "Send failed");
+      return;
+    }
+    input.value = "";
+    if (data.message) {
+      svKnownIds.add(data.message.id);
+      const box = document.getElementById("sv-messages");
+      const empty = box.querySelector(".sv-empty");
+      if (empty) box.innerHTML = "";
+      box.insertAdjacentHTML("beforeend", messageHtml(data.message));
+      box.scrollTop = box.scrollHeight;
+    } else {
+      await loadSvMessages(true);
+    }
+  } catch (err) {
+    alert(err.message || "Send failed");
+  } finally {
+    input.disabled = false;
+    input.focus();
+  }
+}
+
+function startSvPoll() {
+  stopSvPoll();
+  svPollTimer = setInterval(() => {
+    if (!document.getElementById("server-view")?.hidden) loadSvMessages(false);
+  }, 4000);
+}
+
+function stopSvPoll() {
+  if (svPollTimer) clearInterval(svPollTimer);
+  svPollTimer = null;
+}
+
+document.addEventListener("DOMContentLoaded", initServerView);
