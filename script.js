@@ -12,12 +12,9 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function setupEventListeners() {
-  const loginBtn = document.getElementById("login-button");
-  if (loginBtn) {
-    loginBtn.addEventListener("click", () => {
-      window.location.href = "/api/login";
-    });
-  }
+  document.getElementById("login-button")?.addEventListener("click", () => {
+    window..location.href = "/api/login";
+  });
 
   document.querySelectorAll(".nav-item").forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -33,98 +30,59 @@ function setupEventListeners() {
     });
   });
 
-  const serverBtn = document.getElementById("server-button");
-  if (serverBtn) serverBtn.addEventListener("click", loadServers);
+  document.getElementById("server-button")?.addEventListener("click", loadServers);
+  document.getElementById("logout-button")?.addEventListener("click", () => {
+    window.location.href = "/api/logout";
+  });
 
-  const logoutBtn = document.getElementById("logout-button");
-  if (logoutBtn) {
-    logoutBtn.addEventListener("click", () => {
-      window.location.href = "/api/logout";
-    });
-  }
+  document.getElementById("save-moderation")?.addEventListener("click", saveModeration);
+ decument:
+  document.getElementById("save-invites")?.addEventListener("click", saveInvites);
+  document.getElementById("save-leveling")?.addEventListener("click", saveLeveling);
+  document.getElementById("save-currency")?.addEventListener("click", saveCurrency);
+  document.getElementById("add-level-role")?.addEventListener("click", addLevelRole);
+  document.getElementById("save-logs")?.addEventListener("click", saveLogChannel);
+  document.getElementById("test-log")?.addEventListener("click", sendTestLog);
 
-  const saveMod = document.getElementById("save-moderation");
-  if (saveMod) saveMod.addEventListener("click", saveModeration);
-
-  const saveInv = document.getElementById("save-invites");
-  if (saveInv) saveInv.addEventListener("click", saveInvites);
-
-  const addLevel = document.getElementById("add-level-role");
-  if (addLevel) addLevel.addEventListener("click", addLevelRole);
-
-  const saveLogs = document.getElementById("save-logs");
-  if (saveLogs) saveLogs.addEventListener("click", saveLogChannel);
-
-  const testLog = document.getElementById("test-log");
-  if (testLog) testLog.addEventListener("click", sendTestLog);
-
-  const levelingEnabled = document.getElementById("leveling-enabled");
-  if (levelingEnabled) {
-    levelingEnabled.addEventListener("change", async () => {
-      if (!selectedServer) return;
-      try {
-        await saveConfig({ levelingEnabled: levelingEnabled.checked });
-        setStatus(
-          "leveling-status",
-          levelingEnabled.checked ? "Leveling enabled (logged)" : "Leveling disabled (logged)",
-          true
-        );
-      } catch (e) {
-        setStatus("leveling-status", "❌ " + e.message, false);
-      }
-    });
-  }
+  ["lvl-beans-base", "lvl-beans-linear", "lvl-beans-quad"].forEach((id) => {
+    document.getElementById(id)?.addEventListener("input", updateLevelPreview);
+  });
 }
 
 async function checkLogin() {
   const loginScreen = document.getElementById("login-screen");
   const app = document.getElementById("app");
-
   try {
-    const response = await fetch("/api/user", {
-      method: "GET",
-      credentials: "include",
-      cache: "no-store",
-    });
-
+    const response = await fetch("/api/user", { credentials: "include", cache: "no-store" });
     if (!response.ok) {
-      if (loginScreen) loginScreen.hidden = false;
-      if (app) app.hidden = true;
+      loginScreen.hidden = false;
+      app.hidden = true;
       return;
     }
-
     const data = await response.json();
-
     if (!data?.authenticated || !data?.user) {
-      if (loginScreen) loginScreen.hidden = false;
-      if (app) app.hidden = true;
+      loginScreen.hidden = false;
+      app.hidden = true;
       return;
     }
-
     currentUser = data.user;
-    if (loginScreen) loginScreen.hidden = true;
-    if (app) app.hidden = false;
-
+    loginScreen.hidden = true;
+    app.hidden = false;
     updateUserInterface(currentUser);
     restoreSelectedServer();
     startServerRefresh();
-  } catch (error) {
-    console.error("Login check failed:", error);
-    if (loginScreen) loginScreen.hidden = false;
-    if (app) app.hidden = true;
+  } catch {
+    loginScreen.hidden = false;
+    app.hidden = true;
   }
 }
 
 function updateUserInterface(user) {
-  if (!user) return;
   const username = user.global_name || user.username || "Discord User";
-
   const usernameEl = document.getElementById("username");
   if (usernameEl) usernameEl.textContent = username;
-
   const welcome = document.getElementById("welcome-name");
   if (welcome) welcome.textContent = username;
-
   const avatar = document.getElementById("user-avatar");
   if (avatar) {
     avatar.src = user.avatar
@@ -135,90 +93,66 @@ function updateUserInterface(user) {
 
 function showSection(section) {
   document.querySelectorAll(".page-section").forEach((el) => el.classList.remove("active"));
-  const target = document.getElementById(section);
-  if (target) target.classList.add("active");
-
+  document.getElementById(section)?.classList.add("active");
   document.querySelectorAll(".nav-item").forEach((btn) => {
-    btn.classList.remove("active");
-    if (btn.getAttribute("data-tab") === section) btn.classList.add("active");
+    btn.classList.toggle("active", btn.getAttribute("data-tab") === section);
   });
-
   const titles = {
     overview: ["Overview", "Manage your Discord server systems."],
-    moderation: ["Moderation", "Warn logs and punishment system."],
-    invites: ["Invites", "Leaderboard and invite ranks."],
-    leveling: ["Leveling", "XP and automatic level roles."],
+    moderation: ["Moderation", "Warn logs."],
+    invites: ["Invites", "Leaderboard channel."],
+    leveling: ["Leveling", "XP, Beans rewards, and level roles."],
+    currency: ["Currency", "Daily, work, chat drops, coinflip."],
     logs: ["Logs", "Confirm dashboard saves in Discord."],
-    settings: ["Settings", "General configuration."],
+    settings: ["Settings", "General info."],
   };
-
   const info = titles[section];
   if (!info) return;
-
-  const title = document.getElementById("page-title");
-  const description = document.getElementById("page-description");
-  if (title) title.textContent = info[0];
-  if (description) description.textContent = info[1];
+  document.getElementById("page-title").textContent = info[0];
+  document.getElementById("page-description").textContent = info[1];
 }
 
 async function loadServers() {
   const list = document.getElementById("server-list");
   if (!list || isLoadingServers) return;
-
   if (list.dataset.open === "true") {
     list.innerHTML = "";
     list.dataset.open = "false";
     list.hidden = true;
     return;
   }
-
   isLoadingServers = true;
   list.hidden = false;
   list.dataset.open = "true";
-  list.innerHTML = `<div class="server-item"><span>Loading servers...</span></div>`;
-
+  list.innerHTML = `<div class="server-item"><span>Loading...</span></div>`;
   try {
-    const response = await fetch("/api/guilds", {
-      method: "GET",
-      credentials: "include",
-      cache: "no-store",
-    });
-
-    if (!response.ok) throw new Error("Failed to fetch guilds");
-
+    const response = await fetch("/api/guilds", { credentials: "include", cache: "no-store" });
+    if (!response.ok) throw new Error("fail");
     const data = await response.json();
-    const guilds = Array.isArray(data.guilds) ? data.guilds : [];
-
-    if (guilds.length === 0) {
-      list.innerHTML = `<div class="server-item"><span>No servers found (bot must be in the server).</span></div>`;
+    const guilds = data.guilds || [];
+    if (!guilds.length) {
+      list.innerHTML = `<div class="server-item"><span>No servers found.</span></div>`;
       return;
     }
-
     list.innerHTML = "";
     guilds.forEach((guild) => {
       const button = document.createElement("button");
       button.type = "button";
       button.className = "server-item";
-
       const iconUrl = guild.icon
         ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png?size=128`
         : "https://cdn.discordapp.com/embed/avatars/0.png";
-
       const img = document.createElement("img");
       img.src = iconUrl;
-      img.alt = "";
-
       const name = document.createElement("span");
-      name.textContent = guild.name || "Unknown Server";
-
+      name.textContent = guild.name || "Unknown";
       button.appendChild(img);
       button.appendChild(name);
       button.addEventListener("click", () => selectServer(guild));
       list.appendChild(button);
     });
-  } catch (error) {
-    console.error(error);
-    list.innerHTML = `<div class="server-item"><span>❌ Unable to load servers.</span></div>`;
+  } catch {
+    list.innerHTML = `<div class="server-item"><span>❌ Failed to load.</span></div>`;
   } finally {
     isLoadingServers = false;
   }
@@ -226,20 +160,17 @@ async function loadServers() {
 
 async function selectServer(guild) {
   if (!guild?.id) return;
-
   const iconUrl = guild.icon
     ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png?size=128`
     : "https://cdn.discordapp.com/embed/avatars/0.png";
-
   selectedServer = {
     id: guild.id,
-    name: guild.name || "Unknown Server",
+    name: guild.name || "Unknown",
     icon: iconUrl,
     owner: !!guild.owner,
     members: guild.approximate_member_count || 0,
     online: guild.approximate_presence_count || 0,
   };
-
   localStorage.setItem("selectedServer", JSON.stringify(selectedServer));
   renderServerDetails(selectedServer);
   closeServerList();
@@ -248,29 +179,16 @@ async function selectServer(guild) {
 
 function renderServerDetails(server) {
   if (!server) return;
-
-  const nameEl = document.getElementById("selected-server-name");
-  if (nameEl) nameEl.textContent = server.name;
-
-  const memberCount = document.getElementById("server-member-count");
-  if (memberCount) memberCount.textContent = Number(server.members || 0).toLocaleString();
-
-  const onlineCount = document.getElementById("server-online-count");
-  if (onlineCount) onlineCount.textContent = Number(server.online || 0).toLocaleString();
-
-  const ownerStatus = document.getElementById("server-owner-status");
-  if (ownerStatus) ownerStatus.textContent = server.owner ? "Owner" : "Administrator";
-
+  document.getElementById("selected-server-name").textContent = server.name;
+  document.getElementById("server-member-count").textContent = Number(server.members || 0).toLocaleString();
+  document.getElementById("server-online-count").textContent = Number(server.online || 0).toLocaleString();
+  document.getElementById("server-owner-status").textContent = server.owner ? "Owner" : "Administrator";
   const iconEl = document.getElementById("selected-server-icon");
   if (iconEl && server.icon) {
     iconEl.innerHTML = "";
     const img = document.createElement("img");
     img.src = server.icon;
-    img.alt = server.name || "";
-    img.style.width = "100%";
-    img.style.height = "100%";
-    img.style.objectFit = "cover";
-    img.style.borderRadius = "8px";
+    img.style.cssText = "width:100%;height:100%;object-fit:cover;border-radius:8px";
     iconEl.appendChild(img);
   }
 }
@@ -306,76 +224,56 @@ function startServerRefresh() {
 async function refreshSelectedServer() {
   if (!selectedServer?.id) return;
   try {
-    const response = await fetch("/api/guilds", {
-      method: "GET",
-      credentials: "include",
-      cache: "no-store",
-    });
+    const response = await fetch("/api/guilds", { credentials: "include", cache: "no-store" });
     if (!response.ok) return;
     const data = await response.json();
-    const guilds = Array.isArray(data.guilds) ? data.guilds : [];
-    const updated = guilds.find((g) => g.id === selectedServer.id);
+    const updated = (data.guilds || []).find((g) => g.id === selectedServer.id);
     if (!updated) return;
-
     selectedServer.members = updated.approximate_member_count || 0;
     selectedServer.online = updated.approximate_presence_count || 0;
     selectedServer.owner = !!updated.owner;
     localStorage.setItem("selectedServer", JSON.stringify(selectedServer));
     renderServerDetails(selectedServer);
-  } catch (e) {
-    console.error(e);
-  }
+  } catch {}
 }
 
 async function loadGuildData() {
   if (!selectedServer?.id) return;
-
   try {
     const [channelsRes, rolesRes, configRes] = await Promise.all([
       fetch(`/api/channels?guildId=${selectedServer.id}`, { credentials: "include", cache: "no-store" }),
       fetch(`/api/roles?guildId=${selectedServer.id}`, { credentials: "include", cache: "no-store" }),
       fetch(`/api/config?guildId=${selectedServer.id}`, { credentials: "include", cache: "no-store" }),
     ]);
-
     if (channelsRes.ok) {
-      const d = await channelsRes.json();
-      channelsCache = d.channels || [];
+      channelsCache = (await channelsRes.json()).channels || [];
       fillChannelSelects();
     }
-
     if (rolesRes.ok) {
-      const d = await rolesRes.json();
-      rolesCache = d.roles || [];
+      rolesCache = (await rolesRes.json()).roles || [];
       fillRoleSelect();
     }
-
     if (configRes.ok) {
-      const d = await configRes.json();
-      currentConfig = d.config || {};
+      currentConfig = (await configRes.json()).config || {};
       applyConfigToForms();
     }
-  } catch (error) {
-    console.error("Failed to load guild data:", error);
+  } catch (e) {
+    console.error(e);
   }
 }
 
 function fillChannelSelects() {
-  const selects = ["warn-channel", "invite-channel", "dashboard-log-channel"];
-
-  selects.forEach((id) => {
+  ["warn-channel", "invite-channel", "dashboard-log-channel"].forEach((id) => {
     const el = document.getElementById(id);
     if (!el) return;
-
     const current = el.value;
     el.innerHTML = `<option value="">Select a channel...</option>`;
-
     channelsCache.forEach((ch) => {
       const opt = document.createElement("option");
       opt.value = ch.id;
       opt.textContent = `#${ch.name}`;
       el.appendChild(opt);
     });
-
     if (current) el.value = current;
   });
 }
@@ -383,8 +281,7 @@ function fillChannelSelects() {
 function fillRoleSelect() {
   const el = document.getElementById("level-role");
   if (!el) return;
-
-  el.innerHTML = `<option value="">Select a role...</option>`;
+  el.innerHTML = `<option value="">Select role...</option>`;
   rolesCache.forEach((role) => {
     const opt = document.createElement("option");
     opt.value = role.id;
@@ -393,55 +290,89 @@ function fillRoleSelect() {
   });
 }
 
+function setVal(id, v) {
+  const el = document.getElementById(id);
+  if (el && v !== undefined && v !== null) el.value = v;
+}
+
+function setCheck(id, v) {
+  const el = document.getElementById(id);
+  if (el) el.checked = !!v;
+}
+
 function applyConfigToForms() {
   if (!currentConfig) return;
+  const c = currentConfig;
 
-  const warn = document.getElementById("warn-channel");
-  if (warn && currentConfig.warnChannelId) warn.value = currentConfig.warnChannelId;
+  if (c.warnChannelId) setVal("warn-channel", c.warnChannelId);
+  if (c.inviteLeaderboardChannelId) setVal("invite-channel", c.inviteLeaderboardChannelId);
+  if (c.dashboardLogChannelId) setVal("dashboard-log-channel", c.dashboardLogChannelId);
 
-  const invite = document.getElementById("invite-channel");
-  if (invite && currentConfig.inviteLeaderboardChannelId) {
-    invite.value = currentConfig.inviteLeaderboardChannelId;
-  }
+  const L = c.leveling || {};
+  setCheck("lvl-enabled", L.enabled !== false);
+  setCheck("lvl-messages", L.levelUpMessages !== false);
+  setCheck("lvl-beans-enabled", L.beansEnabled !== false);
+  setVal("lvl-xp-min", L.xpMin ?? 15);
+  setVal("lvl-xp-max", L.xpMax ?? 25);
+  setVal("lvl-xp-cd", L.xpCooldownSeconds ?? 60);
+  setVal("lvl-beans-base", L.beansBase ?? 50);
+  setVal("lvl-beans-linear", L.beansLinear ?? 50);
+  setVal("lvl-beans-quad", L.beansQuadratic ?? 5);
+  updateLevelPreview();
 
-  const logCh = document.getElementById("dashboard-log-channel");
-  if (logCh && currentConfig.dashboardLogChannelId) {
-    logCh.value = currentConfig.dashboardLogChannelId;
-  }
-
-  const levelingEnabled = document.getElementById("leveling-enabled");
-  if (levelingEnabled) {
-    levelingEnabled.checked = currentConfig.levelingEnabled !== false;
-  }
+  const U = c.currency || {};
+  setCheck("cur-enabled", U.enabled !== false);
+  setVal("cur-name", U.currencyName ?? "Beans");
+  setVal("cur-emoji", U.currencyEmoji ?? "☕");
+  setVal("cur-daily-min", U.dailyMin ?? 150);
+  setVal("cur-daily-max", U.dailyMax ?? 300);
+  setVal("cur-streak-bonus", U.dailyStreakBonus ?? 25);
+  setVal("cur-max-streak", U.dailyMaxStreak ?? 7);
+  setVal("cur-work-min", U.workMin ?? 40);
+  setVal("cur-work-max", U.workMax ?? 120);
+  setVal("cur-work-cd", U.workCooldownMinutes ?? 30);
+  setCheck("cur-chat-enabled", U.chatCoinsEnabled !== false);
+  setVal("cur-chat-chance", U.chatCoinChance ?? 8);
+  setVal("cur-chat-min", U.chatCoinMin ?? 5);
+  setVal("cur-chat-max", U.chatCoinMax ?? 20);
+  setVal("cur-chat-cd", U.chatCoinCooldownSeconds ?? 60);
+  setCheck("cur-flip-enabled", U.coinflipEnabled !== false);
+  setVal("cur-flip-max", U.coinflipMaxBet ?? 0);
 
   renderLevelRolesList();
+}
+
+function updateLevelPreview() {
+  const base = Number(document.getElementById("lvl-beans-base")?.value) || 0;
+  const linear = Number(document.getElementById("lvl-beans-linear")?.value) || 0;
+  const quad = Number(document.getElementById("lvl-beans-quad")?.value) || 0;
+  const el = document.getElementById("lvl-preview");
+  if (!el) return;
+  const samples = [1, 5, 10, 20].map((lvl) => {
+    const amt = Math.floor(base + lvl * linear + lvl * lvl * quad);
+    return `L${lvl}=${amt.toLocaleString()}`;
+  });
+  el.textContent = "Preview: " + samples.join(" · ");
 }
 
 function renderLevelRolesList() {
   const list = document.getElementById("level-roles-list");
   if (!list) return;
-
   const roles = currentConfig?.levelRoles || {};
   const keys = Object.keys(roles).map(Number).sort((a, b) => a - b);
-
-  if (keys.length === 0) {
-    list.innerHTML = `<p class="empty-list">No level roles yet. Add one above.</p>`;
+  if (!keys.length) {
+    list.innerHTML = `<p class="empty-list">No level roles yet.</p>`;
     return;
   }
-
   list.innerHTML = keys
     .map((lvl) => {
       const roleId = roles[String(lvl)];
       const role = rolesCache.find((r) => r.id === roleId);
       const name = role ? role.name : roleId;
-      return `
-        <div class="level-role-row">
-          <span><strong>Level ${lvl}</strong> → ${name}</span>
-          <button type="button" class="remove-btn" data-level="${lvl}">Remove</button>
-        </div>`;
+      return `<div class="level-role-row"><span><strong>Level ${lvl}</strong> → ${name}</span>
+        <button type="button" class="remove-btn" data-level="${lvl}">Remove</button></div>`;
     })
     .join("");
-
   list.querySelectorAll(".remove-btn").forEach((btn) => {
     btn.addEventListener("click", async () => {
       const level = Number(btn.getAttribute("data-level"));
@@ -449,9 +380,9 @@ function renderLevelRolesList() {
         await saveConfig({ removeLevelRole: level });
         if (currentConfig?.levelRoles) delete currentConfig.levelRoles[String(level)];
         renderLevelRolesList();
-        setStatus("leveling-status", `Removed level ${level} role (logged)`, true);
+        setStatus("leveling-status", `Removed level ${level}`, true);
       } catch (e) {
-        setStatus("leveling-status", "❌ " + e.message, false);
+        setStatus("leveling-status", e.message, false);
       }
     });
   });
@@ -462,19 +393,14 @@ async function saveConfig(body) {
     alert("Choose a server first.");
     return null;
   }
-
   const response = await fetch(`/api/config?guildId=${selectedServer.id}`, {
     method: "POST",
     credentials: "include",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
-
   const data = await response.json().catch(() => ({}));
-  if (!response.ok) {
-    throw new Error(data.error || "Save failed");
-  }
-
+  if (!response.ok) throw new Error(data.error || "Save failed");
   if (data.config) currentConfig = data.config;
   return data;
 }
@@ -486,90 +412,114 @@ function setStatus(id, text, ok) {
   el.style.color = ok ? "#57F287" : "#f23f43";
 }
 
-async function saveModeration() {
-  if (!selectedServer) return alert("Choose a server first.");
-  const channelId = document.getElementById("warn-channel")?.value || null;
+function num(id, fallback) {
+  const v = Number(document.getElementById(id)?.value);
+  return Number.isFinite(v) ? v : fallback;
+}
 
+async function saveModeration() {
   try {
-    await saveConfig({ warnChannelId: channelId || null });
-    setStatus("moderation-status", "✅ Saved — check your log channel in Discord", true);
+    await saveConfig({ warnChannelId: document.getElementById("warn-channel")?.value || null });
+    setStatus("moderation-status", "✅ Saved", true);
   } catch (e) {
     setStatus("moderation-status", "❌ " + e.message, false);
   }
 }
 
 async function saveInvites() {
-  if (!selectedServer) return alert("Choose a server first.");
-  const channelId = document.getElementById("invite-channel")?.value || null;
-
   try {
-    await saveConfig({ inviteLeaderboardChannelId: channelId || null });
-    setStatus("invites-status", "✅ Saved — check your log channel in Discord", true);
+    await saveConfig({ inviteLeaderboardChannelId: document.getElementById("invite-channel")?.value || null });
+    setStatus("invites-status", "✅ Saved", true);
   } catch (e) {
     setStatus("invites-status", "❌ " + e.message, false);
   }
 }
 
-async function addLevelRole() {
-  if (!selectedServer) return alert("Choose a server first.");
+async function saveLeveling() {
+  try {
+    await saveConfig({
+      leveling: {
+        enabled: document.getElementById("lvl-enabled")?.checked !== false,
+        levelUpMessages: document.getElementById("lvl-messages")?.checked !== false,
+        beansEnabled: document.getElementById("lvl-beans-enabled")?.checked !== false,
+        xpMin: num("lvl-xp-min", 15),
+        xpMax: num("lvl-xp-max", 25),
+        xpCooldownSeconds: num("lvl-xp-cd", 60),
+        beansBase: num("lvl-beans-base", 50),
+        beansLinear: num("lvl-beans-linear", 50),
+        beansQuadratic: num("lvl-beans-quad", 5),
+      },
+    });
+    setStatus("leveling-status", "✅ Leveling settings saved", true);
+  } catch (e) {
+    setStatus("leveling-status", "❌ " + e.message, false);
+  }
+}
 
+async function saveCurrency() {
+  try {
+    await saveConfig({
+      currency: {
+        enabled: document.getElementById("cur-enabled")?.checked !== false,
+        currencyName: document.getElementById("cur-name")?.value?.trim() || "Beans",
+        currencyEmoji: document.getElementById("cur-emoji")?.value?.trim() || "☕",
+        dailyMin: num("cur-daily-min", 150),
+        dailyMax: num("cur-daily-max", 300),
+        dailyStreakBonus: num("cur-streak-bonus", 25),
+        dailyMaxStreak: num("cur-max-streak", 7),
+        workMin: num("cur-work-min", 40),
+        workMax: num("cur-work-max", 120),
+        workCooldownMinutes: num("cur-work-cd", 30),
+        chatCoinsEnabled: document.getElementById("cur-chat-enabled")?.checked !== false,
+        chatCoinChance: num("cur-chat-chance", 8),
+        chatCoinMin: num("cur-chat-min", 5),
+        chatCoinMax: num("cur-chat-max", 20),
+        chatCoinCooldownSeconds: num("cur-chat-cd", 60),
+        coinflipEnabled: document.getElementById("cur-flip-enabled")?.checked !== false,
+        coinflipMaxBet: num("cur-flip-max", 0),
+      },
+    });
+    setStatus("currency-status", "✅ Currency settings saved", true);
+  } catch (e) {
+    setStatus("currency-status", "❌ " + e.message, false);
+  }
+}
+
+async function addLevelRole() {
   const level = Number(document.getElementById("level-number")?.value);
   const roleId = document.getElementById("level-role")?.value;
-
-  if (!level || level < 1) return alert("Enter a valid level.");
+  if (!level || level < 1) return alert("Enter a level.");
   if (!roleId) return alert("Select a role.");
-
   try {
     await saveConfig({ setLevelRole: { level, roleId } });
     if (!currentConfig.levelRoles) currentConfig.levelRoles = {};
     currentConfig.levelRoles[String(level)] = roleId;
     renderLevelRolesList();
     document.getElementById("level-number").value = "";
-    setStatus("leveling-status", `✅ Level ${level} role saved (logged)`, true);
+    setStatus("leveling-status", `✅ Level ${level} role saved`, true);
   } catch (e) {
     setStatus("leveling-status", "❌ " + e.message, false);
   }
 }
 
 async function saveLogChannel() {
-  if (!selectedServer) return alert("Choose a server first.");
-  const channelId = document.getElementById("dashboard-log-channel")?.value || null;
-
-  if (!channelId) {
-    return alert("Select a log channel first.");
-  }
-
+  const channelId = document.getElementById("dashboard-log-channel")?.value;
+  if (!channelId) return alert("Select a log channel.");
   try {
     await saveConfig({ dashboardLogChannelId: channelId });
-    setStatus(
-      "logs-status",
-      "✅ Log channel saved — a confirmation should appear in that channel",
-      true
-    );
+    setStatus("logs-status", "✅ Log channel saved — check Discord", true);
   } catch (e) {
     setStatus("logs-status", "❌ " + e.message, false);
   }
 }
 
 async function sendTestLog() {
-  if (!selectedServer) return alert("Choose a server first.");
-
   const channelId = document.getElementById("dashboard-log-channel")?.value;
-  if (!channelId && !currentConfig?.dashboardLogChannelId) {
-    return alert("Save a log channel first, then send a test.");
-  }
-
   try {
-    // Ensure channel is set, then send test
     const body = { testLog: true };
     if (channelId) body.dashboardLogChannelId = channelId;
-
     await saveConfig(body);
-    setStatus(
-      "logs-status",
-      "✅ Test log sent — open that channel in Discord to confirm",
-      true
-    );
+    setStatus("logs-status", "✅ Test log sent", true);
   } catch (e) {
     setStatus("logs-status", "❌ " + e.message, false);
   }
