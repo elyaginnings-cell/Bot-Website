@@ -6,7 +6,7 @@
     <title>Coffee Shop — Bot Control</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="mode-pc">
+<body class="mode-auto">
 
     <div id="login-screen" class="login-screen">
         <div class="login-card">
@@ -39,24 +39,34 @@
             <div class="sidebar-bottom">
                 <div class="connection-status">
                     <span class="status-dot"></span>
-                    <span>Dashboard</span>
+                    <span>Dashboard online</span>
                 </div>
             </div>
         </aside>
 
         <main class="main">
             <header class="header card">
-                <div>
+                <div class="header-text">
                     <h1 id="page-title">Overview</h1>
                     <p id="page-description">Manage your Discord server systems.</p>
                 </div>
-                <div class="account">
-                    <div class="account-avatar"><img id="user-avatar" src="" alt=""></div>
-                    <div class="account-info">
-                        <strong id="username">Loading...</strong>
-                        <span>Discord Account</span>
+                <div class="header-actions">
+                    <div class="view-mode-wrap">
+                        <label class="view-mode-label" for="view-mode">View</label>
+                        <select id="view-mode" class="view-mode-select" title="Layout mode">
+                            <option value="auto">Auto</option>
+                            <option value="desktop">Desktop</option>
+                            <option value="mobile">Mobile</option>
+                        </select>
                     </div>
-                    <button class="logout-btn" id="logout-button" type="button">Logout</button>
+                    <div class="account">
+                        <div class="account-avatar"><img id="user-avatar" src="" alt=""></div>
+                        <div class="account-info">
+                            <strong id="username">Loading...</strong>
+                            <span>Discord Account</span>
+                        </div>
+                        <button class="logout-btn" id="logout-button" type="button">Logout</button>
+                    </div>
                 </div>
             </header>
 
@@ -81,7 +91,7 @@
                         <div>
                             <span class="eyebrow">DASHBOARD</span>
                             <h2>Welcome back, <span id="welcome-name">...</span>.</h2>
-                            <p>Configure moderation, economy, shop, and more.</p>
+                            <p>Configure moderation, economy, shop, and more from one place.</p>
                         </div>
                         <div class="hero-icon">☕</div>
                     </div>
@@ -284,9 +294,10 @@
                 </section>
 
                 <section id="settings" class="page-section">
-                    <div class="card form-card">
+                    <div class="card form-card wide">
                         <span class="eyebrow">INFO</span>
                         <h2>Settings</h2>
+                        <p>Use the <strong>View</strong> dropdown next to your account to switch Desktop / Mobile / Auto layout.</p>
                         <p>Shop is private via /shop. Boosts and titles show on /inventory, /rank, and /balance.</p>
                     </div>
                 </section>
