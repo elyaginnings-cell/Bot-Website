@@ -300,11 +300,15 @@ async function loadGuildData() {
 }
 
 function fillChannelSelects() {
-  ["warn-channel", "invite-channel", "dashboard-log-channel"].forEach((id) => {
+  ["warn-channel", "invite-channel", "dashboard-log-channel", "level-up-channel"].forEach((id) => {
     const el = document.getElementById(id);
     if (!el) return;
     const current = el.value;
-    el.innerHTML = `<option value="">Select a channel...</option>`;
+    const emptyLabel =
+      id === "level-up-channel"
+        ? "Same channel they leveled in"
+        : "Select a channel...";
+    el.innerHTML = `<option value="">${emptyLabel}</option>`;
     channelsCache.forEach((ch) => {
       const opt = document.createElement("option");
       opt.value = ch.id;
@@ -348,6 +352,8 @@ function applyConfigToForms() {
   if (c.warnChannelId) setVal("warn-channel", c.warnChannelId);
   if (c.inviteLeaderboardChannelId) setVal("invite-channel", c.inviteLeaderboardChannelId);
   if (c.dashboardLogChannelId) setVal("dashboard-log-channel", c.dashboardLogChannelId);
+  if (c.levelUpChannelId) setVal("level-up-channel", c.levelUpChannelId);
+  else setVal("level-up-channel", "");
 
   const L = c.leveling || {};
   setCheck("lvl-enabled", L.enabled !== false);
@@ -554,7 +560,9 @@ async function saveInvites() {
 
 async function saveLeveling() {
   try {
+    const channelId = document.getElementById("level-up-channel")?.value || null;
     const data = await saveConfig({
+      levelUpChannelId: channelId,
       leveling: {
         enabled: document.getElementById("lvl-enabled")?.checked !== false,
         levelUpMessages: document.getElementById("lvl-messages")?.checked !== false,
