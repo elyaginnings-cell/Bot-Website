@@ -14,7 +14,6 @@ body {
 button, input, select { font: inherit; }
 button { -webkit-tap-highlight-color: transparent; }
 
-/* LOGIN */
 .login-screen {
     min-height: 100vh;
     display: flex;
@@ -287,6 +286,16 @@ button { -webkit-tap-highlight-color: transparent; }
     transform: translateY(-1px);
 }
 
+.button.secondary {
+    background: transparent;
+    border: 1px solid rgba(255, 77, 240, 0.5);
+    color: #ff9ef5;
+}
+
+.button.secondary:hover {
+    background: rgba(255, 77, 240, 0.15);
+}
+
 .page-section {
     display: none;
     flex-direction: column;
@@ -336,7 +345,7 @@ button { -webkit-tap-highlight-color: transparent; }
 }
 
 .quick-grid.three {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
 }
 
 .quick-card {
