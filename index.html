@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Coffee Shop — Bot Control</title>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -122,7 +122,6 @@
                     </div>
                 </section>
 
-                <!-- LEVELING -->
                 <section id="leveling" class="page-section">
                     <div class="card form-card wide">
                         <span class="eyebrow">LEVELING</span>
@@ -134,17 +133,17 @@
                         <label class="toggle"><input type="checkbox" id="lvl-beans-enabled" checked> <span>Give Beans on level-up</span></label>
 
                         <div class="config-grid">
-                            <div class="input-group"><label>XP min / message</label><input id="lvl-xp-min" type="number" min="1"></div>
-                            <div class="input-group"><label>XP max / message</label><input id="lvl-xp-max" type="number" min="1"></div>
-                            <div class="input-group"><label>XP cooldown (seconds)</label><input id="lvl-xp-cd" type="number" min="5"></div>
+                            <div class="input-group"><label>XP min / message</label><input id="lvl-xp-min" type="number" min="1" inputmode="numeric"></div>
+                            <div class="input-group"><label>XP max / message</label><input id="lvl-xp-max" type="number" min="1" inputmode="numeric"></div>
+                            <div class="input-group"><label>XP cooldown (seconds)</label><input id="lvl-xp-cd" type="number" min="5" inputmode="numeric"></div>
                         </div>
 
                         <h3 class="subhead">Beans formula per level</h3>
                         <p class="form-hint">Reward = Base + (Level × Linear) + (Level² × Quadratic)</p>
                         <div class="config-grid">
-                            <div class="input-group"><label>Base</label><input id="lvl-beans-base" type="number" min="0"></div>
-                            <div class="input-group"><label>Linear</label><input id="lvl-beans-linear" type="number" min="0"></div>
-                            <div class="input-group"><label>Quadratic</label><input id="lvl-beans-quad" type="number" min="0"></div>
+                            <div class="input-group"><label>Base</label><input id="lvl-beans-base" type="number" min="0" inputmode="numeric"></div>
+                            <div class="input-group"><label>Linear</label><input id="lvl-beans-linear" type="number" min="0" inputmode="numeric"></div>
+                            <div class="input-group"><label>Quadratic</label><input id="lvl-beans-quad" type="number" min="0" inputmode="numeric"></div>
                         </div>
                         <p class="form-hint" id="lvl-preview">Preview: Level 10 → …</p>
 
@@ -153,7 +152,7 @@
 
                         <h3 class="subhead">Level roles</h3>
                         <div class="level-role-form">
-                            <div class="input-group"><label>Level</label><input id="level-number" type="number" min="1"></div>
+                            <div class="input-group"><label>Level</label><input id="level-number" type="number" min="1" inputmode="numeric"></div>
                             <div class="input-group"><label>Role</label><select id="level-role"><option value="">Select role...</option></select></div>
                             <button class="button" id="add-level-role" type="button">Add</button>
                         </div>
@@ -161,7 +160,6 @@
                     </div>
                 </section>
 
-                <!-- CURRENCY -->
                 <section id="currency" class="page-section">
                     <div class="card form-card wide">
                         <span class="eyebrow">CURRENCY</span>
@@ -177,33 +175,33 @@
 
                         <h3 class="subhead">Daily</h3>
                         <div class="config-grid">
-                            <div class="input-group"><label>Min</label><input id="cur-daily-min" type="number" min="1"></div>
-                            <div class="input-group"><label>Max</label><input id="cur-daily-max" type="number" min="1"></div>
-                            <div class="input-group"><label>Streak bonus / day</label><input id="cur-streak-bonus" type="number" min="0"></div>
-                            <div class="input-group"><label>Max streak days</label><input id="cur-max-streak" type="number" min="1"></div>
+                            <div class="input-group"><label>Min</label><input id="cur-daily-min" type="number" min="1" inputmode="numeric"></div>
+                            <div class="input-group"><label>Max</label><input id="cur-daily-max" type="number" min="1" inputmode="numeric"></div>
+                            <div class="input-group"><label>Streak bonus / day</label><input id="cur-streak-bonus" type="number" min="0" inputmode="numeric"></div>
+                            <div class="input-group"><label>Max streak days</label><input id="cur-max-streak" type="number" min="1" inputmode="numeric"></div>
                         </div>
 
                         <h3 class="subhead">Work</h3>
                         <div class="config-grid">
-                            <div class="input-group"><label>Min</label><input id="cur-work-min" type="number" min="1"></div>
-                            <div class="input-group"><label>Max</label><input id="cur-work-max" type="number" min="1"></div>
-                            <div class="input-group"><label>Cooldown (minutes)</label><input id="cur-work-cd" type="number" min="1"></div>
+                            <div class="input-group"><label>Min</label><input id="cur-work-min" type="number" min="1" inputmode="numeric"></div>
+                            <div class="input-group"><label>Max</label><input id="cur-work-max" type="number" min="1" inputmode="numeric"></div>
+                            <div class="input-group"><label>Cooldown (minutes)</label><input id="cur-work-cd" type="number" min="1" inputmode="numeric"></div>
                         </div>
 
                         <h3 class="subhead">Chat drops</h3>
                         <label class="toggle"><input type="checkbox" id="cur-chat-enabled" checked> <span>Random chat earnings</span></label>
                         <div class="config-grid">
-                            <div class="input-group"><label>Chance %</label><input id="cur-chat-chance" type="number" min="0" max="100"></div>
-                            <div class="input-group"><label>Min</label><input id="cur-chat-min" type="number" min="1"></div>
-                            <div class="input-group"><label>Max</label><input id="cur-chat-max" type="number" min="1"></div>
-                            <div class="input-group"><label>Cooldown (sec)</label><input id="cur-chat-cd" type="number" min="5"></div>
+                            <div class="input-group"><label>Chance %</label><input id="cur-chat-chance" type="number" min="0" max="100" inputmode="numeric"></div>
+                            <div class="input-group"><label>Min</label><input id="cur-chat-min" type="number" min="1" inputmode="numeric"></div>
+                            <div class="input-group"><label>Max</label><input id="cur-chat-max" type="number" min="1" inputmode="numeric"></div>
+                            <div class="input-group"><label>Cooldown (sec)</label><input id="cur-chat-cd" type="number" min="5" inputmode="numeric"></div>
                         </div>
 
                         <h3 class="subhead">Coinflip</h3>
                         <label class="toggle"><input type="checkbox" id="cur-flip-enabled" checked> <span>Coinflip enabled</span></label>
-                        <div class="input-group" style="max-width:200px">
+                        <div class="input-group">
                             <label>Max bet (0 = unlimited)</label>
-                            <input id="cur-flip-max" type="number" min="0">
+                            <input id="cur-flip-max" type="number" min="0" inputmode="numeric">
                         </div>
 
                         <button class="button" id="save-currency" type="button">Save Currency Settings</button>
@@ -215,15 +213,20 @@
                     <div class="card form-card wide">
                         <span class="eyebrow">LOGS</span>
                         <h2>Dashboard logs</h2>
+                        <p>
+                            Pick a channel the bot can post in. After you save, you should see a green embed there.
+                            If it fails, the message below will say why (usually missing permissions).
+                        </p>
                         <div class="input-group">
                             <label for="dashboard-log-channel">Log channel</label>
                             <select id="dashboard-log-channel"><option value="">Select a channel...</option></select>
                         </div>
-                        <div style="display:flex;gap:10px;flex-wrap:wrap">
+                        <div class="btn-row">
                             <button class="button" id="save-logs" type="button">Save Log Channel</button>
                             <button class="button secondary" id="test-log" type="button">Send Test Log</button>
                         </div>
                         <p class="form-hint" id="logs-status"></p>
+                        <p class="form-hint">Bot needs: <strong>View Channel</strong>, <strong>Send Messages</strong>, <strong>Embed Links</strong> in that channel.</p>
                     </div>
                 </section>
 
