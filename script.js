@@ -6,6 +6,19 @@ let channelsCache = [];
 let rolesCache = [];
 let currentConfig = null;
 
+const SHOP_TYPE_META = {
+  role: { role: true, duration: false, amount: false, title: false, hint: "Permanent role: member keeps it forever." },
+  temp_role: { role: true, duration: true, amount: false, title: false, hint: "Temporary role: auto-removed after hours." },
+  xp_boost: { role: false, duration: true, amount: true, title: false, amountLabel: "Multiplier ×100 (200 = 2x)", hint: "XP boost while chatting. Amount 200 = 2× XP." },
+  bean_boost: { role: false, duration: true, amount: true, title: false, amountLabel: "Multiplier ×100 (200 = 2x)", hint: "Boosts daily, work, and chat Bean drops." },
+  title: { role: false, duration: false, amount: false, title: true, hint: "Cosmetic title on /rank and /balance." },
+  xp_pack: { role: false, duration: false, amount: true, title: false, amountLabel: "XP to grant", hint: "Instant XP dump into their level." },
+  bean_pack: { role: false, duration: false, amount: true, title: false, amountLabel: "Beans to grant", hint: "Instant Beans added to balance." },
+  mystery: { role: false, duration: false, amount: true, title: false, amountLabel: "Max Beans in box", hint: "Random Beans between ~25% of max and max." },
+  work_skip: { role: false, duration: false, amount: false, title: false, hint: "One free /work with no cooldown." },
+  daily_reset: { role: false, duration: false, amount: false, title: false, hint: "Lets them claim /daily again immediately." },
+};
+
 document.addEventListener("DOMContentLoaded", () => {
   setupEventListeners();
   checkLogin();
@@ -44,10 +57,32 @@ function setupEventListeners() {
   document.getElementById("test-log")?.addEventListener("click", sendTestLog);
   document.getElementById("save-shop-toggle")?.addEventListener("click", saveShopToggle);
   document.getElementById("add-shop-item")?.addEventListener("click", addShopItem);
+  document.getElementById("shop-type")?.addEventListener("change", updateShopTypeFields);
 
   ["lvl-beans-base", "lvl-beans-linear", "lvl-beans-quad"].forEach((id) => {
     document.getElementById(id)?.addEventListener("input", updateLevelPreview);
   });
+
+  updateShopTypeFields();
+}
+
+function updateShopTypeFields() {
+  const type = document.getElementById("shop-type")?.value || "role";
+  const meta = SHOP_TYPE_META[type] || SHOP_TYPE_META.role;
+
+  const roleWrap = document.getElementById("shop-role-wrap");
+  const durWrap = document.getElementById("shop-duration-wrap");
+  const amtWrap = document.getElementById("shop-amount-wrap");
+  const titleWrap = document.getElementById("shop-title-wrap");
+  const hint = document.getElementById("shop-type-hint");
+  const amtLabel = document.getElementById("shop-amount-label");
+
+  if (roleWrap) roleWrap.hidden = !meta.role;
+  if (durWrap) durWrap.hidden = !meta.duration;
+  if (amtWrap) amtWrap.hidden = !meta.amount;
+  if (titleWrap) titleWrap.hidden = !meta.title;
+  if (hint) hint.textContent = meta.hint || "";
+  if (amtLabel && meta.amountLabel) amtLabel.textContent = meta.amountLabel;
 }
 
 async function checkLogin() {
@@ -103,7 +138,7 @@ function showSection(section) {
     invites: ["Invites", "Leaderboard channel."],
     leveling: ["Leveling", "XP, Beans rewards, and level roles."],
     currency: ["Currency", "Daily, work, chat drops, coinflip."],
-    shop: ["Shop", "Sell roles for currency (private /shop)."],
+    shop: ["Shop", "Roles, boosts, packs, titles — private /shop."],
     logs: ["Logs", "Confirm dashboard saves in Discord."],
     settings: ["Settings", "General info."],
   };
@@ -350,6 +385,7 @@ function applyConfigToForms() {
 
   renderLevelRolesList();
   renderShopItems();
+  updateShopTypeFields();
 }
 
 function updateLevelPreview() {
@@ -398,21 +434,32 @@ function renderLevelRolesList() {
   });
 }
 
+function typePretty(t) {
+  return (SHOP_TYPE_META[t] && t) ? t.replace(/_/g, " ") : t;
+}
+
 function renderShopItems() {
   const list = document.getElementById("shop-items-list");
   if (!list) return;
   const items = currentConfig?.shop?.items || [];
   if (!items.length) {
-    list.innerHTML = `<p class="empty-list">No shop items yet. Add a role item above.</p>`;
+    list.innerHTML = `<p class="empty-list">No shop items yet.</p>`;
     return;
   }
   list.innerHTML = items
     .map((item) => {
-      const role = rolesCache.find((r) => r.id === item.roleId);
-      const roleName = role ? role.name : item.roleId;
-      const desc = item.description ? `<br><span style="color:#b89cd9;font-size:12px">${escapeHtml(item.description)}</span>` : "";
+      const role = item.roleId ? rolesCache.find((r) => r.id === item.roleId) : null;
+      const bits = [
+        `<strong>${escapeHtml(item.name)}</strong>`,
+        `${Number(item.price).toLocaleString()} ☕`,
+        `<em>${escapeHtml(typePretty(item.type))}</em>`,
+      ];
+      if (role) bits.push(escapeHtml(role.name));
+      if (item.durationHours) bits.push(`${item.durationHours}h`);
+      if (item.amount != null) bits.push(`amt ${item.amount}`);
+      if (item.titleText) bits.push(`“${escapeHtml(item.titleText)}”`);
       return `<div class="level-role-row">
-        <span><strong>${escapeHtml(item.name)}</strong> — ${Number(item.price).toLocaleString()} · ${escapeHtml(roleName)}${desc}</span>
+        <span>${bits.join(" · ")}</span>
         <button type="button" class="remove-btn" data-shop-id="${item.id}">Remove</button>
       </div>`;
     })
@@ -570,18 +617,32 @@ async function saveShopToggle() {
 }
 
 async function addShopItem() {
+  const type = document.getElementById("shop-type")?.value || "role";
+  const meta = SHOP_TYPE_META[type] || SHOP_TYPE_META.role;
   const name = document.getElementById("shop-name")?.value?.trim();
   const price = Number(document.getElementById("shop-price")?.value);
-  const roleId = document.getElementById("shop-role")?.value;
+  const roleId = document.getElementById("shop-role")?.value || null;
   const description = document.getElementById("shop-desc")?.value?.trim() || "";
+  const durationHours = document.getElementById("shop-duration")?.value;
+  const amount = document.getElementById("shop-amount")?.value;
+  const titleText = document.getElementById("shop-title-text")?.value?.trim() || "";
 
   if (!name) return alert("Enter an item name.");
-  if (!roleId) return alert("Select a role.");
   if (!Number.isFinite(price) || price < 0) return alert("Enter a valid price.");
+  if (meta.role && !roleId) return alert("Select a role for this item type.");
 
   try {
     const data = await saveConfig({
-      addShopItem: { name, price, roleId, description },
+      addShopItem: {
+        type,
+        name,
+        price,
+        roleId: meta.role ? roleId : null,
+        description,
+        durationHours: meta.duration ? Number(durationHours) || 24 : null,
+        amount: meta.amount ? Number(amount) || 0 : null,
+        titleText: meta.title ? titleText || name : null,
+      },
     });
     renderShopItems();
     document.getElementById("shop-name").value = "";
