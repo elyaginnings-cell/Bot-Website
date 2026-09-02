@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Coffee Shop — Bot Control</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="server-view.css">
 </head>
 <body class="mode-auto">
 
@@ -35,6 +36,7 @@
                 <button class="nav-item" data-tab="shop" type="button"><span>🛒</span> Shop</button>
                 <button class="nav-item" data-tab="logs" type="button"><span>📋</span> Logs</button>
                 <button class="nav-item" data-tab="settings" type="button"><span>⚙️</span> Settings</button>
+                <button class="nav-item" id="nav-server-view" type="button"><span>💬</span> Server View</button>
             </nav>
             <div class="sidebar-bottom">
                 <div class="connection-status">
@@ -59,6 +61,7 @@
                             <option value="mobile">Mobile</option>
                         </select>
                     </div>
+                    <button class="button secondary" id="open-server-view" type="button">💬 Server</button>
                     <div class="account">
                         <div class="account-avatar"><img id="user-avatar" src="" alt=""></div>
                         <div class="account-info">
@@ -297,14 +300,54 @@
                     <div class="card form-card wide">
                         <span class="eyebrow">INFO</span>
                         <h2>Settings</h2>
-                        <p>Use the <strong>View</strong> dropdown next to your account to switch Desktop / Mobile / Auto layout.</p>
-                        <p>Shop is private via /shop. Boosts and titles show on /inventory, /rank, and /balance.</p>
+                        <p>Use <strong>Server View</strong> (sidebar or header) to watch and chat in the server through the bot.</p>
+                        <p>Use the <strong>View</strong> dropdown for Desktop / Mobile / Auto layout.</p>
                     </div>
                 </section>
 
             </div>
         </main>
     </div>
+
+    <div id="server-view" class="server-view" hidden>
+        <div class="sv-topbar">
+            <div class="sv-top-left">
+                <button type="button" class="sv-back" id="close-server-view">← Dashboard</button>
+                <div class="sv-server-pill">
+                    <span id="sv-server-name">Server</span>
+                </div>
+            </div>
+            <div class="sv-top-right">
+                <span class="sv-hint">Reading live · sending as the bot</span>
+            </div>
+        </div>
+        <div class="sv-body">
+            <aside class="sv-channels">
+                <div class="sv-channels-head">Channels</div>
+                <div id="sv-channel-list" class="sv-channel-list"></div>
+            </aside>
+            <section class="sv-chat">
+                <header class="sv-chat-head">
+                    <strong id="sv-channel-title"># select a channel</strong>
+                    <button type="button" class="sv-refresh" id="sv-refresh">Refresh</button>
+                </header>
+                <div id="sv-messages" class="sv-messages">
+                    <p class="sv-empty">Pick a channel to load messages.</p>
+                </div>
+                <form id="sv-composer" class="sv-composer">
+                    <input id="sv-input" type="text" maxlength="2000" placeholder="Message as the bot…" autocomplete="off" disabled>
+                    <button type="submit" class="button" id="sv-send" disabled>Send</button>
+                </form>
+            </section>
+        </div>
+    </div>
+
     <script src="script.js"></script>
+    <script src="server-view.js"></script>
+    <script>
+      document.getElementById("nav-server-view")?.addEventListener("click", () => {
+        if (typeof openServerView === "function") openServerView();
+      });
+    </script>
 </body>
 </html>
