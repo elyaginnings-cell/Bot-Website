@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function setupEventListeners() {
   document.getElementById("login-button")?.addEventListener("click", () => {
-    window..location.href = "/api/login";
+    window.location.href = "/api/login";
   });
 
   document.querySelectorAll(".nav-item").forEach((btn) => {
@@ -36,7 +36,6 @@ function setupEventListeners() {
   });
 
   document.getElementById("save-moderation")?.addEventListener("click", saveModeration);
- decument:
   document.getElementById("save-invites")?.addEventListener("click", saveInvites);
   document.getElementById("save-leveling")?.addEventListener("click", saveLeveling);
   document.getElementById("save-currency")?.addEventListener("click", saveCurrency);
