@@ -128,8 +128,17 @@
                         <span class="eyebrow">LEVELING</span>
                         <h2>Leveling settings</h2>
                         <label class="toggle"><input type="checkbox" id="lvl-enabled" checked> <span>Leveling enabled</span></label>
-                        <label class="toggle"><input type="checkbox" id="lvl-messages" checked> <span>Level-up messages in chat</span></label>
+                        <label class="toggle"><input type="checkbox" id="lvl-messages" checked> <span>Level-up messages on</span></label>
                         <label class="toggle"><input type="checkbox" id="lvl-beans-enabled" checked> <span>Give Beans on level-up</span></label>
+
+                        <div class="input-group">
+                            <label for="level-up-channel">Level-up channel</label>
+                            <select id="level-up-channel">
+                                <option value="">Same channel they leveled in</option>
+                            </select>
+                        </div>
+                        <p class="form-hint">If set, all level-up pings go here instead of the chat channel.</p>
+
                         <div class="config-grid">
                             <div class="input-group"><label>XP min</label><input id="lvl-xp-min" type="number" min="1" inputmode="numeric"></div>
                             <div class="input-group"><label>XP max</label><input id="lvl-xp-max" type="number" min="1" inputmode="numeric"></div>
