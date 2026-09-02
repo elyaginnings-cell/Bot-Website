@@ -26,6 +26,7 @@ body.server-view-open {
   border-bottom: 1px solid rgba(255, 77, 240, 0.25);
   background: #160a24;
   flex-shrink: 0;
+  flex-wrap: wrap;
 }
 
 .sv-top-left {
@@ -33,6 +34,7 @@ body.server-view-open {
   align-items: center;
   gap: 12px;
   min-width: 0;
+  flex-wrap: wrap;
 }
 
 .sv-back {
@@ -56,6 +58,36 @@ body.server-view-open {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.sv-name-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 77, 240, 0.3);
+  border-radius: 10px;
+  padding: 4px 10px;
+}
+
+.sv-name-wrap label {
+  font-size: 11px;
+  color: #7a5e99;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.sv-name-wrap input {
+  width: 140px;
+  max-width: 28vw;
+  background: transparent;
+  border: none;
+  color: #f5e9ff;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 0;
+  outline: none;
 }
 
 .sv-hint {
@@ -268,5 +300,8 @@ body.server-view-open {
   }
   .sv-hint {
     display: none;
+  }
+  .sv-name-wrap input {
+    width: 110px;
   }
 }

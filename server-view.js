@@ -10,6 +10,23 @@ function initServerView() {
   document.getElementById("close-server-view")?.addEventListener("click", closeServerView);
   document.getElementById("sv-refresh")?.addEventListener("click", () => loadSvMessages(true));
   document.getElementById("sv-composer")?.addEventListener("submit", sendSvMessage);
+
+  const nameInput = document.getElementById("sv-display-name");
+  if (nameInput) {
+    nameInput.value = localStorage.getItem("svDisplayName") || "";
+    nameInput.addEventListener("change", () => {
+      localStorage.setItem("svDisplayName", nameInput.value.trim().slice(0, 80));
+    });
+    nameInput.addEventListener("blur", () => {
+      localStorage.setItem("svDisplayName", nameInput.value.trim().slice(0, 80));
+    });
+  }
+}
+
+function getSvDisplayName() {
+  const el = document.getElementById("sv-display-name");
+  const v = (el?.value || localStorage.getItem("svDisplayName") || "").trim().slice(0, 80);
+  return v || null;
 }
 
 function openServerView() {
@@ -24,6 +41,10 @@ function openServerView() {
   view.hidden = false;
   document.body.classList.add("server-view-open");
   document.getElementById("sv-server-name").textContent = selectedServer.name || "Server";
+  const nameInput = document.getElementById("sv-display-name");
+  if (nameInput && !nameInput.value) {
+    nameInput.value = localStorage.getItem("svDisplayName") || "";
+  }
   renderSvChannels();
   if (svActiveChannelId) {
     loadSvMessages(true);
@@ -188,6 +209,15 @@ async function sendSvMessage(e) {
   const input = document.getElementById("sv-input");
   const content = input?.value?.trim();
   if (!content || !selectedServer?.id || !svActiveChannelId) return;
+
+  const username = getSvDisplayName();
+  if (!username) {
+    alert("Set a display name first (top bar) — that name shows in Discord instead of the bot.");
+    document.getElementById("sv-display-name")?.focus();
+    return;
+  }
+
+  localStorage.setItem("svDisplayName", username);
   input.disabled = true;
   try {
     const params = new URLSearchParams({
@@ -198,12 +228,15 @@ async function sendSvMessage(e) {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ content }),
+      body: JSON.stringify({ content, username }),
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
       alert(data.error || "Send failed");
       return;
+    }
+    if (data.warning) {
+      console.warn(data.warning);
     }
     input.value = "";
     if (data.message) {
