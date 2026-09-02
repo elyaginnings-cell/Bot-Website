@@ -32,6 +32,7 @@
                 <button class="nav-item" data-tab="invites" type="button"><span>📨</span> Invites</button>
                 <button class="nav-item" data-tab="leveling" type="button"><span>📈</span> Leveling</button>
                 <button class="nav-item" data-tab="currency" type="button"><span>☕</span> Currency</button>
+                <button class="nav-item" data-tab="shop" type="button"><span>🛒</span> Shop</button>
                 <button class="nav-item" data-tab="logs" type="button"><span>📋</span> Logs</button>
                 <button class="nav-item" data-tab="settings" type="button"><span>⚙️</span> Settings</button>
             </nav>
@@ -80,7 +81,7 @@
                         <div>
                             <span class="eyebrow">DASHBOARD</span>
                             <h2>Welcome back, <span id="welcome-name">...</span>.</h2>
-                            <p>Fully configure moderation, invites, leveling, and currency.</p>
+                            <p>Configure moderation, economy, shop, and more.</p>
                         </div>
                         <div class="hero-icon">☕</div>
                     </div>
@@ -90,8 +91,8 @@
                         <div class="stat-card card"><span class="stat-icon">👑</span><div><span class="label">Role</span><strong id="server-owner-status">-</strong></div></div>
                     </div>
                     <div class="quick-grid three">
-                        <button class="quick-card card" data-section-link="leveling" type="button"><span class="quick-icon">📈</span><div><strong>Leveling</strong><p>XP rates &amp; Bean rewards</p></div><span class="arrow">→</span></button>
-                        <button class="quick-card card" data-section-link="currency" type="button"><span class="quick-icon">☕</span><div><strong>Currency</strong><p>Daily, work, coinflip</p></div><span class="arrow">→</span></button>
+                        <button class="quick-card card" data-section-link="currency" type="button"><span class="quick-icon">☕</span><div><strong>Currency</strong><p>Beans &amp; rewards</p></div><span class="arrow">→</span></button>
+                        <button class="quick-card card" data-section-link="shop" type="button"><span class="quick-icon">🛒</span><div><strong>Shop</strong><p>Sell roles for Beans</p></div><span class="arrow">→</span></button>
                         <button class="quick-card card" data-section-link="logs" type="button"><span class="quick-icon">📋</span><div><strong>Logs</strong><p>Confirm saves</p></div><span class="arrow">→</span></button>
                     </div>
                 </section>
@@ -126,30 +127,23 @@
                     <div class="card form-card wide">
                         <span class="eyebrow">LEVELING</span>
                         <h2>Leveling settings</h2>
-                        <p>Tune XP, cooldowns, level-up messages, and Beans per level.</p>
-
                         <label class="toggle"><input type="checkbox" id="lvl-enabled" checked> <span>Leveling enabled</span></label>
                         <label class="toggle"><input type="checkbox" id="lvl-messages" checked> <span>Level-up messages in chat</span></label>
                         <label class="toggle"><input type="checkbox" id="lvl-beans-enabled" checked> <span>Give Beans on level-up</span></label>
-
                         <div class="config-grid">
-                            <div class="input-group"><label>XP min / message</label><input id="lvl-xp-min" type="number" min="1" inputmode="numeric"></div>
-                            <div class="input-group"><label>XP max / message</label><input id="lvl-xp-max" type="number" min="1" inputmode="numeric"></div>
-                            <div class="input-group"><label>XP cooldown (seconds)</label><input id="lvl-xp-cd" type="number" min="5" inputmode="numeric"></div>
+                            <div class="input-group"><label>XP min</label><input id="lvl-xp-min" type="number" min="1" inputmode="numeric"></div>
+                            <div class="input-group"><label>XP max</label><input id="lvl-xp-max" type="number" min="1" inputmode="numeric"></div>
+                            <div class="input-group"><label>Cooldown (sec)</label><input id="lvl-xp-cd" type="number" min="5" inputmode="numeric"></div>
                         </div>
-
-                        <h3 class="subhead">Beans formula per level</h3>
-                        <p class="form-hint">Reward = Base + (Level × Linear) + (Level² × Quadratic)</p>
+                        <h3 class="subhead">Beans formula</h3>
                         <div class="config-grid">
                             <div class="input-group"><label>Base</label><input id="lvl-beans-base" type="number" min="0" inputmode="numeric"></div>
                             <div class="input-group"><label>Linear</label><input id="lvl-beans-linear" type="number" min="0" inputmode="numeric"></div>
                             <div class="input-group"><label>Quadratic</label><input id="lvl-beans-quad" type="number" min="0" inputmode="numeric"></div>
                         </div>
-                        <p class="form-hint" id="lvl-preview">Preview: Level 10 → …</p>
-
+                        <p class="form-hint" id="lvl-preview">Preview: …</p>
                         <button class="button" id="save-leveling" type="button">Save Leveling Settings</button>
                         <p class="form-hint" id="leveling-status"></p>
-
                         <h3 class="subhead">Level roles</h3>
                         <div class="level-role-form">
                             <div class="input-group"><label>Level</label><input id="level-number" type="number" min="1" inputmode="numeric"></div>
@@ -164,30 +158,24 @@
                     <div class="card form-card wide">
                         <span class="eyebrow">CURRENCY</span>
                         <h2>Currency settings</h2>
-                        <p>Name, daily, work, chat drops, and coinflip — all adjustable.</p>
-
                         <label class="toggle"><input type="checkbox" id="cur-enabled" checked> <span>Currency enabled</span></label>
-
                         <div class="config-grid">
-                            <div class="input-group"><label>Currency name</label><input id="cur-name" type="text" placeholder="Beans"></div>
+                            <div class="input-group"><label>Name</label><input id="cur-name" type="text" placeholder="Beans"></div>
                             <div class="input-group"><label>Emoji</label><input id="cur-emoji" type="text" placeholder="☕"></div>
                         </div>
-
                         <h3 class="subhead">Daily</h3>
                         <div class="config-grid">
                             <div class="input-group"><label>Min</label><input id="cur-daily-min" type="number" min="1" inputmode="numeric"></div>
                             <div class="input-group"><label>Max</label><input id="cur-daily-max" type="number" min="1" inputmode="numeric"></div>
-                            <div class="input-group"><label>Streak bonus / day</label><input id="cur-streak-bonus" type="number" min="0" inputmode="numeric"></div>
-                            <div class="input-group"><label>Max streak days</label><input id="cur-max-streak" type="number" min="1" inputmode="numeric"></div>
+                            <div class="input-group"><label>Streak bonus</label><input id="cur-streak-bonus" type="number" min="0" inputmode="numeric"></div>
+                            <div class="input-group"><label>Max streak</label><input id="cur-max-streak" type="number" min="1" inputmode="numeric"></div>
                         </div>
-
                         <h3 class="subhead">Work</h3>
                         <div class="config-grid">
                             <div class="input-group"><label>Min</label><input id="cur-work-min" type="number" min="1" inputmode="numeric"></div>
                             <div class="input-group"><label>Max</label><input id="cur-work-max" type="number" min="1" inputmode="numeric"></div>
-                            <div class="input-group"><label>Cooldown (minutes)</label><input id="cur-work-cd" type="number" min="1" inputmode="numeric"></div>
+                            <div class="input-group"><label>Cooldown (min)</label><input id="cur-work-cd" type="number" min="1" inputmode="numeric"></div>
                         </div>
-
                         <h3 class="subhead">Chat drops</h3>
                         <label class="toggle"><input type="checkbox" id="cur-chat-enabled" checked> <span>Random chat earnings</span></label>
                         <div class="config-grid">
@@ -196,16 +184,48 @@
                             <div class="input-group"><label>Max</label><input id="cur-chat-max" type="number" min="1" inputmode="numeric"></div>
                             <div class="input-group"><label>Cooldown (sec)</label><input id="cur-chat-cd" type="number" min="5" inputmode="numeric"></div>
                         </div>
-
                         <h3 class="subhead">Coinflip</h3>
                         <label class="toggle"><input type="checkbox" id="cur-flip-enabled" checked> <span>Coinflip enabled</span></label>
                         <div class="input-group">
                             <label>Max bet (0 = unlimited)</label>
                             <input id="cur-flip-max" type="number" min="0" inputmode="numeric">
                         </div>
-
                         <button class="button" id="save-currency" type="button">Save Currency Settings</button>
                         <p class="form-hint" id="currency-status"></p>
+                    </div>
+                </section>
+
+                <!-- SHOP -->
+                <section id="shop" class="page-section">
+                    <div class="card form-card wide">
+                        <span class="eyebrow">SHOP</span>
+                        <h2>Server shop</h2>
+                        <p>
+                            Members use <code>/shop</code> — only they see it.
+                            They can buy roles with currency. Bot role must be above shop roles.
+                        </p>
+
+                        <label class="toggle"><input type="checkbox" id="shop-enabled" checked> <span>Shop enabled</span></label>
+                        <button class="button" id="save-shop-toggle" type="button">Save Shop On/Off</button>
+                        <p class="form-hint" id="shop-status"></p>
+
+                        <h3 class="subhead">Add role item</h3>
+                        <div class="config-grid">
+                            <div class="input-group"><label>Item name</label><input id="shop-name" type="text" placeholder="VIP Role"></div>
+                            <div class="input-group"><label>Price</label><input id="shop-price" type="number" min="0" inputmode="numeric" placeholder="500"></div>
+                        </div>
+                        <div class="input-group">
+                            <label>Role to give</label>
+                            <select id="shop-role"><option value="">Select a role...</option></select>
+                        </div>
+                        <div class="input-group">
+                            <label>Description (optional)</label>
+                            <input id="shop-desc" type="text" placeholder="Cool perks…">
+                        </div>
+                        <button class="button" id="add-shop-item" type="button">Add to Shop</button>
+
+                        <h3 class="subhead">Current items</h3>
+                        <div id="shop-items-list" class="level-roles-list"></div>
                     </div>
                 </section>
 
@@ -213,10 +233,6 @@
                     <div class="card form-card wide">
                         <span class="eyebrow">LOGS</span>
                         <h2>Dashboard logs</h2>
-                        <p>
-                            Pick a channel the bot can post in. After you save, you should see a green embed there.
-                            If it fails, the message below will say why (usually missing permissions).
-                        </p>
                         <div class="input-group">
                             <label for="dashboard-log-channel">Log channel</label>
                             <select id="dashboard-log-channel"><option value="">Select a channel...</option></select>
@@ -226,7 +242,6 @@
                             <button class="button secondary" id="test-log" type="button">Send Test Log</button>
                         </div>
                         <p class="form-hint" id="logs-status"></p>
-                        <p class="form-hint">Bot needs: <strong>View Channel</strong>, <strong>Send Messages</strong>, <strong>Embed Links</strong> in that channel.</p>
                     </div>
                 </section>
 
@@ -234,7 +249,7 @@
                     <div class="card form-card">
                         <span class="eyebrow">INFO</span>
                         <h2>Settings</h2>
-                        <p>Pick a server, then configure each system tab. Saves write to the live bot and log channel (if set).</p>
+                        <p>Pick a server, then configure each system. Shop items are private to the buyer when using /shop.</p>
                     </div>
                 </section>
 
