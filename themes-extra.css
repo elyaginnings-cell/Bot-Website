@@ -40,6 +40,36 @@ body.theme-sakura {
   --border: rgba(255, 126, 179, 0.28);
 }
 
+body.theme-sunflower {
+  --bg: #1a1608;
+  --card: #2a2410;
+  --text: #fff6d6;
+  --muted: #c4b070;
+  --accent: #f5c518;
+  --accent-2: #ffe066;
+  --border: rgba(245, 197, 24, 0.3);
+}
+
+body.theme-bloodmoon {
+  --bg: #12080a;
+  --card: #1f1014;
+  --text: #ffe4e8;
+  --muted: #b08088;
+  --accent: #e63946;
+  --accent-2: #ff6b6b;
+  --border: rgba(230, 57, 70, 0.32);
+}
+
+body.theme-terminal {
+  --bg: #0a0f0a;
+  --card: #0f1a0f;
+  --text: #c8f5c8;
+  --muted: #6a9a6a;
+  --accent: #39ff14;
+  --accent-2: #7cff6b;
+  --border: rgba(57, 255, 20, 0.28);
+}
+
 /* Server view extra themes */
 #server-view.theme-mocha {
   --sv-bg: #1a1410;
@@ -71,4 +101,28 @@ body.theme-sakura {
   --sv-text: #ffe8f0;
   --sv-muted: #c49aaa;
   --sv-accent: #ff7eb3;
+}
+
+#server-view.theme-sunflower {
+  --sv-bg: #1a1608;
+  --sv-panel: #2a2410;
+  --sv-text: #fff6d6;
+  --sv-muted: #c4b070;
+  --sv-accent: #f5c518;
+}
+
+#server-view.theme-bloodmoon {
+  --sv-bg: #12080a;
+  --sv-panel: #1f1014;
+  --sv-text: #ffe4e8;
+  --sv-muted: #b08088;
+  --sv-accent: #e63946;
+}
+
+#server-view.theme-terminal {
+  --sv-bg: #0a0f0a;
+  --sv-panel: #0f1a0f;
+  --sv-text: #c8f5c8;
+  --sv-muted: #6a9a6a;
+  --sv-accent: #39ff14;
 }

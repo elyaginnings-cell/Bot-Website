@@ -12,7 +12,10 @@
       "theme-mocha",
       "theme-neon",
       "theme-midnight",
-      "theme-sakura"
+      "theme-sakura",
+      "theme-sunflower",
+      "theme-bloodmoon",
+      "theme-terminal"
     );
     if (name && name !== "default") {
       document.body.classList.add(`theme-${name}`);
@@ -37,6 +40,9 @@
         <option value="neon">Neon</option>
         <option value="midnight">Midnight</option>
         <option value="sakura">Sakura</option>
+        <option value="sunflower">Sunflower</option>
+        <option value="bloodmoon">Bloodmoon</option>
+        <option value="terminal">Terminal</option>
       </select>
     `;
     wrap.parentElement.insertBefore(box, wrap.nextSibling);
@@ -51,6 +57,5 @@
     ensureThemeControl();
   }
 
-  // Expose for server-view theme list extension
   window.__applyDashboardTheme = applyTheme;
 })();
