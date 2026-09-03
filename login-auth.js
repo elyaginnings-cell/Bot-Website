@@ -24,16 +24,15 @@ function wireLogout() {
   });
 }
 
-function ensureLinkDiscordBanner(user) {
+function showDiscordReconnectBanner(opts = {}) {
   const existing = document.getElementById("link-discord-banner");
-  const needsLink = user && !user.discord_id && !user.linked;
+  if (existing) existing.remove();
 
-  if (!needsLink) {
-    if (existing) existing.remove();
-    return;
-  }
-
-  if (existing) return;
+  const title = opts.title || "Reconnect Discord";
+  const body =
+    opts.body ||
+    "Your account is linked, but this browser needs a fresh Discord login to load servers.";
+  const btnLabel = opts.btnLabel || "Reconnect Discord";
 
   const banner = document.createElement("div");
   banner.id = "link-discord-banner";
@@ -42,12 +41,10 @@ function ensureLinkDiscordBanner(user) {
     "margin-bottom:12px;border-color:rgba(255,77,240,0.55);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;";
   banner.innerHTML = `
     <div>
-      <strong style="color:#ff4df0">Connect Discord</strong>
-      <p style="color:#b89cd9;font-size:13px;margin-top:4px">
-        Your email is logged in, but Discord isn't linked yet — link it to load your servers and use the dashboard.
-      </p>
+      <strong style="color:#ff4df0">${title}</strong>
+      <p style="color:#b89cd9;font-size:13px;margin-top:4px">${body}</p>
     </div>
-    <button class="button" id="link-discord-btn" type="button">Link Discord</button>
+    <button class="button" id="link-discord-btn" type="button">${btnLabel}</button>
   `;
 
   const main = document.querySelector(".main");
@@ -61,6 +58,45 @@ function ensureLinkDiscordBanner(user) {
   document.getElementById("link-discord-btn")?.addEventListener("click", () => {
     window.location.href = "/api/login?state=link";
   });
+}
+
+function ensureLinkDiscordBanner(user) {
+  const existing = document.getElementById("link-discord-banner");
+  const needsFirstLink = user && !user.discord_id && !user.linked;
+
+  if (needsFirstLink) {
+    showDiscordReconnectBanner({
+      title: "Connect Discord",
+      body: "Your email is logged in, but Discord isn't linked yet — link it to load your servers.",
+      btnLabel: "Link Discord",
+    });
+    return;
+  }
+
+  // Linked in DB is not enough — we still need a live Discord token cookie in this browser.
+  // Probe guilds lightly; if token missing, show reconnect.
+  if (user?.discord_id) {
+    fetch("/api/guilds", { credentials: "include", cache: "no-store" })
+      .then(async (res) => {
+        if (res.ok) {
+          if (existing && existing.querySelector("#link-discord-btn")) {
+            // keep banner only if it was a forced reconnect
+          }
+          return;
+        }
+        const data = await res.json().catch(() => ({}));
+        if (
+          data.code === "DISCORD_NOT_LINKED" ||
+          data.code === "DISCORD_EXPIRED" ||
+          /not linked|expired|Discord is not linked/i.test(data.error || "")
+        ) {
+          showDiscordReconnectBanner();
+        }
+      })
+      .catch(() => {});
+  } else if (existing) {
+    existing.remove();
+  }
 }
 
 function ensureEmailLoginForm() {
@@ -137,6 +173,14 @@ async function submitPasswordAuth(endpoint) {
       setLoginError(data.error || "Login failed.");
       return;
     }
+
+    // Account is linked in DB, but email login does not create a Discord access token.
+    // Bounce through Discord OAuth once so guilds/API work in this browser.
+    if (data.user?.discord_id || data.user?.linked) {
+      window.location.href = "/api/login?state=link";
+      return;
+    }
+
     window.location.reload();
   } catch {
     setLoginError("Could not reach the login server.");
@@ -202,3 +246,6 @@ if (document.readyState === "loading") {
 } else {
   startEmailLogin();
 }
+
+// Expose for script.js loadServers errors
+window.showDiscordReconnectBanner = showDiscordReconnectBanner;
