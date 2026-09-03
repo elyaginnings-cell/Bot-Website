@@ -17,13 +17,22 @@
   }
 })();
 
-let currentUser = null;
-let selectedServer = null;
-let isLoadingServers = false;
-let serverRefreshInterval = null;
-let channelsCache = [];
-let rolesCache = [];
-let currentConfig = null;
+var currentUser = null;
+var selectedServer = null;
+var isLoadingServers = false;
+var serverRefreshInterval = null;
+var channelsCache = [];
+var rolesCache = [];
+var currentConfig = null;
+
+function syncGlobals() {
+  window.selectedServer = selectedServer;
+  window.channelsCache = channelsCache;
+  window.rolesCache = rolesCache;
+  window.currentConfig = currentConfig;
+  window.currentUser = currentUser;
+}
+syncGlobals();
 
 const SHOP_TYPE_META = {
   role: { role: true, duration: false, amount: false, title: false, hint: "Permanent role: member keeps it forever." },
@@ -81,6 +90,14 @@ function setupEventListeners() {
     });
   });
   document.getElementById("server-button")?.addEventListener("click", loadServers);
+  document.getElementById("open-server-view")?.addEventListener("click", () => {
+    if (typeof openServerView === "function") openServerView();
+    else alert("Server View is still loading — try again in a second.");
+  });
+  document.getElementById("nav-server-view")?.addEventListener("click", () => {
+    if (typeof openServerView === "function") openServerView();
+    else alert("Server View is still loading — try again in a second.");
+  });
   document.getElementById("logout-button")?.addEventListener("click", () => {
     window.location.href = "/api/logout";
   });
@@ -134,6 +151,7 @@ async function checkLogin() {
       return;
     }
     currentUser = data.user;
+    syncGlobals();
     if (loginScreen) loginScreen.hidden = true;
     if (app) app.hidden = false;
     updateUserInterface(currentUser);
@@ -250,6 +268,7 @@ async function selectServer(guild) {
     online: guild.approximate_presence_count || 0,
   };
   localStorage.setItem("selectedServer", JSON.stringify(selectedServer));
+  syncGlobals();
   renderServerDetails(selectedServer);
   closeServerList();
   await loadGuildData();
@@ -286,6 +305,7 @@ function restoreSelectedServer() {
     const server = JSON.parse(saved);
     if (!server?.id) return;
     selectedServer = server;
+    syncGlobals();
     renderServerDetails(server);
     loadGuildData();
     refreshSelectedServer();
@@ -311,6 +331,7 @@ async function refreshSelectedServer() {
     selectedServer.online = updated.approximate_presence_count || 0;
     selectedServer.owner = !!updated.owner;
     localStorage.setItem("selectedServer", JSON.stringify(selectedServer));
+    syncGlobals();
     renderServerDetails(selectedServer);
   } catch {}
 }
@@ -335,6 +356,7 @@ async function loadGuildData() {
       currentConfig = (await configRes.json()).config || {};
       applyConfigToForms();
     }
+    syncGlobals();
   } catch (e) {
     console.error(e);
   }
@@ -404,6 +426,7 @@ async function saveConfig(body) {
   const data = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(data.error || "Save failed");
   if (data.config) currentConfig = data.config;
+  syncGlobals();
   return data;
 }
 
