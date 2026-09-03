@@ -8,3 +8,5 @@
   s.src = "login-auth.js";
   document.head.appendChild(s);
 })();
+
+let currentUser = null;
