@@ -1,6 +1,10 @@
 {
   "name": "discord-bot-dashboard",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "pg": "^8.16.3"
+  }
 }
