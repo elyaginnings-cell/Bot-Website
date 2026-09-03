@@ -7,6 +7,13 @@ let svLoading = false;
 let svLastMessages = [];
 let svSending = false;
 
+function svServer() {
+  return window.selectedServer || null;
+}
+function svChannels() {
+  return window.channelsCache || [];
+}
+
 function initServerView() {
   document.getElementById("open-server-view")?.addEventListener("click", openServerView);
   document.getElementById("close-server-view")?.addEventListener("click", closeServerView);
@@ -58,13 +65,7 @@ function applySvPrefs() {
   const theme = document.getElementById("sv-theme")?.value || "discord";
   const density = document.getElementById("sv-density")?.value || "default";
   const fontSize = document.getElementById("sv-font-size")?.value || "16";
-  view.classList.remove(
-    "theme-darker",
-    "theme-light",
-    "theme-garden",
-    "density-compact",
-    "density-cozy"
-  );
+  view.classList.remove("theme-darker", "theme-light", "theme-garden", "density-compact", "density-cozy");
   if (theme === "darker") view.classList.add("theme-darker");
   if (theme === "light") view.classList.add("theme-light");
   if (theme === "garden") view.classList.add("theme-garden");
@@ -89,17 +90,22 @@ function getSvDisplayName() {
 }
 
 function openServerView() {
+  const selectedServer = svServer();
   if (!selectedServer?.id) {
     alert("Choose a server first.");
     return;
   }
   const app = document.getElementById("app");
   const view = document.getElementById("server-view");
-  if (!view) return;
-  app.hidden = true;
+  if (!view) {
+    alert("Server View markup missing from the page.");
+    return;
+  }
+  if (app) app.hidden = true;
   view.hidden = false;
   document.body.classList.add("server-view-open");
-  document.getElementById("sv-server-name").textContent = selectedServer.name || "Server";
+  const nameEl = document.getElementById("sv-server-name");
+  if (nameEl) nameEl.textContent = selectedServer.name || "Server";
   const nameInput = document.getElementById("sv-display-name");
   if (nameInput && !nameInput.value) nameInput.value = localStorage.getItem("svDisplayName") || "";
   applySvPrefs();
@@ -109,6 +115,7 @@ function openServerView() {
   else if (window.matchMedia("(max-width: 768px)").matches) openSvDrawer();
   startSvPoll();
 }
+window.openServerView = openServerView;
 
 function closeServerView() {
   stopSvPoll();
@@ -120,14 +127,16 @@ function closeServerView() {
   if (app) app.hidden = false;
   document.body.classList.remove("server-view-open");
 }
+window.closeServerView = closeServerView;
 
 function renderSvChannels() {
   const list = document.getElementById("sv-channel-list");
   if (!list) return;
+  const channelsCache = svChannels();
   const cats = channelsCache.filter((c) => c.type === 4);
   const texts = channelsCache.filter((c) => c.type === 0 || c.type === 5);
   if (!texts.length) {
-    list.innerHTML = `<p class="sv-empty">No text channels found.</p>`;
+    list.innerHTML = `<p class="sv-empty">No text channels found. Choose a server and wait for channels to load.</p>`;
     return;
   }
   const byParent = new Map();
@@ -183,6 +192,7 @@ function selectSvChannel(id, title) {
 }
 
 async function loadSvMessages(full) {
+  const selectedServer = svServer();
   if (!selectedServer?.id || !svActiveChannelId || svLoading) return;
   svLoading = true;
   try {
@@ -245,151 +255,36 @@ function renderSvMessages(messages) {
   box.scrollTop = box.scrollHeight;
 }
 
+function escapeHtml(s) {
+  return String(s ?? "")
+    .replace(/&/g, "&")
+    .replace(/</g, "<")
+    .replace(/>/g, ">")
+    .replace(/"/g, """);
+}
+
 function formatMessageContent(content, mentions) {
   if (!content) return "";
-  const blocks = [];
-  let text = content.replace(/```([\s\S]*?)```/g, (_, code) => {
-    const i = blocks.length;
-    blocks.push(`<pre class="sv-codeblock">${escapeHtml(code.replace(/^\n|\n$/g, ""))}</pre>`);
-    return `\0BLOCK${i}\0`;
-  });
-  text = escapeHtml(text);
+  let text = escapeHtml(content);
   const users = mentions?.users || {};
   const roles = mentions?.roles || {};
   const channels = mentions?.channels || {};
   text = text.replace(/<@!?(\d+)>/g, (_, id) => {
     const u = users[id];
     const label = u ? `@${u.displayName || u.nickname || u.globalName || u.username}` : `@user`;
-    return `<span class="sv-mention sv-mention-user" data-user-id="${id}">${escapeHtml(label)}</span>`;
+    return `<span class="sv-mention sv-mention-user">${escapeHtml(label)}</span>`;
   });
   text = text.replace(/<@&(\d+)>/g, (_, id) => {
     const r = roles[id];
-    return `<span class="sv-mention sv-mention-role" data-role-id="${id}">${escapeHtml(r ? `@${r.name}` : `@role`)}</span>`;
+    return `<span class="sv-mention sv-mention-role">${escapeHtml(r ? `@${r.name}` : `@role`)}</span>`;
   });
   text = text.replace(/<#(\d+)>/g, (_, id) => {
     const c = channels[id];
     return `<span class="sv-mention sv-mention-channel" data-channel-id="${id}">${escapeHtml(c ? `#${c.name}` : `#channel`)}</span>`;
   });
-  text = text.replace(/@everyone/g, `<span class="sv-mention sv-mention-everyone">@everyone</span>`);
-  text = text.replace(/@here/g, `<span class="sv-mention sv-mention-everyone">@here</span>`);
   text = text.replace(/(https?:\/\/[^\s<]+)/g, `<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>`);
-  text = text.replace(/\|\|(.+?)\|\|/g, `<span class="sv-spoiler">$1</span>`);
-  text = text.replace(/`([^`]+)`/g, `<code class="sv-code">$1</code>`);
-  text = text.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
-  text = text.replace(/__(.+?)__/g, "<u>$1</u>");
-  text = text.replace(/~~(.+?)~~/g, "<s>$1</s>");
-  text = text.replace(/(?<![*\\])\*(?!\*)(.+?)(?<![*\\])\*(?!\*)/g, "<em>$1</em>");
-  text = text.replace(/\0BLOCK(\d+)\0/g, (_, i) => blocks[Number(i)] || "");
   return text;
 }
-
-function embedHtml(e, mentions) {
-  if (!e) return "";
-  const color =
-    e.color != null && e.color !== 0
-      ? `#${Number(e.color).toString(16).padStart(6, "0")}`
-      : "#202225";
-  let main = "";
-  if (e.author?.name) {
-    const icon = e.author.iconURL
-      ? `<img class="sv-embed-author-icon" src="${escapeHtml(e.author.iconURL)}" alt="">`
-      : "";
-    main += `<div class="sv-embed-author">${icon}<span>${formatMessageContent(e.author.name, mentions)}</span></div>`;
-  }
-  if (e.title) {
-    const titleInner = formatMessageContent(e.title, mentions);
-    const title = e.url
-      ? `<a href="${escapeHtml(e.url)}" target="_blank" rel="noopener">${titleInner}</a>`
-      : titleInner;
-    main += `<div class="sv-embed-title">${title}</div>`;
-  }
-  if (e.description) {
-    main += `<div class="sv-embed-desc">${formatMessageContent(e.description, mentions)}</div>`;
-  }
-  if (e.fields?.length) {
-    main += `<div class="sv-embed-fields">`;
-    e.fields.forEach((f) => {
-      main += `<div class="sv-embed-field${f.inline ? " inline" : ""}">
-        <div class="sv-embed-field-name">${formatMessageContent(f.name, mentions)}</div>
-        <div class="sv-embed-field-value">${formatMessageContent(f.value, mentions)}</div>
-      </div>`;
-    });
-    main += `</div>`;
-  }
-  if (e.image) {
-    main += `<img class="sv-embed-image" src="${escapeHtml(e.image)}" alt="" data-full="${escapeHtml(e.image)}">`;
-  }
-  if (e.footer?.text || e.timestamp) {
-    const ficon = e.footer?.iconURL
-      ? `<img class="sv-embed-footer-icon" src="${escapeHtml(e.footer.iconURL)}" alt="">`
-      : "";
-    const parts = [];
-    if (e.footer?.text) parts.push(formatMessageContent(e.footer.text, mentions));
-    if (e.timestamp) parts.push(escapeHtml(new Date(e.timestamp).toLocaleString()));
-    main += `<div class="sv-embed-footer">${ficon}<span>${parts.join(" · ")}</span></div>`;
-  }
-  const thumb = e.thumbnail
-    ? `<img class="sv-embed-thumb" src="${escapeHtml(e.thumbnail)}" alt="" data-full="${escapeHtml(e.thumbnail)}">`
-    : "";
-  return `<div class="sv-embed${e.thumbnail ? " has-thumb" : ""}" style="border-left-color:${color}">
-    <div class="sv-embed-inner">${main}</div>${thumb}
-  </div>`;
-}
-
-function buttonStyleClass(style) {
-  switch (Number(style)) {
-    case 1: return "primary";
-    case 3: return "success";
-    case 4: return "danger";
-    case 5: return "link";
-    default: return "secondary";
-  }
-}
-
-function emojiHtml(emoji) {
-  if (!emoji) return "";
-  if (emoji.id) {
-    const ext = emoji.animated ? "gif" : "png";
-    const url = `https://cdn.discordapp.com/emojis/${emoji.id}.${ext}?size=32`;
-    return `<span class="sv-btn-emoji"><img src="${escapeHtml(url)}" alt=""></span>`;
-  }
-  if (emoji.name) return `<span class="sv-btn-emoji">${escapeHtml(emoji.name)}</span>`;
-  return "";
-}
-
-function componentsHtml(rows) {
-  if (!rows?.length) return "";
-  let html = `<div class="sv-components">`;
-  for (const row of rows) {
-    html += `<div class="sv-comp-row">`;
-    for (const c of row.components || []) {
-      if (c.type === "button") {
-        const cls = buttonStyleClass(c.style);
-        const disabled = c.disabled ? " disabled" : "";
-        const label = escapeHtml(c.label || "");
-        const em = emojiHtml(c.emoji);
-        if (c.url) {
-          html += `<a class="sv-btn ${cls}${disabled}" href="${escapeHtml(c.url)}" target="_blank" rel="noopener">${em}${label || "Link"}</a>`;
-        } else {
-          html += `<button type="button" class="sv-btn ${cls}${disabled}" disabled title="View only — interact in Discord">${em}${label || "Button"}</button>`;
-        }
-      } else if (c.type === "select") {
-        const opts = (c.options || [])
-          .map((o) => `<option value="${escapeHtml(o.value)}">${escapeHtml(o.label)}</option>`)
-          .join("");
-        html += `<select class="sv-select" disabled title="View only — interact in Discord">
-          <option>${escapeHtml(c.placeholder || "Select…")}</option>${opts}
-        </select>`;
-      }
-    }
-    html += `</div>`;
-  }
-  html += `<div class="sv-comp-hint">Buttons are view-only here — click them in Discord to use.</div>`;
-  html += `</div>`;
-  return html;
-}
-
-const REPLY_ICON = `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M10 8.22V4.97a.5.5 0 0 0-.83-.35l-6.8 6.28a.5.5 0 0 0 0 .74l6.8 6.28a.5.5 0 0 0 .83-.35v-3.2c5.18.12 8.7 1.63 10.5 4.83.2.35.64.4.85.08C23.1 15.6 19.55 8.5 10 8.22Z"/></svg>`;
 
 function messageHtml(m, grouped) {
   const name =
@@ -410,14 +305,10 @@ function messageHtml(m, grouped) {
   const av = m.author?.avatar
     ? `<img class="sv-av" src="${escapeHtml(m.author.avatar)}" alt="">`
     : `<div class="sv-av fallback">☕</div>`;
-
   let body = formatMessageContent(m.content || "", m.mentions);
-  const hasMedia =
-    (m.embeds && m.embeds.length) ||
-    (m.attachments && m.attachments.length) ||
-    (m.components && m.components.length);
-  if (!body && !hasMedia) body = "<em style=\"opacity:.6\">(empty)</em>";
-
+  if (!body && !(m.embeds?.length) && !(m.attachments?.length)) {
+    body = `<em style="opacity:.6">(empty)</em>`;
+  }
   const atts = (m.attachments || [])
     .map((a) => {
       if (a.contentType && a.contentType.startsWith("image/")) {
@@ -426,34 +317,19 @@ function messageHtml(m, grouped) {
       return `<a class="sv-file" href="${escapeHtml(a.url)}" target="_blank" rel="noopener">📎 ${escapeHtml(a.name || "file")}</a>`;
     })
     .join("");
-
-  const embeds = (m.embeds || []).map((e) => embedHtml(e, m.mentions)).join("");
-  const comps = componentsHtml(m.components);
-
-  return `<div class="sv-msg${grouped ? " grouped" : ""}" data-id="${m.id}" data-author="${escapeHtml(m.author?.id || "")}">
+  return `<div class="sv-msg${grouped ? " grouped" : ""}" data-id="${m.id}">
     <div class="sv-av-wrap">${av}</div>
     <div class="sv-msg-body">
       <div class="sv-msg-meta"><strong>${escapeHtml(name)}</strong>${bot}<span class="sv-time">${escapeHtml(time)}</span></div>
       ${body ? `<div class="sv-msg-text">${body}</div>` : ""}
       ${atts}
-      ${embeds}
-      ${comps}
-    </div>
-    <div class="sv-msg-actions">
-      <button type="button" class="sv-reply-btn" data-action="reply" data-name="${escapeHtml(name)}" title="Reply">
-        ${REPLY_ICON}<span class="sv-reply-label">Reply</span>
-      </button>
     </div>
   </div>`;
 }
 
 function onSvMessagesClick(e) {
   const t = e.target;
-  if (t.classList?.contains("sv-spoiler")) {
-    t.classList.toggle("revealed");
-    return;
-  }
-  if (t.matches?.("img.sv-img, img.sv-embed-image, img.sv-embed-thumb")) {
+  if (t.matches?.("img.sv-img")) {
     openLightbox(t.getAttribute("data-full") || t.src);
     return;
   }
@@ -461,71 +337,28 @@ function onSvMessagesClick(e) {
   if (chMention) {
     const id = chMention.getAttribute("data-channel-id");
     if (id) {
-      const ch = channelsCache.find((c) => c.id === id);
+      const ch = svChannels().find((c) => c.id === id);
       selectSvChannel(id, ch ? `# ${ch.name}` : "# channel");
     }
-    return;
-  }
-  const uMention = t.closest?.(".sv-mention-user");
-  if (uMention) {
-    const id = uMention.getAttribute("data-user-id");
-    if (id) insertIntoComposer(`<@${id}> `);
-    return;
-  }
-  const rMention = t.closest?.(".sv-mention-role");
-  if (rMention) {
-    const id = rMention.getAttribute("data-role-id");
-    if (id) insertIntoComposer(`<@&${id}> `);
-    return;
-  }
-  const btn = t.closest?.("[data-action=reply]");
-  if (btn) {
-    const name = btn.getAttribute("data-name") || "user";
-    const id = btn.closest(".sv-msg")?.getAttribute("data-author");
-    if (id) insertIntoComposer(`<@${id}> `);
-    else insertIntoComposer(`@${name} `);
-    showToast(`Replying to ${name}`);
   }
 }
 
-function insertIntoComposer(text) {
-  const input = document.getElementById("sv-input");
-  if (!input || input.disabled) return;
-  input.value = (input.value || "") + text;
-  input.focus();
-}
-
-function openLightbox(url) {
-  const lb = document.getElementById("sv-lightbox");
+function openLightbox(src) {
+  const box = document.getElementById("sv-lightbox");
   const img = document.getElementById("sv-lightbox-img");
-  if (!lb || !img) return;
-  img.src = url;
-  lb.hidden = false;
+  if (!box || !img) return;
+  img.src = src;
+  box.hidden = false;
 }
-
 function closeLightbox() {
-  const lb = document.getElementById("sv-lightbox");
-  if (lb) lb.hidden = true;
-}
-
-function showToast(msg) {
-  let t = document.getElementById("sv-toast");
-  if (!t) {
-    t = document.createElement("div");
-    t.id = "sv-toast";
-    t.className = "sv-toast";
-    document.body.appendChild(t);
-  }
-  t.textContent = msg;
-  t.classList.add("show");
-  clearTimeout(t._timer);
-  t._timer = setTimeout(() => t.classList.remove("show"), 1800);
+  const box = document.getElementById("sv-lightbox");
+  if (box) box.hidden = true;
 }
 
 async function sendSvMessage(e) {
   e.preventDefault();
   if (svSending) return;
-
+  const selectedServer = svServer();
   const input = document.getElementById("sv-input");
   const sendBtn = document.getElementById("sv-send");
   const content = input?.value?.trim();
