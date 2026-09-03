@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="server-view.css">
     <link rel="stylesheet" href="server-view-components.css">
     <link rel="stylesheet" href="server-view-theme-garden.css">
+    <link rel="stylesheet" href="server-view-reply.css">
 </head>
 <body class="mode-auto">
 
@@ -111,185 +112,13 @@
                     </div>
                 </section>
 
-                <section id="moderation" class="page-section">
-                    <div class="card form-card wide">
-                        <span class="eyebrow">PUNISHMENT</span>
-                        <h2>Moderation</h2>
-                        <div class="input-group">
-                            <label for="warn-channel">Warn log channel</label>
-                            <select id="warn-channel"><option value="">Select a channel...</option></select>
-                        </div>
-                        <button class="button" id="save-moderation" type="button">Save</button>
-                        <p class="form-hint" id="moderation-status"></p>
-                    </div>
-                </section>
-
-                <section id="invites" class="page-section">
-                    <div class="card form-card wide">
-                        <span class="eyebrow">INVITES</span>
-                        <h2>Invite Leaderboard</h2>
-                        <div class="input-group">
-                            <label for="invite-channel">Leaderboard channel</label>
-                            <select id="invite-channel"><option value="">Select a channel...</option></select>
-                        </div>
-                        <button class="button" id="save-invites" type="button">Save</button>
-                        <p class="form-hint" id="invites-status"></p>
-                    </div>
-                </section>
-
-                <section id="leveling" class="page-section">
-                    <div class="card form-card wide">
-                        <span class="eyebrow">LEVELING</span>
-                        <h2>Leveling settings</h2>
-                        <label class="toggle"><input type="checkbox" id="lvl-enabled" checked> <span>Leveling enabled</span></label>
-                        <label class="toggle"><input type="checkbox" id="lvl-messages" checked> <span>Level-up messages on</span></label>
-                        <label class="toggle"><input type="checkbox" id="lvl-beans-enabled" checked> <span>Give Beans on level-up</span></label>
-                        <div class="input-group">
-                            <label for="level-up-channel">Level-up channel</label>
-                            <select id="level-up-channel"><option value="">Same channel they leveled in</option></select>
-                        </div>
-                        <p class="form-hint">If set, all level-up pings go here instead of the chat channel.</p>
-                        <div class="config-grid">
-                            <div class="input-group"><label>XP min</label><input id="lvl-xp-min" type="number" min="1" inputmode="numeric"></div>
-                            <div class="input-group"><label>XP max</label><input id="lvl-xp-max" type="number" min="1" inputmode="numeric"></div>
-                            <div class="input-group"><label>Cooldown (sec)</label><input id="lvl-xp-cd" type="number" min="5" inputmode="numeric"></div>
-                        </div>
-                        <h3 class="subhead">Beans formula</h3>
-                        <div class="config-grid">
-                            <div class="input-group"><label>Base</label><input id="lvl-beans-base" type="number" min="0" inputmode="numeric"></div>
-                            <div class="input-group"><label>Linear</label><input id="lvl-beans-linear" type="number" min="0" inputmode="numeric"></div>
-                            <div class="input-group"><label>Quadratic</label><input id="lvl-beans-quad" type="number" min="0" inputmode="numeric"></div>
-                        </div>
-                        <p class="form-hint" id="lvl-preview">Preview: …</p>
-                        <button class="button" id="save-leveling" type="button">Save Leveling Settings</button>
-                        <p class="form-hint" id="leveling-status"></p>
-                        <h3 class="subhead">Level roles</h3>
-                        <div class="level-role-form">
-                            <div class="input-group"><label>Level</label><input id="level-number" type="number" min="1" inputmode="numeric"></div>
-                            <div class="input-group"><label>Role</label><select id="level-role"><option value="">Select role...</option></select></div>
-                            <button class="button" id="add-level-role" type="button">Add</button>
-                        </div>
-                        <div id="level-roles-list" class="level-roles-list"></div>
-                    </div>
-                </section>
-
-                <section id="currency" class="page-section">
-                    <div class="card form-card wide">
-                        <span class="eyebrow">CURRENCY</span>
-                        <h2>Currency settings</h2>
-                        <label class="toggle"><input type="checkbox" id="cur-enabled" checked> <span>Currency enabled</span></label>
-                        <div class="config-grid">
-                            <div class="input-group"><label>Name</label><input id="cur-name" type="text" placeholder="Beans"></div>
-                            <div class="input-group"><label>Emoji</label><input id="cur-emoji" type="text" placeholder="☕"></div>
-                        </div>
-                        <h3 class="subhead">Daily</h3>
-                        <div class="config-grid">
-                            <div class="input-group"><label>Min</label><input id="cur-daily-min" type="number" min="1" inputmode="numeric"></div>
-                            <div class="input-group"><label>Max</label><input id="cur-daily-max" type="number" min="1" inputmode="numeric"></div>
-                            <div class="input-group"><label>Streak bonus</label><input id="cur-streak-bonus" type="number" min="0" inputmode="numeric"></div>
-                            <div class="input-group"><label>Max streak</label><input id="cur-max-streak" type="number" min="1" inputmode="numeric"></div>
-                        </div>
-                        <h3 class="subhead">Work</h3>
-                        <div class="config-grid">
-                            <div class="input-group"><label>Min</label><input id="cur-work-min" type="number" min="1" inputmode="numeric"></div>
-                            <div class="input-group"><label>Max</label><input id="cur-work-max" type="number" min="1" inputmode="numeric"></div>
-                            <div class="input-group"><label>Cooldown (min)</label><input id="cur-work-cd" type="number" min="1" inputmode="numeric"></div>
-                        </div>
-                        <h3 class="subhead">Chat drops</h3>
-                        <label class="toggle"><input type="checkbox" id="cur-chat-enabled" checked> <span>Random chat earnings</span></label>
-                        <div class="config-grid">
-                            <div class="input-group"><label>Chance %</label><input id="cur-chat-chance" type="number" min="0" max="100" inputmode="numeric"></div>
-                            <div class="input-group"><label>Min</label><input id="cur-chat-min" type="number" min="1" inputmode="numeric"></div>
-                            <div class="input-group"><label>Max</label><input id="cur-chat-max" type="number" min="1" inputmode="numeric"></div>
-                            <div class="input-group"><label>Cooldown (sec)</label><input id="cur-chat-cd" type="number" min="5" inputmode="numeric"></div>
-                        </div>
-                        <h3 class="subhead">Coinflip</h3>
-                        <label class="toggle"><input type="checkbox" id="cur-flip-enabled" checked> <span>Coinflip enabled</span></label>
-                        <div class="input-group">
-                            <label>Max bet (0 = unlimited)</label>
-                            <input id="cur-flip-max" type="number" min="0" inputmode="numeric">
-                        </div>
-                        <button class="button" id="save-currency" type="button">Save Currency Settings</button>
-                        <p class="form-hint" id="currency-status"></p>
-                    </div>
-                </section>
-
-                <section id="shop" class="page-section">
-                    <div class="card form-card wide">
-                        <span class="eyebrow">SHOP</span>
-                        <h2>Server shop</h2>
-                        <p>Members use <code>/shop</code> (private) and <code>/inventory</code>.</p>
-                        <label class="toggle"><input type="checkbox" id="shop-enabled" checked> <span>Shop enabled</span></label>
-                        <button class="button" id="save-shop-toggle" type="button">Save Shop On/Off</button>
-                        <p class="form-hint" id="shop-status"></p>
-                        <h3 class="subhead">Add item</h3>
-                        <div class="input-group">
-                            <label>Item type</label>
-                            <select id="shop-type">
-                                <option value="role">Permanent role</option>
-                                <option value="temp_role">Temporary role</option>
-                                <option value="xp_boost">XP boost</option>
-                                <option value="bean_boost">Bean boost</option>
-                                <option value="title">Profile title</option>
-                                <option value="xp_pack">XP pack</option>
-                                <option value="bean_pack">Bean pack</option>
-                                <option value="mystery">Mystery box</option>
-                                <option value="work_skip">Skip work cooldown</option>
-                                <option value="daily_reset">Reset daily</option>
-                            </select>
-                        </div>
-                        <div class="config-grid">
-                            <div class="input-group"><label>Item name</label><input id="shop-name" type="text" placeholder="VIP Role"></div>
-                            <div class="input-group"><label>Price</label><input id="shop-price" type="number" min="0" inputmode="numeric" placeholder="500"></div>
-                        </div>
-                        <div class="input-group" id="shop-role-wrap">
-                            <label>Role</label><select id="shop-role"><option value="">Select a role...</option></select>
-                        </div>
-                        <div class="config-grid" id="shop-extra-grid">
-                            <div class="input-group" id="shop-duration-wrap" hidden>
-                                <label>Duration (hours)</label>
-                                <input id="shop-duration" type="number" min="1" inputmode="numeric" placeholder="24">
-                            </div>
-                            <div class="input-group" id="shop-amount-wrap" hidden>
-                                <label id="shop-amount-label">Amount</label>
-                                <input id="shop-amount" type="number" min="1" inputmode="numeric" placeholder="200">
-                            </div>
-                            <div class="input-group" id="shop-title-wrap" hidden>
-                                <label>Title text</label>
-                                <input id="shop-title-text" type="text" placeholder="Barista Elite" maxlength="40">
-                            </div>
-                        </div>
-                        <div class="input-group">
-                            <label>Description (optional)</label>
-                            <input id="shop-desc" type="text" placeholder="Shown under the item">
-                        </div>
-                        <p class="form-hint" id="shop-type-hint">Permanent role: member keeps the role forever.</p>
-                        <button class="button" id="add-shop-item" type="button">Add item</button>
-                        <div id="shop-items-list" class="level-roles-list"></div>
-                    </div>
-                </section>
-
-                <section id="logs" class="page-section">
-                    <div class="card form-card wide">
-                        <span class="eyebrow">LOGS</span>
-                        <h2>Dashboard logs</h2>
-                        <div class="input-group">
-                            <label for="dashboard-log-channel">Log channel</label>
-                            <select id="dashboard-log-channel"><option value="">Select a channel...</option></select>
-                        </div>
-                        <button class="button" id="save-logs" type="button">Save</button>
-                        <button class="button secondary" id="test-log" type="button">Send test log</button>
-                        <p class="form-hint" id="logs-status"></p>
-                    </div>
-                </section>
-
-                <section id="settings" class="page-section">
-                    <div class="card form-card wide">
-                        <span class="eyebrow">SETTINGS</span>
-                        <h2>Layout</h2>
-                        <p class="form-hint">Use the View selector in the header for Auto / Desktop / Mobile.</p>
-                    </div>
-                </section>
+                <section id="moderation" class="page-section"><div class="card form-card wide"><span class="eyebrow">PUNISHMENT</span><h2>Moderation</h2><div class="input-group"><label for="warn-channel">Warn log channel</label><select id="warn-channel"><option value="">Select a channel...</option></select></div><button class="button" id="save-moderation" type="button">Save</button><p class="form-hint" id="moderation-status"></p></div></section>
+                <section id="invites" class="page-section"><div class="card form-card wide"><span class="eyebrow">INVITES</span><h2>Invite Leaderboard</h2><div class="input-group"><label for="invite-channel">Leaderboard channel</label><select id="invite-channel"><option value="">Select a channel...</option></select></div><button class="button" id="save-invites" type="button">Save</button><p class="form-hint" id="invites-status"></p></div></section>
+                <section id="leveling" class="page-section"><div class="card form-card wide"><span class="eyebrow">LEVELING</span><h2>Leveling settings</h2><label class="toggle"><input type="checkbox" id="lvl-enabled" checked> <span>Leveling enabled</span></label><label class="toggle"><input type="checkbox" id="lvl-messages" checked> <span>Level-up messages on</span></label><label class="toggle"><input type="checkbox" id="lvl-beans-enabled" checked> <span>Give Beans on level-up</span></label><div class="input-group"><label for="level-up-channel">Level-up channel</label><select id="level-up-channel"><option value="">Same channel they leveled in</option></select></div><div class="config-grid"><div class="input-group"><label>XP min</label><input id="lvl-xp-min" type="number" min="1"></div><div class="input-group"><label>XP max</label><input id="lvl-xp-max" type="number" min="1"></div><div class="input-group"><label>Cooldown (sec)</label><input id="lvl-xp-cd" type="number" min="5"></div></div><h3 class="subhead">Beans formula</h3><div class="config-grid"><div class="input-group"><label>Base</label><input id="lvl-beans-base" type="number" min="0"></div><div class="input-group"><label>Linear</label><input id="lvl-beans-linear" type="number" min="0"></div><div class="input-group"><label>Quadratic</label><input id="lvl-beans-quad" type="number" min="0"></div></div><p class="form-hint" id="lvl-preview">Preview: …</p><button class="button" id="save-leveling" type="button">Save Leveling Settings</button><p class="form-hint" id="leveling-status"></p><h3 class="subhead">Level roles</h3><div class="level-role-form"><div class="input-group"><label>Level</label><input id="level-number" type="number" min="1"></div><div class="input-group"><label>Role</label><select id="level-role"><option value="">Select role...</option></select></div><button class="button" id="add-level-role" type="button">Add</button></div><div id="level-roles-list" class="level-roles-list"></div></div></section>
+                <section id="currency" class="page-section"><div class="card form-card wide"><span class="eyebrow">CURRENCY</span><h2>Currency settings</h2><label class="toggle"><input type="checkbox" id="cur-enabled" checked> <span>Currency enabled</span></label><div class="config-grid"><div class="input-group"><label>Name</label><input id="cur-name" type="text" placeholder="Beans"></div><div class="input-group"><label>Emoji</label><input id="cur-emoji" type="text" placeholder="☕"></div></div><h3 class="subhead">Daily</h3><div class="config-grid"><div class="input-group"><label>Min</label><input id="cur-daily-min" type="number"></div><div class="input-group"><label>Max</label><input id="cur-daily-max" type="number"></div><div class="input-group"><label>Streak bonus</label><input id="cur-streak-bonus" type="number"></div><div class="input-group"><label>Max streak</label><input id="cur-max-streak" type="number"></div></div><h3 class="subhead">Work</h3><div class="config-grid"><div class="input-group"><label>Min</label><input id="cur-work-min" type="number"></div><div class="input-group"><label>Max</label><input id="cur-work-max" type="number"></div><div class="input-group"><label>Cooldown (min)</label><input id="cur-work-cd" type="number"></div></div><h3 class="subhead">Chat drops</h3><label class="toggle"><input type="checkbox" id="cur-chat-enabled" checked> <span>Random chat earnings</span></label><div class="config-grid"><div class="input-group"><label>Chance %</label><input id="cur-chat-chance" type="number"></div><div class="input-group"><label>Min</label><input id="cur-chat-min" type="number"></div><div class="input-group"><label>Max</label><input id="cur-chat-max" type="number"></div><div class="input-group"><label>Cooldown (sec)</label><input id="cur-chat-cd" type="number"></div></div><h3 class="subhead">Coinflip</h3><label class="toggle"><input type="checkbox" id="cur-flip-enabled" checked> <span>Coinflip enabled</span></label><div class="input-group"><label>Max bet (0 = unlimited)</label><input id="cur-flip-max" type="number"></div><button class="button" id="save-currency" type="button">Save Currency Settings</button><p class="form-hint" id="currency-status"></p></div></section>
+                <section id="shop" class="page-section"><div class="card form-card wide"><span class="eyebrow">SHOP</span><h2>Server shop</h2><label class="toggle"><input type="checkbox" id="shop-enabled" checked> <span>Shop enabled</span></label><button class="button" id="save-shop-toggle" type="button">Save Shop On/Off</button><p class="form-hint" id="shop-status"></p><h3 class="subhead">Add item</h3><div class="input-group"><label>Item type</label><select id="shop-type"><option value="role">Permanent role</option><option value="temp_role">Temporary role</option><option value="xp_boost">XP boost</option><option value="bean_boost">Bean boost</option><option value="title">Profile title</option><option value="xp_pack">XP pack</option><option value="bean_pack">Bean pack</option><option value="mystery">Mystery box</option><option value="work_skip">Skip work cooldown</option><option value="daily_reset">Reset daily</option></select></div><div class="config-grid"><div class="input-group"><label>Item name</label><input id="shop-name" type="text"></div><div class="input-group"><label>Price</label><input id="shop-price" type="number"></div></div><div class="input-group" id="shop-role-wrap"><label>Role</label><select id="shop-role"><option value="">Select a role...</option></select></div><div class="config-grid" id="shop-extra-grid"><div class="input-group" id="shop-duration-wrap" hidden><label>Duration (hours)</label><input id="shop-duration" type="number"></div><div class="input-group" id="shop-amount-wrap" hidden><label id="shop-amount-label">Amount</label><input id="shop-amount" type="number"></div><div class="input-group" id="shop-title-wrap" hidden><label>Title text</label><input id="shop-title-text" type="text"></div></div><div class="input-group"><label>Description (optional)</label><input id="shop-desc" type="text"></div><p class="form-hint" id="shop-type-hint"></p><button class="button" id="add-shop-item" type="button">Add item</button><div id="shop-items-list" class="level-roles-list"></div></div></section>
+                <section id="logs" class="page-section"><div class="card form-card wide"><span class="eyebrow">LOGS</span><h2>Dashboard logs</h2><div class="input-group"><label for="dashboard-log-channel">Log channel</label><select id="dashboard-log-channel"><option value="">Select a channel...</option></select></div><button class="button" id="save-logs" type="button">Save</button><button class="button secondary" id="test-log" type="button">Send test log</button><p class="form-hint" id="logs-status"></p></div></section>
+                <section id="settings" class="page-section"><div class="card form-card wide"><span class="eyebrow">SETTINGS</span><h2>Layout</h2><p class="form-hint">Use the View selector in the header for Auto / Desktop / Mobile.</p></div></section>
             </div>
         </main>
     </div>
@@ -310,10 +139,8 @@
                 <button type="button" class="sv-icon-btn" id="close-server-view" title="Close">×</button>
             </div>
         </header>
-
         <div class="sv-body">
             <button type="button" class="sv-drawer-backdrop" id="sv-drawer-backdrop" aria-label="Close drawer"></button>
-
             <aside class="sv-channels" id="sv-channels">
                 <div class="sv-channels-head">
                     <strong id="sv-server-name">Server</strong>
@@ -321,7 +148,6 @@
                 </div>
                 <div id="sv-channel-list" class="sv-channel-list"></div>
             </aside>
-
             <section class="sv-chat">
                 <div class="sv-chat-head">
                     <div class="sv-chat-head-left">
@@ -330,41 +156,20 @@
                     </div>
                     <button type="button" class="sv-refresh" id="sv-refresh">Refresh</button>
                 </div>
-
                 <div id="sv-settings-panel" class="sv-settings-panel" hidden>
                     <h4>Appearance</h4>
-                    <div class="sv-settings-row">
-                        <label for="sv-theme">Theme</label>
-                        <select id="sv-theme">
-                            <option value="discord">Discord</option>
-                            <option value="darker">Darker</option>
-                            <option value="light">Light</option>
-                            <option value="garden">Garden</option>
-                        </select>
-                    </div>
-                    <div class="sv-settings-row">
-                        <label for="sv-density">Density</label>
-                        <select id="sv-density">
-                            <option value="default">Default</option>
-                            <option value="compact">Compact</option>
-                            <option value="cozy">Cozy</option>
-                        </select>
-                    </div>
-                    <div class="sv-settings-row">
-                        <label for="sv-font-size">Font size</label>
-                        <select id="sv-font-size">
-                            <option value="14">14</option>
-                            <option value="16" selected>16</option>
-                            <option value="18">18</option>
-                        </select>
-                    </div>
+                    <div class="sv-settings-row"><label for="sv-theme">Theme</label><select id="sv-theme"><option value="discord">Discord</option><option value="darker">Darker</option><option value="light">Light</option><option value="garden">Garden</option></select></div>
+                    <div class="sv-settings-row"><label for="sv-density">Density</label><select id="sv-density"><option value="default">Default</option><option value="compact">Compact</option><option value="cozy">Cozy</option></select></div>
+                    <div class="sv-settings-row"><label for="sv-font-size">Font size</label><select id="sv-font-size"><option value="14">14</option><option value="16" selected>16</option><option value="18">18</option></select></div>
                 </div>
-
                 <div id="sv-messages" class="sv-messages">
                     <p class="sv-empty">Pick a channel on the left to start reading chat.</p>
                 </div>
-
                 <div class="sv-composer-wrap">
+                    <div id="sv-reply-bar" class="sv-reply-bar" hidden>
+                        <div class="sv-reply-bar-text" id="sv-reply-label">Replying…</div>
+                        <button type="button" class="sv-reply-cancel" id="sv-reply-cancel" title="Cancel reply">×</button>
+                    </div>
                     <form id="sv-composer" class="sv-composer">
                         <input id="sv-input" type="text" placeholder="Select a channel…" disabled autocomplete="off" maxlength="2000">
                         <button type="submit" class="sv-send-btn" id="sv-send" disabled>Send</button>
@@ -378,7 +183,7 @@
         <img id="sv-lightbox-img" src="" alt="">
     </div>
 
-    <script src="script.js?v=5"></script>
-    <script src="server-view.js?v=5"></script>
+    <script src="script.js?v=6"></script>
+    <script src="server-view.js?v=6"></script>
 </body>
 </html>
