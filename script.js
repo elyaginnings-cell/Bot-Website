@@ -90,22 +90,13 @@ function setupEventListeners() {
     });
   });
   document.getElementById("server-button")?.addEventListener("click", loadServers);
-  function launchServerView() {
-    const fn = window.openServerView;
-    if (typeof fn === "function") {
-      fn();
-      return;
-    }
-    const view = document.getElementById("server-view");
-    const app = document.getElementById("app");
-    if (view && window.selectedServer?.id) {
-      if (app) app.hidden = true;
-      view.hidden = false;
-      document.body.classList.add("server-view-open");
-    } else if (!window.selectedServer?.id) {
-      alert("Choose a server first.");
+  function launchServerView(e) {
+    if (e) e.preventDefault();
+    if (typeof window.openServerView === "function") {
+      window.openServerView();
     } else {
-      alert("Server View failed to load. Hard refresh the page (Ctrl+Shift+R).");
+      console.error("openServerView missing");
+      alert("Server View script not loaded. Hard refresh (Ctrl+Shift+R).");
     }
   }
   document.getElementById("open-server-view")?.addEventListener("click", launchServerView);
