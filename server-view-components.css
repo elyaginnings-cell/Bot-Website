@@ -1,0 +1,104 @@
+/* Message components (buttons / selects) */
+.sv-components {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+  max-width: 100%;
+}
+
+.sv-comp-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.sv-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 2px 16px;
+  border-radius: 3px;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: default;
+  border: none;
+  text-decoration: none;
+  line-height: 1.2;
+  max-width: 100%;
+}
+
+.sv-btn.primary {
+  background: #5865f2;
+  color: #fff;
+}
+
+.sv-btn.secondary {
+  background: #4e5058;
+  color: #fff;
+}
+
+.sv-btn.success {
+  background: #248046;
+  color: #fff;
+}
+
+.sv-btn.danger {
+  background: #da373c;
+  color: #fff;
+}
+
+.sv-btn.link {
+  background: transparent;
+  color: #00a8fc;
+  padding-left: 4px;
+  padding-right: 4px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.sv-btn.link:hover {
+  text-decoration: underline;
+}
+
+.sv-btn.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sv-btn-emoji {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.sv-btn-emoji img {
+  width: 20px;
+  height: 20px;
+  vertical-align: middle;
+}
+
+.sv-select {
+  min-width: min(240px, 100%);
+  max-width: 100%;
+  background: #1e1f22;
+  border: 1px solid #1e1f22;
+  border-radius: 4px;
+  color: #dbdee1;
+  padding: 10px 12px;
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.sv-select:disabled {
+  opacity: 0.6;
+}
+
+.sv-comp-hint {
+  font-size: 11px;
+  color: #949ba4;
+  margin-top: 2px;
+}
