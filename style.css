@@ -783,3 +783,209 @@ body.mode-desktop .sidebar-bottom { display: flex !important; }
 body.mode-desktop .stats-grid { grid-template-columns: repeat(3, 1fr) !important; }
 body.mode-desktop .quick-grid.three { grid-template-columns: repeat(3, 1fr) !important; }
 body.mode-desktop .hero-icon { display: block !important; }
+/* =========================================================
+   AUTH / LOGIN — NEW EMAIL + PASSWORD AUTH UI
+   ========================================================= */
+
+.login-screen {
+  position: relative;
+  isolation: isolate;
+}
+
+.login-card {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Decorative glow behind the login card */
+.login-card::before {
+  content: "";
+  position: absolute;
+  width: 220px;
+  height: 220px;
+  top: -120px;
+  right: -100px;
+  background: rgba(255, 77, 240, 0.12);
+  border-radius: 50%;
+  filter: blur(45px);
+  pointer-events: none;
+}
+
+.login-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Login/signup form */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  text-align: left;
+}
+
+.login-form .input-group {
+  width: 100%;
+}
+
+.login-form label {
+  display: block;
+  margin-bottom: 6px;
+  color: #b89cd9;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.login-form input {
+  width: 100%;
+}
+
+.login-form .button {
+  width: 100%;
+  margin-top: 4px;
+}
+
+/* Auth error / success message */
+.auth-message {
+  min-height: 20px;
+  margin: 0 !important;
+  font-size: 13px !important;
+  line-height: 1.4;
+}
+
+.auth-message.error {
+  color: #ff6b81;
+}
+
+.auth-message.success {
+  color: #6ee7a8;
+}
+
+/* Divider between password login and Discord */
+.login-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  margin: 20px 0 14px;
+  color: #7a5e99;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.login-divider::before,
+.login-divider::after {
+  content: "";
+  height: 1px;
+  flex: 1;
+  background: rgba(255, 77, 240, 0.18);
+}
+
+/* Discord login button */
+.discord-login {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 13px 18px;
+  min-height: 46px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: #5865f2;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    filter 0.15s,
+    transform 0.1s,
+    background 0.15s;
+}
+
+.discord-login:hover {
+  filter: brightness(1.08);
+}
+
+.discord-login:active {
+  transform: scale(0.98);
+}
+
+.discord-login:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Discord icon */
+.discord-login .discord-icon {
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+/* Switch between Login and Signup */
+.auth-switch {
+  margin-top: 18px !important;
+  margin-bottom: 0 !important;
+  color: #7a5e99 !important;
+  font-size: 12px !important;
+}
+
+.auth-switch button {
+  background: none;
+  border: none;
+  padding: 0;
+  color: #ff4df0;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.auth-switch button:hover {
+  text-decoration: underline;
+}
+
+/* Forgot password, if present */
+.forgot-password {
+  display: block;
+  margin-top: -4px;
+  text-align: right;
+  color: #ff4df0;
+  font-size: 11px;
+  text-decoration: none;
+}
+
+.forgot-password:hover {
+  text-decoration: underline;
+}
+
+/* Keep auth screen comfortable on phones */
+@media (max-width: 480px) {
+  .login-screen {
+    padding: 16px;
+  }
+
+  .login-card {
+    padding: 30px 20px;
+    border-radius: 18px;
+  }
+
+  .login-icon {
+    font-size: 44px;
+  }
+
+  .login-card h1 {
+    font-size: 23px;
+  }
+}
+
+/* Prevent hidden auth/app elements from accidentally appearing */
+.login-screen[hidden],
+#app[hidden] {
+  display: none !important;
+}
