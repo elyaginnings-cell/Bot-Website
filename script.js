@@ -90,14 +90,26 @@ function setupEventListeners() {
     });
   });
   document.getElementById("server-button")?.addEventListener("click", loadServers);
-  document.getElementById("open-server-view")?.addEventListener("click", () => {
-    if (typeof openServerView === "function") openServerView();
-    else alert("Server View is still loading — try again in a second.");
-  });
-  document.getElementById("nav-server-view")?.addEventListener("click", () => {
-    if (typeof openServerView === "function") openServerView();
-    else alert("Server View is still loading — try again in a second.");
-  });
+  function launchServerView() {
+    const fn = window.openServerView;
+    if (typeof fn === "function") {
+      fn();
+      return;
+    }
+    const view = document.getElementById("server-view");
+    const app = document.getElementById("app");
+    if (view && window.selectedServer?.id) {
+      if (app) app.hidden = true;
+      view.hidden = false;
+      document.body.classList.add("server-view-open");
+    } else if (!window.selectedServer?.id) {
+      alert("Choose a server first.");
+    } else {
+      alert("Server View failed to load. Hard refresh the page (Ctrl+Shift+R).");
+    }
+  }
+  document.getElementById("open-server-view")?.addEventListener("click", launchServerView);
+  document.getElementById("nav-server-view")?.addEventListener("click", launchServerView);
   document.getElementById("logout-button")?.addEventListener("click", () => {
     window.location.href = "/api/logout";
   });
