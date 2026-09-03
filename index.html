@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1">
     <title>Coffee Shop — Bot Control</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="server-view.css">
@@ -88,7 +88,6 @@
             </div>
 
             <div class="content">
-
                 <section id="overview" class="page-section active">
                     <div class="hero card">
                         <div>
@@ -227,14 +226,14 @@
                             <select id="shop-type">
                                 <option value="role">Permanent role</option>
                                 <option value="temp_role">Temporary role</option>
-                                <option value="xp_boost">XP boost (multiplier)</option>
-                                <option value="bean_boost">Bean boost (multiplier)</option>
+                                <option value="xp_boost">XP boost</option>
+                                <option value="bean_boost">Bean boost</option>
                                 <option value="title">Profile title</option>
-                                <option value="xp_pack">Instant XP pack</option>
-                                <option value="bean_pack">Instant Bean pack</option>
-                                <option value="mystery">Mystery Bean box</option>
+                                <option value="xp_pack">XP pack</option>
+                                <option value="bean_pack">Bean pack</option>
+                                <option value="mystery">Mystery box</option>
                                 <option value="work_skip">Skip work cooldown</option>
-                                <option value="daily_reset">Reset daily claim</option>
+                                <option value="daily_reset">Reset daily</option>
                             </select>
                         </div>
                         <div class="config-grid">
@@ -290,20 +289,18 @@
                     <div class="card form-card wide">
                         <span class="eyebrow">INFO</span>
                         <h2>Settings</h2>
-                        <p>Use <strong>Server View</strong> for a Discord-style chat client through the bot.</p>
-                        <p>Customize theme, density, and font size with the ⚙ button inside Server View.</p>
+                        <p>Use <strong>Server View</strong> for Discord-style chat through the bot (mobile-friendly drawer).</p>
                     </div>
                 </section>
-
             </div>
         </main>
     </div>
 
-    <!-- Discord-style Server View -->
     <div id="server-view" class="server-view" hidden>
         <div class="sv-topbar">
             <div class="sv-top-left">
-                <button type="button" class="sv-back" id="close-server-view">← Dashboard</button>
+                <button type="button" class="sv-menu-btn" id="sv-menu-btn" aria-label="Channels">☰</button>
+                <button type="button" class="sv-back" id="close-server-view">← Back</button>
                 <div class="sv-server-pill" id="sv-server-name">Server</div>
                 <div class="sv-name-wrap">
                     <label for="sv-display-name">Name</label>
@@ -345,8 +342,12 @@
         </div>
 
         <div class="sv-body">
-            <aside class="sv-channels">
-                <div class="sv-channels-head" id="sv-channels-head">Channels</div>
+            <button type="button" class="sv-drawer-backdrop" id="sv-drawer-backdrop" aria-label="Close channels"></button>
+            <aside class="sv-channels" id="sv-channels">
+                <div class="sv-channels-head">
+                    <span>Channels</span>
+                    <button type="button" class="sv-channels-close" id="sv-channels-close" aria-label="Close">×</button>
+                </div>
                 <div id="sv-channel-list" class="sv-channel-list"></div>
             </aside>
             <section class="sv-chat">
@@ -362,7 +363,7 @@
                 </div>
                 <div class="sv-composer-wrap">
                     <form id="sv-composer" class="sv-composer">
-                        <input id="sv-input" type="text" maxlength="2000" placeholder="Message…" autocomplete="off" disabled>
+                        <input id="sv-input" type="text" maxlength="2000" placeholder="Message…" autocomplete="off" enterkeyhint="send" disabled>
                         <button type="submit" class="sv-send-btn" id="sv-send" disabled>Send</button>
                     </form>
                 </div>
