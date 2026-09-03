@@ -1,501 +1,554 @@
-/* Discord-style Server View (+ mobile drawer) */
+/**
+ * Server View — complete rewrite
+ * Depends on window.selectedServer and window.channelsCache from script.js
+ */
+(function () {
+  "use strict";
 
-let svActiveChannelId = null;
-let svPollTimer = null;
-let svKnownIds = new Set();
-let svLoading = false;
-let svLastMessages = [];
-let svSending = false;
+  var activeChannelId = null;
+  var pollTimer = null;
+  var knownIds = {};
+  var lastMessages = [];
+  var loading = false;
+  var sending = false;
+  var bound = false;
 
-function svServer() {
-  return window.selectedServer || null;
-}
-function svChannels() {
-  return window.channelsCache || [];
-}
-
-function escapeHtml(s) {
-  return String(s == null ? "" : s)
-    .replace(/&/g, "&")
-    .replace(/</g, "<")
-    .replace(/>/g, ">")
-    .replace(/"/g, """);
-}
-
-function initServerView() {
-  document.getElementById("open-server-view")?.addEventListener("click", openServerView);
-  document.getElementById("close-server-view")?.addEventListener("click", closeServerView);
-  document.getElementById("sv-refresh")?.addEventListener("click", () => loadSvMessages(true));
-  document.getElementById("sv-composer")?.addEventListener("submit", sendSvMessage);
-  document.getElementById("sv-settings-btn")?.addEventListener("click", toggleSvSettings);
-  document.getElementById("sv-theme")?.addEventListener("change", applySvPrefs);
-  document.getElementById("sv-density")?.addEventListener("change", applySvPrefs);
-  document.getElementById("sv-font-size")?.addEventListener("change", applySvPrefs);
-  document.getElementById("sv-lightbox")?.addEventListener("click", closeLightbox);
-  document.getElementById("sv-menu-btn")?.addEventListener("click", openSvDrawer);
-  document.getElementById("sv-channels-close")?.addEventListener("click", closeSvDrawer);
-  document.getElementById("sv-drawer-backdrop")?.addEventListener("click", closeSvDrawer);
-
-  const nameInput = document.getElementById("sv-display-name");
-  if (nameInput) {
-    nameInput.value = localStorage.getItem("svDisplayName") || "";
-    const saveName = () => localStorage.setItem("svDisplayName", nameInput.value.trim().slice(0, 80));
-    nameInput.addEventListener("change", saveName);
-    nameInput.addEventListener("blur", saveName);
+  function esc(s) {
+    return String(s == null ? "" : s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
   }
-  loadSvPrefs();
-  document.getElementById("sv-messages")?.addEventListener("click", onSvMessagesClick);
-}
 
-function openSvDrawer() {
-  document.getElementById("server-view")?.classList.add("drawer-open");
-}
-function closeSvDrawer() {
-  document.getElementById("server-view")?.classList.remove("drawer-open");
-}
-
-function loadSvPrefs() {
-  const theme = localStorage.getItem("svTheme") || "discord";
-  const density = localStorage.getItem("svDensity") || "default";
-  const fontSize = localStorage.getItem("svFontSize") || "16";
-  const themeEl = document.getElementById("sv-theme");
-  const densEl = document.getElementById("sv-density");
-  const fontEl = document.getElementById("sv-font-size");
-  if (themeEl) themeEl.value = theme;
-  if (densEl) densEl.value = density;
-  if (fontEl) fontEl.value = fontSize;
-  applySvPrefs();
-}
-
-function applySvPrefs() {
-  const view = document.getElementById("server-view");
-  if (!view) return;
-  const theme = document.getElementById("sv-theme")?.value || "discord";
-  const density = document.getElementById("sv-density")?.value || "default";
-  const fontSize = document.getElementById("sv-font-size")?.value || "16";
-  view.classList.remove("theme-darker", "theme-light", "theme-garden", "density-compact", "density-cozy");
-  if (theme === "darker") view.classList.add("theme-darker");
-  if (theme === "light") view.classList.add("theme-light");
-  if (theme === "garden") view.classList.add("theme-garden");
-  if (density === "compact") view.classList.add("density-compact");
-  if (density === "cozy") view.classList.add("density-cozy");
-  view.style.setProperty("--sv-font-size", fontSize + "px");
-  localStorage.setItem("svTheme", theme);
-  localStorage.setItem("svDensity", density);
-  localStorage.setItem("svFontSize", fontSize);
-}
-
-function toggleSvSettings() {
-  const panel = document.getElementById("sv-settings-panel");
-  if (!panel) return;
-  panel.hidden = !panel.hidden;
-}
-
-function getSvDisplayName() {
-  const el = document.getElementById("sv-display-name");
-  const v = (el?.value || localStorage.getItem("svDisplayName") || "").trim().slice(0, 80);
-  return v || "";
-}
-
-function openServerView() {
-  const selectedServer = svServer();
-  if (!selectedServer || !selectedServer.id) {
-    alert("Choose a server first.");
-    return;
+  function getServer() {
+    return window.selectedServer || null;
   }
-  const app = document.getElementById("app");
-  const view = document.getElementById("server-view");
-  if (!view) {
-    alert("Server View markup missing from the page.");
-    return;
-  }
-  if (app) app.hidden = true;
-  view.hidden = false;
-  document.body.classList.add("server-view-open");
-  const nameEl = document.getElementById("sv-server-name");
-  if (nameEl) nameEl.textContent = selectedServer.name || "Server";
-  const nameInput = document.getElementById("sv-display-name");
-  if (nameInput && !nameInput.value) nameInput.value = localStorage.getItem("svDisplayName") || "";
-  applySvPrefs();
-  closeSvDrawer();
-  renderSvChannels();
-  if (svActiveChannelId) loadSvMessages(true);
-  else if (window.matchMedia("(max-width: 768px)").matches) openSvDrawer();
-  startSvPoll();
-}
-window.openServerView = openServerView;
 
-function closeServerView() {
-  stopSvPoll();
-  closeSvDrawer();
-  document.getElementById("sv-settings-panel")?.setAttribute("hidden", "");
-  const app = document.getElementById("app");
-  const view = document.getElementById("server-view");
-  if (view) view.hidden = true;
-  if (app) app.hidden = false;
-  document.body.classList.remove("server-view-open");
-}
-window.closeServerView = closeServerView;
-
-function renderSvChannels() {
-  const list = document.getElementById("sv-channel-list");
-  if (!list) return;
-  const channelsCache = svChannels();
-  const cats = channelsCache.filter((c) => c.type === 4);
-  const texts = channelsCache.filter((c) => c.type === 0 || c.type === 5);
-  if (!texts.length) {
-    list.innerHTML = '<p class="sv-empty">No text channels found. Choose a server and wait for channels to load.</p>';
-    return;
+  function getChannels() {
+    var list = window.channelsCache;
+    return Array.isArray(list) ? list : [];
   }
-  const byParent = new Map();
-  texts.forEach((ch) => {
-    const key = ch.parentId || "_none";
-    if (!byParent.has(key)) byParent.set(key, []);
-    byParent.get(key).push(ch);
-  });
-  let html = "";
-  const orderedParents = ["_none"].concat(cats.map((c) => c.id));
-  const seen = new Set();
-  for (const pid of orderedParents) {
-    const group = byParent.get(pid);
-    if (!group || !group.length) continue;
-    seen.add(pid);
-    const cat = cats.find((c) => c.id === pid);
-    if (cat) html += '<div class="sv-cat">' + escapeHtml(cat.name) + "</div>";
-    else if (pid === "_none") html += '<div class="sv-cat">Text channels</div>';
-    group
-      .sort((a, b) => (a.position || 0) - (b.position || 0) || a.name.localeCompare(b.name))
-      .forEach((ch) => {
-        const active = ch.id === svActiveChannelId ? " active" : "";
+
+  function openDrawer() {
+    var v = document.getElementById("server-view");
+    if (v) v.classList.add("drawer-open");
+  }
+  function closeDrawer() {
+    var v = document.getElementById("server-view");
+    if (v) v.classList.remove("drawer-open");
+  }
+
+  function loadPrefs() {
+    var theme = localStorage.getItem("svTheme") || "discord";
+    var density = localStorage.getItem("svDensity") || "default";
+    var fontSize = localStorage.getItem("svFontSize") || "16";
+    var te = document.getElementById("sv-theme");
+    var de = document.getElementById("sv-density");
+    var fe = document.getElementById("sv-font-size");
+    if (te) te.value = theme;
+    if (de) de.value = density;
+    if (fe) fe.value = fontSize;
+    applyPrefs();
+  }
+
+  function applyPrefs() {
+    var view = document.getElementById("server-view");
+    if (!view) return;
+    var theme = (document.getElementById("sv-theme") || {}).value || "discord";
+    var density = (document.getElementById("sv-density") || {}).value || "default";
+    var fontSize = (document.getElementById("sv-font-size") || {}).value || "16";
+    view.classList.remove(
+      "theme-darker",
+      "theme-light",
+      "theme-garden",
+      "density-compact",
+      "density-cozy"
+    );
+    if (theme === "darker") view.classList.add("theme-darker");
+    if (theme === "light") view.classList.add("theme-light");
+    if (theme === "garden") view.classList.add("theme-garden");
+    if (density === "compact") view.classList.add("density-compact");
+    if (density === "cozy") view.classList.add("density-cozy");
+    view.style.setProperty("--sv-font-size", fontSize + "px");
+    localStorage.setItem("svTheme", theme);
+    localStorage.setItem("svDensity", density);
+    localStorage.setItem("svFontSize", fontSize);
+  }
+
+  function openServerView() {
+    var server = getServer();
+    if (!server || !server.id) {
+      alert("Choose a server first (Choose Server button).");
+      return;
+    }
+    var app = document.getElementById("app");
+    var view = document.getElementById("server-view");
+    if (!view) {
+      alert("Server View HTML is missing.");
+      return;
+    }
+    if (app) app.hidden = true;
+    view.hidden = false;
+    document.body.classList.add("server-view-open");
+
+    var nameEl = document.getElementById("sv-server-name");
+    if (nameEl) nameEl.textContent = server.name || "Server";
+    var pill = document.getElementById("sv-server-pill");
+    if (pill) pill.textContent = server.name || "Server";
+
+    var nameInput = document.getElementById("sv-display-name");
+    if (nameInput && !nameInput.value) {
+      nameInput.value = localStorage.getItem("svDisplayName") || "";
+    }
+
+    applyPrefs();
+    closeDrawer();
+    renderChannels();
+
+    if (activeChannelId) {
+      loadMessages(true);
+    } else if (window.matchMedia("(max-width: 768px)").matches) {
+      openDrawer();
+    }
+
+    startPoll();
+  }
+
+  function closeServerView() {
+    stopPoll();
+    closeDrawer();
+    var panel = document.getElementById("sv-settings-panel");
+    if (panel) panel.hidden = true;
+    var app = document.getElementById("app");
+    var view = document.getElementById("server-view");
+    if (view) view.hidden = true;
+    if (app) app.hidden = false;
+    document.body.classList.remove("server-view-open");
+  }
+
+  function renderChannels() {
+    var list = document.getElementById("sv-channel-list");
+    if (!list) return;
+    var channels = getChannels();
+    var cats = channels.filter(function (c) {
+      return c.type === 4;
+    });
+    var texts = channels.filter(function (c) {
+      return c.type === 0 || c.type === 5;
+    });
+
+    if (!texts.length) {
+      list.innerHTML =
+        '<p class="sv-empty">No text channels.<br>Pick a server and wait for channels to load.</p>';
+      return;
+    }
+
+    var byParent = {};
+    texts.forEach(function (ch) {
+      var key = ch.parentId || "_none";
+      if (!byParent[key]) byParent[key] = [];
+      byParent[key].push(ch);
+    });
+
+    var html = "";
+    var ordered = ["_none"].concat(
+      cats.map(function (c) {
+        return c.id;
+      })
+    );
+    var seen = {};
+
+    ordered.forEach(function (pid) {
+      var group = byParent[pid];
+      if (!group || !group.length) return;
+      seen[pid] = true;
+      var cat = cats.find(function (c) {
+        return c.id === pid;
+      });
+      if (cat) html += '<div class="sv-cat">' + esc(cat.name) + "</div>";
+      else if (pid === "_none") html += '<div class="sv-cat">Text channels</div>';
+      group
+        .slice()
+        .sort(function (a, b) {
+          return (a.position || 0) - (b.position || 0) || String(a.name).localeCompare(String(b.name));
+        })
+        .forEach(function (ch) {
+          var active = ch.id === activeChannelId ? " active" : "";
+          html +=
+            '<button type="button" class="sv-ch' +
+            active +
+            '" data-id="' +
+            esc(ch.id) +
+            '"><span class="sv-hash">#</span>' +
+            esc(ch.name) +
+            "</button>";
+        });
+    });
+
+    Object.keys(byParent).forEach(function (pid) {
+      if (seen[pid]) return;
+      byParent[pid].forEach(function (ch) {
+        var active = ch.id === activeChannelId ? " active" : "";
         html +=
           '<button type="button" class="sv-ch' +
           active +
           '" data-id="' +
-          ch.id +
+          esc(ch.id) +
           '"><span class="sv-hash">#</span>' +
-          escapeHtml(ch.name) +
+          esc(ch.name) +
           "</button>";
       });
-  }
-  byParent.forEach((group, pid) => {
-    if (seen.has(pid)) return;
-    group.forEach((ch) => {
-      const active = ch.id === svActiveChannelId ? " active" : "";
-      html +=
-        '<button type="button" class="sv-ch' +
-        active +
-        '" data-id="' +
-        ch.id +
-        '"><span class="sv-hash">#</span>' +
-        escapeHtml(ch.name) +
-        "</button>";
     });
-  });
-  list.innerHTML = html;
-  list.querySelectorAll(".sv-ch").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      selectSvChannel(btn.getAttribute("data-id"), btn.textContent.replace(/^\s*#\s*/, "# "));
-    });
-  });
-}
 
-function selectSvChannel(id, title) {
-  svActiveChannelId = id;
-  svKnownIds = new Set();
-  const clean = (title || "# channel").replace(/^\s*#\s*/, "");
-  const titleEl = document.getElementById("sv-channel-title");
-  if (titleEl) titleEl.textContent = clean;
-  const input = document.getElementById("sv-input");
-  const send = document.getElementById("sv-send");
-  if (input) {
-    input.disabled = false;
-    input.placeholder = "Message #" + clean;
+    list.innerHTML = html;
+    var buttons = list.querySelectorAll(".sv-ch");
+    for (var i = 0; i < buttons.length; i++) {
+      buttons[i].addEventListener("click", function (e) {
+        var btn = e.currentTarget;
+        selectChannel(btn.getAttribute("data-id"), btn.textContent);
+      });
+    }
   }
-  if (send) send.disabled = false;
-  closeSvDrawer();
-  renderSvChannels();
-  loadSvMessages(true);
-}
 
-async function loadSvMessages(full) {
-  const selectedServer = svServer();
-  if (!selectedServer || !selectedServer.id || !svActiveChannelId || svLoading) return;
-  svLoading = true;
-  try {
-    const params = new URLSearchParams({
-      guildId: selectedServer.id,
-      channelId: svActiveChannelId,
+  function selectChannel(id, title) {
+    activeChannelId = id;
+    knownIds = {};
+    lastMessages = [];
+    var clean = String(title || "channel").replace(/^\s*#\s*/, "").trim();
+    var titleEl = document.getElementById("sv-channel-title");
+    if (titleEl) titleEl.textContent = clean;
+    var input = document.getElementById("sv-input");
+    var send = document.getElementById("sv-send");
+    if (input) {
+      input.disabled = false;
+      input.placeholder = "Message #" + clean;
+    }
+    if (send) send.disabled = false;
+    closeDrawer();
+    renderChannels();
+    loadMessages(true);
+  }
+
+  function loadMessages(full) {
+    var server = getServer();
+    if (!server || !server.id || !activeChannelId || loading) return;
+    loading = true;
+    var params = new URLSearchParams({
+      guildId: server.id,
+      channelId: activeChannelId,
       limit: "50",
     });
-    const res = await fetch("/api/messages?" + params, {
+    fetch("/api/messages?" + params.toString(), {
       credentials: "include",
       cache: "no-store",
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) {
-      const box = document.getElementById("sv-messages");
-      if (box) {
-        box.innerHTML =
-          '<p class="sv-empty">❌ ' + escapeHtml(data.error || "Failed to load") + "</p>";
-      }
+    })
+      .then(function (res) {
+        return res.json().then(function (data) {
+          return { ok: res.ok, status: res.status, data: data };
+        });
+      })
+      .then(function (result) {
+        var box = document.getElementById("sv-messages");
+        if (!box) return;
+        if (!result.ok) {
+          box.innerHTML =
+            '<p class="sv-empty">❌ ' +
+            esc((result.data && result.data.error) || "Failed to load (" + result.status + ")") +
+            "</p>";
+          return;
+        }
+        var messages = (result.data && result.data.messages) || [];
+        if (full) {
+          knownIds = {};
+          messages.forEach(function (m) {
+            knownIds[m.id] = true;
+          });
+          lastMessages = messages;
+          renderMessages(messages);
+        } else {
+          var atBottom =
+            box.scrollHeight - box.scrollTop - box.clientHeight < 120;
+          var fresh = messages.filter(function (m) {
+            return !knownIds[m.id];
+          });
+          if (fresh.length) {
+            fresh.forEach(function (m) {
+              knownIds[m.id] = true;
+              lastMessages.push(m);
+            });
+            renderMessages(lastMessages.slice(-60));
+            if (atBottom) box.scrollTop = box.scrollHeight;
+          }
+        }
+      })
+      .catch(function (err) {
+        console.error(err);
+        var box = document.getElementById("sv-messages");
+        if (box)
+          box.innerHTML =
+            '<p class="sv-empty">❌ Network error loading messages</p>';
+      })
+      .finally(function () {
+        loading = false;
+      });
+  }
+
+  function formatContent(content) {
+    if (!content) return "";
+    var text = esc(content);
+    text = text.replace(
+      /(https?:\/\/[^\s&lt;]+)/g,
+      '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>'
+    );
+    return text;
+  }
+
+  function messageHtml(m, grouped) {
+    var author = m.author || {};
+    var name =
+      author.displayName ||
+      author.nickname ||
+      author.globalName ||
+      author.username ||
+      "Unknown";
+    var bot = author.bot ? '<span class="sv-bot">BOT</span>' : "";
+    var time = m.createdTimestamp
+      ? new Date(m.createdTimestamp).toLocaleString(undefined, {
+          month: "short",
+          day: "numeric",
+          hour: "numeric",
+          minute: "2-digit",
+        })
+      : "";
+    var av =
+      author.avatar
+        ? '<img class="sv-av" src="' + esc(author.avatar) + '" alt="">'
+        : '<div class="sv-av fallback">☕</div>';
+    var body = formatContent(m.content || "");
+    var atts = (m.attachments || [])
+      .map(function (a) {
+        if (a.contentType && a.contentType.indexOf("image/") === 0) {
+          return (
+            '<img class="sv-img" src="' +
+            esc(a.url) +
+            '" alt="" data-full="' +
+            esc(a.url) +
+            '">'
+          );
+        }
+        return (
+          '<a class="sv-file" href="' +
+          esc(a.url) +
+          '" target="_blank" rel="noopener">📎 ' +
+          esc(a.name || "file") +
+          "</a>"
+        );
+      })
+      .join("");
+    if (!body && !atts) body = '<em style="opacity:.6">(empty)</em>';
+    return (
+      '<div class="sv-msg' +
+      (grouped ? " grouped" : "") +
+      '" data-id="' +
+      esc(m.id) +
+      '">' +
+      '<div class="sv-av-wrap">' +
+      av +
+      "</div>" +
+      '<div class="sv-msg-body">' +
+      '<div class="sv-msg-meta"><strong>' +
+      esc(name) +
+      "</strong>" +
+      bot +
+      '<span class="sv-time">' +
+      esc(time) +
+      "</span></div>" +
+      (body ? '<div class="sv-msg-text">' + body + "</div>" : "") +
+      atts +
+      "</div></div>"
+    );
+  }
+
+  function renderMessages(messages) {
+    var box = document.getElementById("sv-messages");
+    if (!box) return;
+    if (!messages.length) {
+      box.innerHTML =
+        '<p class="sv-empty">No messages yet.<br>Say something!</p>';
       return;
     }
-    const messages = data.messages || [];
-    if (full) {
-      svKnownIds = new Set(messages.map((m) => m.id));
-      svLastMessages = messages;
-      renderSvMessages(messages);
-    } else {
-      const box = document.getElementById("sv-messages");
-      if (!box) return;
-      const atBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 120;
-      const fresh = messages.filter((m) => !svKnownIds.has(m.id));
-      if (fresh.length) {
-        fresh.forEach((m) => {
-          svKnownIds.add(m.id);
-          svLastMessages.push(m);
-        });
-        renderSvMessages(svLastMessages.slice(-60));
-        if (atBottom) box.scrollTop = box.scrollHeight;
-      }
-    }
-  } catch (e) {
-    console.error(e);
-  } finally {
-    svLoading = false;
-  }
-}
-
-function renderSvMessages(messages) {
-  const box = document.getElementById("sv-messages");
-  if (!box) return;
-  if (!messages.length) {
-    box.innerHTML = '<p class="sv-empty">No messages yet.<br>Say something!</p>';
-    return;
-  }
-  box.innerHTML = messages
-    .map((m, i) => {
-      const prev = i > 0 ? messages[i - 1] : null;
-      const grouped =
+    var html = "";
+    for (var i = 0; i < messages.length; i++) {
+      var m = messages[i];
+      var prev = i > 0 ? messages[i - 1] : null;
+      var grouped =
         prev &&
         prev.author &&
         m.author &&
         prev.author.id === m.author.id &&
         m.createdTimestamp - prev.createdTimestamp < 7 * 60 * 1000;
-      return messageHtml(m, grouped);
-    })
-    .join("");
-  box.scrollTop = box.scrollHeight;
-}
-
-function formatMessageContent(content, mentions) {
-  if (!content) return "";
-  let text = escapeHtml(content);
-  const users = (mentions && mentions.users) || {};
-  const roles = (mentions && mentions.roles) || {};
-  const channels = (mentions && mentions.channels) || {};
-  text = text.replace(/<@!?(\d+)>/g, function (_, id) {
-    const u = users[id];
-    const label = u
-      ? "@" + (u.displayName || u.nickname || u.globalName || u.username)
-      : "@user";
-    return '<span class="sv-mention sv-mention-user">' + escapeHtml(label) + "</span>";
-  });
-  text = text.replace(/<@&(\d+)>/g, function (_, id) {
-    const r = roles[id];
-    return (
-      '<span class="sv-mention sv-mention-role">' +
-      escapeHtml(r ? "@" + r.name : "@role") +
-      "</span>"
-    );
-  });
-  text = text.replace(/<#(\d+)>/g, function (_, id) {
-    const c = channels[id];
-    return (
-      '<span class="sv-mention sv-mention-channel" data-channel-id="' +
-      id +
-      '">' +
-      escapeHtml(c ? "#" + c.name : "#channel") +
-      "</span>"
-    );
-  });
-  text = text.replace(
-    /(https?:\/\/[^\s<]+)/g,
-    '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>'
-  );
-  return text;
-}
-
-function messageHtml(m, grouped) {
-  const name =
-    (m.author &&
-      (m.author.displayName ||
-        m.author.nickname ||
-        m.author.globalName ||
-        m.author.username)) ||
-    "Unknown";
-  const bot = m.author && m.author.bot ? '<span class="sv-bot">BOT</span>' : "";
-  const time = m.createdTimestamp
-    ? new Date(m.createdTimestamp).toLocaleString(undefined, {
-        month: "short",
-        day: "numeric",
-        hour: "numeric",
-        minute: "2-digit",
-      })
-    : "";
-  const av =
-    m.author && m.author.avatar
-      ? '<img class="sv-av" src="' + escapeHtml(m.author.avatar) + '" alt="">'
-      : '<div class="sv-av fallback">☕</div>';
-  let body = formatMessageContent(m.content || "", m.mentions);
-  if (
-    !body &&
-    !(m.embeds && m.embeds.length) &&
-    !(m.attachments && m.attachments.length)
-  ) {
-    body = '<em style="opacity:.6">(empty)</em>';
+      html += messageHtml(m, grouped);
+    }
+    box.innerHTML = html;
+    box.scrollTop = box.scrollHeight;
   }
-  const atts = (m.attachments || [])
-    .map(function (a) {
-      if (a.contentType && a.contentType.indexOf("image/") === 0) {
-        return (
-          '<img class="sv-img" src="' +
-          escapeHtml(a.url) +
-          '" alt="" data-full="' +
-          escapeHtml(a.url) +
-          '">'
-        );
-      }
-      return (
-        '<a class="sv-file" href="' +
-        escapeHtml(a.url) +
-        '" target="_blank" rel="noopener">📎 ' +
-        escapeHtml(a.name || "file") +
-        "</a>"
-      );
-    })
-    .join("");
-  return (
-    '<div class="sv-msg' +
-    (grouped ? " grouped" : "") +
-    '" data-id="' +
-    m.id +
-    '">' +
-    '<div class="sv-av-wrap">' +
-    av +
-    "</div>" +
-    '<div class="sv-msg-body">' +
-    '<div class="sv-msg-meta"><strong>' +
-    escapeHtml(name) +
-    "</strong>" +
-    bot +
-    '<span class="sv-time">' +
-    escapeHtml(time) +
-    "</span></div>" +
-    (body ? '<div class="sv-msg-text">' + body + "</div>" : "") +
-    atts +
-    "</div></div>"
-  );
-}
 
-function onSvMessagesClick(e) {
-  const t = e.target;
-  if (t.matches && t.matches("img.sv-img")) {
-    openLightbox(t.getAttribute("data-full") || t.src);
-    return;
-  }
-  const chMention = t.closest && t.closest(".sv-mention-channel");
-  if (chMention) {
-    const id = chMention.getAttribute("data-channel-id");
-    if (id) {
-      const ch = svChannels().find((c) => c.id === id);
-      selectSvChannel(id, ch ? "# " + ch.name : "# channel");
+  function onMessagesClick(e) {
+    var t = e.target;
+    if (t && t.matches && t.matches("img.sv-img")) {
+      openLightbox(t.getAttribute("data-full") || t.src);
     }
   }
-}
 
-function openLightbox(src) {
-  const box = document.getElementById("sv-lightbox");
-  const img = document.getElementById("sv-lightbox-img");
-  if (!box || !img) return;
-  img.src = src;
-  box.hidden = false;
-}
-function closeLightbox() {
-  const box = document.getElementById("sv-lightbox");
-  if (box) box.hidden = true;
-}
+  function openLightbox(src) {
+    var box = document.getElementById("sv-lightbox");
+    var img = document.getElementById("sv-lightbox-img");
+    if (!box || !img) return;
+    img.src = src;
+    box.hidden = false;
+  }
+  function closeLightbox() {
+    var box = document.getElementById("sv-lightbox");
+    if (box) box.hidden = true;
+  }
 
-async function sendSvMessage(e) {
-  e.preventDefault();
-  if (svSending) return;
-  const selectedServer = svServer();
-  const input = document.getElementById("sv-input");
-  const sendBtn = document.getElementById("sv-send");
-  const content = input && input.value ? input.value.trim() : "";
-  if (!content || !selectedServer || !selectedServer.id || !svActiveChannelId) return;
+  function sendMessage(e) {
+    e.preventDefault();
+    if (sending) return;
+    var server = getServer();
+    var input = document.getElementById("sv-input");
+    var sendBtn = document.getElementById("sv-send");
+    var content = input && input.value ? input.value.trim() : "";
+    if (!content || !server || !server.id || !activeChannelId) return;
 
-  const username = getSvDisplayName();
-  if (username) localStorage.setItem("svDisplayName", username);
+    var username =
+      ((document.getElementById("sv-display-name") || {}).value ||
+        localStorage.getItem("svDisplayName") ||
+        "").trim().slice(0, 80);
+    if (username) localStorage.setItem("svDisplayName", username);
 
-  svSending = true;
-  if (input) input.disabled = true;
-  if (sendBtn) sendBtn.disabled = true;
+    sending = true;
+    if (input) input.disabled = true;
+    if (sendBtn) sendBtn.disabled = true;
 
-  try {
-    const params = new URLSearchParams({
-      guildId: selectedServer.id,
-      channelId: svActiveChannelId,
+    var params = new URLSearchParams({
+      guildId: server.id,
+      channelId: activeChannelId,
     });
-    const payload = { content: content };
+    var payload = { content: content };
     if (username) payload.username = username;
 
-    const res = await fetch("/api/messages?" + params, {
+    fetch("/api/messages?" + params.toString(), {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) {
-      alert(data.error || "Send failed (" + res.status + ")");
-      return;
-    }
-    if (input) input.value = "";
-    if (data.message && data.message.id) {
-      svKnownIds.add(data.message.id);
-      svLastMessages.push(data.message);
-      renderSvMessages(svLastMessages.slice(-60));
-    } else {
-      await loadSvMessages(true);
-    }
-  } catch (err) {
-    console.error(err);
-    alert((err && err.message) || "Send failed — check connection / bot online");
-  } finally {
-    svSending = false;
-    if (input) {
-      input.disabled = false;
-      input.focus();
-    }
-    if (sendBtn) sendBtn.disabled = false;
+    })
+      .then(function (res) {
+        return res.json().then(function (data) {
+          return { ok: res.ok, status: res.status, data: data };
+        });
+      })
+      .then(function (result) {
+        if (!result.ok) {
+          alert(
+            (result.data && result.data.error) ||
+              "Send failed (" + result.status + ")"
+          );
+          return;
+        }
+        if (input) input.value = "";
+        if (result.data && result.data.message && result.data.message.id) {
+          knownIds[result.data.message.id] = true;
+          lastMessages.push(result.data.message);
+          renderMessages(lastMessages.slice(-60));
+        } else {
+          loadMessages(true);
+        }
+      })
+      .catch(function (err) {
+        console.error(err);
+        alert((err && err.message) || "Send failed");
+      })
+      .finally(function () {
+        sending = false;
+        if (input) {
+          input.disabled = false;
+          input.focus();
+        }
+        if (sendBtn) sendBtn.disabled = false;
+      });
   }
-}
 
-function startSvPoll() {
-  stopSvPoll();
-  svPollTimer = setInterval(function () {
-    const view = document.getElementById("server-view");
-    if (view && !view.hidden) loadSvMessages(false);
-  }, 3500);
-}
+  function startPoll() {
+    stopPoll();
+    pollTimer = setInterval(function () {
+      var view = document.getElementById("server-view");
+      if (view && !view.hidden) loadMessages(false);
+    }, 3500);
+  }
+  function stopPoll() {
+    if (pollTimer) clearInterval(pollTimer);
+    pollTimer = null;
+  }
 
-function stopSvPoll() {
-  if (svPollTimer) clearInterval(svPollTimer);
-  svPollTimer = null;
-}
+  function bindOnce() {
+    if (bound) return;
+    bound = true;
+    var closeBtn = document.getElementById("close-server-view");
+    if (closeBtn) closeBtn.addEventListener("click", closeServerView);
+    var backBtn = document.getElementById("sv-back");
+    if (backBtn) backBtn.addEventListener("click", closeServerView);
+    var refresh = document.getElementById("sv-refresh");
+    if (refresh)
+      refresh.addEventListener("click", function () {
+        loadMessages(true);
+      });
+    var form = document.getElementById("sv-composer");
+    if (form) form.addEventListener("submit", sendMessage);
+    var settingsBtn = document.getElementById("sv-settings-btn");
+    if (settingsBtn)
+      settingsBtn.addEventListener("click", function () {
+        var panel = document.getElementById("sv-settings-panel");
+        if (panel) panel.hidden = !panel.hidden;
+      });
+    ["sv-theme", "sv-density", "sv-font-size"].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.addEventListener("change", applyPrefs);
+    });
+    var lightbox = document.getElementById("sv-lightbox");
+    if (lightbox) lightbox.addEventListener("click", closeLightbox);
+    var menu = document.getElementById("sv-menu-btn");
+    if (menu) menu.addEventListener("click", openDrawer);
+    var chClose = document.getElementById("sv-channels-close");
+    if (chClose) chClose.addEventListener("click", closeDrawer);
+    var backdrop = document.getElementById("sv-drawer-backdrop");
+    if (backdrop) backdrop.addEventListener("click", closeDrawer);
+    var msgs = document.getElementById("sv-messages");
+    if (msgs) msgs.addEventListener("click", onMessagesClick);
+    var nameInput = document.getElementById("sv-display-name");
+    if (nameInput) {
+      nameInput.value = localStorage.getItem("svDisplayName") || "";
+      nameInput.addEventListener("change", function () {
+        localStorage.setItem(
+          "svDisplayName",
+          nameInput.value.trim().slice(0, 80)
+        );
+      });
+    }
+    loadPrefs();
+  }
 
-document.addEventListener("DOMContentLoaded", initServerView);
-if (document.readyState !== "loading") {
-  try { initServerView(); } catch (e) { console.error(e); }
-}
+  window.openServerView = openServerView;
+  window.closeServerView = closeServerView;
+
+  function boot() {
+    bindOnce();
+  }
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot);
+  } else {
+    boot();
+  }
+})();
