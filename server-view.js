@@ -5,6 +5,7 @@ let svPollTimer = null;
 let svKnownIds = new Set();
 let svLoading = false;
 let svLastMessages = [];
+let svSending = false;
 
 function initServerView() {
   document.getElementById("open-server-view")?.addEventListener("click", openServerView);
@@ -77,7 +78,7 @@ function toggleSvSettings() {
 function getSvDisplayName() {
   const el = document.getElementById("sv-display-name");
   const v = (el?.value || localStorage.getItem("svDisplayName") || "").trim().slice(0, 80);
-  return v || null;
+  return v || "";
 }
 
 function openServerView() {
@@ -249,6 +250,7 @@ function formatMessageContent(content, mentions) {
   const users = mentions?.users || {};
   const roles = mentions?.roles || {};
   const channels = mentions?.channels || {};
+  // After escapeHtml, Discord tokens look like <@id>
   text = text.replace(/<@!?(\d+)>/g, (_, id) => {
     const u = users[id];
     const label = u ? `@${u.displayName || u.nickname || u.globalName || u.username}` : `@user`;
@@ -516,46 +518,59 @@ function showToast(msg) {
 
 async function sendSvMessage(e) {
   e.preventDefault();
+  if (svSending) return;
+
   const input = document.getElementById("sv-input");
+  const sendBtn = document.getElementById("sv-send");
   const content = input?.value?.trim();
   if (!content || !selectedServer?.id || !svActiveChannelId) return;
+
+  // Name is optional — bot will fall back to Coffee Shop | Chat
   const username = getSvDisplayName();
-  if (!username) {
-    alert("Set a display name in the top bar first.");
-    document.getElementById("sv-display-name")?.focus();
-    return;
-  }
-  localStorage.setItem("svDisplayName", username);
-  input.disabled = true;
+  if (username) localStorage.setItem("svDisplayName", username);
+
+  svSending = true;
+  if (input) input.disabled = true;
+  if (sendBtn) sendBtn.disabled = true;
+
   try {
     const params = new URLSearchParams({
       guildId: selectedServer.id,
       channelId: svActiveChannelId,
     });
+    const payload = { content };
+    if (username) payload.username = username;
+
     const res = await fetch(`/api/messages?${params}`, {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ content, username }),
+      body: JSON.stringify(payload),
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
-      alert(data.error || "Send failed");
+      alert(data.error || `Send failed (${res.status})`);
       return;
     }
-    input.value = "";
-    if (data.message) {
+    if (input) input.value = "";
+    if (data.message?.id) {
       svKnownIds.add(data.message.id);
       svLastMessages.push(data.message);
       renderSvMessages(svLastMessages.slice(-60));
     } else {
+      // Message may still have been posted — refresh from Discord
       await loadSvMessages(true);
     }
   } catch (err) {
-    alert(err.message || "Send failed");
+    console.error(err);
+    alert(err.message || "Send failed — check connection / bot online");
   } finally {
-    input.disabled = false;
-    input.focus();
+    svSending = false;
+    if (input) {
+      input.disabled = false;
+      input.focus();
+    }
+    if (sendBtn) sendBtn.disabled = false;
   }
 }
 
