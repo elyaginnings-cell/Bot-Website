@@ -1,0 +1,74 @@
+/* Extra dashboard themes — toggle via body.theme-* */
+
+body.theme-mocha {
+  --bg: #1a1410;
+  --card: #2a211c;
+  --text: #f5e6d3;
+  --muted: #b8a090;
+  --accent: #c4a484;
+  --accent-2: #e8c39e;
+  --border: rgba(196, 164, 132, 0.25);
+}
+
+body.theme-neon {
+  --bg: #0a0a12;
+  --card: #12121f;
+  --text: #e8e8ff;
+  --muted: #9a9ac0;
+  --accent: #ff4df0;
+  --accent-2: #4df0ff;
+  --border: rgba(255, 77, 240, 0.3);
+}
+
+body.theme-midnight {
+  --bg: #0b1220;
+  --card: #142033;
+  --text: #e6eefc;
+  --muted: #8fa3c1;
+  --accent: #5b8cff;
+  --accent-2: #7aa2ff;
+  --border: rgba(91, 140, 255, 0.28);
+}
+
+body.theme-sakura {
+  --bg: #1a1014;
+  --card: #2a1820;
+  --text: #ffe8f0;
+  --muted: #c49aaa;
+  --accent: #ff7eb3;
+  --accent-2: #ffb3d1;
+  --border: rgba(255, 126, 179, 0.28);
+}
+
+/* Server view extra themes */
+#server-view.theme-mocha {
+  --sv-bg: #1a1410;
+  --sv-panel: #2a211c;
+  --sv-text: #f5e6d3;
+  --sv-muted: #b8a090;
+  --sv-accent: #c4a484;
+}
+
+#server-view.theme-neon {
+  --sv-bg: #0a0a12;
+  --sv-panel: #12121f;
+  --sv-text: #e8e8ff;
+  --sv-muted: #9a9ac0;
+  --sv-accent: #ff4df0;
+}
+
+#server-view.theme-midnight {
+  --sv-bg: #0b1220;
+  --sv-panel: #142033;
+  --sv-text: #e6eefc;
+  --sv-muted: #8fa3c1;
+  --sv-accent: #5b8cff;
+}
+
+#server-view.theme-sakura {
+  --sv-bg: #1a1014;
+  --sv-panel: #2a1820;
+  --sv-text: #ffe8f0;
+  --sv-muted: #c49aaa;
+  --sv-accent: #ff7eb3;
+}
