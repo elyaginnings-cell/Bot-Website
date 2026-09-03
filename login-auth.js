@@ -24,6 +24,45 @@ function wireLogout() {
   });
 }
 
+function ensureLinkDiscordBanner(user) {
+  const existing = document.getElementById("link-discord-banner");
+  const needsLink = user && !user.discord_id && !user.linked;
+
+  if (!needsLink) {
+    if (existing) existing.remove();
+    return;
+  }
+
+  if (existing) return;
+
+  const banner = document.createElement("div");
+  banner.id = "link-discord-banner";
+  banner.className = "card";
+  banner.style.cssText =
+    "margin-bottom:12px;border-color:rgba(255,77,240,0.55);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;";
+  banner.innerHTML = `
+    <div>
+      <strong style="color:#ff4df0">Connect Discord</strong>
+      <p style="color:#b89cd9;font-size:13px;margin-top:4px">
+        Your email is logged in, but Discord isn't linked yet — link it to load your servers and use the dashboard.
+      </p>
+    </div>
+    <button class="button" id="link-discord-btn" type="button">Link Discord</button>
+  `;
+
+  const main = document.querySelector(".main");
+  const header = document.querySelector(".header");
+  if (main && header) {
+    main.insertBefore(banner, header.nextSibling);
+  } else if (main) {
+    main.prepend(banner);
+  }
+
+  document.getElementById("link-discord-btn")?.addEventListener("click", () => {
+    window.location.href = "/api/login?state=link";
+  });
+}
+
 function ensureEmailLoginForm() {
   const card = document.querySelector(".login-card");
   if (!card) return;
@@ -120,11 +159,33 @@ async function checkLogin() {
     }
     if (loginScreen) loginScreen.hidden = true;
     if (app) app.hidden = false;
-    const name = data.user.global_name || data.user.username || data.user.email || "Account";
+
+    const user = data.user;
+    const name = user.global_name || user.username || user.email || "Account";
     const usernameEl = document.getElementById("username");
     const welcomeEl = document.getElementById("welcome-name");
     if (usernameEl) usernameEl.textContent = name;
     if (welcomeEl) welcomeEl.textContent = name;
+
+    const accountLabel = document.querySelector(".account-info span");
+    if (accountLabel) {
+      accountLabel.textContent = user.discord_id
+        ? "Discord linked"
+        : user.email
+          ? "Email account"
+          : "Account";
+    }
+
+    const avatar = document.getElementById("user-avatar");
+    if (avatar) {
+      if (user.discord_id && user.avatar) {
+        avatar.src = `https://cdn.discordapp.com/avatars/${user.discord_id}/${user.avatar}.png?size=128`;
+      } else {
+        avatar.src = "https://cdn.discordapp.com/embed/avatars/0.png";
+      }
+    }
+
+    ensureLinkDiscordBanner(user);
   } catch {
     if (loginScreen) loginScreen.hidden = false;
     if (app) app.hidden = true;
