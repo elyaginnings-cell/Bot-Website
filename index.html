@@ -265,9 +265,9 @@
                             <input id="shop-desc" type="text" placeholder="Shown under the item">
                         </div>
                         <p class="form-hint" id="shop-type-hint">Permanent role: member keeps the role forever.</p>
-                        <button class="button" id="add-shop-item" type="button">Add to Shop</button>
-                        <h3 class="subhead">Current items</h3>
+                        <button class="button" id="add-shop-item" type="button">Add item</button>
                         <div id="shop-items-list" class="level-roles-list"></div>
+                        <p class="form-hint" id="shop-status"></p>
                     </div>
                 </section>
 
@@ -279,19 +279,17 @@
                             <label for="dashboard-log-channel">Log channel</label>
                             <select id="dashboard-log-channel"><option value="">Select a channel...</option></select>
                         </div>
-                        <div class="btn-row">
-                            <button class="button" id="save-logs" type="button">Save Log Channel</button>
-                            <button class="button secondary" id="test-log" type="button">Send Test Log</button>
-                        </div>
+                        <button class="button" id="save-logs" type="button">Save</button>
+                        <button class="button secondary" id="test-log" type="button">Send test log</button>
                         <p class="form-hint" id="logs-status"></p>
                     </div>
                 </section>
 
                 <section id="settings" class="page-section">
                     <div class="card form-card wide">
-                        <span class="eyebrow">INFO</span>
-                        <h2>Settings</h2>
-                        <p>Use <strong>Server View</strong> for Discord-style chat through the bot (mobile-friendly drawer).</p>
+                        <span class="eyebrow">SETTINGS</span>
+                        <h2>Layout</h2>
+                        <p class="form-hint">Use the View selector in the header for Auto / Desktop / Mobile.</p>
                     </div>
                 </section>
             </div>
@@ -299,91 +297,43 @@
     </div>
 
     <div id="server-view" class="server-view" hidden>
-        <div class="sv-topbar">
-            <div class="sv-top-left">
-                <button type="button" class="sv-menu-btn" id="sv-menu-btn" aria-label="Channels">☰</button>
-                <button type="button" class="sv-back" id="close-server-view">← Back</button>
-                <div class="sv-server-pill" id="sv-server-name">Server</div>
-                <div class="sv-name-wrap">
-                    <label for="sv-display-name">Name</label>
-                    <input id="sv-display-name" type="text" maxlength="80" placeholder="Display name" autocomplete="off">
+        <div class="sv-drawer-backdrop" id="sv-drawer-backdrop"></div>
+        <aside class="sv-channels" id="sv-channels">
+            <div class="sv-channels-head">
+                <strong id="sv-server-name">Server</strong>
+                <button type="button" id="sv-channels-close" class="sv-icon-btn" aria-label="Close">×</button>
+            </div>
+            <div id="sv-channel-list" class="sv-channel-list"></div>
+        </aside>
+        <section class="sv-main">
+            <header class="sv-topbar">
+                <button type="button" id="sv-menu-btn" class="sv-icon-btn" aria-label="Channels">☰</button>
+                <h2 id="sv-channel-title"># channel</h2>
+                <div class="sv-top-actions">
+                    <button type="button" id="sv-refresh" class="sv-icon-btn" title="Refresh">↻</button>
+                    <button type="button" id="sv-settings-btn" class="sv-icon-btn" title="Settings">⚙</button>
+                    <button type="button" id="close-server-view" class="sv-icon-btn" title="Close">×</button>
                 </div>
+            </header>
+            <div id="sv-settings-panel" class="sv-settings-panel" hidden>
+                <label>Theme <select id="sv-theme"><option value="discord">Discord</option><option value="darker">Darker</option><option value="light">Light</option><option value="garden">Garden</option></select></label>
+                <label>Density <select id="sv-density"><option value="default">Default</option><option value="compact">Compact</option><option value="cozy">Cozy</option></select></label>
+                <label>Font <select id="sv-font-size"><option value="14">14</option><option value="16">16</option><option value="18">18</option></select></label>
+                <label>Display name <input id="sv-display-name" type="text" maxlength="80" placeholder="Optional"></label>
             </div>
-            <div class="sv-top-right">
-                <button type="button" class="sv-icon-btn" id="sv-settings-btn" title="Appearance">⚙</button>
-            </div>
-        </div>
-
-        <div id="sv-settings-panel" class="sv-settings-panel" hidden>
-            <h4>Appearance</h4>
-            <div class="sv-settings-row">
-                <label for="sv-theme">Theme</label>
-                <select id="sv-theme">
-                    <option value="discord">Discord Dark</option>
-                    <option value="darker">Darker</option>
-                    <option value="light">Light</option>
-                    <option value="garden">🌻 Sunflower Garden</option>
-                </select>
-            </div>
-            <div class="sv-settings-row">
-                <label for="sv-density">Message density</label>
-                <select id="sv-density">
-                    <option value="default">Default</option>
-                    <option value="compact">Compact</option>
-                    <option value="cozy">Cozy</option>
-                </select>
-            </div>
-            <div class="sv-settings-row">
-                <label for="sv-font-size">Font size</label>
-                <select id="sv-font-size">
-                    <option value="14">Small</option>
-                    <option value="16" selected>Default</option>
-                    <option value="18">Large</option>
-                    <option value="20">Extra large</option>
-                </select>
-            </div>
-        </div>
-
-        <div class="sv-body">
-            <button type="button" class="sv-drawer-backdrop" id="sv-drawer-backdrop" aria-label="Close channels"></button>
-            <aside class="sv-channels" id="sv-channels">
-                <div class="sv-channels-head">
-                    <span>Channels</span>
-                    <button type="button" class="sv-channels-close" id="sv-channels-close" aria-label="Close">×</button>
-                </div>
-                <div id="sv-channel-list" class="sv-channel-list"></div>
-            </aside>
-            <section class="sv-chat">
-                <header class="sv-chat-head">
-                    <div class="sv-chat-head-left">
-                        <span class="sv-hash-big">#</span>
-                        <strong id="sv-channel-title">select a channel</strong>
-                    </div>
-                    <button type="button" class="sv-refresh" id="sv-refresh">Refresh</button>
-                </header>
-                <div id="sv-messages" class="sv-messages">
-                    <p class="sv-empty">Pick a channel to load messages.</p>
-                </div>
-                <div class="sv-composer-wrap">
-                    <form id="sv-composer" class="sv-composer">
-                        <input id="sv-input" type="text" maxlength="2000" placeholder="Message…" autocomplete="off" enterkeyhint="send" disabled>
-                        <button type="submit" class="sv-send-btn" id="sv-send" disabled>Send</button>
-                    </form>
-                </div>
-            </section>
-        </div>
+            <div id="sv-messages" class="sv-messages"></div>
+            <form id="sv-composer" class="sv-composer">
+                <input id="sv-input" type="text" placeholder="Select a channel…" disabled autocomplete="off">
+                <button type="submit" class="sv-send-btn" id="sv-send" disabled>Send</button>
+            </form>
+        </section>
     </div>
 
     <div id="sv-lightbox" class="sv-lightbox" hidden>
         <img id="sv-lightbox-img" src="" alt="">
     </div>
 
-    <script src="script.js"></script>
-    <script src="server-view.js"></script>
-    <script>
-      document.getElementById("nav-server-view")?.addEventListener("click", () => {
-        if (typeof openServerView === "function") openServerView();
-      });
-    </script>
+    <script src="script.js?v=4"></script>
+    <script src="server-view.js?v=4"></script>
 </body>
 </html>
