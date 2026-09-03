@@ -173,8 +173,114 @@ function renderSvMessages(messages) {
   box.scrollTop = box.scrollHeight;
 }
 
+/** Format Discord markdown-ish text with mentions */
+function formatMessageContent(content, mentions) {
+  if (!content) return "";
+  let text = escapeHtml(content);
+
+  const users = mentions?.users || {};
+  const roles = mentions?.roles || {};
+  const channels = mentions?.channels || {};
+
+  // User mentions <@id> or <@!id>
+  text = text.replace(/&lt;@!?(\d+)&gt;/g, (_, id) => {
+    const u = users[id];
+    const label = u
+      ? `@${u.displayName || u.nickname || u.globalName || u.username}`
+      : `@${id}`;
+    return `<span class="sv-mention sv-mention-user">${escapeHtml(label)}</span>`;
+  });
+
+  // Role mentions <@&id>
+  text = text.replace(/&lt;@&amp;(\d+)&gt;/g, (_, id) => {
+    const r = roles[id];
+    const label = r ? `@${r.name}` : `@role`;
+    return `<span class="sv-mention sv-mention-role">${escapeHtml(label)}</span>`;
+  });
+  // Fallback if &amp; wasn't used (shouldn't happen after escapeHtml)
+  text = text.replace(/&lt;@&(\d+)&gt;/g, (_, id) => {
+    const r = roles[id];
+    const label = r ? `@${r.name}` : `@role`;
+    return `<span class="sv-mention sv-mention-role">${escapeHtml(label)}</span>`;
+  });
+
+  // Channel mentions <#id>
+  text = text.replace(/&lt;#(\d+)&gt;/g, (_, id) => {
+    const c = channels[id];
+    const label = c ? `#${c.name}` : `#channel`;
+    return `<span class="sv-mention sv-mention-channel">${escapeHtml(label)}</span>`;
+  });
+
+  // @everyone / @here
+  text = text.replace(/@everyone/g, `<span class="sv-mention sv-mention-everyone">@everyone</span>`);
+  text = text.replace(/@here/g, `<span class="sv-mention sv-mention-everyone">@here</span>`);
+
+  // Simple **bold** and *italic* and `code`
+  text = text.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+  text = text.replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, "<em>$1</em>");
+  text = text.replace(/`([^`]+)`/g, "<code class=\"sv-code\">$1</code>");
+
+  // Newlines already preserved via white-space: pre-wrap
+  return text;
+}
+
+function embedHtml(e) {
+  if (!e) return "";
+  const color = e.color != null ? `#${Number(e.color).toString(16).padStart(6, "0")}` : "#ff4df0";
+  let inner = "";
+
+  if (e.author?.name) {
+    const icon = e.author.iconURL
+      ? `<img class="sv-embed-author-icon" src="${escapeHtml(e.author.iconURL)}" alt="">`
+      : "";
+    inner += `<div class="sv-embed-author">${icon}<span>${escapeHtml(e.author.name)}</span></div>`;
+  }
+  if (e.title) {
+    const title = e.url
+      ? `<a href="${escapeHtml(e.url)}" target="_blank" rel="noopener">${escapeHtml(e.title)}</a>`
+      : escapeHtml(e.title);
+    inner += `<div class="sv-embed-title">${title}</div>`;
+  }
+  if (e.description) {
+    inner += `<div class="sv-embed-desc">${formatMessageContent(e.description, null)}</div>`;
+  }
+  if (e.fields?.length) {
+    inner += `<div class="sv-embed-fields">`;
+    e.fields.forEach((f) => {
+      inner += `<div class="sv-embed-field${f.inline ? " inline" : ""}">
+        <div class="sv-embed-field-name">${escapeHtml(f.name)}</div>
+        <div class="sv-embed-field-value">${formatMessageContent(f.value, null)}</div>
+      </div>`;
+    });
+    inner += `</div>`;
+  }
+  if (e.image) {
+    inner += `<a href="${escapeHtml(e.image)}" target="_blank" rel="noopener"><img class="sv-embed-image" src="${escapeHtml(e.image)}" alt=""></a>`;
+  }
+  if (e.thumbnail) {
+    // thumbnail shown as small image on the side conceptually — keep simple
+    inner += `<img class="sv-embed-thumb" src="${escapeHtml(e.thumbnail)}" alt="">`;
+  }
+  if (e.footer?.text) {
+    const ficon = e.footer.iconURL
+      ? `<img class="sv-embed-footer-icon" src="${escapeHtml(e.footer.iconURL)}" alt="">`
+      : "";
+    const time = e.timestamp ? ` · ${new Date(e.timestamp).toLocaleString()}` : "";
+    inner += `<div class="sv-embed-footer">${ficon}<span>${escapeHtml(e.footer.text)}${escapeHtml(time)}</span></div>`;
+  } else if (e.timestamp) {
+    inner += `<div class="sv-embed-footer"><span>${escapeHtml(new Date(e.timestamp).toLocaleString())}</span></div>`;
+  }
+
+  return `<div class="sv-embed" style="border-left-color:${color}">${inner}</div>`;
+}
+
 function messageHtml(m) {
-  const name = m.author?.globalName || m.author?.username || "Unknown";
+  const name =
+    m.author?.displayName ||
+    m.author?.nickname ||
+    m.author?.globalName ||
+    m.author?.username ||
+    "Unknown";
   const bot = m.author?.bot ? `<span class="sv-bot">BOT</span>` : "";
   const time = m.createdTimestamp
     ? new Date(m.createdTimestamp).toLocaleString()
@@ -182,10 +288,12 @@ function messageHtml(m) {
   const av = m.author?.avatar
     ? `<img class="sv-av" src="${escapeHtml(m.author.avatar)}" alt="">`
     : `<div class="sv-av fallback">☕</div>`;
-  let body = escapeHtml(m.content || "");
-  if (!body && m.attachments?.length) body = "(attachment)";
-  if (!body && m.embedCount) body = "(embed)";
-  if (!body) body = "<em>(empty)</em>";
+
+  let body = formatMessageContent(m.content || "", m.mentions);
+  if (!body && !(m.embeds && m.embeds.length) && !(m.attachments && m.attachments.length)) {
+    body = "<em>(empty)</em>";
+  }
+
   const atts = (m.attachments || [])
     .map((a) => {
       if (a.contentType && a.contentType.startsWith("image/")) {
@@ -194,12 +302,16 @@ function messageHtml(m) {
       return `<a class="sv-file" href="${escapeHtml(a.url)}" target="_blank" rel="noopener">📎 ${escapeHtml(a.name || "file")}</a>`;
     })
     .join("");
+
+  const embeds = (m.embeds || []).map(embedHtml).join("");
+
   return `<div class="sv-msg" data-id="${m.id}">
     ${av}
     <div class="sv-msg-body">
       <div class="sv-msg-meta"><strong>${escapeHtml(name)}</strong>${bot}<span class="sv-time">${escapeHtml(time)}</span></div>
-      <div class="sv-msg-text">${body}</div>
+      ${body ? `<div class="sv-msg-text">${body}</div>` : ""}
       ${atts}
+      ${embeds}
     </div>
   </div>`;
 }
@@ -235,9 +347,7 @@ async function sendSvMessage(e) {
       alert(data.error || "Send failed");
       return;
     }
-    if (data.warning) {
-      console.warn(data.warning);
-    }
+    if (data.warning) console.warn(data.warning);
     input.value = "";
     if (data.message) {
       svKnownIds.add(data.message.id);
