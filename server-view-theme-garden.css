@@ -1,0 +1,297 @@
+/* ═══════════════════════════════════════════
+   Theme: Sunflower Garden
+   pink · purple · white · soft · cute blooms
+   ═══════════════════════════════════════════ */
+
+@import url("https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap");
+
+.server-view.theme-garden {
+  --sv-bg-primary: #fff7fb;
+  --sv-bg-secondary: #f3e8ff;
+  --sv-bg-tertiary: #fce7f3;
+  --sv-bg-modifier: rgba(232, 121, 198, 0.08);
+  --sv-bg-modifier-hover: rgba(192, 132, 252, 0.18);
+  --sv-bg-modifier-active: rgba(192, 132, 252, 0.28);
+  --sv-text: #4a3b5c;
+  --sv-text-muted: #9b8aad;
+  --sv-text-link: #c026d3;
+  --sv-header: #6b21a8;
+  --sv-interactive: #7c6b94;
+  --sv-interactive-hover: #5b21b6;
+  --sv-interactive-active: #4c1d95;
+  --sv-brand: #e879f9;
+  --sv-mention: rgba(232, 121, 249, 0.22);
+  --sv-mention-hover: rgba(232, 121, 249, 0.35);
+  --sv-mention-text: #a21caf;
+  --sv-embed-bg: #ffffff;
+  --sv-input-bg: #ffffff;
+  --sv-font: "Nunito", "Noto Sans", system-ui, sans-serif;
+  --garden-pink: #f9a8d4;
+  --garden-purple: #c084fc;
+  --garden-sun: #fde047;
+  --garden-white: #ffffff;
+  --garden-lavender: #ede9fe;
+
+  background:
+    radial-gradient(circle at 12% 18%, rgba(253, 224, 71, 0.35) 0 40px, transparent 42px),
+    radial-gradient(circle at 88% 12%, rgba(249, 168, 212, 0.4) 0 28px, transparent 30px),
+    radial-gradient(circle at 78% 78%, rgba(192, 132, 252, 0.28) 0 50px, transparent 52px),
+    radial-gradient(circle at 18% 82%, rgba(253, 224, 71, 0.2) 0 22px, transparent 24px),
+    linear-gradient(160deg, #fdf2f8 0%, #f5f3ff 45%, #faf5ff 100%);
+  font-family: var(--sv-font);
+}
+
+/* Soft bubble headings */
+.server-view.theme-garden .sv-server-pill,
+.server-view.theme-garden #sv-channel-title,
+.server-view.theme-garden .sv-channels-head span,
+.server-view.theme-garden .sv-msg-meta strong {
+  font-family: "Fredoka", "Nunito", sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.server-view.theme-garden .sv-topbar {
+  background: linear-gradient(90deg, #fce7f3 0%, #f3e8ff 50%, #fef9c3 100%);
+  border-bottom: 2px solid rgba(232, 121, 249, 0.25);
+  box-shadow: 0 4px 16px rgba(168, 85, 247, 0.08);
+}
+
+.server-view.theme-garden .sv-name-wrap {
+  background: var(--garden-white);
+  border: 2px solid var(--garden-pink);
+  border-radius: 999px;
+  box-shadow: 0 2px 0 rgba(249, 168, 212, 0.4);
+}
+
+.server-view.theme-garden .sv-name-wrap input {
+  color: #7e22ce;
+}
+
+.server-view.theme-garden .sv-back,
+.server-view.theme-garden .sv-menu-btn,
+.server-view.theme-garden .sv-icon-btn,
+.server-view.theme-garden .sv-refresh {
+  border-radius: 999px;
+  color: #7e22ce;
+}
+
+.server-view.theme-garden .sv-back:hover,
+.server-view.theme-garden .sv-menu-btn:hover,
+.server-view.theme-garden .sv-icon-btn:hover {
+  background: rgba(249, 168, 212, 0.35);
+  color: #6b21a8;
+}
+
+.server-view.theme-garden .sv-channels {
+  background: linear-gradient(180deg, #faf5ff 0%, #fce7f3 100%);
+  border-right: 2px solid rgba(192, 132, 252, 0.25);
+}
+
+.server-view.theme-garden .sv-channels-head {
+  color: #7e22ce;
+  border-bottom: 2px dashed rgba(232, 121, 249, 0.35);
+  font-family: "Fredoka", sans-serif;
+}
+
+.server-view.theme-garden .sv-cat {
+  color: #a855f7;
+  font-family: "Fredoka", sans-serif;
+  letter-spacing: 0.06em;
+}
+
+.server-view.theme-garden .sv-ch {
+  border-radius: 14px;
+  color: #6b5b7a;
+}
+
+.server-view.theme-garden .sv-ch:hover {
+  background: rgba(253, 224, 71, 0.35);
+  color: #7e22ce;
+}
+
+.server-view.theme-garden .sv-ch.active {
+  background: linear-gradient(90deg, #f9a8d4, #c084fc);
+  color: #fff;
+  box-shadow: 0 3px 0 rgba(168, 85, 247, 0.25);
+}
+
+.server-view.theme-garden .sv-ch.active .sv-hash {
+  color: #fef9c3;
+}
+
+.server-view.theme-garden .sv-chat {
+  background: transparent;
+}
+
+.server-view.theme-garden .sv-chat-head {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(8px);
+  border-bottom: 2px solid rgba(249, 168, 212, 0.35);
+}
+
+.server-view.theme-garden #sv-channel-title {
+  color: #7e22ce;
+}
+
+.server-view.theme-garden .sv-hash-big {
+  color: #e879f9;
+}
+
+.server-view.theme-garden .sv-messages {
+  background: transparent;
+}
+
+.server-view.theme-garden .sv-msg {
+  border-radius: 16px;
+  margin-left: 6px;
+  margin-right: 6px;
+}
+
+.server-view.theme-garden .sv-msg:hover {
+  background: rgba(255, 255, 255, 0.65);
+}
+
+.server-view.theme-garden .sv-msg-meta strong {
+  color: #7e22ce;
+}
+
+.server-view.theme-garden .sv-bot {
+  background: linear-gradient(90deg, #f9a8d4, #c084fc);
+  border-radius: 999px;
+  padding: 0 6px;
+}
+
+.server-view.theme-garden .sv-av {
+  border: 2px solid #f9a8d4;
+  box-shadow: 0 0 0 3px rgba(253, 224, 71, 0.35);
+}
+
+.server-view.theme-garden .sv-av.fallback {
+  background: linear-gradient(135deg, #fde047, #f9a8d4, #c084fc);
+}
+
+.server-view.theme-garden .sv-mention-user,
+.server-view.theme-garden .sv-mention-channel {
+  background: rgba(249, 168, 212, 0.35);
+  color: #9d174d;
+  border-radius: 999px;
+  padding: 0 6px;
+}
+
+.server-view.theme-garden .sv-mention-role {
+  background: rgba(192, 132, 252, 0.3);
+  color: #6b21a8;
+  border-radius: 999px;
+  padding: 0 6px;
+}
+
+.server-view.theme-garden .sv-embed {
+  background: #ffffff;
+  border-radius: 16px;
+  border-left-width: 5px;
+  box-shadow: 0 4px 14px rgba(168, 85, 247, 0.1);
+}
+
+.server-view.theme-garden .sv-msg-actions {
+  background: #ffffff;
+  border: 2px solid #f9a8d4;
+  border-radius: 999px;
+  box-shadow: 0 4px 12px rgba(232, 121, 249, 0.2);
+}
+
+.server-view.theme-garden .sv-reply-btn {
+  color: #a21caf;
+  border-radius: 999px;
+}
+
+.server-view.theme-garden .sv-reply-btn:hover {
+  background: rgba(253, 224, 71, 0.45);
+  color: #7e22ce;
+}
+
+.server-view.theme-garden .sv-composer-wrap {
+  background: transparent;
+}
+
+.server-view.theme-garden .sv-composer {
+  background: #ffffff;
+  border: 2px solid #f9a8d4;
+  border-radius: 24px;
+  box-shadow:
+    0 4px 0 rgba(249, 168, 212, 0.35),
+    0 8px 20px rgba(168, 85, 247, 0.1);
+}
+
+.server-view.theme-garden .sv-composer input {
+  color: #4a3b5c;
+}
+
+.server-view.theme-garden .sv-composer input::placeholder {
+  color: #c4b5d4;
+}
+
+.server-view.theme-garden .sv-send-btn {
+  background: linear-gradient(135deg, #fde047 0%, #f9a8d4 50%, #c084fc 100%);
+  color: #4c1d95;
+  font-family: "Fredoka", sans-serif;
+  font-weight: 600;
+  border-radius: 999px;
+  box-shadow: 0 3px 0 rgba(168, 85, 247, 0.3);
+}
+
+.server-view.theme-garden .sv-send-btn:hover:not(:disabled) {
+  filter: brightness(1.05);
+}
+
+.server-view.theme-garden .sv-settings-panel {
+  background: linear-gradient(180deg, #ffffff, #fdf2f8);
+  border: 2px solid #f9a8d4;
+  border-radius: 18px;
+  box-shadow: 0 12px 28px rgba(168, 85, 247, 0.18);
+}
+
+.server-view.theme-garden .sv-settings-panel h4 {
+  color: #a855f7;
+  font-family: "Fredoka", sans-serif;
+}
+
+.server-view.theme-garden .sv-settings-row select {
+  background: #faf5ff;
+  border: 2px solid #e9d5ff;
+  border-radius: 12px;
+  color: #6b21a8;
+}
+
+.server-view.theme-garden .sv-empty {
+  color: #a78bfa;
+  font-family: "Fredoka", sans-serif;
+}
+
+.server-view.theme-garden .sv-empty::before {
+  content: "🌻 🌸 🤍";
+  display: block;
+  font-size: 1.4rem;
+  margin-bottom: 8px;
+  letter-spacing: 0.35em;
+}
+
+.server-view.theme-garden .sv-toast {
+  background: linear-gradient(90deg, #fde047, #f9a8d4);
+  color: #4c1d95;
+  border-radius: 999px;
+  font-family: "Fredoka", sans-serif;
+  font-weight: 600;
+}
+
+/* Little sunflower dots on channel list header */
+.server-view.theme-garden .sv-channels-head span::before {
+  content: "🌻 ";
+}
+
+.server-view.theme-garden .sv-code,
+.server-view.theme-garden .sv-codeblock {
+  background: #faf5ff;
+  border: 1px solid #e9d5ff;
+  border-radius: 10px;
+}
