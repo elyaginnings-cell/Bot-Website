@@ -16,7 +16,6 @@ function initServerView() {
   document.getElementById("sv-density")?.addEventListener("change", applySvPrefs);
   document.getElementById("sv-font-size")?.addEventListener("change", applySvPrefs);
   document.getElementById("sv-lightbox")?.addEventListener("click", closeLightbox);
-
   document.getElementById("sv-menu-btn")?.addEventListener("click", openSvDrawer);
   document.getElementById("sv-channels-close")?.addEventListener("click", closeSvDrawer);
   document.getElementById("sv-drawer-backdrop")?.addEventListener("click", closeSvDrawer);
@@ -24,12 +23,10 @@ function initServerView() {
   const nameInput = document.getElementById("sv-display-name");
   if (nameInput) {
     nameInput.value = localStorage.getItem("svDisplayName") || "";
-    const saveName = () =>
-      localStorage.setItem("svDisplayName", nameInput.value.trim().slice(0, 80));
+    const saveName = () => localStorage.setItem("svDisplayName", nameInput.value.trim().slice(0, 80));
     nameInput.addEventListener("change", saveName);
     nameInput.addEventListener("blur", saveName);
   }
-
   loadSvPrefs();
   document.getElementById("sv-messages")?.addEventListener("click", onSvMessagesClick);
 }
@@ -37,7 +34,6 @@ function initServerView() {
 function openSvDrawer() {
   document.getElementById("server-view")?.classList.add("drawer-open");
 }
-
 function closeSvDrawer() {
   document.getElementById("server-view")?.classList.remove("drawer-open");
 }
@@ -61,14 +57,12 @@ function applySvPrefs() {
   const theme = document.getElementById("sv-theme")?.value || "discord";
   const density = document.getElementById("sv-density")?.value || "default";
   const fontSize = document.getElementById("sv-font-size")?.value || "16";
-
   view.classList.remove("theme-darker", "theme-light", "density-compact", "density-cozy");
   if (theme === "darker") view.classList.add("theme-darker");
   if (theme === "light") view.classList.add("theme-light");
   if (density === "compact") view.classList.add("density-compact");
   if (density === "cozy") view.classList.add("density-cozy");
   view.style.setProperty("--sv-font-size", `${fontSize}px`);
-
   localStorage.setItem("svTheme", theme);
   localStorage.setItem("svDensity", density);
   localStorage.setItem("svFontSize", fontSize);
@@ -99,9 +93,7 @@ function openServerView() {
   document.body.classList.add("server-view-open");
   document.getElementById("sv-server-name").textContent = selectedServer.name || "Server";
   const nameInput = document.getElementById("sv-display-name");
-  if (nameInput && !nameInput.value) {
-    nameInput.value = localStorage.getItem("svDisplayName") || "";
-  }
+  if (nameInput && !nameInput.value) nameInput.value = localStorage.getItem("svDisplayName") || "";
   applySvPrefs();
   closeSvDrawer();
   renderSvChannels();
@@ -130,18 +122,15 @@ function renderSvChannels() {
     list.innerHTML = `<p class="sv-empty">No text channels found.</p>`;
     return;
   }
-
   const byParent = new Map();
   texts.forEach((ch) => {
     const key = ch.parentId || "_none";
     if (!byParent.has(key)) byParent.set(key, []);
     byParent.get(key).push(ch);
   });
-
   let html = "";
   const orderedParents = ["_none", ...cats.map((c) => c.id)];
   const seen = new Set();
-
   for (const pid of orderedParents) {
     const group = byParent.get(pid);
     if (!group?.length) continue;
@@ -156,7 +145,6 @@ function renderSvChannels() {
         html += `<button type="button" class="sv-ch${active}" data-id="${ch.id}"><span class="sv-hash">#</span>${escapeHtml(ch.name)}</button>`;
       });
   }
-
   byParent.forEach((group, pid) => {
     if (seen.has(pid)) return;
     group.forEach((ch) => {
@@ -164,7 +152,6 @@ function renderSvChannels() {
       html += `<button type="button" class="sv-ch${active}" data-id="${ch.id}"><span class="sv-hash">#</span>${escapeHtml(ch.name)}</button>`;
     });
   });
-
   list.innerHTML = html;
   list.querySelectorAll(".sv-ch").forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -258,32 +245,30 @@ function formatMessageContent(content, mentions) {
     blocks.push(`<pre class="sv-codeblock">${escapeHtml(code.replace(/^\n|\n$/g, ""))}</pre>`);
     return `\0BLOCK${i}\0`;
   });
-
   text = escapeHtml(text);
   const users = mentions?.users || {};
   const roles = mentions?.roles || {};
   const channels = mentions?.channels || {};
-
-  text = text.replace(/&lt;@!?(\d+)&gt;/g, (_, id) => {
+  text = text.replace(/<@!?(\d+)>/g, (_, id) => {
     const u = users[id];
     const label = u ? `@${u.displayName || u.nickname || u.globalName || u.username}` : `@user`;
     return `<span class="sv-mention sv-mention-user" data-user-id="${id}">${escapeHtml(label)}</span>`;
   });
-  text = text.replace(/&lt;@&amp;(\d+)&gt;/g, (_, id) => {
+  text = text.replace(/<@&(\d+)>/g, (_, id) => {
     const r = roles[id];
     return `<span class="sv-mention sv-mention-role" data-role-id="${id}">${escapeHtml(r ? `@${r.name}` : `@role`)}</span>`;
   });
-  text = text.replace(/&lt;@&(\d+)&gt;/g, (_, id) => {
+  text = text.replace(/<@&(\d+)>/g, (_, id) => {
     const r = roles[id];
     return `<span class="sv-mention sv-mention-role" data-role-id="${id}">${escapeHtml(r ? `@${r.name}` : `@role`)}</span>`;
   });
-  text = text.replace(/&lt;#(\d+)&gt;/g, (_, id) => {
+  text = text.replace(/<#(\d+)>/g, (_, id) => {
     const c = channels[id];
     return `<span class="sv-mention sv-mention-channel" data-channel-id="${id}">${escapeHtml(c ? `#${c.name}` : `#channel`)}</span>`;
   });
   text = text.replace(/@everyone/g, `<span class="sv-mention sv-mention-everyone">@everyone</span>`);
   text = text.replace(/@here/g, `<span class="sv-mention sv-mention-everyone">@here</span>`);
-  text = text.replace(/(https?:\/\/[^\s&lt;]+)/g, `<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>`);
+  text = text.replace(/(https?:\/\/[^\s<]+)/g, `<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>`);
   text = text.replace(/\|\|(.+?)\|\|/g, `<span class="sv-spoiler">$1</span>`);
   text = text.replace(/`([^`]+)`/g, `<code class="sv-code">$1</code>`);
   text = text.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
@@ -294,7 +279,7 @@ function formatMessageContent(content, mentions) {
   return text;
 }
 
-function embedHtml(e) {
+function embedHtml(e, mentions) {
   if (!e) return "";
   const color =
     e.color != null && e.color !== 0
@@ -305,21 +290,24 @@ function embedHtml(e) {
     const icon = e.author.iconURL
       ? `<img class="sv-embed-author-icon" src="${escapeHtml(e.author.iconURL)}" alt="">`
       : "";
-    main += `<div class="sv-embed-author">${icon}<span>${escapeHtml(e.author.name)}</span></div>`;
+    main += `<div class="sv-embed-author">${icon}<span>${formatMessageContent(e.author.name, mentions)}</span></div>`;
   }
   if (e.title) {
+    const titleInner = formatMessageContent(e.title, mentions);
     const title = e.url
-      ? `<a href="${escapeHtml(e.url)}" target="_blank" rel="noopener">${escapeHtml(e.title)}</a>`
-      : escapeHtml(e.title);
+      ? `<a href="${escapeHtml(e.url)}" target="_blank" rel="noopener">${titleInner}</a>`
+      : titleInner;
     main += `<div class="sv-embed-title">${title}</div>`;
   }
-  if (e.description) main += `<div class="sv-embed-desc">${formatMessageContent(e.description, null)}</div>`;
+  if (e.description) {
+    main += `<div class="sv-embed-desc">${formatMessageContent(e.description, mentions)}</div>`;
+  }
   if (e.fields?.length) {
     main += `<div class="sv-embed-fields">`;
     e.fields.forEach((f) => {
       main += `<div class="sv-embed-field${f.inline ? " inline" : ""}">
-        <div class="sv-embed-field-name">${formatMessageContent(f.name, null)}</div>
-        <div class="sv-embed-field-value">${formatMessageContent(f.value, null)}</div>
+        <div class="sv-embed-field-name">${formatMessageContent(f.name, mentions)}</div>
+        <div class="sv-embed-field-value">${formatMessageContent(f.value, mentions)}</div>
       </div>`;
     });
     main += `</div>`;
@@ -332,7 +320,7 @@ function embedHtml(e) {
       ? `<img class="sv-embed-footer-icon" src="${escapeHtml(e.footer.iconURL)}" alt="">`
       : "";
     const parts = [];
-    if (e.footer?.text) parts.push(escapeHtml(e.footer.text));
+    if (e.footer?.text) parts.push(formatMessageContent(e.footer.text, mentions));
     if (e.timestamp) parts.push(escapeHtml(new Date(e.timestamp).toLocaleString()));
     main += `<div class="sv-embed-footer">${ficon}<span>${parts.join(" · ")}</span></div>`;
   }
@@ -342,6 +330,60 @@ function embedHtml(e) {
   return `<div class="sv-embed${e.thumbnail ? " has-thumb" : ""}" style="border-left-color:${color}">
     <div class="sv-embed-inner">${main}</div>${thumb}
   </div>`;
+}
+
+function buttonStyleClass(style) {
+  // Discord: 1 Primary, 2 Secondary, 3 Success, 4 Danger, 5 Link
+  switch (Number(style)) {
+    case 1: return "primary";
+    case 3: return "success";
+    case 4: return "danger";
+    case 5: return "link";
+    default: return "secondary";
+  }
+}
+
+function emojiHtml(emoji) {
+  if (!emoji) return "";
+  if (emoji.id) {
+    const ext = emoji.animated ? "gif" : "png";
+    const url = `https://cdn.discordapp.com/emojis/${emoji.id}.${ext}?size=32`;
+    return `<span class="sv-btn-emoji"><img src="${escapeHtml(url)}" alt=""></span>`;
+  }
+  if (emoji.name) return `<span class="sv-btn-emoji">${escapeHtml(emoji.name)}</span>`;
+  return "";
+}
+
+function componentsHtml(rows) {
+  if (!rows?.length) return "";
+  let html = `<div class="sv-components">`;
+  for (const row of rows) {
+    html += `<div class="sv-comp-row">`;
+    for (const c of row.components || []) {
+      if (c.type === "button") {
+        const cls = buttonStyleClass(c.style);
+        const disabled = c.disabled ? " disabled" : "";
+        const label = escapeHtml(c.label || "");
+        const em = emojiHtml(c.emoji);
+        if (c.url) {
+          html += `<a class="sv-btn ${cls}${disabled}" href="${escapeHtml(c.url)}" target="_blank" rel="noopener">${em}${label || "Link"}</a>`;
+        } else {
+          html += `<button type="button" class="sv-btn ${cls}${disabled}" disabled title="View only — interact in Discord">${em}${label || "Button"}</button>`;
+        }
+      } else if (c.type === "select") {
+        const opts = (c.options || [])
+          .map((o) => `<option value="${escapeHtml(o.value)}">${escapeHtml(o.label)}</option>`)
+          .join("");
+        html += `<select class="sv-select" disabled title="View only — interact in Discord">
+          <option>${escapeHtml(c.placeholder || "Select…")}</option>${opts}
+        </select>`;
+      }
+    }
+    html += `</div>`;
+  }
+  html += `<div class="sv-comp-hint">Buttons are view-only here — click them in Discord to use.</div>`;
+  html += `</div>`;
+  return html;
 }
 
 function messageHtml(m, grouped) {
@@ -365,9 +407,11 @@ function messageHtml(m, grouped) {
     : `<div class="sv-av fallback">☕</div>`;
 
   let body = formatMessageContent(m.content || "", m.mentions);
-  if (!body && !(m.embeds && m.embeds.length) && !(m.attachments && m.attachments.length)) {
-    body = "<em style=\"opacity:.6\">(empty)</em>";
-  }
+  const hasMedia =
+    (m.embeds && m.embeds.length) ||
+    (m.attachments && m.attachments.length) ||
+    (m.components && m.components.length);
+  if (!body && !hasMedia) body = "<em style=\"opacity:.6\">(empty)</em>";
 
   const atts = (m.attachments || [])
     .map((a) => {
@@ -378,7 +422,8 @@ function messageHtml(m, grouped) {
     })
     .join("");
 
-  const embeds = (m.embeds || []).map(embedHtml).join("");
+  const embeds = (m.embeds || []).map((e) => embedHtml(e, m.mentions)).join("");
+  const comps = componentsHtml(m.components);
   const jump =
     selectedServer?.id && svActiveChannelId
       ? `https://discord.com/channels/${selectedServer.id}/${svActiveChannelId}/${m.id}`
@@ -391,6 +436,7 @@ function messageHtml(m, grouped) {
       ${body ? `<div class="sv-msg-text">${body}</div>` : ""}
       ${atts}
       ${embeds}
+      ${comps}
       <div class="sv-msg-actions">
         <button type="button" data-action="reply" data-id="${m.id}" data-name="${escapeHtml(name)}">Reply</button>
         <button type="button" data-action="copy-id" data-id="${m.id}">ID</button>
@@ -491,14 +537,12 @@ async function sendSvMessage(e) {
   const input = document.getElementById("sv-input");
   const content = input?.value?.trim();
   if (!content || !selectedServer?.id || !svActiveChannelId) return;
-
   const username = getSvDisplayName();
   if (!username) {
     alert("Set a display name in the top bar first.");
     document.getElementById("sv-display-name")?.focus();
     return;
   }
-
   localStorage.setItem("svDisplayName", username);
   input.disabled = true;
   try {
