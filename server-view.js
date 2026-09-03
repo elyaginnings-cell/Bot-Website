@@ -258,10 +258,6 @@ function formatMessageContent(content, mentions) {
     const r = roles[id];
     return `<span class="sv-mention sv-mention-role" data-role-id="${id}">${escapeHtml(r ? `@${r.name}` : `@role`)}</span>`;
   });
-  text = text.replace(/<@&(\d+)>/g, (_, id) => {
-    const r = roles[id];
-    return `<span class="sv-mention sv-mention-role" data-role-id="${id}">${escapeHtml(r ? `@${r.name}` : `@role`)}</span>`;
-  });
   text = text.replace(/<#(\d+)>/g, (_, id) => {
     const c = channels[id];
     return `<span class="sv-mention sv-mention-channel" data-channel-id="${id}">${escapeHtml(c ? `#${c.name}` : `#channel`)}</span>`;
@@ -333,7 +329,6 @@ function embedHtml(e, mentions) {
 }
 
 function buttonStyleClass(style) {
-  // Discord: 1 Primary, 2 Secondary, 3 Success, 4 Danger, 5 Link
   switch (Number(style)) {
     case 1: return "primary";
     case 3: return "success";
@@ -386,6 +381,8 @@ function componentsHtml(rows) {
   return html;
 }
 
+const REPLY_ICON = `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M10 8.22V4.97a.5.5 0 0 0-.83-.35l-6.8 6.28a.5.5 0 0 0 0 .74l6.8 6.28a.5.5 0 0 0 .83-.35v-3.2c5.18.12 8.7 1.63 10.5 4.83.2.35.64.4.85.08C23.1 15.6 19.55 8.5 10 8.22Z"/></svg>`;
+
 function messageHtml(m, grouped) {
   const name =
     m.author?.displayName ||
@@ -424,10 +421,6 @@ function messageHtml(m, grouped) {
 
   const embeds = (m.embeds || []).map((e) => embedHtml(e, m.mentions)).join("");
   const comps = componentsHtml(m.components);
-  const jump =
-    selectedServer?.id && svActiveChannelId
-      ? `https://discord.com/channels/${selectedServer.id}/${svActiveChannelId}/${m.id}`
-      : "";
 
   return `<div class="sv-msg${grouped ? " grouped" : ""}" data-id="${m.id}" data-author="${escapeHtml(m.author?.id || "")}">
     <div class="sv-av-wrap">${av}</div>
@@ -437,11 +430,11 @@ function messageHtml(m, grouped) {
       ${atts}
       ${embeds}
       ${comps}
-      <div class="sv-msg-actions">
-        <button type="button" data-action="reply" data-id="${m.id}" data-name="${escapeHtml(name)}">Reply</button>
-        <button type="button" data-action="copy-id" data-id="${m.id}">ID</button>
-        ${jump ? `<button type="button" data-action="jump" data-url="${escapeHtml(jump)}">Open</button>` : ""}
-      </div>
+    </div>
+    <div class="sv-msg-actions">
+      <button type="button" class="sv-reply-btn" data-action="reply" data-name="${escapeHtml(name)}" title="Reply">
+        ${REPLY_ICON}<span class="sv-reply-label">Reply</span>
+      </button>
     </div>
   </div>`;
 }
@@ -477,24 +470,13 @@ function onSvMessagesClick(e) {
     if (id) insertIntoComposer(`<@&${id}> `);
     return;
   }
-  const btn = t.closest?.("[data-action]");
+  const btn = t.closest?.("[data-action=reply]");
   if (btn) {
-    const action = btn.getAttribute("data-action");
-    if (action === "reply") {
-      const name = btn.getAttribute("data-name") || "user";
-      const id = btn.closest(".sv-msg")?.getAttribute("data-author");
-      if (id) insertIntoComposer(`<@${id}> `);
-      else insertIntoComposer(`@${name} `);
-      showToast(`Replying to ${name}`);
-    } else if (action === "copy-id") {
-      const id = btn.getAttribute("data-id");
-      navigator.clipboard?.writeText(id).then(
-        () => showToast("Message ID copied"),
-        () => showToast(id)
-      );
-    } else if (action === "jump") {
-      window.open(btn.getAttribute("data-url"), "_blank", "noopener");
-    }
+    const name = btn.getAttribute("data-name") || "user";
+    const id = btn.closest(".sv-msg")?.getAttribute("data-author");
+    if (id) insertIntoComposer(`<@${id}> `);
+    else insertIntoComposer(`@${name} `);
+    showToast(`Replying to ${name}`);
   }
 }
 
