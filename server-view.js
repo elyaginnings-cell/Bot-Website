@@ -58,9 +58,16 @@ function applySvPrefs() {
   const theme = document.getElementById("sv-theme")?.value || "discord";
   const density = document.getElementById("sv-density")?.value || "default";
   const fontSize = document.getElementById("sv-font-size")?.value || "16";
-  view.classList.remove("theme-darker", "theme-light", "density-compact", "density-cozy");
+  view.classList.remove(
+    "theme-darker",
+    "theme-light",
+    "theme-garden",
+    "density-compact",
+    "density-cozy"
+  );
   if (theme === "darker") view.classList.add("theme-darker");
   if (theme === "light") view.classList.add("theme-light");
+  if (theme === "garden") view.classList.add("theme-garden");
   if (density === "compact") view.classList.add("density-compact");
   if (density === "cozy") view.classList.add("density-cozy");
   view.style.setProperty("--sv-font-size", `${fontSize}px`);
@@ -250,7 +257,6 @@ function formatMessageContent(content, mentions) {
   const users = mentions?.users || {};
   const roles = mentions?.roles || {};
   const channels = mentions?.channels || {};
-  // After escapeHtml, Discord tokens look like <@id>
   text = text.replace(/<@!?(\d+)>/g, (_, id) => {
     const u = users[id];
     const label = u ? `@${u.displayName || u.nickname || u.globalName || u.username}` : `@user`;
@@ -525,7 +531,6 @@ async function sendSvMessage(e) {
   const content = input?.value?.trim();
   if (!content || !selectedServer?.id || !svActiveChannelId) return;
 
-  // Name is optional — bot will fall back to Coffee Shop | Chat
   const username = getSvDisplayName();
   if (username) localStorage.setItem("svDisplayName", username);
 
@@ -558,7 +563,6 @@ async function sendSvMessage(e) {
       svLastMessages.push(data.message);
       renderSvMessages(svLastMessages.slice(-60));
     } else {
-      // Message may still have been posted — refresh from Discord
       await loadSvMessages(true);
     }
   } catch (err) {
