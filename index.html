@@ -143,15 +143,11 @@
                         <label class="toggle"><input type="checkbox" id="lvl-enabled" checked> <span>Leveling enabled</span></label>
                         <label class="toggle"><input type="checkbox" id="lvl-messages" checked> <span>Level-up messages on</span></label>
                         <label class="toggle"><input type="checkbox" id="lvl-beans-enabled" checked> <span>Give Beans on level-up</span></label>
-
                         <div class="input-group">
                             <label for="level-up-channel">Level-up channel</label>
-                            <select id="level-up-channel">
-                                <option value="">Same channel they leveled in</option>
-                            </select>
+                            <select id="level-up-channel"><option value="">Same channel they leveled in</option></select>
                         </div>
                         <p class="form-hint">If set, all level-up pings go here instead of the chat channel.</p>
-
                         <div class="config-grid">
                             <div class="input-group"><label>XP min</label><input id="lvl-xp-min" type="number" min="1" inputmode="numeric"></div>
                             <div class="input-group"><label>XP max</label><input id="lvl-xp-max" type="number" min="1" inputmode="numeric"></div>
@@ -221,15 +217,10 @@
                     <div class="card form-card wide">
                         <span class="eyebrow">SHOP</span>
                         <h2>Server shop</h2>
-                        <p>
-                            Members use <code>/shop</code> (private) and <code>/inventory</code> for boosts &amp; titles.
-                            Pick an item type below — extra fields appear when needed.
-                        </p>
-
+                        <p>Members use <code>/shop</code> (private) and <code>/inventory</code>.</p>
                         <label class="toggle"><input type="checkbox" id="shop-enabled" checked> <span>Shop enabled</span></label>
                         <button class="button" id="save-shop-toggle" type="button">Save Shop On/Off</button>
                         <p class="form-hint" id="shop-status"></p>
-
                         <h3 class="subhead">Add item</h3>
                         <div class="input-group">
                             <label>Item type</label>
@@ -274,7 +265,6 @@
                         </div>
                         <p class="form-hint" id="shop-type-hint">Permanent role: member keeps the role forever.</p>
                         <button class="button" id="add-shop-item" type="button">Add to Shop</button>
-
                         <h3 class="subhead">Current items</h3>
                         <div id="shop-items-list" class="level-roles-list"></div>
                     </div>
@@ -300,8 +290,8 @@
                     <div class="card form-card wide">
                         <span class="eyebrow">INFO</span>
                         <h2>Settings</h2>
-                        <p>Use <strong>Server View</strong> to watch chat and send with a custom display name.</p>
-                        <p>Use the <strong>View</strong> dropdown for Desktop / Mobile / Auto layout.</p>
+                        <p>Use <strong>Server View</strong> for a Discord-style chat client through the bot.</p>
+                        <p>Customize theme, density, and font size with the ⚙ button inside Server View.</p>
                     </div>
                 </section>
 
@@ -309,41 +299,79 @@
         </main>
     </div>
 
+    <!-- Discord-style Server View -->
     <div id="server-view" class="server-view" hidden>
         <div class="sv-topbar">
             <div class="sv-top-left">
                 <button type="button" class="sv-back" id="close-server-view">← Dashboard</button>
-                <div class="sv-server-pill">
-                    <span id="sv-server-name">Server</span>
-                </div>
+                <div class="sv-server-pill" id="sv-server-name">Server</div>
                 <div class="sv-name-wrap">
                     <label for="sv-display-name">Name</label>
-                    <input id="sv-display-name" type="text" maxlength="80" placeholder="Your display name" autocomplete="off">
+                    <input id="sv-display-name" type="text" maxlength="80" placeholder="Display name" autocomplete="off">
                 </div>
             </div>
             <div class="sv-top-right">
-                <span class="sv-hint">Sends with your name · same bot avatar</span>
+                <button type="button" class="sv-icon-btn" id="sv-settings-btn" title="Appearance">⚙</button>
             </div>
         </div>
+
+        <div id="sv-settings-panel" class="sv-settings-panel" hidden>
+            <h4>Appearance</h4>
+            <div class="sv-settings-row">
+                <label for="sv-theme">Theme</label>
+                <select id="sv-theme">
+                    <option value="discord">Discord Dark</option>
+                    <option value="darker">Darker</option>
+                    <option value="light">Light</option>
+                </select>
+            </div>
+            <div class="sv-settings-row">
+                <label for="sv-density">Message density</label>
+                <select id="sv-density">
+                    <option value="default">Default</option>
+                    <option value="compact">Compact</option>
+                    <option value="cozy">Cozy</option>
+                </select>
+            </div>
+            <div class="sv-settings-row">
+                <label for="sv-font-size">Font size</label>
+                <select id="sv-font-size">
+                    <option value="14">Small</option>
+                    <option value="16" selected>Default</option>
+                    <option value="18">Large</option>
+                    <option value="20">Extra large</option>
+                </select>
+            </div>
+        </div>
+
         <div class="sv-body">
             <aside class="sv-channels">
-                <div class="sv-channels-head">Channels</div>
+                <div class="sv-channels-head" id="sv-channels-head">Channels</div>
                 <div id="sv-channel-list" class="sv-channel-list"></div>
             </aside>
             <section class="sv-chat">
                 <header class="sv-chat-head">
-                    <strong id="sv-channel-title"># select a channel</strong>
+                    <div class="sv-chat-head-left">
+                        <span class="sv-hash-big">#</span>
+                        <strong id="sv-channel-title">select a channel</strong>
+                    </div>
                     <button type="button" class="sv-refresh" id="sv-refresh">Refresh</button>
                 </header>
                 <div id="sv-messages" class="sv-messages">
                     <p class="sv-empty">Pick a channel to load messages.</p>
                 </div>
-                <form id="sv-composer" class="sv-composer">
-                    <input id="sv-input" type="text" maxlength="2000" placeholder="Type a message…" autocomplete="off" disabled>
-                    <button type="submit" class="button" id="sv-send" disabled>Send</button>
-                </form>
+                <div class="sv-composer-wrap">
+                    <form id="sv-composer" class="sv-composer">
+                        <input id="sv-input" type="text" maxlength="2000" placeholder="Message…" autocomplete="off" disabled>
+                        <button type="submit" class="sv-send-btn" id="sv-send" disabled>Send</button>
+                    </form>
+                </div>
             </section>
         </div>
+    </div>
+
+    <div id="sv-lightbox" class="sv-lightbox" hidden>
+        <img id="sv-lightbox-img" src="" alt="">
     </div>
 
     <script src="script.js"></script>
