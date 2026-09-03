@@ -39,6 +39,14 @@ function ensureEmailLoginForm() {
   } else {
     card.appendChild(form);
   }
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    submitPasswordAuth("/api/auth-login");
+  });
+  document.getElementById("password-signup-button")?.addEventListener("click", () => {
+    submitPasswordAuth("/api/signup");
+  });
 }
 
 async function submitPasswordAuth(endpoint) {
@@ -66,7 +74,7 @@ async function submitPasswordAuth(endpoint) {
     });
     const data = await response.json().catch(() => ({}));
     if (!response.ok || !data.ok) {
-      setLoginError(data.error || "Login failed. Check DATABASE_URL on Vercel.");
+      setLoginError(data.error || "Login failed.");
       return;
     }
     window.location.reload();
@@ -78,13 +86,12 @@ async function submitPasswordAuth(endpoint) {
   }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+function startEmailLogin() {
   ensureEmailLoginForm();
-  document.getElementById("password-login-form")?.addEventListener("submit", (e) => {
-    e.preventDefault();
-    submitPasswordAuth("/api/auth-login");
-  });
-  document.getElementById("password-signup-button")?.addEventListener("click", () => {
-    submitPasswordAuth("/api/signup");
-  });
-});
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", startEmailLogin);
+} else {
+  startEmailLogin();
+}
