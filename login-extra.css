@@ -1,1 +1,102 @@
-.login-form{display:flex;flex-direction:column;gap:12px;text-align:left;margin-bottom:8px}.login-field{display:flex;flex-direction:column;gap:6px}.login-field span{font-size:12px;color:#b89cd9;font-weight:500}.login-error{color:#f23f43;font-size:13px;margin:0}.login-error[hidden]{display:none!important}.login-divider{display:flex;align-items:center;gap:10px;margin:16px 0 14px;color:#7a5e99;font-size:12px;text-transform:uppercase;letter-spacing:.08em}.login-divider::before,.login-divider::after{content:"";flex:1;height:1px;background:rgba(255,77,240,.25)}.login-card .button.secondary.login-btn{width:100%}
+/* Email/password login form styles (injected by script.js) */
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  text-align: left;
+  margin-bottom: 4px;
+  width: 100%;
+}
+
+.login-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.login-field span {
+  font-size: 12px;
+  color: #b89cd9;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.login-field input,
+.login-form input[type="email"],
+.login-form input[type="password"] {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 77, 240, 0.28);
+  background: rgba(0, 0, 0, 0.35);
+  color: #f8efff;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.login-field input::placeholder,
+.login-form input::placeholder {
+  color: #7a5e99;
+}
+
+.login-field input:focus,
+.login-form input:focus {
+  border-color: rgba(255, 77, 240, 0.65);
+  box-shadow: 0 0 0 3px rgba(255, 77, 240, 0.15);
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.login-error {
+  color: #f23f43;
+  font-size: 13px;
+  margin: 0;
+  min-height: 18px;
+}
+
+.login-error[hidden] {
+  display: none !important;
+}
+
+.login-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 16px 0 14px;
+  color: #7a5e99;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.login-divider::before,
+.login-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 77, 240, 0.25);
+}
+
+.login-card .button.login-btn,
+.login-card .button.secondary.login-btn {
+  width: 100%;
+  margin-top: 2px;
+}
+
+.login-card .button.secondary {
+  background: transparent;
+  border: 1px solid rgba(255, 77, 240, 0.35);
+  color: #f0d9ff;
+}
+
+.login-card .button.secondary:hover {
+  background: rgba(255, 77, 240, 0.12);
+  border-color: rgba(255, 77, 240, 0.55);
+  opacity: 1;
+}
+
+.login-form .button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
