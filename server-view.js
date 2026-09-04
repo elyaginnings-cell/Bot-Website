@@ -1029,11 +1029,13 @@
         });
 
       if (!response.ok) {
-        throw new Error(
-          "Send failed: " +
-          response.status
-        );
-      }
+  const errorData = await response.json().catch(() => ({}));
+
+  throw new Error(
+    errorData.error ||
+    ("Send failed: " + response.status)
+  );
+}
 
       input.value = "";
       clearReply();
