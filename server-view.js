@@ -17,12 +17,12 @@
   var replyTo = null;
 
   function esc(value) {
-    return String(value == null ? "" : value)
-      .replace(/&/g, "&")
-      .replace(/</g, "<")
-      .replace(/>/g, ">")
-      .replace(/"/g, """);
-  }
+  return String(value == null ? "" : value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
 
   function getServer() {
     return window.selectedServer || null;
