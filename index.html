@@ -157,11 +157,41 @@
                     <button type="button" class="sv-refresh" id="sv-refresh">Refresh</button>
                 </div>
                 <div id="sv-settings-panel" class="sv-settings-panel" hidden>
-                    <h4>Appearance</h4>
-                    <div class="sv-settings-row"><label for="sv-theme">Theme</label><select id="sv-theme"><option value="discord">Discord</option><option value="darker">Darker</option><option value="light">Light</option><option value="garden">Garden</option></select></div>
-                    <div class="sv-settings-row"><label for="sv-density">Density</label><select id="sv-density"><option value="default">Default</option><option value="compact">Compact</option><option value="cozy">Cozy</option></select></div>
-                    <div class="sv-settings-row"><label for="sv-font-size">Font size</label><select id="sv-font-size"><option value="14">14</option><option value="16" selected>16</option><option value="18">18</option></select></div>
-                </div>
+                    <div class="sv-settings-panel" id="sv-settings-panel" hidden>
+  <h4>Server View Appearance</h4>
+
+  <div class="sv-settings-row">
+    <label for="sv-theme">Theme</label>
+
+    <select id="sv-theme">
+      <option value="discord">Discord</option>
+      <option value="darker">Darker</option>
+      <option value="light">Light</option>
+      <option value="garden">Garden</option>
+      <option value="midnight">Midnight Purple</option>
+    </select>
+  </div>
+
+  <div class="sv-settings-row">
+    <label for="sv-density">Message Density</label>
+
+    <select id="sv-density">
+      <option value="default">Default</option>
+      <option value="compact">Compact</option>
+      <option value="cozy">Cozy</option>
+    </select>
+  </div>
+
+  <div class="sv-settings-row">
+    <label for="sv-font-size">Font Size</label>
+
+    <select id="sv-font-size">
+      <option value="14">Small</option>
+      <option value="16">Normal</option>
+      <option value="18">Large</option>
+    </select>
+  </div>
+</div>
                 <div id="sv-messages" class="sv-messages">
                     <p class="sv-empty">Pick a channel on the left to start reading chat.</p>
                 </div>
