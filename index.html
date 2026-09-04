@@ -19,14 +19,15 @@
     </style>
 </head>
 
-<body>
+<body class="mode-auto">
 
     <div id="login-screen" class="login-screen">
         <div class="login-card">
-            <h1>Discord Bot Dashboard</h1>
-            <p>Sign in to manage your Discord server.</p>
+            <div class="login-icon">🐱</div>
+            <h1>Gatto Dashboard</h1>
+            <p>Sign in to manage your Discord server with ease.</p>
 
-            <button id="login-button" class="button primary">
+            <button id="login-button" class="button primary login-btn" type="button">
                 Login with Discord
             </button>
         </div>
@@ -34,38 +35,16 @@
 
     <div id="app" hidden>
 
-        <header class="topbar">
-            <div class="topbar-left">
-                <button id="mobile-menu-button" class="mobile-menu-button" type="button">
-                    ☰
-                </button>
-
-                <div class="brand">
-                    <span class="brand-icon">☕</span>
-                    <span>Discord Bot Dashboard</span>
-                </div>
-            </div>
-
-            <div class="topbar-right">
-                <div id="user-info" class="user-info">
-                    <span id="user-name"></span>
-                </div>
-
-                <button id="logout-button" class="button secondary" type="button">
-                    Logout
-                </button>
-            </div>
-        </header>
-
         <aside id="sidebar" class="sidebar">
-
-            <button id="server-button" class="server-selector" type="button">
-                <span>Choose Server</span>
-                <span>⌄</span>
-            </button>
+            <div class="sidebar-brand">
+                <div class="brand-icon">🐱</div>
+                <div>
+                    <strong>Gatto Bot</strong>
+                    <span>DASHBOARD v2.0</span>
+                </div>
+            </div>
 
             <nav class="navigation">
-
                 <button class="nav-item active" data-tab="dashboard" type="button">
                     <span>🏠</span>
                     <span>Dashboard</span>
@@ -105,448 +84,319 @@
                     <span>⚙️</span>
                     <span>Settings</span>
                 </button>
-
             </nav>
+
+            <div class="sidebar-bottom">
+                <div class="connection-status">
+                    <div class="status-dot"></div>
+                    <span>Bot Online</span>
+                </div>
+            </div>
         </aside>
 
-        <main class="main-content">
+        <main class="main">
 
-            <section id="dashboard" class="tab-section active">
-                <div class="page-header">
-                    <div>
-                        <h2>Dashboard</h2>
-                        <p>Manage your Discord bot and server.</p>
+            <div class="card server-bar">
+                <div class="server-selector">
+                    <button id="server-button" class="button" type="button">
+                        <span id="sv-server-name-btn">Choose Server</span>
+                        <span>⌄</span>
+                    </button>
+                    <div id="server-list" class="server-list" hidden>
+                        <!-- Populated dynamically -->
                     </div>
                 </div>
 
-                <div class="quick-grid">
-                    <button class="quick-card" data-section-link="moderation" type="button">
-                        <span class="quick-icon">🛡️</span>
-                        <strong>Moderation</strong>
-                        <span>Manage moderation settings.</span>
-                    </button>
-
-                    <button class="quick-card" data-section-link="invites" type="button">
-                        <span class="quick-icon">🔗</span>
-                        <strong>Invites</strong>
-                        <span>Configure invite tracking.</span>
-                    </button>
-
-                    <button class="quick-card" data-section-link="leveling" type="button">
-                        <span class="quick-icon">⭐</span>
-                        <strong>Leveling</strong>
-                        <span>Manage XP and levels.</span>
-                    </button>
-
-                    <button class="quick-card" data-section-link="currency" type="button">
-                        <span class="quick-icon">💰</span>
-                        <strong>Currency</strong>
-                        <span>Configure Beans and rewards.</span>
-                    </button>
-
-                    <button class="quick-card" data-section-link="shop" type="button">
-                        <span class="quick-icon">🛒</span>
-                        <strong>Shop</strong>
-                        <span>Manage your server shop.</span>
-                    </button>
-
-                    <button id="open-server-view" class="quick-card" type="button">
-                        <span class="quick-icon">💬</span>
-                        <strong>Server View</strong>
-                        <span>View and interact with server chat.</span>
-                    </button>
-                </div>
-            </section>
-
-            <section id="moderation" class="tab-section">
-                <div class="page-header">
-                    <div>
-                        <h2>Moderation</h2>
-                        <p>Configure moderation features.</p>
+                <div class="account">
+                    <img id="user-avatar" class="account-avatar" src="" alt="Avatar" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'36\' height=\'36\'><circle cx=\'18\' cy=\'18\' r=\'18\' fill=\'%23b83dff\'/></svg>'">
+                    <div class="account-info">
+                        <strong id="user-name">User</strong>
+                        <span id="user-tag">Online</span>
                     </div>
+                    <button id="logout-button" class="button danger" type="button" style="margin-left: 10px; min-height: 32px; padding: 4px 10px;">Logout</button>
                 </div>
+            </div>
 
-                <div class="settings-card">
-                    <h3>Moderation Settings</h3>
+            <div class="content">
 
-                    <label>
-                        Auto moderation
-                        <input id="moderation-enabled" type="checkbox">
-                    </label>
-
-                    <button id="save-moderation" class="button primary" type="button">
-                        Save
-                    </button>
-                </div>
-            </section>
-
-            <section id="invites" class="tab-section">
-                <div class="page-header">
-                    <div>
-                        <h2>Invites</h2>
-                        <p>Manage invite tracking.</p>
+                <!-- DASHBOARD TAB -->
+                <section id="dashboard" class="tab-section active content">
+                    <div class="hero card">
+                        <div class="hero-copy">
+                            <h2>Welcome back!</h2>
+                            <p>Monitor real-time statistics, adjust configurations, and control your bot right from this panel.</p>
+                        </div>
+                        <div class="hero-icon">✨</div>
                     </div>
-                </div>
 
-                <div class="settings-card">
-                    <h3>Invite Settings</h3>
-
-                    <label>
-                        Invite tracking
-                        <input id="invites-enabled" type="checkbox">
-                    </label>
-
-                    <button id="save-invites" class="button primary" type="button">
-                        Save
-                    </button>
-                </div>
-            </section>
-
-            <section id="leveling" class="tab-section">
-                <div class="page-header">
-                    <div>
-                        <h2>Leveling</h2>
-                        <p>Configure XP and leveling.</p>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">👥</div>
+                            <div class="stat-value" id="stat-members">0</div>
+                            <div class="stat-label">Server Members</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">⚡</div>
+                            <div class="stat-value" id="stat-ping">12ms</div>
+                            <div class="stat-label">Bot Latency</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">🎛️</div>
+                            <div class="stat-value" id="stat-commands">1,420</div>
+                            <div class="stat-label">Commands Run</div>
+                        </div>
                     </div>
-                </div>
 
-                <div class="settings-card">
-                    <h3>Leveling Settings</h3>
-
-                    <label>
-                        Leveling enabled
-                        <input id="leveling-enabled" type="checkbox">
-                    </label>
-
-                    <button id="save-leveling" class="button primary" type="button">
-                        Save
-                    </button>
-                </div>
-            </section>
-
-            <section id="currency" class="tab-section">
-                <div class="page-header">
-                    <div>
-                        <h2>Currency</h2>
-                        <p>Configure Beans and currency rewards.</p>
+                    <div class="card">
+                        <div class="section-title">
+                            <h2>Quick Actions</h2>
+                            <span>Shortcuts</span>
+                        </div>
+                        <div class="quick-grid three">
+                            <button class="quick-card" data-section-link="moderation" type="button">
+                                <div class="quick-icon">🛡️</div>
+                                <div class="quick-copy">
+                                    <strong>Moderation</strong>
+                                    <span>Configure safety rules</span>
+                                </div>
+                            </button>
+                            <button class="quick-card" data-section-link="leveling" type="button">
+                                <div class="quick-icon">⭐</div>
+                                <div class="quick-copy">
+                                    <strong>Leveling</strong>
+                                    <span>XP rates & reward roles</span>
+                                </div>
+                            </button>
+                            <button id="open-server-view" class="quick-card" type="button">
+                                <div class="quick-icon">💬</div>
+                                <div class="quick-copy">
+                                    <strong>Server View</strong>
+                                    <span>Browse live channels</span>
+                                </div>
+                            </button>
+                        </div>
                     </div>
-                </div>
+                </section>
 
-                <div class="settings-card">
-                    <h3>Currency Settings</h3>
-
-                    <label>
-                        Currency enabled
-                        <input id="currency-enabled" type="checkbox">
-                    </label>
-
-                    <button id="save-currency" class="button primary" type="button">
-                        Save
-                    </button>
-                </div>
-            </section>
-
-            <section id="shop" class="tab-section">
-                <div class="page-header">
-                    <div>
-                        <h2>Shop</h2>
-                        <p>Manage server shop items.</p>
+                <!-- MODERATION TAB -->
+                <section id="moderation" class="tab-section content" hidden>
+                    <div class="card header">
+                        <div>
+                            <h1>Moderation</h1>
+                            <p>Configure automated moderation features.</p>
+                        </div>
                     </div>
-                </div>
-
-                <div id="shop-items"></div>
-            </section>
-
-            <section id="settings" class="tab-section">
-                <div class="page-header">
-                    <div>
-                        <h2>Settings</h2>
-                        <p>Dashboard settings.</p>
+                    <div class="card form-card">
+                        <div class="form-group">
+                            <label>Auto-moderation Engine</label>
+                            <small>Automatically filter spam, malicious links, and prohibited phrases.</small>
+                            <input id="moderation-enabled" type="checkbox" style="margin-top: 8px;">
+                        </div>
+                        <div class="btn-row" style="margin-top: 15px;">
+                            <button id="save-moderation" class="button primary" type="button">Save Changes</button>
+                        </div>
                     </div>
-                </div>
+                </section>
 
-                <div class="settings-card">
-                    <h3>View Mode</h3>
+                <!-- INVITES TAB -->
+                <section id="invites" class="tab-section content" hidden>
+                    <div class="card header">
+                        <div>
+                            <h1>Invites</h1>
+                            <p>Track user invite metrics.</p>
+                        </div>
+                    </div>
+                    <div class="card form-card">
+                        <div class="form-group">
+                            <label>Invite Tracking</label>
+                            <small>Log joins, leaves, and fake invites.</small>
+                            <input id="invites-enabled" type="checkbox" style="margin-top: 8px;">
+                        </div>
+                        <div class="btn-row" style="margin-top: 15px;">
+                            <button id="save-invites" class="button primary" type="button">Save Changes</button>
+                        </div>
+                    </div>
+                </section>
 
-                    <label for="view-mode">
-                        Dashboard layout
-                    </label>
+                <!-- LEVELING TAB -->
+                <section id="leveling" class="tab-section content" hidden>
+                    <div class="card header">
+                        <div>
+                            <h1>Leveling</h1>
+                            <p>Manage experience rates and rank rewards.</p>
+                        </div>
+                    </div>
+                    <div class="card form-card">
+                        <div class="form-group">
+                            <label>Leveling System</label>
+                            <input id="leveling-enabled" type="checkbox" style="margin-top: 8px;">
+                        </div>
+                        <div class="btn-row" style="margin-top: 15px;">
+                            <button id="save-leveling" class="button primary" type="button">Save Changes</button>
+                        </div>
+                    </div>
+                </section>
 
-                    <select id="view-mode">
-                        <option value="auto">Auto</option>
-                        <option value="desktop">Desktop</option>
-                        <option value="mobile">Mobile</option>
-                    </select>
-                </div>
-            </section>
+                <!-- CURRENCY TAB -->
+                <section id="currency" class="tab-section content" hidden>
+                    <div class="card header">
+                        <div>
+                            <h1>Currency</h1>
+                            <p>Configure economy balances and reward drops.</p>
+                        </div>
+                    </div>
+                    <div class="card form-card">
+                        <div class="form-group">
+                            <label>Currency Enabled</label>
+                            <input id="currency-enabled" type="checkbox" style="margin-top: 8px;">
+                        </div>
+                        <div class="btn-row" style="margin-top: 15px;">
+                            <button id="save-currency" class="button primary" type="button">Save Changes</button>
+                        </div>
+                    </div>
+                </section>
 
+                <!-- SHOP TAB -->
+                <section id="shop" class="tab-section content" hidden>
+                    <div class="card header">
+                        <div>
+                            <h1>Shop</h1>
+                            <p>Manage redeemable server store items.</p>
+                        </div>
+                    </div>
+                    <div class="card" id="shop-items">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">🛒</div>
+                            <strong>No items added</strong>
+                            <span>Create a custom shop item to begin.</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SETTINGS TAB -->
+                <section id="settings" class="tab-section content" hidden>
+                    <div class="card header">
+                        <div>
+                            <h1>Settings</h1>
+                            <p>Dashboard layout and display preferences.</p>
+                        </div>
+                    </div>
+                    <div class="card form-card">
+                        <div class="form-group view-mode-wrap">
+                            <label for="view-mode">Dashboard Layout Mode</label>
+                            <select id="view-mode" class="view-mode-select">
+                                <option value="auto">Auto (Responsive)</option>
+                                <option value="desktop">Forced Desktop</option>
+                                <option value="mobile">Forced Mobile</option>
+                            </select>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
         </main>
     </div>
 
-    <!-- SERVER VIEW -->
-
+    <!-- SERVER VIEW MODAL/OVERLAY -->
     <div id="server-view" class="server-view" hidden>
-
         <div class="sv-shell">
-
             <header class="sv-topbar">
-
                 <div class="sv-topbar-left">
-
-                    <button
-                        id="sv-menu-btn"
-                        class="sv-icon-btn sv-mobile-only"
-                        type="button"
-                        title="Open channels"
-                    >
-                        ☰
-                    </button>
-
-                    <button
-                        id="sv-back"
-                        class="sv-icon-btn"
-                        type="button"
-                        title="Back"
-                    >
-                        ←
-                    </button>
-
+                    <button id="sv-menu-btn" class="sv-icon-btn sv-mobile-only" type="button" title="Open channels">☰</button>
+                    <button id="sv-back" class="sv-icon-btn" type="button" title="Back">←</button>
                     <div class="sv-server-title">
-                        <div id="sv-server-name" class="sv-server-name">
-                            Server
-                        </div>
-
-                        <div id="sv-server-pill" class="sv-server-pill">
-                            Server
-                        </div>
+                        <div id="sv-server-name" class="sv-server-name">Server</div>
+                        <div id="sv-server-pill" class="sv-server-pill">Server</div>
                     </div>
-
                 </div>
-
                 <div class="sv-topbar-right">
-
-                    <button
-                        id="sv-refresh"
-                        class="sv-icon-btn"
-                        type="button"
-                        title="Refresh"
-                    >
-                        ↻
-                    </button>
-
-                    <button
-                        id="sv-settings-btn"
-                        class="sv-icon-btn"
-                        type="button"
-                        title="Server View settings"
-                    >
-                        ⚙
-                    </button>
-
-                    <button
-                        id="close-server-view"
-                        class="sv-icon-btn"
-                        type="button"
-                        title="Close"
-                    >
-                        ×
-                    </button>
-
+                    <button id="sv-refresh" class="sv-icon-btn" type="button" title="Refresh">↻</button>
+                    <button id="sv-settings-btn" class="sv-icon-btn" type="button" title="Settings">⚙</button>
+                    <button id="close-server-view" class="sv-icon-btn" type="button" title="Close">×</button>
                 </div>
-
             </header>
 
             <div class="sv-body">
-
                 <aside id="sv-channels" class="sv-channels">
-
-                    <div class="sv-channels-header">
+                    <div class="sv-channels-head">
                         <span>CHANNELS</span>
-
-                        <button
-                            id="sv-channels-close"
-                            class="sv-icon-btn sv-mobile-only"
-                            type="button"
-                            title="Close channels"
-                        >
-                            ×
-                        </button>
+                        <button id="sv-channels-close" class="sv-icon-btn sv-mobile-only" type="button">×</button>
                     </div>
-
                     <div id="sv-channel-list" class="sv-channel-list">
-                        <p class="sv-empty">
-                            Pick a server to load channels.
-                        </p>
+                        <p class="sv-empty">Pick a server to load channels.</p>
                     </div>
-
                 </aside>
-
-                <div
-                    id="sv-drawer-backdrop"
-                    class="sv-drawer-backdrop"
-                    hidden
-                ></div>
+                <div id="sv-drawer-backdrop" class="sv-drawer-backdrop" hidden></div>
 
                 <section class="sv-chat">
-
-                    <div class="sv-chat-header">
-
+                    <div class="sv-chat-head">
                         <div class="sv-chat-header-main">
-
-                            <div id="sv-channel-icon" class="sv-channel-icon">
-                                #
-                            </div>
-
+                            <div id="sv-channel-icon" class="sv-channel-icon">#</div>
                             <div>
-                                <div id="sv-channel-name" class="sv-channel-name">
-                                    Select a channel
-                                </div>
-
-                                <div id="sv-channel-topic" class="sv-channel-topic">
-                                </div>
+                                <div id="sv-channel-title" class="sv-channel-name">Select a channel</div>
+                                <div id="sv-channel-topic" class="sv-channel-topic"></div>
                             </div>
-
                         </div>
-
-                        <div class="sv-chat-header-actions">
-                        </div>
-
                     </div>
 
-                    <div
-                        id="sv-settings-panel"
-                        class="sv-settings-panel"
-                        hidden
-                    >
-
+                    <div id="sv-settings-panel" class="sv-settings-panel" hidden>
                         <h4>Appearance</h4>
-
                         <div class="sv-settings-row">
-                            <label for="sv-theme">
-                                Theme
-                            </label>
-
+                            <label for="sv-theme">Theme</label>
                             <select id="sv-theme">
                                 <option value="discord">Discord</option>
                                 <option value="darker">Darker</option>
                                 <option value="light">Light</option>
                                 <option value="garden">Garden</option>
-                                <option value="midnight">Midnight Purple</option>
+                                <option value="midnight" selected>Midnight Purple</option>
                             </select>
                         </div>
-
                         <div class="sv-settings-row">
-                            <label for="sv-density">
-                                Density
-                            </label>
-
+                            <label for="sv-density">Density</label>
                             <select id="sv-density">
                                 <option value="default">Default</option>
                                 <option value="compact">Compact</option>
                                 <option value="cozy">Cozy</option>
                             </select>
                         </div>
-
                         <div class="sv-settings-row">
-                            <label for="sv-font-size">
-                                Font size
-                            </label>
-
+                            <label for="sv-font-size">Font size</label>
                             <select id="sv-font-size">
                                 <option value="14">14</option>
                                 <option value="16" selected>16</option>
                                 <option value="18">18</option>
                             </select>
                         </div>
-
                         <div class="sv-settings-row">
-                            <label for="sv-display-name">
-                                Display name
-                            </label>
-
-                            <input
-                                id="sv-display-name"
-                                type="text"
-                                maxlength="80"
-                                placeholder="Your display name"
-                                autocomplete="off"
-                            >
+                            <label for="sv-display-name">Display name</label>
+                            <input id="sv-display-name" type="text" maxlength="80" placeholder="Your display name" autocomplete="off">
                         </div>
-
                     </div>
 
                     <div id="sv-messages" class="sv-messages">
-                        <p class="sv-empty">
-                            Pick a channel on the left to start reading chat.
-                        </p>
+                        <p class="sv-empty">Pick a channel on the left to start reading chat.</p>
                     </div>
 
                     <div class="sv-composer-wrap">
-
-                        <div
-                            id="sv-reply-bar"
-                            class="sv-reply-bar"
-                            hidden
-                        >
-                            <div
-                                class="sv-reply-bar-text"
-                                id="sv-reply-label"
-                            >
-                                Replying…
-                            </div>
-
-                            <button
-                                type="button"
-                                class="sv-reply-cancel"
-                                id="sv-reply-cancel"
-                                title="Cancel reply"
-                            >
-                                ×
-                            </button>
+                        <div id="sv-reply-bar" class="sv-reply-bar" hidden>
+                            <div class="sv-reply-bar-text" id="sv-reply-label">Replying…</div>
+                            <button type="button" class="sv-reply-cancel" id="sv-reply-cancel">×</button>
                         </div>
-
                         <form id="sv-composer" class="sv-composer">
-
-                            <input
-                                id="sv-input"
-                                type="text"
-                                placeholder="Select a channel…"
-                                disabled
-                                autocomplete="off"
-                                maxlength="2000"
-                            >
-
-                            <button
-                                type="submit"
-                                class="sv-send-btn"
-                                id="sv-send"
-                                disabled
-                            >
-                                Send
-                            </button>
-
+                            <input id="sv-input" type="text" placeholder="Select a channel…" disabled autocomplete="off" maxlength="2000">
+                            <button type="submit" class="sv-send-btn" id="sv-send" disabled>Send</button>
                         </form>
-
                     </div>
-
                 </section>
-
             </div>
-
         </div>
-
     </div>
 
     <div id="sv-lightbox" class="sv-lightbox" hidden>
         <img id="sv-lightbox-img" src="" alt="">
     </div>
 
-    <!-- IMPORTANT:
-         Server View MUST load before script.js.
-         This prevents the "Server View script not loaded" error. -->
-
     <script src="server-view.js?v=8"></script>
     <script src="script.js?v=7"></script>
-
 </body>
 </html>
