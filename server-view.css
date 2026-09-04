@@ -2682,3 +2682,477 @@
   background:
     rgba(3, 2, 5, 0.68);
 }
+/* =========================================================
+   MIDNIGHT PURPLE
+   Safe theme override — does not change layout or structure
+   ========================================================= */
+
+.server-view.theme-midnight {
+  --sv-bg-primary: #17121f;
+  --sv-bg-secondary: #100c17;
+  --sv-bg-tertiary: #09070d;
+
+  --sv-bg-modifier: rgba(168, 85, 247, 0.07);
+  --sv-bg-modifier-hover: rgba(168, 85, 247, 0.13);
+  --sv-bg-modifier-active: rgba(168, 85, 247, 0.20);
+
+  --sv-text: #e9e1f0;
+  --sv-text-muted: #9b8da8;
+  --sv-text-link: #c084fc;
+
+  --sv-header: #f5effa;
+
+  --sv-interactive: #aaa0b4;
+  --sv-interactive-hover: #e5dcea;
+  --sv-interactive-active: #ffffff;
+
+  --sv-brand: #a855f7;
+  --sv-brand-hover: #9333ea;
+
+  --sv-mention: rgba(168, 85, 247, 0.18);
+  --sv-mention-hover: rgba(168, 85, 247, 0.28);
+  --sv-mention-text: #d8b4fe;
+
+  --sv-embed-bg: #15101d;
+  --sv-input-bg: #1b1523;
+
+  --sv-scrollbar: #0b0810;
+
+  background:
+    radial-gradient(
+      ellipse 70% 45% at 10% 0%,
+      rgba(168, 85, 247, 0.13),
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 65% 50% at 100% 100%,
+      rgba(126, 34, 206, 0.10),
+      transparent 65%
+    ),
+    #09070d;
+}
+
+
+/* =========================================================
+   TOP BAR
+   ========================================================= */
+
+.server-view.theme-midnight .sv-topbar {
+  background:
+    linear-gradient(
+      90deg,
+      rgba(168, 85, 247, 0.08),
+      transparent 45%
+    ),
+    #100c17;
+
+  border-bottom-color:
+    rgba(168, 85, 247, 0.15);
+
+  box-shadow:
+    0 4px 20px rgba(0, 0, 0, 0.25);
+}
+
+.server-view.theme-midnight .sv-server-pill {
+  color: #f0e7f7;
+}
+
+.server-view.theme-midnight .sv-back,
+.server-view.theme-midnight .sv-menu-btn,
+.server-view.theme-midnight .sv-icon-btn,
+.server-view.theme-midnight .sv-refresh {
+  transition:
+    background 160ms ease,
+    color 160ms ease;
+}
+
+.server-view.theme-midnight .sv-back:hover,
+.server-view.theme-midnight .sv-menu-btn:hover,
+.server-view.theme-midnight .sv-icon-btn:hover,
+.server-view.theme-midnight .sv-refresh:hover {
+  background: rgba(168, 85, 247, 0.12);
+  color: #e9d5ff;
+}
+
+
+/* =========================================================
+   CHANNEL SIDEBAR
+   ========================================================= */
+
+.server-view.theme-midnight .sv-channels {
+  background:
+    linear-gradient(
+      180deg,
+      #120d19 0%,
+      #0c0910 100%
+    );
+
+  border-right-color:
+    rgba(168, 85, 247, 0.12);
+
+  box-shadow:
+    6px 0 25px rgba(0, 0, 0, 0.18);
+}
+
+.server-view.theme-midnight .sv-channels-head {
+  color: #eee5f5;
+  border-bottom-color:
+    rgba(168, 85, 247, 0.10);
+}
+
+.server-view.theme-midnight .sv-cat {
+  color: #887995;
+}
+
+.server-view.theme-midnight .sv-ch {
+  color: #a99db2;
+  border-radius: 6px;
+
+  transition:
+    background 140ms ease,
+    color 140ms ease;
+}
+
+.server-view.theme-midnight .sv-ch:hover {
+  background:
+    rgba(168, 85, 247, 0.08);
+
+  color: #eee7f5;
+}
+
+.server-view.theme-midnight .sv-ch.active {
+  background:
+    linear-gradient(
+      90deg,
+      rgba(168, 85, 247, 0.20),
+      rgba(126, 34, 206, 0.08)
+    );
+
+  color: #f4ecfa;
+
+  box-shadow:
+    inset 2px 0 0 #a855f7;
+}
+
+.server-view.theme-midnight .sv-ch.active .sv-hash {
+  color: #c084fc;
+}
+
+
+/* =========================================================
+   CHAT
+   ========================================================= */
+
+.server-view.theme-midnight .sv-chat {
+  background:
+    radial-gradient(
+      ellipse 75% 35% at 50% 0%,
+      rgba(168, 85, 247, 0.055),
+      transparent 70%
+    ),
+    #0e0a13;
+}
+
+.server-view.theme-midnight .sv-chat-head {
+  background:
+    rgba(12, 9, 16, 0.92);
+
+  border-bottom-color:
+    rgba(168, 85, 247, 0.11);
+
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.server-view.theme-midnight .sv-hash-big {
+  color: #a855f7;
+
+  text-shadow:
+    0 0 16px rgba(168, 85, 247, 0.30);
+}
+
+.server-view.theme-midnight #sv-channel-title {
+  color: #f1eaf5;
+}
+
+.server-view.theme-midnight .sv-messages {
+  background: transparent;
+}
+
+
+/* =========================================================
+   MESSAGES
+   ========================================================= */
+
+.server-view.theme-midnight .sv-msg {
+  transition:
+    background 140ms ease;
+}
+
+.server-view.theme-midnight .sv-msg:hover {
+  background:
+    rgba(168, 85, 247, 0.035);
+}
+
+.server-view.theme-midnight .sv-msg-meta strong {
+  color: #eadff1;
+}
+
+.server-view.theme-midnight .sv-time {
+  color: #776b80;
+}
+
+.server-view.theme-midnight .sv-msg-text {
+  color: #d8cfde;
+}
+
+
+/* =========================================================
+   AVATARS
+   ========================================================= */
+
+.server-view.theme-midnight .sv-av {
+  border:
+    2px solid rgba(168, 85, 247, 0.30);
+
+  box-shadow:
+    0 2px 10px rgba(0, 0, 0, 0.30);
+}
+
+.server-view.theme-midnight .sv-av:hover {
+  border-color:
+    rgba(192, 132, 252, 0.55);
+
+  box-shadow:
+    0 0 12px rgba(168, 85, 247, 0.16);
+}
+
+.server-view.theme-midnight .sv-av.fallback {
+  background:
+    linear-gradient(
+      135deg,
+      #7e22ce,
+      #a855f7
+    );
+}
+
+
+/* =========================================================
+   BOT BADGES
+   ========================================================= */
+
+.server-view.theme-midnight .sv-bot {
+  background:
+    linear-gradient(
+      135deg,
+      #7e22ce,
+      #a855f7
+    );
+
+  color: #ffffff;
+
+  box-shadow:
+    0 0 10px rgba(168, 85, 247, 0.16);
+}
+
+
+/* =========================================================
+   MENTIONS
+   ========================================================= */
+
+.server-view.theme-midnight .sv-mention,
+.server-view.theme-midnight .sv-mention-user,
+.server-view.theme-midnight .sv-mention-channel,
+.server-view.theme-midnight .sv-mention-role,
+.server-view.theme-midnight .sv-mention-everyone {
+  background:
+    rgba(168, 85, 247, 0.15);
+
+  color:
+    #d8b4fe;
+
+  border-radius:
+    4px;
+}
+
+.server-view.theme-midnight .sv-mention:hover,
+.server-view.theme-midnight .sv-mention-user:hover,
+.server-view.theme-midnight .sv-mention-channel:hover,
+.server-view.theme-midnight .sv-mention-role:hover {
+  background:
+    rgba(168, 85, 247, 0.24);
+}
+
+
+/* =========================================================
+   EMBEDS
+   ========================================================= */
+
+.server-view.theme-midnight .sv-embed {
+  background:
+    rgba(21, 16, 29, 0.94);
+
+  border-left-color:
+    #a855f7;
+
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.20);
+}
+
+.server-view.theme-midnight .sv-embed-title {
+  color: #d8b4fe;
+}
+
+.server-view.theme-midnight .sv-embed-desc {
+  color: #b8adbf;
+}
+
+
+/* =========================================================
+   CODE
+   ========================================================= */
+
+.server-view.theme-midnight .sv-code,
+.server-view.theme-midnight .sv-codeblock {
+  background:
+    #08060b;
+
+  border-color:
+    rgba(168, 85, 247, 0.12);
+
+  color:
+    #ddd3e4;
+}
+
+
+/* =========================================================
+   COMPOSER
+   ========================================================= */
+
+.server-view.theme-midnight .sv-composer-wrap {
+  background:
+    #0b0810;
+
+  border-top-color:
+    rgba(168, 85, 247, 0.10);
+}
+
+.server-view.theme-midnight .sv-composer {
+  background:
+    #1a1421;
+
+  border-color:
+    rgba(168, 85, 247, 0.15);
+
+  box-shadow:
+    0 4px 20px rgba(0, 0, 0, 0.22);
+}
+
+.server-view.theme-midnight .sv-composer:focus-within {
+  border-color:
+    rgba(168, 85, 247, 0.42);
+
+  box-shadow:
+    0 0 0 3px
+      rgba(168, 85, 247, 0.07);
+}
+
+.server-view.theme-midnight .sv-composer input {
+  color: #eee7f5;
+}
+
+.server-view.theme-midnight .sv-composer input::placeholder {
+  color: #716579;
+}
+
+
+/* =========================================================
+   REPLY
+   ========================================================= */
+
+.server-view.theme-midnight .sv-reply-bar {
+  background:
+    rgba(168, 85, 247, 0.07);
+
+  border-top-color:
+    rgba(168, 85, 247, 0.10);
+}
+
+.server-view.theme-midnight .sv-reply-label {
+  color: #c084fc;
+}
+
+
+/* =========================================================
+   SETTINGS
+   ========================================================= */
+
+.server-view.theme-midnight .sv-name-wrap {
+  background:
+    rgba(255, 255, 255, 0.025);
+
+  border-color:
+    rgba(168, 85, 247, 0.15);
+}
+
+.server-view.theme-midnight .sv-name-wrap:focus-within {
+  border-color:
+    rgba(168, 85, 247, 0.42);
+
+  box-shadow:
+    0 0 0 3px
+      rgba(168, 85, 247, 0.07);
+}
+
+.server-view.theme-midnight .sv-settings-panel {
+  background:
+    #120d19;
+
+  border-color:
+    rgba(168, 85, 247, 0.16);
+
+  box-shadow:
+    0 15px 40px rgba(0, 0, 0, 0.35);
+}
+
+.server-view.theme-midnight .sv-settings-panel select,
+.server-view.theme-midnight .sv-settings-panel input {
+  background:
+    #0d0912;
+
+  color:
+    #eee7f5;
+
+  border-color:
+    rgba(168, 85, 247, 0.15);
+}
+
+
+/* =========================================================
+   SCROLLBAR
+   ========================================================= */
+
+.server-view.theme-midnight ::-webkit-scrollbar {
+  width: 10px;
+}
+
+.server-view.theme-midnight ::-webkit-scrollbar-track {
+  background:
+    #09070d;
+}
+
+.server-view.theme-midnight ::-webkit-scrollbar-thumb {
+  background:
+    #33233f;
+
+  border-radius:
+    10px;
+
+  border:
+    2px solid #09070d;
+}
+
+.server-view.theme-midnight ::-webkit-scrollbar-thumb:hover {
+  background:
+    #513766;
+}
