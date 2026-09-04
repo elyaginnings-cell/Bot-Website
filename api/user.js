@@ -5,40 +5,75 @@ import { clearSessionCookies, readSession } from "../lib/session.js";
 export default async function handler(req, res) {
   try {
     if (!process.env.SESSION_SECRET) {
-      return res.status(500).json({ authenticated: false, error: "Missing SESSION_SECRET" });
+      return res.status(500).json({
+        authenticated: false,
+        error: "Missing SESSION_SECRET",
+      });
     }
 
     let session;
+
     try {
       session = readSession(req);
     } catch {
       clearSessionCookies(res);
-      return res.status(401).json({ authenticated: false });
+      return res.status(401).json({
+        authenticated: false,
+      });
     }
 
-    if (!session) {
-      return res.status(401).json({ authenticated: false });
+    if (!session || session.staff !== true) {
+      clearSessionCookies(res);
+
+      return res.status(403).json({
+        authenticated: false,
+        error: "You are not authorized to access this dashboard.",
+        code: "STAFF_REQUIRED",
+      });
     }
 
     if (session.accountId && process.env.DATABASE_URL) {
       const result = await query(
-        `SELECT id, email, discord_id, username, global_name, avatar FROM accounts WHERE id = $1`,
+        `SELECT id, email, discord_id, username, global_name, avatar
+         FROM accounts
+         WHERE id = $1`,
         [session.accountId]
       );
+
       if (result.rows[0]) {
-        return res.status(200).json({ authenticated: true, user: publicUser(result.rows[0]) });
+        return res.status(200).json({
+          authenticated: true,
+          user: publicUser(result.rows[0]),
+        });
       }
+
+      clearSessionCookies(res);
+
+      return res.status(401).json({
+        authenticated: false,
+      });
     }
 
     if (session.discordToken) {
-      const response = await fetch("https://discord.com/api/users/@me", {
-        headers: { Authorization: `Bearer ${session.discordToken}` },
-      });
+      const response = await fetch(
+        "https://discord.com/api/users/@me",
+        {
+          headers: {
+            Authorization: `Bearer ${session.discordToken}`,
+          },
+        }
+      );
+
       if (!response.ok) {
         clearSessionCookies(res);
-        return res.status(401).json({ authenticated: false });
+
+        return res.status(401).json({
+          authenticated: false,
+        });
       }
+
       const data = await response.json();
+
       return res.status(200).json({
         authenticated: true,
         user: {
@@ -52,9 +87,14 @@ export default async function handler(req, res) {
       });
     }
 
-    return res.status(401).json({ authenticated: false });
+    return res.status(401).json({
+      authenticated: false,
+    });
   } catch (error) {
     console.error("User API error:", error);
-    return res.status(500).json({ authenticated: false });
+
+    return res.status(500).json({
+      authenticated: false,
+    });
   }
 }
