@@ -964,103 +964,106 @@
   }
 
   async function sendMessage(event) {
-    event.preventDefault();
+  event.preventDefault();
 
-    if (sending || !activeChannelId) {
-      return;
+  if (sending || !activeChannelId) {
+    return;
+  }
+
+  var input =
+    document.getElementById("sv-input");
+
+  var send =
+    document.getElementById("sv-send");
+
+  if (!input) {
+    return;
+  }
+
+  var content =
+    input.value.trim();
+
+  if (!content) {
+    return;
+  }
+
+  var server =
+    getServer();
+
+  if (!server || !server.id) {
+    return;
+  }
+
+  sending = true;
+
+  if (send) {
+    send.disabled = true;
+  }
+
+  try {
+    var payload = {
+      guildId: server.id,
+      channelId: activeChannelId,
+      content: content
+    };
+
+    if (replyTo) {
+      payload.replyTo = replyTo;
     }
 
-    var input =
-      document.getElementById("sv-input");
+    var response = await fetch(
+      "/api/messages?guildId=" +
+        encodeURIComponent(server.id) +
+        "&channelId=" +
+        encodeURIComponent(activeChannelId),
+      {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify(payload)
+      }
+    );
 
-    var send =
-      document.getElementById("sv-send");
+    if (!response.ok) {
+      const errorData =
+        await response.json().catch(() => ({}));
 
-    if (!input) {
-      return;
+      throw new Error(
+        errorData.error ||
+        ("Send failed: " + response.status)
+      );
     }
 
-    var content =
-      input.value.trim();
+    input.value = "";
+    clearReply();
+    loadMessages(true);
 
-    if (!content) {
-      return;
-    }
+  } catch (error) {
+    console.error(
+      "Server View send failed:",
+      error
+    );
 
-    var server =
-      getServer();
+    alert(
+      "Failed to send message.\n\n" +
+      (error?.message || error)
+    );
 
-    if (!server || !server.id) {
-      return;
-    }
-
-    sending = true;
+  } finally {
+    sending = false;
 
     if (send) {
-      send.disabled = true;
+      send.disabled = false;
     }
 
-    try {
-      var payload = {
-        guildId: server.id,
-        channelId: activeChannelId,
-        content: content
-      };
-
-      if (replyTo) {
-        payload.replyTo = replyTo;
-      }
-
-      var response = await fetch(
-  "/api/messages?guildId=" +
-    encodeURIComponent(server.id) +
-    "&channelId=" +
-    encodeURIComponent(activeChannelId),
-  {
-    method: "POST",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-            "Accept": "application/json"
-          },
-          body: JSON.stringify(payload)
-        });
-
-      if (!response.ok) {
-  const errorData = await response.json().catch(() => ({}));
-
-  throw new Error(
-    errorData.error ||
-    ("Send failed: " + response.status)
-  );
-}
-
-      input.value = "";
-      clearReply();
-      loadMessages(true);
-
-    } catch (error) {
-  console.error(
-    "Server View send failed:",
-    error
-  );
-
-  alert(
-    "Failed to send message.\n\n" +
-    (error?.message || error)
-  );
-} finally {
-      sending = false;
-
-      if (send) {
-        send.disabled = false;
-      }
-
-      if (input) {
-        input.focus();
-      }
+    if (input) {
+      input.focus();
     }
   }
+}
 
   function startPoll() {
     stopPoll();
