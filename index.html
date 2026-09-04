@@ -4,22 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#0b0810">
-    <title>Discord Bot Dashboard</title>
+    <title>Gatto Discord Bot Dashboard</title>
 
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="server-view.css?v=8">
+    <link rel="stylesheet" href="server-view.css">
     <link rel="stylesheet" href="server-view-components.css">
     <link rel="stylesheet" href="server-view-theme-garden.css">
     <link rel="stylesheet" href="server-view-reply.css">
-
-    <style>
-        [hidden] {
-            display: none !important;
-        }
-    </style>
 </head>
 
-<body class="mode-auto">
+<body>
 
     <div id="login-screen" class="login-screen">
         <div class="login-card">
@@ -96,7 +90,7 @@
 
         <main class="main">
 
-            <div class="card server-bar">
+            <div class="card server-bar" style="display: flex; justify-content: space-between; align-items: center;">
                 <div class="server-selector">
                     <button id="server-button" class="button" type="button">
                         <span id="sv-server-name-btn">Choose Server</span>
@@ -107,71 +101,71 @@
                     </div>
                 </div>
 
-                <div class="account">
-                    <img id="user-avatar" class="account-avatar" src="" alt="Avatar" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'36\' height=\'36\'><circle cx=\'18\' cy=\'18\' r=\'18\' fill=\'%23b83dff\'/></svg>'">
+                <div class="account" style="display: flex; align-items: center; gap: 10px;">
+                    <img id="user-avatar" class="account-avatar" src="" alt="Avatar" style="width: 36px; height: 36px; border-radius: 50%;">
                     <div class="account-info">
                         <strong id="user-name">User</strong>
-                        <span id="user-tag">Online</span>
+                        <span id="user-tag" style="font-size: 12px; color: var(--text-muted);">Online</span>
                     </div>
-                    <button id="logout-button" class="button danger" type="button" style="margin-left: 10px; min-height: 32px; padding: 4px 10px;">Logout</button>
+                    <button id="logout-button" class="button danger" type="button" style="margin-left: 10px; padding: 6px 12px; background: var(--danger);">Logout</button>
                 </div>
             </div>
 
             <div class="content">
 
                 <!-- DASHBOARD TAB -->
-                <section id="dashboard" class="tab-section active content">
-                    <div class="hero card">
+                <section id="dashboard" class="tab-section active">
+                    <div class="hero card" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
                         <div class="hero-copy">
                             <h2>Welcome back!</h2>
                             <p>Monitor real-time statistics, adjust configurations, and control your bot right from this panel.</p>
                         </div>
-                        <div class="hero-icon">✨</div>
+                        <div class="hero-icon" style="font-size: 36px;">✨</div>
                     </div>
 
-                    <div class="stats-grid">
-                        <div class="stat-card">
+                    <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 18px; margin-bottom: 18px;">
+                        <div class="stat-card card">
                             <div class="stat-icon">👥</div>
-                            <div class="stat-value" id="stat-members">0</div>
-                            <div class="stat-label">Server Members</div>
+                            <div class="stat-value" id="stat-members" style="font-size: 24px; font-weight: bold; margin: 8px 0;">0</div>
+                            <div class="stat-label" style="color: var(--text-muted);">Server Members</div>
                         </div>
-                        <div class="stat-card">
+                        <div class="stat-card card">
                             <div class="stat-icon">⚡</div>
-                            <div class="stat-value" id="stat-ping">12ms</div>
-                            <div class="stat-label">Bot Latency</div>
+                            <div class="stat-value" id="stat-ping" style="font-size: 24px; font-weight: bold; margin: 8px 0;">12ms</div>
+                            <div class="stat-label" style="color: var(--text-muted);">Bot Latency</div>
                         </div>
-                        <div class="stat-card">
+                        <div class="stat-card card">
                             <div class="stat-icon">🎛️</div>
-                            <div class="stat-value" id="stat-commands">1,420</div>
-                            <div class="stat-label">Commands Run</div>
+                            <div class="stat-value" id="stat-commands" style="font-size: 24px; font-weight: bold; margin: 8px 0;">1,420</div>
+                            <div class="stat-label" style="color: var(--text-muted);">Commands Run</div>
                         </div>
                     </div>
 
                     <div class="card">
-                        <div class="section-title">
+                        <div class="section-title" style="display: flex; justify-content: space-between; margin-bottom: 15px;">
                             <h2>Quick Actions</h2>
-                            <span>Shortcuts</span>
+                            <span style="color: var(--text-muted);">Shortcuts</span>
                         </div>
-                        <div class="quick-grid three">
-                            <button class="quick-card" data-section-link="moderation" type="button">
-                                <div class="quick-icon">🛡️</div>
+                        <div class="quick-grid three" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px;">
+                            <button class="quick-card card" data-section-link="moderation" type="button" style="display: flex; gap: 12px; align-items: center; text-align: left; cursor: pointer;">
+                                <div class="quick-icon" style="font-size: 24px;">🛡️</div>
                                 <div class="quick-copy">
-                                    <strong>Moderation</strong>
-                                    <span>Configure safety rules</span>
+                                    <strong>Moderation</strong><br>
+                                    <span style="font-size: 12px; color: var(--text-muted);">Configure safety rules</span>
                                 </div>
                             </button>
-                            <button class="quick-card" data-section-link="leveling" type="button">
-                                <div class="quick-icon">⭐</div>
+                            <button class="quick-card card" data-section-link="leveling" type="button" style="display: flex; gap: 12px; align-items: center; text-align: left; cursor: pointer;">
+                                <div class="quick-icon" style="font-size: 24px;">⭐</div>
                                 <div class="quick-copy">
-                                    <strong>Leveling</strong>
-                                    <span>XP rates & reward roles</span>
+                                    <strong>Leveling</strong><br>
+                                    <span style="font-size: 12px; color: var(--text-muted);">XP rates & rewards</span>
                                 </div>
                             </button>
-                            <button id="open-server-view" class="quick-card" type="button">
-                                <div class="quick-icon">💬</div>
+                            <button id="open-server-view" class="quick-card card" type="button" style="display: flex; gap: 12px; align-items: center; text-align: left; cursor: pointer;">
+                                <div class="quick-icon" style="font-size: 24px;">💬</div>
                                 <div class="quick-copy">
-                                    <strong>Server View</strong>
-                                    <span>Browse live channels</span>
+                                    <strong>Server View</strong><br>
+                                    <span style="font-size: 12px; color: var(--text-muted);">Browse live channels</span>
                                 </div>
                             </button>
                         </div>
@@ -179,112 +173,100 @@
                 </section>
 
                 <!-- MODERATION TAB -->
-                <section id="moderation" class="tab-section content" hidden>
-                    <div class="card header">
-                        <div>
-                            <h1>Moderation</h1>
-                            <p>Configure automated moderation features.</p>
-                        </div>
+                <section id="moderation" class="tab-section" hidden>
+                    <div class="card header-card" style="margin-bottom: 18px;">
+                        <h1>Moderation</h1>
+                        <p style="color: var(--text-muted);">Configure automated moderation features.</p>
                     </div>
                     <div class="card form-card">
                         <div class="form-group">
-                            <label>Auto-moderation Engine</label>
-                            <small>Automatically filter spam, malicious links, and prohibited phrases.</small>
-                            <input id="moderation-enabled" type="checkbox" style="margin-top: 8px;">
+                            <label for="moderation-enabled" style="font-weight: 600; display: block;">Auto-moderation Engine</label>
+                            <small style="color: var(--text-muted);">Automatically filter spam, malicious links, and prohibited phrases.</small><br>
+                            <input id="moderation-enabled" type="checkbox" style="margin-top: 12px; width: 18px; height: 18px;">
                         </div>
-                        <div class="btn-row" style="margin-top: 15px;">
+                        <div class="btn-row" style="margin-top: 20px;">
                             <button id="save-moderation" class="button primary" type="button">Save Changes</button>
                         </div>
                     </div>
                 </section>
 
                 <!-- INVITES TAB -->
-                <section id="invites" class="tab-section content" hidden>
-                    <div class="card header">
-                        <div>
-                            <h1>Invites</h1>
-                            <p>Track user invite metrics.</p>
-                        </div>
+                <section id="invites" class="tab-section" hidden>
+                    <div class="card header-card" style="margin-bottom: 18px;">
+                        <h1>Invites</h1>
+                        <p style="color: var(--text-muted);">Track user invite metrics.</p>
                     </div>
                     <div class="card form-card">
                         <div class="form-group">
-                            <label>Invite Tracking</label>
-                            <small>Log joins, leaves, and fake invites.</small>
-                            <input id="invites-enabled" type="checkbox" style="margin-top: 8px;">
+                            <label for="invites-enabled" style="font-weight: 600; display: block;">Invite Tracking</label>
+                            <small style="color: var(--text-muted);">Log joins, leaves, and fake invites.</small><br>
+                            <input id="invites-enabled" type="checkbox" style="margin-top: 12px; width: 18px; height: 18px;">
                         </div>
-                        <div class="btn-row" style="margin-top: 15px;">
+                        <div class="btn-row" style="margin-top: 20px;">
                             <button id="save-invites" class="button primary" type="button">Save Changes</button>
                         </div>
                     </div>
                 </section>
 
                 <!-- LEVELING TAB -->
-                <section id="leveling" class="tab-section content" hidden>
-                    <div class="card header">
-                        <div>
-                            <h1>Leveling</h1>
-                            <p>Manage experience rates and rank rewards.</p>
-                        </div>
+                <section id="leveling" class="tab-section" hidden>
+                    <div class="card header-card" style="margin-bottom: 18px;">
+                        <h1>Leveling</h1>
+                        <p style="color: var(--text-muted);">Manage experience rates and rank rewards.</p>
                     </div>
                     <div class="card form-card">
                         <div class="form-group">
-                            <label>Leveling System</label>
-                            <input id="leveling-enabled" type="checkbox" style="margin-top: 8px;">
+                            <label for="leveling-enabled" style="font-weight: 600; display: block;">Leveling System</label>
+                            <input id="leveling-enabled" type="checkbox" style="margin-top: 12px; width: 18px; height: 18px;">
                         </div>
-                        <div class="btn-row" style="margin-top: 15px;">
+                        <div class="btn-row" style="margin-top: 20px;">
                             <button id="save-leveling" class="button primary" type="button">Save Changes</button>
                         </div>
                     </div>
                 </section>
 
                 <!-- CURRENCY TAB -->
-                <section id="currency" class="tab-section content" hidden>
-                    <div class="card header">
-                        <div>
-                            <h1>Currency</h1>
-                            <p>Configure economy balances and reward drops.</p>
-                        </div>
+                <section id="currency" class="tab-section" hidden>
+                    <div class="card header-card" style="margin-bottom: 18px;">
+                        <h1>Currency</h1>
+                        <p style="color: var(--text-muted);">Configure economy balances and reward drops.</p>
                     </div>
                     <div class="card form-card">
                         <div class="form-group">
-                            <label>Currency Enabled</label>
-                            <input id="currency-enabled" type="checkbox" style="margin-top: 8px;">
+                            <label for="currency-enabled" style="font-weight: 600; display: block;">Currency Enabled</label>
+                            <input id="currency-enabled" type="checkbox" style="margin-top: 12px; width: 18px; height: 18px;">
                         </div>
-                        <div class="btn-row" style="margin-top: 15px;">
+                        <div class="btn-row" style="margin-top: 20px;">
                             <button id="save-currency" class="button primary" type="button">Save Changes</button>
                         </div>
                     </div>
                 </section>
 
                 <!-- SHOP TAB -->
-                <section id="shop" class="tab-section content" hidden>
-                    <div class="card header">
-                        <div>
-                            <h1>Shop</h1>
-                            <p>Manage redeemable server store items.</p>
-                        </div>
+                <section id="shop" class="tab-section" hidden>
+                    <div class="card header-card" style="margin-bottom: 18px;">
+                        <h1>Shop</h1>
+                        <p style="color: var(--text-muted);">Manage redeemable server store items.</p>
                     </div>
                     <div class="card" id="shop-items">
-                        <div class="empty-state">
-                            <div class="empty-state-icon">🛒</div>
-                            <strong>No items added</strong>
-                            <span>Create a custom shop item to begin.</span>
+                        <div class="empty-state" style="text-align: center; padding: 40px;">
+                            <div class="empty-state-icon" style="font-size: 32px; margin-bottom: 8px;">🛒</div>
+                            <strong>No items added</strong><br>
+                            <span style="color: var(--text-muted); font-size: 13px;">Create a custom shop item to begin.</span>
                         </div>
                     </div>
                 </section>
 
                 <!-- SETTINGS TAB -->
-                <section id="settings" class="tab-section content" hidden>
-                    <div class="card header">
-                        <div>
-                            <h1>Settings</h1>
-                            <p>Dashboard layout and display preferences.</p>
-                        </div>
+                <section id="settings" class="tab-section" hidden>
+                    <div class="card header-card" style="margin-bottom: 18px;">
+                        <h1>Settings</h1>
+                        <p style="color: var(--text-muted);">Dashboard layout and display preferences.</p>
                     </div>
                     <div class="card form-card">
                         <div class="form-group view-mode-wrap">
-                            <label for="view-mode">Dashboard Layout Mode</label>
-                            <select id="view-mode" class="view-mode-select">
+                            <label for="view-mode" style="font-weight: 600; display: block; margin-bottom: 8px;">Dashboard Layout Mode</label>
+                            <select id="view-mode" class="view-mode-select" style="padding: 8px; border-radius: 6px; background: var(--bg-soft); color: var(--text); border: 1px solid var(--border);">
                                 <option value="auto">Auto (Responsive)</option>
                                 <option value="desktop">Forced Desktop</option>
                                 <option value="mobile">Forced Mobile</option>
@@ -297,22 +279,22 @@
         </main>
     </div>
 
-    <!-- SERVER VIEW MODAL/OVERLAY -->
+    <!-- SERVER VIEW OVERLAY -->
     <div id="server-view" class="server-view" hidden>
         <div class="sv-shell">
             <header class="sv-topbar">
                 <div class="sv-topbar-left">
-                    <button id="sv-menu-btn" class="sv-icon-btn sv-mobile-only" type="button" title="Open channels">☰</button>
-                    <button id="sv-back" class="sv-icon-btn" type="button" title="Back">←</button>
+                    <button id="sv-menu-btn" class="sv-icon-btn sv-mobile-only" type="button">☰</button>
+                    <button id="sv-back" class="sv-icon-btn" type="button">←</button>
                     <div class="sv-server-title">
                         <div id="sv-server-name" class="sv-server-name">Server</div>
                         <div id="sv-server-pill" class="sv-server-pill">Server</div>
                     </div>
                 </div>
                 <div class="sv-topbar-right">
-                    <button id="sv-refresh" class="sv-icon-btn" type="button" title="Refresh">↻</button>
-                    <button id="sv-settings-btn" class="sv-icon-btn" type="button" title="Settings">⚙</button>
-                    <button id="close-server-view" class="sv-icon-btn" type="button" title="Close">×</button>
+                    <button id="sv-refresh" class="sv-icon-btn" type="button">↻</button>
+                    <button id="sv-settings-btn" class="sv-icon-btn" type="button">⚙</button>
+                    <button id="close-server-view" class="sv-icon-btn" type="button">×</button>
                 </div>
             </header>
 
@@ -392,11 +374,7 @@
         </div>
     </div>
 
-    <div id="sv-lightbox" class="sv-lightbox" hidden>
-        <img id="sv-lightbox-img" src="" alt="">
-    </div>
-
-    <script src="server-view.js?v=8"></script>
-    <script src="script.js?v=7"></script>
+    <script src="server-view.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
