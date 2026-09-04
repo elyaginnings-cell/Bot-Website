@@ -1,555 +1,879 @@
-/**
- * Server View — mentions, embeds, replies
- */
 (function () {
   "use strict";
 
+  var activeGuildId = null;
   var activeChannelId = null;
-  var pollTimer = null;
-  var knownIds = {};
-  var lastMessages = [];
-  var loading = false;
+  var activeChannelName = null;
+  var messages = [];
   var sending = false;
-  var bound = false;
   var replyTo = null;
+  var editingMessageId = null;
+  var messagePollTimer = null;
+  var channelPollTimer = null;
 
-  function esc(s) {
-    return String(s == null ? "" : s)
+  function $(id) {
+    return document.getElementById(id);
+  }
+
+  function esc(value) {
+    return String(value == null ? "" : value)
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;");
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
   }
 
   function getServer() {
-    return window.selectedServer || null;
-  }
-  function getChannels() {
-    var list = window.channelsCache;
-    return Array.isArray(list) ? list : [];
-  }
-
-  function openDrawer() {
-    var v = document.getElementById("server-view");
-    if (v) v.classList.add("drawer-open");
-  }
-  function closeDrawer() {
-    var v = document.getElementById("server-view");
-    if (v) v.classList.remove("drawer-open");
+    try {
+      return JSON.parse(localStorage.getItem("svServer") || "null");
+    } catch (_) {
+      return null;
+    }
   }
 
-  function loadPrefs() {
-    var theme = localStorage.getItem("svTheme") || "discord";
-    var density = localStorage.getItem("svDensity") || "default";
-    var fontSize = localStorage.getItem("svFontSize") || "16";
-    var te = document.getElementById("sv-theme");
-    var de = document.getElementById("sv-density");
-    var fe = document.getElementById("sv-font-size");
-    if (te) te.value = theme;
-    if (de) de.value = density;
-    if (fe) fe.value = fontSize;
-    applyPrefs();
+  function saveServer(server) {
+    try {
+      localStorage.setItem("svServer", JSON.stringify(server));
+    } catch (_) {}
   }
 
-  function applyPrefs() {
-    var view = document.getElementById("server-view");
+  function getTheme() {
+    return localStorage.getItem("svTheme") || "discord";
+  }
+
+  function getDensity() {
+    return localStorage.getItem("svDensity") || "default";
+  }
+
+  function getFontSize() {
+    return localStorage.getItem("svFontSize") || "16";
+  }
+
+  function applyAppearance() {
+    var view = document.querySelector(".server-view");
     if (!view) return;
-    var theme = (document.getElementById("sv-theme") || {}).value || "discord";
-    var density = (document.getElementById("sv-density") || {}).value || "default";
-    var fontSize = (document.getElementById("sv-font-size") || {}).value || "16";
-    view.classList.remove("theme-darker", "theme-light", "theme-garden", "density-compact", "density-cozy");
-    if (theme === "darker") view.classList.add("theme-darker");
-    if (theme === "light") view.classList.add("theme-light");
-    if (theme === "garden") view.classList.add("theme-garden");
-    if (density === "compact") view.classList.add("density-compact");
-    if (density === "cozy") view.classList.add("density-cozy");
+
+    var theme =
+      (document.getElementById("sv-theme") || {}).value ||
+      getTheme() ||
+      "discord";
+
+    var density =
+      (document.getElementById("sv-density") || {}).value ||
+      getDensity() ||
+      "default";
+
+    var fontSize =
+      (document.getElementById("sv-font-size") || {}).value ||
+      getFontSize() ||
+      "16";
+
+    view.classList.remove(
+      "theme-darker",
+      "theme-light",
+      "theme-garden",
+      "theme-midnight",
+      "density-compact",
+      "density-cozy"
+    );
+
+    if (theme === "darker") {
+      view.classList.add("theme-darker");
+    }
+
+    if (theme === "light") {
+      view.classList.add("theme-light");
+    }
+
+    if (theme === "garden") {
+      view.classList.add("theme-garden");
+    }
+
+    if (theme === "midnight") {
+      view.classList.add("theme-midnight");
+    }
+
+    if (density === "compact") {
+      view.classList.add("density-compact");
+    }
+
+    if (density === "cozy") {
+      view.classList.add("density-cozy");
+    }
+
     view.style.setProperty("--sv-font-size", fontSize + "px");
-    localStorage.setItem("svTheme", theme);
-    localStorage.setItem("svDensity", density);
-    localStorage.setItem("svFontSize", fontSize);
+
+    try {
+      localStorage.setItem("svTheme", theme);
+      localStorage.setItem("svDensity", density);
+      localStorage.setItem("svFontSize", fontSize);
+    } catch (_) {}
   }
 
-  function openServerView() {
-    var server = getServer();
-    if (!server || !server.id) {
-      alert("Choose a server first (Choose Server button).");
-      return;
-    }
-    var app = document.getElementById("app");
-    var view = document.getElementById("server-view");
-    if (!view) {
-      alert("Server View HTML is missing.");
-      return;
-    }
-    if (app) app.hidden = true;
-    view.hidden = false;
-    document.body.classList.add("server-view-open");
-    var nameEl = document.getElementById("sv-server-name");
-    if (nameEl) nameEl.textContent = server.name || "Server";
-    var pill = document.getElementById("sv-server-pill");
-    if (pill) pill.textContent = server.name || "Server";
-    var nameInput = document.getElementById("sv-display-name");
-    if (nameInput && !nameInput.value) nameInput.value = localStorage.getItem("svDisplayName") || "";
-    applyPrefs();
-    closeDrawer();
-    clearReply();
-    renderChannels();
-    if (activeChannelId) loadMessages(true);
-    else if (window.matchMedia("(max-width: 768px)").matches) openDrawer();
-    startPoll();
+  function setSelectValue(id, value) {
+    var el = $(id);
+    if (el) el.value = value;
   }
 
-  function closeServerView() {
-    stopPoll();
-    closeDrawer();
-    clearReply();
-    var panel = document.getElementById("sv-settings-panel");
-    if (panel) panel.hidden = true;
-    var app = document.getElementById("app");
-    var view = document.getElementById("server-view");
-    if (view) view.hidden = true;
-    if (app) app.hidden = false;
-    document.body.classList.remove("server-view-open");
+  function loadAppearanceSettings() {
+    setSelectValue("sv-theme", getTheme());
+    setSelectValue("sv-density", getDensity());
+    setSelectValue("sv-font-size", getFontSize());
+    applyAppearance();
   }
 
-  function renderChannels() {
-    var list = document.getElementById("sv-channel-list");
-    if (!list) return;
-    var channels = getChannels();
-    var cats = channels.filter(function (c) { return c.type === 4; });
-    var texts = channels.filter(function (c) { return c.type === 0 || c.type === 5; });
-    if (!texts.length) {
-      list.innerHTML = '<p class="sv-empty">No text channels.<br>Pick a server and wait for channels to load.</p>';
-      return;
-    }
-    var byParent = {};
-    texts.forEach(function (ch) {
-      var key = ch.parentId || "_none";
-      if (!byParent[key]) byParent[key] = [];
-      byParent[key].push(ch);
+  function showToast(message, type) {
+    var toast = document.createElement("div");
+    toast.className = "sv-toast" + (type ? " " + type : "");
+    toast.textContent = message;
+
+    document.body.appendChild(toast);
+
+    requestAnimationFrame(function () {
+      toast.classList.add("show");
     });
-    var html = "";
-    var ordered = ["_none"].concat(cats.map(function (c) { return c.id; }));
-    var seen = {};
-    ordered.forEach(function (pid) {
-      var group = byParent[pid];
-      if (!group || !group.length) return;
-      seen[pid] = true;
-      var cat = cats.find(function (c) { return c.id === pid; });
-      if (cat) html += '<div class="sv-cat">' + esc(cat.name) + "</div>";
-      else if (pid === "_none") html += '<div class="sv-cat">Text channels</div>';
-      group.slice().sort(function (a, b) {
-        return (a.position || 0) - (b.position || 0) || String(a.name).localeCompare(String(b.name));
-      }).forEach(function (ch) {
-        var active = ch.id === activeChannelId ? " active" : "";
-        html += '<button type="button" class="sv-ch' + active + '" data-id="' + esc(ch.id) + '"><span class="sv-hash">#</span>' + esc(ch.name) + "</button>";
-      });
-    });
-    Object.keys(byParent).forEach(function (pid) {
-      if (seen[pid]) return;
-      byParent[pid].forEach(function (ch) {
-        var active = ch.id === activeChannelId ? " active" : "";
-        html += '<button type="button" class="sv-ch' + active + '" data-id="' + esc(ch.id) + '"><span class="sv-hash">#</span>' + esc(ch.name) + "</button>";
-      });
-    });
-    list.innerHTML = html;
-    var buttons = list.querySelectorAll(".sv-ch");
-    for (var i = 0; i < buttons.length; i++) {
-      buttons[i].addEventListener("click", function (e) {
-        var btn = e.currentTarget;
-        selectChannel(btn.getAttribute("data-id"), btn.textContent);
-      });
-    }
+
+    setTimeout(function () {
+      toast.classList.remove("show");
+      setTimeout(function () {
+        toast.remove();
+      }, 220);
+    }, 2800);
   }
 
-  function selectChannel(id, title) {
-    activeChannelId = id;
-    knownIds = {};
-    lastMessages = [];
-    clearReply();
-    var clean = String(title || "channel").replace(/^\s*#\s*/, "").trim();
-    var titleEl = document.getElementById("sv-channel-title");
-    if (titleEl) titleEl.textContent = clean;
-    var input = document.getElementById("sv-input");
-    var send = document.getElementById("sv-send");
-    if (input) {
-      input.disabled = false;
-      input.placeholder = "Message #" + clean;
-    }
-    if (send) send.disabled = false;
-    closeDrawer();
-    renderChannels();
-    loadMessages(true);
+  function formatTime(timestamp) {
+    if (!timestamp) return "";
+
+    var date = new Date(
+      typeof timestamp === "number"
+        ? timestamp
+        : String(timestamp)
+    );
+
+    if (isNaN(date.getTime())) return "";
+
+    return date.toLocaleTimeString([], {
+      hour: "numeric",
+      minute: "2-digit"
+    });
   }
 
-  function loadMessages(full) {
-    var server = getServer();
-    if (!server || !server.id || !activeChannelId || loading) return;
-    loading = true;
-    var params = new URLSearchParams({
-      guildId: server.id,
-      channelId: activeChannelId,
-      limit: "50"
+  function formatDate(timestamp) {
+    if (!timestamp) return "";
+
+    var date = new Date(
+      typeof timestamp === "number"
+        ? timestamp
+        : String(timestamp)
+    );
+
+    if (isNaN(date.getTime())) return "";
+
+    return date.toLocaleDateString([], {
+      month: "long",
+      day: "numeric",
+      year: "numeric"
     });
-    fetch("/api/messages?" + params.toString(), { credentials: "include", cache: "no-store" })
-      .then(function (res) {
-        return res.json().then(function (data) {
-          return { ok: res.ok, status: res.status, data: data };
-        });
-      })
-      .then(function (result) {
-        var box = document.getElementById("sv-messages");
-        if (!box) return;
-        if (!result.ok) {
-          box.innerHTML = '<p class="sv-empty">❌ ' + esc((result.data && result.data.error) || "Failed to load (" + result.status + ")") + "</p>";
-          return;
-        }
-        var messages = (result.data && result.data.messages) || [];
-        if (full) {
-          knownIds = {};
-          messages.forEach(function (m) { knownIds[m.id] = true; });
-          lastMessages = messages;
-          renderMessages(messages);
-        } else {
-          var atBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 120;
-          var fresh = messages.filter(function (m) { return !knownIds[m.id]; });
-          if (fresh.length) {
-            fresh.forEach(function (m) {
-              knownIds[m.id] = true;
-              lastMessages.push(m);
-            });
-            renderMessages(lastMessages.slice(-60));
-            if (atBottom) box.scrollTop = box.scrollHeight;
-          }
-        }
-      })
-      .catch(function (err) {
-        console.error(err);
-      })
-      .finally(function () {
-        loading = false;
-      });
   }
 
   function formatContent(content, mentions) {
-    if (!content) return "";
-    var users = (mentions && mentions.users) || {};
-    var roles = (mentions && mentions.roles) || {};
-    var channels = (mentions && mentions.channels) || {};
-    var blocks = [];
-    var text = String(content).replace(/```([\s\S]*?)```/g, function (_, code) {
-      var i = blocks.length;
-      blocks.push('<pre class="sv-codeblock">' + esc(code.replace(/^\n|\n$/g, "")) + "</pre>");
-      return "\0BLOCK" + i + "\0";
-    });
-    text = esc(text);
-    text = text.replace(/&lt;@!?(\d+)&gt;/g, function (_, id) {
-      var u = users[id];
-      var label = u ? "@" + (u.displayName || u.nickname || u.globalName || u.username) : "@user";
-      return '<span class="sv-mention sv-mention-user" data-user-id="' + id + '">' + esc(label) + "</span>";
-    });
-    text = text.replace(/&lt;@&amp;(\d+)&gt;/g, function (_, id) {
-      var r = roles[id];
-      var label = r ? "@" + r.name : "@role";
-      return '<span class="sv-mention sv-mention-role" data-role-id="' + id + '">' + esc(label) + "</span>";
-    });
-    text = text.replace(/&lt;#(\d+)&gt;/g, function (_, id) {
-      var c = channels[id];
-      var label = c ? "#" + c.name : "#channel";
-      return '<span class="sv-mention sv-mention-channel" data-channel-id="' + id + '">' + esc(label) + "</span>";
-    });
-    text = text.replace(/@everyone/g, '<span class="sv-mention sv-mention-everyone">@everyone</span>');
-    text = text.replace(/@here/g, '<span class="sv-mention sv-mention-everyone">@here</span>');
-    text = text.replace(/(https?:\/\/[^\s&lt;]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
-    text = text.replace(/`([^`]+)`/g, '<code class="sv-code">$1</code>');
-    text = text.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
-    text = text.replace(/__(.+?)__/g, "<u>$1</u>");
-    text = text.replace(/~~(.+?)~~/g, "<s>$1</s>");
-    text = text.replace(/(?<![*\\])\*(?!\*)(.+?)(?<![*\\])\*(?!\*)/g, "<em>$1</em>");
-    text = text.replace(/\|\|(.+?)\|\|/g, '<span class="sv-spoiler">$1</span>');
-    text = text.replace(/\0BLOCK(\d+)\0/g, function (_, i) {
-      return blocks[Number(i)] || "";
-    });
-    return text;
+    var text = String(content || "");
+    var result = esc(text);
+
+    result = result.replace(
+      /```([\s\S]*?)```/g,
+      '<pre class="sv-codeblock"><code>$1</code></pre>'
+    );
+
+    result = result.replace(
+      /`([^`\n]+)`/g,
+      '<code class="sv-code">$1</code>'
+    );
+
+    result = result.replace(
+      /\*\*([^*]+)\*\*/g,
+      "<strong>$1</strong>"
+    );
+
+    result = result.replace(
+      /__([^_]+)__/g,
+      "<u>$1</u>"
+    );
+
+    result = result.replace(
+      /\*([^*\n]+)\*/g,
+      "<em>$1</em>"
+    );
+
+    result = result.replace(
+      /~~([^~]+)~~/g,
+      "<s>$1</s>"
+    );
+
+    result = result.replace(
+      /(^|\s)(https?:\/\/[^\s<]+)/g,
+      '$1<a class="sv-link" href="$2" target="_blank" rel="noopener noreferrer">$2</a>'
+    );
+
+    result = result.replace(/\n/g, "<br>");
+
+    if (mentions && typeof mentions === "object") {
+      var users = mentions.users || [];
+
+      users.forEach(function (user) {
+        if (!user || !user.id) return;
+
+        var name =
+          user.displayName ||
+          user.globalName ||
+          user.username ||
+          user.id;
+
+        var patterns = [
+          new RegExp("&lt;@" + user.id + "&gt;", "g"),
+          new RegExp("&lt;@!" + user.id + "&gt;", "g")
+        ];
+
+        patterns.forEach(function (pattern) {
+          result = result.replace(
+            pattern,
+            '<span class="sv-mention-user">@' +
+              esc(name) +
+              "</span>"
+          );
+        });
+      });
+    }
+
+    return result;
   }
 
-  function embedHtml(e, mentions) {
-    if (!e) return "";
-    var color =
-      e.color != null && e.color !== 0
-        ? "#" + Number(e.color).toString(16).padStart(6, "0")
-        : "#202225";
-    var main = "";
-    if (e.author && e.author.name) {
-      var icon = e.author.iconURL
-        ? '<img class="sv-embed-author-icon" src="' + esc(e.author.iconURL) + '" alt="">'
-        : "";
-      main += '<div class="sv-embed-author">' + icon + "<span>" + formatContent(e.author.name, mentions) + "</span></div>";
+  function renderEmbed(embed) {
+    if (!embed) return "";
+
+    var html = '<div class="sv-embed">';
+
+    if (embed.author && embed.author.name) {
+      html +=
+        '<div class="sv-embed-author">' +
+        esc(embed.author.name) +
+        "</div>";
     }
-    if (e.title) {
-      var titleInner = formatContent(e.title, mentions);
-      var title = e.url
-        ? '<a href="' + esc(e.url) + '" target="_blank" rel="noopener">' + titleInner + "</a>"
-        : titleInner;
-      main += '<div class="sv-embed-title">' + title + "</div>";
+
+    if (embed.title) {
+      html +=
+        '<div class="sv-embed-title">' +
+        (embed.url
+          ? '<a href="' +
+            esc(embed.url) +
+            '" target="_blank" rel="noopener noreferrer">' +
+            esc(embed.title) +
+            "</a>"
+          : esc(embed.title)) +
+        "</div>";
     }
-    if (e.description) {
-      main += '<div class="sv-embed-desc">' + formatContent(e.description, mentions) + "</div>";
+
+    if (embed.description) {
+      html +=
+        '<div class="sv-embed-description">' +
+        formatContent(embed.description) +
+        "</div>";
     }
-    if (e.fields && e.fields.length) {
-      main += '<div class="sv-embed-fields">';
-      e.fields.forEach(function (f) {
-        main +=
-          '<div class="sv-embed-field' +
-          (f.inline ? " inline" : "") +
-          '"><div class="sv-embed-field-name">' +
-          formatContent(f.name, mentions) +
-          '</div><div class="sv-embed-field-value">' +
-          formatContent(f.value, mentions) +
-          "</div></div>";
+
+    if (Array.isArray(embed.fields) && embed.fields.length) {
+      html += '<div class="sv-embed-fields">';
+
+      embed.fields.forEach(function (field) {
+        html += '<div class="sv-embed-field">';
+
+        if (field.name) {
+          html +=
+            '<div class="sv-embed-field-name">' +
+            esc(field.name) +
+            "</div>";
+        }
+
+        if (field.value) {
+          html +=
+            '<div class="sv-embed-field-value">' +
+            formatContent(field.value) +
+            "</div>";
+        }
+
+        html += "</div>";
       });
-      main += "</div>";
+
+      html += "</div>";
     }
-    if (e.image) {
-      main +=
+
+    if (embed.image && embed.image.url) {
+      html +=
         '<img class="sv-embed-image" src="' +
-        esc(e.image) +
-        '" alt="" data-full="' +
-        esc(e.image) +
-        '">';
+        esc(embed.image.url) +
+        '" alt="" loading="lazy" referrerpolicy="no-referrer">';
     }
-    if ((e.footer && e.footer.text) || e.timestamp) {
-      var ficon =
-        e.footer && e.footer.iconURL
-          ? '<img class="sv-embed-footer-icon" src="' + esc(e.footer.iconURL) + '" alt="">'
-          : "";
-      var parts = [];
-      if (e.footer && e.footer.text) parts.push(formatContent(e.footer.text, mentions));
-      if (e.timestamp) parts.push(esc(new Date(e.timestamp).toLocaleString()));
-      main += '<div class="sv-embed-footer">' + ficon + "<span>" + parts.join(" · ") + "</span></div>";
+
+    if (embed.thumbnail && embed.thumbnail.url) {
+      html +=
+        '<img class="sv-embed-thumb" src="' +
+        esc(embed.thumbnail.url) +
+        '" alt="" loading="lazy" referrerpolicy="no-referrer">';
     }
-    var thumb = e.thumbnail
-      ? '<img class="sv-embed-thumb" src="' + esc(e.thumbnail) + '" alt="" data-full="' + esc(e.thumbnail) + '">'
-      : "";
+
+    if (embed.footer && embed.footer.text) {
+      html +=
+        '<div class="sv-embed-footer">' +
+        esc(embed.footer.text) +
+        "</div>";
+    }
+
+    html += "</div>";
+
+    return html;
+  }
+
+  function renderReply(reference) {
+    if (!reference) return "";
+
+    var author =
+      reference.author ||
+      reference.messageAuthor ||
+      {};
+
+    var name =
+      author.displayName ||
+      author.globalName ||
+      author.username ||
+      "Unknown";
+
+    var content = reference.content || "";
+
     return (
-      '<div class="sv-embed' +
-      (e.thumbnail ? " has-thumb" : "") +
-      '" style="border-left-color:' +
-      color +
-      '"><div class="sv-embed-inner">' +
-      main +
-      "</div>" +
-      thumb +
+      '<div class="sv-reply-preview">' +
+      '<span class="sv-reply-arrow">↳</span>' +
+      '<strong>' +
+      esc(name) +
+      "</strong>" +
+      '<span class="sv-reply-text">' +
+      esc(content.slice(0, 120)) +
+      (content.length > 120 ? "…" : "") +
+      "</span>" +
       "</div>"
     );
   }
 
-  function referenceHtml(ref) {
-    if (!ref) return "";
-    var name = ref.authorName || "message";
-    var snippet = ref.content ? esc(ref.content) : "";
+  function getAuthorName(author) {
+    author = author || {};
+
     return (
-      '<div class="sv-reply-ref" data-ref-id="' +
-      esc(ref.messageId || "") +
-      '"><span class="sv-reply-ref-bar"></span><div class="sv-reply-ref-body"><strong>' +
-      esc(name) +
-      "</strong>" +
-      (snippet ? '<span class="sv-reply-ref-text">' + snippet + "</span>" : "") +
-      "</div></div>"
-    );
-  }
-
-  var REPLY_ICON =
-    '<svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true"><path d="M10 8.22V4.97a.5.5 0 0 0-.83-.35l-6.8 6.28a.5.5 0 0 0 0 .74l6.8 6.28a.5.5 0 0 0 .83-.35v-3.2c5.18.12 8.7 1.63 10.5 4.83.2.35.64.4.85.08C23.1 15.6 19.55 8.5 10 8.22Z"/></svg>';
-
-  function messageHtml(m, grouped) {
-    var author = m.author || {};
-    var name =
       author.displayName ||
       author.nickname ||
       author.globalName ||
       author.username ||
-      "Unknown";
-    var bot = author.bot ? '<span class="sv-bot">BOT</span>' : "";
-    var time = m.createdTimestamp
-      ? new Date(m.createdTimestamp).toLocaleString(undefined, {
-          month: "short",
-          day: "numeric",
-          hour: "numeric",
-          minute: "2-digit"
-        })
-      : "";
-    var av = author.avatar
-      ? '<img class="sv-av" src="' + esc(author.avatar) + '" alt="">'
-      : '<div class="sv-av fallback">☕</div>';
-
-    var body = formatContent(m.content || "", m.mentions);
-    var embeds = (m.embeds || []).map(function (e) {
-      return embedHtml(e, m.mentions);
-    }).join("");
-    var atts = (m.attachments || [])
-      .map(function (a) {
-        if (a.contentType && a.contentType.indexOf("image/") === 0) {
-          return (
-            '<img class="sv-img" src="' +
-            esc(a.url) +
-            '" alt="" data-full="' +
-            esc(a.url) +
-            '">'
-          );
-        }
-        return (
-          '<a class="sv-file" href="' +
-          esc(a.url) +
-          '" target="_blank" rel="noopener">📎 ' +
-          esc(a.name || "file") +
-          "</a>"
-        );
-      })
-      .join("");
-    var ref = referenceHtml(m.reference);
-    if (!body && !atts && !embeds) body = '<em style="opacity:.6">(empty)</em>';
-
-    return (
-      '<div class="sv-msg' +
-      (grouped ? " grouped" : "") +
-      '" data-id="' +
-      esc(m.id) +
-      '" data-author-name="' +
-      esc(name) +
-      '">' +
-      '<div class="sv-av-wrap">' +
-      av +
-      "</div>" +
-      '<div class="sv-msg-body">' +
-      ref +
-      '<div class="sv-msg-meta"><strong>' +
-      esc(name) +
-      "</strong>" +
-      bot +
-      '<span class="sv-time">' +
-      esc(time) +
-      "</span></div>" +
-      (body ? '<div class="sv-msg-text">' + body + "</div>" : "") +
-      atts +
-      embeds +
-      "</div>" +
-      '<div class="sv-msg-actions">' +
-      '<button type="button" class="sv-reply-btn" data-action="reply" data-id="' +
-      esc(m.id) +
-      '" data-name="' +
-      esc(name) +
-      '" title="Reply">' +
-      REPLY_ICON +
-      '<span class="sv-reply-label">Reply</span></button></div></div>'
+      "Unknown"
     );
   }
 
-  function renderMessages(messages) {
-    var box = document.getElementById("sv-messages");
-    if (!box) return;
+  function getAvatar(author) {
+    author = author || {};
+
+    /*
+     * Discord normally gives us a CDN URL through displayAvatarURL().
+     * The website serializer supplies it as author.avatar.
+     *
+     * Keep this renderer defensive because cached/older messages can
+     * occasionally contain an empty avatar value.
+     */
+    var avatarUrl =
+      typeof author.avatar === "string"
+        ? author.avatar.trim()
+        : "";
+
+    var defaultAvatar =
+      "https://cdn.discordapp.com/embed/avatars/0.png";
+
+    if (!avatarUrl) {
+      return (
+        '<img class="sv-av" src="' +
+        defaultAvatar +
+        '" alt="" loading="lazy" referrerpolicy="no-referrer">'
+      );
+    }
+
+    return (
+      '<img class="sv-av" src="' +
+      esc(avatarUrl) +
+      '" alt="" loading="lazy" referrerpolicy="no-referrer" ' +
+      'onerror="this.onerror=null;this.src=&quot;' +
+      defaultAvatar +
+      '&quot;">'
+    );
+  }
+
+  function messageHtml(m, index) {
+    m = m || {};
+
+    var author = m.author || {};
+
+    var authorName = getAuthorName(author);
+
+    var avatar = getAvatar(author);
+
+    var timestamp = formatTime(m.createdTimestamp);
+
+    var dateLabel = formatDate(m.createdTimestamp);
+
+    var body = formatContent(
+      m.content || "",
+      m.mentions
+    );
+
+    var embeds = Array.isArray(m.embeds)
+      ? m.embeds
+          .map(renderEmbed)
+          .join("")
+      : "";
+
+    var reference = m.reference
+      ? renderReply(m.reference)
+      : "";
+
+    var botBadge = author.bot
+      ? '<span class="sv-bot">BOT</span>'
+      : "";
+
+    var edited = m.editedTimestamp
+      ? '<span class="sv-edited">(edited)</span>'
+      : "";
+
+    var messageClasses = ["sv-msg"];
+
+    var prev =
+      index > 0
+        ? messages[index - 1]
+        : null;
+
+    var grouped =
+      prev &&
+      prev.author &&
+      m.author &&
+      prev.author.id &&
+      m.author.id &&
+      prev.author.id === m.author.id &&
+      !m.reference &&
+      m.createdTimestamp -
+        prev.createdTimestamp <
+        7 * 60 * 1000;
+
+    if (grouped) {
+      messageClasses.push("grouped");
+    }
+
+    if (m.pinned) {
+      messageClasses.push("pinned");
+    }
+
+    var contentHtml =
+      body || embeds || reference
+        ? '<div class="sv-content">' +
+          reference +
+          (body ? '<div class="sv-text">' + body + "</div>" : "") +
+          embeds +
+          "</div>"
+        : "";
+
+    return (
+      '<article class="' +
+      messageClasses.join(" ") +
+      '" data-message-id="' +
+      esc(m.id || "") +
+      '">' +
+      '<div class="sv-av-wrap">' +
+      avatar +
+      "</div>" +
+      '<div class="sv-msg-main">' +
+      (grouped
+        ? ""
+        : '<div class="sv-msg-meta">' +
+          '<strong>' +
+          esc(authorName) +
+          "</strong>" +
+          botBadge +
+          '<span class="sv-time" title="' +
+          esc(dateLabel) +
+          '">' +
+          esc(timestamp) +
+          "</span>" +
+          edited +
+          "</div>") +
+      contentHtml +
+      "</div>" +
+      "</article>"
+    );
+  }
+
+  function scrollMessagesToBottom(force) {
+    var container = $("sv-messages");
+    if (!container) return;
+
+    var distance =
+      container.scrollHeight -
+      container.scrollTop -
+      container.clientHeight;
+
+    if (force || distance < 260) {
+      container.scrollTop = container.scrollHeight;
+    }
+  }
+
+  function renderMessages(nextMessages) {
+    messages = Array.isArray(nextMessages)
+      ? nextMessages
+      : [];
+
+    var container = $("sv-messages");
+    if (!container) return;
+
     if (!messages.length) {
-      box.innerHTML = '<p class="sv-empty">No messages yet.<br>Say something!</p>';
+      container.innerHTML =
+        '<div class="sv-empty">' +
+        '<div class="sv-empty-icon">✦</div>' +
+        "<strong>No messages yet</strong>" +
+        "<span>Be the first to say something.</span>" +
+        "</div>";
+
       return;
     }
-    var html = "";
-    for (var i = 0; i < messages.length; i++) {
-      var m = messages[i];
-      var prev = i > 0 ? messages[i - 1] : null;
-      var grouped =
-        prev &&
-        prev.author &&
-        m.author &&
-        prev.author.id === m.author.id &&
-        !m.reference &&
-        m.createdTimestamp - prev.createdTimestamp < 7 * 60 * 1000;
-      html += messageHtml(m, grouped);
+
+    var wasNearBottom =
+      container.scrollHeight -
+        container.scrollTop -
+        container.clientHeight <
+      260;
+
+    container.innerHTML = messages
+      .map(function (message, index) {
+        return messageHtml(message, index);
+      })
+      .join("");
+
+    if (wasNearBottom) {
+      scrollMessagesToBottom(true);
     }
-    box.innerHTML = html;
-    box.scrollTop = box.scrollHeight;
   }
 
-  function setReply(id, name, content) {
-    replyTo = { id: id, name: name || "message", content: (content || "").slice(0, 80) };
-    var bar = document.getElementById("sv-reply-bar");
-    if (!bar) return;
-    bar.hidden = false;
-    var label = document.getElementById("sv-reply-label");
-    if (label) {
-      label.textContent =
-        "Replying to " + replyTo.name + (replyTo.content ? " — " + replyTo.content : "");
-    }
-    var input = document.getElementById("sv-input");
-    if (input) input.focus();
-  }
+  async function loadMessages(forceScroll) {
+    if (!activeGuildId || !activeChannelId) return;
 
-  function clearReply() {
-    replyTo = null;
-    var bar = document.getElementById("sv-reply-bar");
-    if (bar) bar.hidden = true;
-  }
+    try {
+      var params = new URLSearchParams({
+        guildId: activeGuildId,
+        channelId: activeChannelId
+      });
 
-  function onMessagesClick(e) {
-    var t = e.target;
-    if (t.classList && t.classList.contains("sv-spoiler")) {
-      t.classList.toggle("revealed");
-      return;
-    }
-    if (t.matches && t.matches("img.sv-img, img.sv-embed-image, img.sv-embed-thumb")) {
-      openLightbox(t.getAttribute("data-full") || t.src);
-      return;
-    }
-    var replyBtn = t.closest && t.closest('[data-action="reply"]');
-    if (replyBtn) {
-      var msgEl = replyBtn.closest(".sv-msg");
-      var id = replyBtn.getAttribute("data-id") || (msgEl && msgEl.getAttribute("data-id"));
-      var name = replyBtn.getAttribute("data-name") || (msgEl && msgEl.getAttribute("data-author-name")) || "message";
-      var textEl = msgEl && msgEl.querySelector(".sv-msg-text");
-      var content = textEl ? textEl.textContent : "";
-      setReply(id, name, content);
-      return;
-    }
-    var chMention = t.closest && t.closest(".sv-mention-channel");
-    if (chMention) {
-      var cid = chMention.getAttribute("data-channel-id");
-      if (cid) {
-        var ch = getChannels().find(function (c) { return c.id === cid; });
-        selectChannel(cid, ch ? "# " + ch.name : "# channel");
+      var response = await fetch(
+        "/api/messages?" + params.toString(),
+        {
+          credentials: "include",
+          cache: "no-store"
+        }
+      );
+
+      var result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          result.error || "Failed to load messages."
+        );
+      }
+
+      var nextMessages =
+        (result.data &&
+          result.data.messages) ||
+        [];
+
+      renderMessages(nextMessages);
+
+      if (forceScroll) {
+        setTimeout(function () {
+          scrollMessagesToBottom(true);
+        }, 20);
+      }
+    } catch (err) {
+      console.error("Failed to load messages:", err);
+
+      if (!messages.length) {
+        var container = $("sv-messages");
+
+        if (container) {
+          container.innerHTML =
+            '<div class="sv-empty">' +
+            "<strong>Unable to load messages</strong>" +
+            "<span>" +
+            esc(err.message || "Something went wrong.") +
+            "</span>" +
+            "</div>";
+        }
       }
     }
   }
 
-  function openLightbox(src) {
-    var box = document.getElementById("sv-lightbox");
-    var img = document.getElementById("sv-lightbox-img");
-    if (!box || !img) return;
-    img.src = src;
-    box.hidden = false;
+  async function loadChannels() {
+    if (!activeGuildId) return;
+
+    try {
+      var response = await fetch(
+        "/api/channels?guildId=" +
+          encodeURIComponent(activeGuildId),
+        {
+          credentials: "include",
+          cache: "no-store"
+        }
+      );
+
+      var result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          result.error || "Failed to load channels."
+        );
+      }
+
+      var channels =
+        (result.data &&
+          result.data.channels) ||
+        [];
+
+      renderChannels(channels);
+    } catch (err) {
+      console.error("Failed to load channels:", err);
+    }
   }
-  function closeLightbox() {
-    var box = document.getElementById("sv-lightbox");
-    if (box) box.hidden = true;
+
+  function channelIcon(channel) {
+    if (!channel) return "#";
+
+    if (
+      channel.type === "voice" ||
+      channel.type === 2
+    ) {
+      return "🔊";
+    }
+
+    if (
+      channel.type === "announcement" ||
+      channel.type === 5
+    ) {
+      return "📢";
+    }
+
+    return "#";
+  }
+
+  function renderChannels(channels) {
+    var container = $("sv-channel-list");
+    if (!container) return;
+
+    var visible = channels.filter(function (channel) {
+      return (
+        channel &&
+        channel.id &&
+        channel.type !== "category"
+      );
+    });
+
+    var categories = channels.filter(function (channel) {
+      return (
+        channel &&
+        (channel.type === "category" ||
+          channel.type === 4)
+      );
+    });
+
+    if (!visible.length) {
+      container.innerHTML =
+        '<div class="sv-empty-channel">No channels available.</div>';
+      return;
+    }
+
+    var html = "";
+
+    if (categories.length) {
+      categories.forEach(function (category) {
+        var categoryChannels = visible.filter(
+          function (channel) {
+            return (
+              channel.parentId === category.id
+            );
+          }
+        );
+
+        if (!categoryChannels.length) return;
+
+        html +=
+          '<div class="sv-category">' +
+          '<div class="sv-cat">' +
+          esc(
+            category.name || "CHANNELS"
+          ) +
+          "</div>";
+
+        categoryChannels.forEach(function (channel) {
+          html += channelButton(channel);
+        });
+
+        html += "</div>";
+      });
+
+      var uncategorized = visible.filter(
+        function (channel) {
+          return !channel.parentId;
+        }
+      );
+
+      if (uncategorized.length) {
+        html +=
+          '<div class="sv-category">' +
+          '<div class="sv-cat">CHANNELS</div>';
+
+        uncategorized.forEach(function (channel) {
+          html += channelButton(channel);
+        });
+
+        html += "</div>";
+      }
+    } else {
+      html +=
+        '<div class="sv-category">' +
+        '<div class="sv-cat">CHANNELS</div>';
+
+      visible.forEach(function (channel) {
+        html += channelButton(channel);
+      });
+
+      html += "</div>";
+    }
+
+    container.innerHTML = html;
+  }
+
+  function channelButton(channel) {
+    var active =
+      String(channel.id) ===
+      String(activeChannelId);
+
+    return (
+      '<button type="button" class="sv-ch' +
+      (active ? " active" : "") +
+      '" data-channel-id="' +
+      esc(channel.id) +
+      '" data-channel-name="' +
+      esc(channel.name || "") +
+      '">' +
+      '<span class="sv-hash">' +
+      channelIcon(channel) +
+      "</span>" +
+      '<span class="sv-channel-name">' +
+      esc(channel.name || "unnamed") +
+      "</span>" +
+      "</button>"
+    );
+  }
+
+  function selectChannel(id, name) {
+    if (!id) return;
+
+    activeChannelId = String(id);
+    activeChannelName = name || "channel";
+
+    try {
+      localStorage.setItem(
+        "svChannelId",
+        activeChannelId
+      );
+
+      localStorage.setItem(
+        "svChannelName",
+        activeChannelName
+      );
+    } catch (_) {}
+
+    var title = $("sv-channel-title");
+    if (title) {
+      title.textContent = activeChannelName;
+    }
+
+    var hash = $("sv-channel-hash");
+    if (hash) {
+      hash.textContent = "#";
+    }
+
+    document
+      .querySelectorAll(".sv-ch")
+      .forEach(function (button) {
+        button.classList.toggle(
+          "active",
+          String(
+            button.dataset.channelId
+          ) === String(activeChannelId)
+        );
+      });
+
+    replyTo = null;
+    editingMessageId = null;
+
+    hideReplyBar();
+    hideEditBar();
+
+    loadMessages(true);
   }
 
   function sendMessage(e) {
-    e.preventDefault();
+    if (e) e.preventDefault();
+
     if (sending) return;
+
     var server = getServer();
-    var input = document.getElementById("sv-input");
-    var sendBtn = document.getElementById("sv-send");
-    var content = input && input.value ? input.value.trim() : "";
-    if (!content || !server || !server.id || !activeChannelId) return;
+
+    var input = $("sv-input");
+    var sendBtn = $("sv-send");
+
+    var content =
+      input && input.value
+        ? input.value.trim()
+        : "";
+
+    if (
+      !content ||
+      !server ||
+      !server.id ||
+      !activeChannelId
+    ) {
+      return;
+    }
 
     var username = (
-      ((document.getElementById("sv-display-name") || {}).value ||
-        localStorage.getItem("svDisplayName") ||
-        "")
+      (
+        ($("sv-display-name") || {}).value ||
+        localStorage.getItem(
+          "svDisplayName"
+        ) ||
+        ""
+      )
     )
       .trim()
       .slice(0, 80);
-    if (username) localStorage.setItem("svDisplayName", username);
+
+    if (username) {
+      localStorage.setItem(
+        "svDisplayName",
+        username
+      );
+    }
 
     sending = true;
+
     if (input) input.disabled = true;
     if (sendBtn) sendBtn.disabled = true;
 
@@ -557,114 +881,379 @@
       guildId: server.id,
       channelId: activeChannelId
     });
-    var payload = { content: content };
-    if (username) payload.username = username;
-    if (replyTo && replyTo.id) payload.replyTo = replyTo.id;
+
+    var payload = {
+      content: content
+    };
+
+    if (username) {
+      payload.username = username;
+    }
+
+    if (replyTo && replyTo.id) {
+      payload.replyTo = replyTo.id;
+    }
 
     fetch("/api/messages?" + params.toString(), {
       method: "POST",
       credentials: "include",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json"
+      },
       body: JSON.stringify(payload)
     })
-      .then(function (res) {
-        return res.json().then(function (data) {
-          return { ok: res.ok, status: res.status, data: data };
+      .then(function (response) {
+        return response.json().then(function (data) {
+          return {
+            ok: response.ok,
+            data: data
+          };
         });
       })
       .then(function (result) {
         if (!result.ok) {
-          alert((result.data && result.data.error) || "Send failed (" + result.status + ")");
-          return;
+          throw new Error(
+            result.data.error ||
+              "Failed to send message."
+          );
         }
-        if (input) input.value = "";
-        clearReply();
-        if (result.data && result.data.message && result.data.message.id) {
-          knownIds[result.data.message.id] = true;
-          lastMessages.push(result.data.message);
-          renderMessages(lastMessages.slice(-60));
-        } else {
-          loadMessages(true);
+
+        if (input) {
+          input.value = "";
         }
+
+        replyTo = null;
+        hideReplyBar();
+
+        loadMessages(true);
       })
       .catch(function (err) {
-        console.error(err);
-        alert((err && err.message) || "Send failed");
+        console.error(
+          "Failed to send message:",
+          err
+        );
+
+        showToast(
+          err.message ||
+            "Failed to send message.",
+          "error"
+        );
       })
       .finally(function () {
         sending = false;
-        if (input) {
-          input.disabled = false;
-          input.focus();
-        }
+
+        if (input) input.disabled = false;
         if (sendBtn) sendBtn.disabled = false;
+
+        if (input) input.focus();
       });
   }
 
-  function startPoll() {
-    stopPoll();
-    pollTimer = setInterval(function () {
-      var view = document.getElementById("server-view");
-      if (view && !view.hidden) loadMessages(false);
-    }, 3500);
-  }
-  function stopPoll() {
-    if (pollTimer) clearInterval(pollTimer);
-    pollTimer = null;
-  }
-
-  function bindOnce() {
-    if (bound) return;
-    bound = true;
-    var closeBtn = document.getElementById("close-server-view");
-    if (closeBtn) closeBtn.addEventListener("click", closeServerView);
-    var backBtn = document.getElementById("sv-back");
-    if (backBtn) backBtn.addEventListener("click", closeServerView);
-    var refresh = document.getElementById("sv-refresh");
-    if (refresh) refresh.addEventListener("click", function () { loadMessages(true); });
-    var form = document.getElementById("sv-composer");
-    if (form) form.addEventListener("submit", sendMessage);
-    var settingsBtn = document.getElementById("sv-settings-btn");
-    if (settingsBtn)
-      settingsBtn.addEventListener("click", function () {
-        var panel = document.getElementById("sv-settings-panel");
-        if (panel) panel.hidden = !panel.hidden;
-      });
-    ["sv-theme", "sv-density", "sv-font-size"].forEach(function (id) {
-      var el = document.getElementById(id);
-      if (el) el.addEventListener("change", applyPrefs);
+  function beginReply(messageId) {
+    var message = messages.find(function (item) {
+      return String(item.id) === String(messageId);
     });
-    var lightbox = document.getElementById("sv-lightbox");
-    if (lightbox) lightbox.addEventListener("click", closeLightbox);
-    var menu = document.getElementById("sv-menu-btn");
-    if (menu) menu.addEventListener("click", openDrawer);
-    var chClose = document.getElementById("sv-channels-close");
-    if (chClose) chClose.addEventListener("click", closeDrawer);
-    var backdrop = document.getElementById("sv-drawer-backdrop");
-    if (backdrop) backdrop.addEventListener("click", closeDrawer);
-    var msgs = document.getElementById("sv-messages");
-    if (msgs) msgs.addEventListener("click", onMessagesClick);
-    var cancelReply = document.getElementById("sv-reply-cancel");
-    if (cancelReply) cancelReply.addEventListener("click", clearReply);
-    var nameInput = document.getElementById("sv-display-name");
-    if (nameInput) {
-      nameInput.value = localStorage.getItem("svDisplayName") || "";
-      nameInput.addEventListener("change", function () {
-        localStorage.setItem("svDisplayName", nameInput.value.trim().slice(0, 80));
-      });
+
+    if (!message) return;
+
+    replyTo = message;
+
+    var bar = $("sv-reply-bar");
+    var name = $("sv-reply-name");
+    var text = $("sv-reply-text");
+
+    if (name) {
+      name.textContent = getAuthorName(
+        message.author
+      );
     }
-    loadPrefs();
+
+    if (text) {
+      text.textContent =
+        message.content || "";
+    }
+
+    if (bar) {
+      bar.classList.add("show");
+    }
+
+    var input = $("sv-input");
+    if (input) input.focus();
   }
 
-  window.openServerView = openServerView;
-  window.closeServerView = closeServerView;
+  function hideReplyBar() {
+    var bar = $("sv-reply-bar");
 
-  function boot() {
-    bindOnce();
+    if (bar) {
+      bar.classList.remove("show");
+    }
   }
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", boot);
+
+  function hideEditBar() {
+    var bar = $("sv-edit-bar");
+
+    if (bar) {
+      bar.classList.remove("show");
+    }
+  }
+
+  function startPolling() {
+    stopPolling();
+
+    messagePollTimer = setInterval(
+      function () {
+        if (activeGuildId && activeChannelId) {
+          loadMessages(false);
+        }
+      },
+      3000
+    );
+
+    channelPollTimer = setInterval(
+      function () {
+        if (activeGuildId) {
+          loadChannels();
+        }
+      },
+      10000
+    );
+  }
+
+  function stopPolling() {
+    if (messagePollTimer) {
+      clearInterval(messagePollTimer);
+      messagePollTimer = null;
+    }
+
+    if (channelPollTimer) {
+      clearInterval(channelPollTimer);
+      channelPollTimer = null;
+    }
+  }
+
+  function bindEvents() {
+    var form = $("sv-form");
+
+    if (form) {
+      form.addEventListener(
+        "submit",
+        sendMessage
+      );
+    }
+
+    var theme = $("sv-theme");
+
+    if (theme) {
+      theme.addEventListener(
+        "change",
+        applyAppearance
+      );
+    }
+
+    var density = $("sv-density");
+
+    if (density) {
+      density.addEventListener(
+        "change",
+        applyAppearance
+      );
+    }
+
+    var fontSize = $("sv-font-size");
+
+    if (fontSize) {
+      fontSize.addEventListener(
+        "change",
+        applyAppearance
+      );
+    }
+
+    var channelList = $("sv-channel-list");
+
+    if (channelList) {
+      channelList.addEventListener(
+        "click",
+        function (event) {
+          var button =
+            event.target.closest(".sv-ch");
+
+          if (!button) return;
+
+          selectChannel(
+            button.dataset.channelId,
+            button.dataset.channelName
+          );
+        }
+      );
+    }
+
+    var messagesContainer =
+      $("sv-messages");
+
+    if (messagesContainer) {
+      messagesContainer.addEventListener(
+        "contextmenu",
+        function (event) {
+          var messageEl =
+            event.target.closest(".sv-msg");
+
+          if (!messageEl) return;
+
+          event.preventDefault();
+
+          var messageId =
+            messageEl.dataset.messageId;
+
+          if (messageId) {
+            beginReply(messageId);
+          }
+        }
+      );
+    }
+
+    var replyClose = $("sv-reply-close");
+
+    if (replyClose) {
+      replyClose.addEventListener(
+        "click",
+        function () {
+          replyTo = null;
+          hideReplyBar();
+        }
+      );
+    }
+
+    var displayName =
+      $("sv-display-name");
+
+    if (displayName) {
+      displayName.value =
+        localStorage.getItem(
+          "svDisplayName"
+        ) || "";
+    }
+
+    var refresh = $("sv-refresh");
+
+    if (refresh) {
+      refresh.addEventListener(
+        "click",
+        function () {
+          loadChannels();
+          loadMessages(true);
+        }
+      );
+    }
+
+    var input = $("sv-input");
+
+    if (input) {
+      input.addEventListener(
+        "keydown",
+        function (event) {
+          if (
+            event.key === "Enter" &&
+            !event.shiftKey
+          ) {
+            event.preventDefault();
+
+            if (form) {
+              form.requestSubmit();
+            }
+          }
+
+          if (
+            event.key === "Escape" &&
+            replyTo
+          ) {
+            replyTo = null;
+            hideReplyBar();
+          }
+        }
+      );
+    }
+  }
+
+  function initialize() {
+    var server = getServer();
+
+    if (!server || !server.id) {
+      console.warn(
+        "No Server View server selected."
+      );
+      return;
+    }
+
+    activeGuildId = String(server.id);
+
+    try {
+      activeChannelId =
+        localStorage.getItem(
+          "svChannelId"
+        );
+
+      activeChannelName =
+        localStorage.getItem(
+          "svChannelName"
+        ) || null;
+    } catch (_) {}
+
+    bindEvents();
+    loadAppearanceSettings();
+
+    loadChannels().then(function () {
+      var currentButton =
+        document.querySelector(
+          '.sv-ch[data-channel-id="' +
+            CSS.escape(
+              String(
+                activeChannelId || ""
+              )
+            ) +
+            '"]'
+        );
+
+      if (
+        !currentButton &&
+        !activeChannelId
+      ) {
+        var first =
+          document.querySelector(".sv-ch");
+
+        if (first) {
+          selectChannel(
+            first.dataset.channelId,
+            first.dataset.channelName
+          );
+        }
+      } else if (activeChannelId) {
+        selectChannel(
+          activeChannelId,
+          activeChannelName
+        );
+      }
+    });
+
+    startPolling();
+  }
+
+  window.ServerView = {
+    initialize: initialize,
+    selectChannel: selectChannel,
+    loadMessages: loadMessages,
+    loadChannels: loadChannels,
+    applyAppearance: applyAppearance
+  };
+
+  if (
+    document.readyState ===
+    "loading"
+  ) {
+    document.addEventListener(
+      "DOMContentLoaded",
+      initialize
+    );
   } else {
-    boot();
+    initialize();
   }
 })();
