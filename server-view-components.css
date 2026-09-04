@@ -1,114 +1,412 @@
 /* =========================================================
-   GATTO DISCORD BOT DASHBOARD — SERVER VIEW COMPONENTS
+   MESSAGE COMPONENTS
+   Discord-inspired message buttons & selects
    ========================================================= */
 
-/* Message Item Layout */
-.sv-msg {
-  display: flex;
-  gap: 16px;
-  padding: 4px 20px;
-  margin-top: 4px;
-  transition: background 140ms ease;
-}
-
-.sv-msg:hover {
-  background: rgba(168, 85, 247, 0.04);
-}
-
-.sv-av {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  object-fit: cover;
-  flex-shrink: 0;
-  border: 2px solid rgba(168, 85, 247, 0.35);
-}
-
-.sv-msg-content {
+.sv-components {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-  flex: 1;
+  gap: 6px;
+  margin-top: 10px;
+  width: 100%;
+  max-width: 100%;
 }
 
-.sv-msg-meta {
+/* Component row */
+.sv-comp-row {
   display: flex;
-  align-items: baseline;
+  flex-wrap: wrap;
+  align-items: center;
   gap: 8px;
+  width: 100%;
 }
 
-.sv-msg-meta strong {
-  color: #ffffff;
-  font-size: 15px;
-  font-weight: 600;
-}
+/* ---------------------------------------------------------
+   BUTTON BASE
+   --------------------------------------------------------- */
 
-.sv-time {
-  font-size: 12px;
-  color: #8c7d99;
-}
-
-.sv-msg-text {
-  color: var(--sv-text, #f3edf7);
-  font-size: 15px;
-  line-height: 1.4;
-  word-break: break-word;
-}
-
-/* Embed Components */
-.sv-embed {
-  margin-top: 8px;
-  background: var(--sv-embed-bg, #181222);
-  border-left: 4px solid var(--sv-brand, #a855f7);
-  border-radius: 4px 8px 8px 4px;
-  padding: 12px 16px;
-  max-width: 520px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-}
-
-.sv-embed-title {
-  font-weight: 600;
-  color: var(--sv-text-link, #d8b4fe);
-  font-size: 14px;
-  margin-bottom: 4px;
-}
-
-.sv-embed-desc {
-  font-size: 13px;
-  color: var(--sv-text-muted, #b0a1bd);
-}
-
-/* Code Blocks & Inline Code */
-.sv-code {
-  background: #050408;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-family: monospace;
-  font-size: 13px;
-  border: 1px solid rgba(168, 85, 247, 0.15);
-}
-
-.sv-codeblock {
-  background: #050408;
-  padding: 12px;
-  border-radius: 6px;
-  font-family: monospace;
-  font-size: 13px;
-  margin-top: 6px;
-  border: 1px solid rgba(168, 85, 247, 0.15);
-  overflow-x: auto;
-}
-
-/* Empty State Styles */
-.sv-empty {
-  display: flex;
-  flex-direction: column;
+.sv-btn {
+  position: relative;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 40px;
-  text-align: center;
-  color: #82728f;
+  gap: 7px;
+
+  min-height: 32px;
+  max-width: 100%;
+
+  padding: 2px 16px;
+
+  border: 1px solid transparent;
+  border-radius: 4px;
+
+  font-family: inherit;
   font-size: 14px;
-  gap: 8px;
+  font-weight: 500;
+  line-height: 1.2;
+
+  color: #fff;
+  text-decoration: none;
+  white-space: nowrap;
+
+  cursor: default;
+
+  overflow: hidden;
+
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.15);
+
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.12s ease,
+    filter 0.15s ease;
+}
+
+/* Subtle highlight across the top of buttons */
+.sv-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.07),
+    transparent 55%
+  );
+
+  opacity: 0;
+  pointer-events: none;
+
+  transition: opacity 0.15s ease;
+}
+
+.sv-btn:hover::before {
+  opacity: 1;
+}
+
+/* ---------------------------------------------------------
+   PRIMARY — Discord Blurple
+   --------------------------------------------------------- */
+
+.sv-btn.primary {
+  background: #5865f2;
+  border-color: #5865f2;
+  color: #fff;
+
+  box-shadow:
+    0 2px 6px rgba(88, 101, 242, 0.22);
+}
+
+.sv-btn.primary:hover {
+  background: #4752c4;
+  border-color: #4752c4;
+
+  box-shadow:
+    0 4px 10px rgba(88, 101, 242, 0.28);
+
+  filter: brightness(1.04);
+}
+
+.sv-btn.primary:active {
+  background: #3c45a5;
+  transform: translateY(1px);
+}
+
+/* ---------------------------------------------------------
+   SECONDARY — Discord Gray
+   --------------------------------------------------------- */
+
+.sv-btn.secondary {
+  background: #4e5058;
+  border-color: #4e5058;
+  color: #fff;
+
+  box-shadow:
+    0 2px 5px rgba(0, 0, 0, 0.18);
+}
+
+.sv-btn.secondary:hover {
+  background: #6d6f78;
+  border-color: #6d6f78;
+
+  box-shadow:
+    0 4px 9px rgba(0, 0, 0, 0.22);
+}
+
+.sv-btn.secondary:active {
+  background: #42444a;
+  transform: translateY(1px);
+}
+
+/* ---------------------------------------------------------
+   SUCCESS — Discord Green
+   --------------------------------------------------------- */
+
+.sv-btn.success {
+  background: #248046;
+  border-color: #248046;
+  color: #fff;
+
+  box-shadow:
+    0 2px 6px rgba(35, 128, 70, 0.2);
+}
+
+.sv-btn.success:hover {
+  background: #1f7040;
+  border-color: #1f7040;
+
+  box-shadow:
+    0 4px 10px rgba(35, 128, 70, 0.28);
+}
+
+.sv-btn.success:active {
+  background: #185c34;
+  transform: translateY(1px);
+}
+
+/* ---------------------------------------------------------
+   DANGER — Discord Red
+   --------------------------------------------------------- */
+
+.sv-btn.danger {
+  background: #da373c;
+  border-color: #da373c;
+  color: #fff;
+
+  box-shadow:
+    0 2px 6px rgba(218, 55, 60, 0.2);
+}
+
+.sv-btn.danger:hover {
+  background: #a1282d;
+  border-color: #a1282d;
+
+  box-shadow:
+    0 4px 10px rgba(218, 55, 60, 0.28);
+}
+
+.sv-btn.danger:active {
+  background: #861f24;
+  transform: translateY(1px);
+}
+
+/* ---------------------------------------------------------
+   LINK BUTTON
+   --------------------------------------------------------- */
+
+.sv-btn.link {
+  background: transparent;
+  border-color: transparent;
+
+  color: #00a8fc;
+
+  padding-left: 4px;
+  padding-right: 4px;
+
+  cursor: pointer;
+
+  box-shadow: none;
+}
+
+.sv-btn.link::before {
+  display: none;
+}
+
+.sv-btn.link:hover {
+  color: #33bfff;
+  text-decoration: underline;
+  filter: none;
+}
+
+.sv-btn.link:active {
+  color: #0096df;
+  transform: none;
+}
+
+/* ---------------------------------------------------------
+   DISABLED
+   --------------------------------------------------------- */
+
+.sv-btn.disabled,
+.sv-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+
+  pointer-events: none;
+
+  box-shadow: none;
+  filter: grayscale(10%);
+}
+
+/* ---------------------------------------------------------
+   EMOJI / ICON
+   --------------------------------------------------------- */
+
+.sv-btn-emoji {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  flex: 0 0 auto;
+
+  font-size: 16px;
+  line-height: 1;
+}
+
+.sv-btn-emoji img {
+  display: block;
+
+  width: 20px;
+  height: 20px;
+
+  object-fit: contain;
+  vertical-align: middle;
+
+  border-radius: 3px;
+}
+
+/* ---------------------------------------------------------
+   SELECT MENU
+   --------------------------------------------------------- */
+
+.sv-select {
+  appearance: none;
+  -webkit-appearance: none;
+
+  position: relative;
+
+  width: auto;
+  min-width: min(240px, 100%);
+  max-width: 100%;
+
+  padding: 10px 38px 10px 12px;
+
+  border: 1px solid #1e1f22;
+  border-radius: 4px;
+
+  background-color: #1e1f22;
+
+  /* Discord-like dropdown arrow */
+  background-image:
+    linear-gradient(45deg, transparent 50%, #b5bac1 50%),
+    linear-gradient(135deg, #b5bac1 50%, transparent 50%);
+
+  background-position:
+    calc(100% - 16px) 50%,
+    calc(100% - 11px) 50%;
+
+  background-size:
+    5px 5px,
+    5px 5px;
+
+  background-repeat: no-repeat;
+
+  color: #dbdee1;
+
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+
+  line-height: 1.2;
+
+  outline: none;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.12);
+
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    color 0.15s ease;
+}
+
+.sv-select:hover {
+  background-color: #232428;
+  border-color: #2b2d31;
+  color: #f2f3f5;
+}
+
+.sv-select:focus {
+  border-color: #5865f2;
+
+  box-shadow:
+    0 0 0 2px rgba(88, 101, 242, 0.28);
+}
+
+.sv-select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+
+  box-shadow: none;
+}
+
+/* Dropdown options */
+.sv-select option {
+  background: #1e1f22;
+  color: #dbdee1;
+}
+
+/* ---------------------------------------------------------
+   COMPONENT HINT
+   --------------------------------------------------------- */
+
+.sv-comp-hint {
+  margin-top: 3px;
+
+  color: #949ba4;
+
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.4;
+
+  max-width: 100%;
+}
+
+/* ---------------------------------------------------------
+   FOCUS ACCESSIBILITY
+   --------------------------------------------------------- */
+
+.sv-btn:focus-visible,
+.sv-select:focus-visible {
+  outline: 2px solid #00a8fc;
+  outline-offset: 2px;
+}
+
+/* ---------------------------------------------------------
+   SMALL SCREENS
+   --------------------------------------------------------- */
+
+@media (max-width: 600px) {
+  .sv-comp-row {
+    gap: 7px;
+  }
+
+  .sv-btn {
+    min-height: 34px;
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .sv-select {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+/* ---------------------------------------------------------
+   REDUCED MOTION
+   --------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .sv-btn,
+  .sv-select,
+  .sv-btn::before {
+    transition: none;
+  }
 }
