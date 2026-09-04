@@ -451,9 +451,13 @@
         "&channelId=" +
         encodeURIComponent(activeChannelId);
 
-      var response =
-        await fetch(url, {
-          method: "GET",
+      var response = await fetch(
+  "/api/messages?guildId=" +
+    encodeURIComponent(server.id) +
+    "&channelId=" +
+    encodeURIComponent(activeChannelId),
+  {
+    method: "POST",
           credentials: "include",
           cache: "no-store",
           headers: {
