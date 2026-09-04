@@ -1040,12 +1040,16 @@
       loadMessages(true);
 
     } catch (error) {
-      console.error(
-        "Server View send failed:",
-        error
-      );
-      alert("Failed to send message.");
-    } finally {
+  console.error(
+    "Server View send failed:",
+    error
+  );
+
+  alert(
+    "Failed to send message.\n\n" +
+    (error?.message || error)
+  );
+} finally {
       sending = false;
 
       if (send) {
