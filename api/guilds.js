@@ -6,8 +6,6 @@ const RAILWAY_API =
 
 export default async function handler(req, res) {
   try {
-    requireAnySession(req);
-
     const dashboardSecret = process.env.DASHBOARD_API_SECRET;
 
     if (!dashboardSecret) {
@@ -16,22 +14,25 @@ export default async function handler(req, res) {
       });
     }
 
-    /*
-     * The dashboard is high-staff-only.
-     *
-     * We no longer need the user's Discord OAuth token here.
-     * The Railway bot provides the servers it is currently in.
-     */
-    const railwayResponse = await fetch(
-      `${RAILWAY_API}/api/guilds`,
-      {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${dashboardSecret}`,
-        },
-        cache: "no-store",
-      }
-    );
+    // The dashboard itself is restricted to approved staff.
+    // We do NOT require the user's personal Discord OAuth token here.
+    try {
+      requireAnySession(req);
+    } catch (err) {
+      return res.status(err.status || 401).json({
+        error: err.message || "Not authenticated",
+        code: err.code || undefined,
+      });
+    }
+
+    // Ask the Railway bot which Discord servers it is actually in.
+    const railwayResponse = await fetch(`${RAILWAY_API}/api/guilds`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${dashboardSecret}`,
+      },
+      cache: "no-store",
+    });
 
     if (!railwayResponse.ok) {
       console.error(
@@ -50,34 +51,33 @@ export default async function handler(req, res) {
       ? railwayData.guilds
       : [];
 
-    /*
-     * Every guild returned by the bot is available to authorized
-     * high staff.
-     */
     const guilds = botGuilds.map((guild) => ({
       id: guild.id,
-      name: guild.name,
+      name: guild.name || "Unknown Server",
       icon: guild.icon || null,
+
+      // Staff members are authorized by the dashboard,
+      // not by Discord server ownership.
       owner: false,
+
       approximate_member_count: Number(
-        guild.memberCount || guild.approximate_member_count || 0
+        guild.memberCount ||
+        guild.approximate_member_count ||
+        0
       ),
+
       approximate_presence_count: Number(
-        guild.presenceCount ||
-          guild.approximate_presence_count ||
-          0
+        guild.approximate_presence_count ||
+        0
       ),
     }));
 
-    return res.status(200).json({
-      guilds,
-    });
+    return res.status(200).json({ guilds });
   } catch (error) {
     console.error("Guild API error:", error);
 
-    return res.status(error.status || 500).json({
-      error: error.message || "Failed to retrieve Discord servers",
-      code: error.code || undefined,
+    return res.status(500).json({
+      error: "Failed to retrieve Discord servers",
     });
   }
 }
