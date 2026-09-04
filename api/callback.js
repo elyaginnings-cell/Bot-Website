@@ -3,6 +3,11 @@ import {
   upsertDiscordAccount,
 } from "../lib/accounts.js";
 import { readSession, setSessionCookies } from "../lib/session.js";
+import {
+  isStaffDiscordId,
+  isStaffEmail,
+  requireStaffConfiguration,
+} from "../lib/staffAuth.js";
 
 export default async function handler(req, res) {
   const {
@@ -21,6 +26,12 @@ export default async function handler(req, res) {
     return res.status(500).send("Discord OAuth is not configured correctly.");
   }
 
+  try {
+    requireStaffConfiguration();
+  } catch (error) {
+    return res.status(error.status || 500).send(error.message);
+  }
+
   const code = req.query?.code;
   const state = req.query?.state || "";
   const isLink = state === "link";
@@ -30,34 +41,48 @@ export default async function handler(req, res) {
   }
 
   try {
-    const tokenResponse = await fetch("https://discord.com/api/oauth2/token", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({
-        client_id: DISCORD_CLIENT_ID,
-        client_secret: DISCORD_CLIENT_SECRET,
-        grant_type: "authorization_code",
-        code,
-        redirect_uri: DISCORD_REDIRECT_URI,
-      }),
-    });
+    const tokenResponse = await fetch(
+      "https://discord.com/api/oauth2/token",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams({
+          client_id: DISCORD_CLIENT_ID,
+          client_secret: DISCORD_CLIENT_SECRET,
+          grant_type: "authorization_code",
+          code,
+          redirect_uri: DISCORD_REDIRECT_URI,
+        }),
+      }
+    );
 
     if (!tokenResponse.ok) {
       const errorText = await tokenResponse.text();
       console.error("Discord token error:", errorText);
+
       return res.status(401).send("Discord authentication failed.");
     }
 
     const tokenData = await tokenResponse.json();
+
     if (!tokenData.access_token) {
-      return res.status(401).send("Discord did not return an access token.");
+      return res
+        .status(401)
+        .send("Discord did not return an access token.");
     }
 
     const accessToken = tokenData.access_token;
 
-    const meResponse = await fetch("https://discord.com/api/users/@me", {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    });
+    const meResponse = await fetch(
+      "https://discord.com/api/users/@me",
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
 
     if (!meResponse.ok) {
       return res.status(401).send("Could not fetch Discord user.");
@@ -65,13 +90,26 @@ export default async function handler(req, res) {
 
     const discordUser = await meResponse.json();
 
+    /*
+     * Discord login is permitted if either:
+     *
+     * 1. The Discord ID is explicitly high staff, OR
+     * 2. The Discord account's OAuth email is a configured staff email.
+     */
+    const discordIsStaff =
+      isStaffDiscordId(discordUser.id) ||
+      isStaffEmail(discordUser.email);
+
+    /*
+     * Linking happens after an already-authenticated email session.
+     */
     let account = null;
 
-    // If user is already logged in with email and clicked "Link Discord"
     if (isLink) {
       try {
         const existingSession = readSession(req);
-        if (existingSession?.accountId) {
+
+        if (existingSession?.accountId && existingSession.staff === true) {
           account = await linkDiscordToAccount(
             existingSession.accountId,
             discordUser
@@ -85,8 +123,19 @@ export default async function handler(req, res) {
               "That Discord account is already linked to a different login. Log out and use Discord login instead."
             );
         }
+
         console.error("Link Discord error:", err);
       }
+    }
+
+    /*
+     * If this wasn't a valid email-session link, require the
+     * Discord identity itself to be high staff.
+     */
+    if (!account && !discordIsStaff) {
+      return res.status(403).send(
+        "This Discord account is not authorized to access the dashboard."
+      );
     }
 
     if (!account) {
@@ -100,6 +149,7 @@ export default async function handler(req, res) {
         accountId: account.id,
         method: "discord",
         discordId: account.discord_id || discordUser.id,
+        staff: true,
       },
       accessToken
     );
@@ -107,6 +157,7 @@ export default async function handler(req, res) {
     return res.redirect(302, "/");
   } catch (error) {
     console.error("Callback error:", error);
+
     return res.status(500).send("Internal server error.");
   }
 }
