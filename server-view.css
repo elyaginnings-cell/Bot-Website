@@ -1,44 +1,10 @@
-/* =========================================================
-   YOUR ORIGINAL SERVER VIEW CSS
-   EVERYTHING FROM THE ORIGINAL FILE STAYS EXACTLY AS-IS
-   ========================================================= */
-
-/*
-   Keep ALL of your existing CSS here:
-   - Discord base theme
-   - Darker theme
-   - Light theme
-   - Compact/cozy density
-   - Page lock
-   - Server view
-   - Top bar
-   - Mobile menu
-   - Server name editor
-   - Channel sidebar
-   - Channel drawer
-   - Chat
-   - Messages
-   - Avatars
-   - Message actions
-   - Replies
-   - Embeds
-   - Images
-   - Files
-   - Composer
-   - Settings
-   - Lightbox
-   - Toasts
-   - Mobile media queries
-   - Small-phone media queries
-   - Reduced-motion accessibility
-   - Focus accessibility
-*/
+/* ALL ORIGINAL SERVER VIEW CSS */
+/* ... everything through mobile/reduced-motion/accessibility ... */
 
 
 /* =========================================================
    MIDNIGHT PURPLE
-   ONE SINGLE THEME SECTION
-   Does not change layout or structure
+   Safe theme override — does not change layout or structure
    ========================================================= */
 
 .server-view.theme-midnight {
@@ -69,6 +35,7 @@
 
   --sv-embed-bg: #15101d;
   --sv-input-bg: #1b1523;
+
   --sv-scrollbar: #0b0810;
 
   background:
@@ -85,9 +52,6 @@
     #09070d;
 }
 
-
-/* TOP BAR */
-
 .server-view.theme-midnight .sv-topbar {
   background:
     linear-gradient(
@@ -97,7 +61,8 @@
     ),
     #100c17;
 
-  border-bottom-color: rgba(168, 85, 247, 0.15);
+  border-bottom-color:
+    rgba(168, 85, 247, 0.15);
 
   box-shadow:
     0 4px 20px rgba(0, 0, 0, 0.25);
@@ -120,12 +85,12 @@
 .server-view.theme-midnight .sv-menu-btn:hover,
 .server-view.theme-midnight .sv-icon-btn:hover,
 .server-view.theme-midnight .sv-refresh:hover {
-  background: rgba(168, 85, 247, 0.12);
-  color: #e9d5ff;
+  background:
+    rgba(168, 85, 247, 0.12);
+
+  color:
+    #e9d5ff;
 }
-
-
-/* CHANNEL SIDEBAR */
 
 .server-view.theme-midnight .sv-channels {
   background:
@@ -135,7 +100,8 @@
       #0c0910 100%
     );
 
-  border-right-color: rgba(168, 85, 247, 0.12);
+  border-right-color:
+    rgba(168, 85, 247, 0.12);
 
   box-shadow:
     6px 0 25px rgba(0, 0, 0, 0.18);
@@ -143,7 +109,9 @@
 
 .server-view.theme-midnight .sv-channels-head {
   color: #eee5f5;
-  border-bottom-color: rgba(168, 85, 247, 0.10);
+
+  border-bottom-color:
+    rgba(168, 85, 247, 0.10);
 }
 
 .server-view.theme-midnight .sv-cat {
@@ -161,8 +129,11 @@
 }
 
 .server-view.theme-midnight .sv-ch:hover {
-  background: rgba(168, 85, 247, 0.08);
-  color: #eee7f5;
+  background:
+    rgba(168, 85, 247, 0.08);
+
+  color:
+    #eee7f5;
 }
 
 .server-view.theme-midnight .sv-ch.active {
@@ -173,18 +144,17 @@
       rgba(126, 34, 206, 0.08)
     );
 
-  color: #f4ecfa;
+  color:
+    #f4ecfa;
 
   box-shadow:
     inset 2px 0 0 #a855f7;
 }
 
 .server-view.theme-midnight .sv-ch.active .sv-hash {
-  color: #c084fc;
+  color:
+    #c084fc;
 }
-
-
-/* CHAT */
 
 .server-view.theme-midnight .sv-chat {
   background:
@@ -197,28 +167,35 @@
 }
 
 .server-view.theme-midnight .sv-chat-head {
-  background: rgba(12, 9, 16, 0.92);
+  background:
+    rgba(12, 9, 16, 0.92);
 
   border-bottom-color:
     rgba(168, 85, 247, 0.11);
 
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter:
+    blur(12px);
+
+  -webkit-backdrop-filter:
+    blur(12px);
 }
 
 .server-view.theme-midnight .sv-hash-big {
-  color: #a855f7;
+  color:
+    #a855f7;
 
   text-shadow:
     0 0 16px rgba(168, 85, 247, 0.30);
 }
 
 .server-view.theme-midnight #sv-channel-title {
-  color: #f1eaf5;
+  color:
+    #f1eaf5;
 }
 
 .server-view.theme-midnight .sv-messages {
-  background: transparent;
+  background:
+    transparent;
 }
 
 .server-view.theme-midnight .sv-msg {
@@ -227,23 +204,24 @@
 }
 
 .server-view.theme-midnight .sv-msg:hover {
-  background: rgba(168, 85, 247, 0.035);
+  background:
+    rgba(168, 85, 247, 0.035);
 }
 
 .server-view.theme-midnight .sv-msg-meta strong {
-  color: #eadff1;
+  color:
+    #eadff1;
 }
 
 .server-view.theme-midnight .sv-time {
-  color: #776b80;
+  color:
+    #776b80;
 }
 
 .server-view.theme-midnight .sv-msg-text {
-  color: #d8cfde;
+  color:
+    #d8cfde;
 }
-
-
-/* AVATARS */
 
 .server-view.theme-midnight .sv-av {
   border:
@@ -270,9 +248,6 @@
     );
 }
 
-
-/* BOT BADGE */
-
 .server-view.theme-midnight .sv-bot {
   background:
     linear-gradient(
@@ -281,79 +256,80 @@
       #a855f7
     );
 
-  color: #ffffff;
+  color:
+    #ffffff;
 
   box-shadow:
     0 0 10px rgba(168, 85, 247, 0.16);
 }
-
-
-/* MENTIONS */
 
 .server-view.theme-midnight .sv-mention,
 .server-view.theme-midnight .sv-mention-user,
 .server-view.theme-midnight .sv-mention-channel,
 .server-view.theme-midnight .sv-mention-role,
 .server-view.theme-midnight .sv-mention-everyone {
-  background: rgba(168, 85, 247, 0.15);
+  background:
+    rgba(168, 85, 247, 0.15);
 
-  color: #d8b4fe;
+  color:
+    #d8b4fe;
 
-  border-radius: 4px;
+  border-radius:
+    4px;
 }
 
 .server-view.theme-midnight .sv-mention:hover,
 .server-view.theme-midnight .sv-mention-user:hover,
 .server-view.theme-midnight .sv-mention-channel:hover,
 .server-view.theme-midnight .sv-mention-role:hover {
-  background: rgba(168, 85, 247, 0.24);
+  background:
+    rgba(168, 85, 247, 0.24);
 }
 
-
-/* EMBEDS */
-
 .server-view.theme-midnight .sv-embed {
-  background: rgba(21, 16, 29, 0.94);
+  background:
+    rgba(21, 16, 29, 0.94);
 
-  border-left-color: #a855f7;
+  border-left-color:
+    #a855f7;
 
   box-shadow:
     0 4px 16px rgba(0, 0, 0, 0.20);
 }
 
 .server-view.theme-midnight .sv-embed-title {
-  color: #d8b4fe;
+  color:
+    #d8b4fe;
 }
 
 .server-view.theme-midnight .sv-embed-desc {
-  color: #b8adbf;
+  color:
+    #b8adbf;
 }
-
-
-/* CODE */
 
 .server-view.theme-midnight .sv-code,
 .server-view.theme-midnight .sv-codeblock {
-  background: #08060b;
+  background:
+    #08060b;
 
   border-color:
     rgba(168, 85, 247, 0.12);
 
-  color: #ddd3e4;
+  color:
+    #ddd3e4;
 }
 
-
-/* COMPOSER */
-
 .server-view.theme-midnight .sv-composer-wrap {
-  background: #0b0810;
+  background:
+    #0b0810;
 
   border-top-color:
     rgba(168, 85, 247, 0.10);
 }
 
 .server-view.theme-midnight .sv-composer {
-  background: #1a1421;
+  background:
+    #1a1421;
 
   border-color:
     rgba(168, 85, 247, 0.15);
@@ -367,36 +343,36 @@
     rgba(168, 85, 247, 0.42);
 
   box-shadow:
-    0 0 0 3px rgba(168, 85, 247, 0.07);
+    0 0 0 3px
+    rgba(168, 85, 247, 0.07);
 }
 
 .server-view.theme-midnight .sv-composer input {
-  color: #eee7f5;
+  color:
+    #eee7f5;
 }
 
 .server-view.theme-midnight .sv-composer input::placeholder {
-  color: #716579;
+  color:
+    #716579;
 }
 
-
-/* REPLY BAR */
-
 .server-view.theme-midnight .sv-reply-bar {
-  background: rgba(168, 85, 247, 0.07);
+  background:
+    rgba(168, 85, 247, 0.07);
 
   border-top-color:
     rgba(168, 85, 247, 0.10);
 }
 
 .server-view.theme-midnight .sv-reply-label {
-  color: #c084fc;
+  color:
+    #c084fc;
 }
 
-
-/* NAME EDITOR */
-
 .server-view.theme-midnight .sv-name-wrap {
-  background: rgba(255, 255, 255, 0.025);
+  background:
+    rgba(255, 255, 255, 0.025);
 
   border-color:
     rgba(168, 85, 247, 0.15);
@@ -407,52 +383,56 @@
     rgba(168, 85, 247, 0.42);
 
   box-shadow:
-    0 0 0 3px rgba(168, 85, 247, 0.07);
+    0 0 0 3px
+    rgba(168, 85, 247, 0.07);
 }
 
-
-/* SETTINGS */
-
 .server-view.theme-midnight .sv-settings-panel {
-  background: #120d19;
+  background:
+    #120d19;
 
   border-color:
     rgba(168, 85, 247, 0.16);
 
   box-shadow:
-    0 15px 40px rgba(0, 0, 0, 0.35);
+    0 15px 40px
+    rgba(0, 0, 0, 0.35);
 }
 
 .server-view.theme-midnight .sv-settings-panel select,
 .server-view.theme-midnight .sv-settings-panel input {
-  background: #0d0912;
+  background:
+    #0d0912;
 
-  color: #eee7f5;
+  color:
+    #eee7f5;
 
   border-color:
     rgba(168, 85, 247, 0.15);
 }
 
-
-/* SCROLLBARS */
-
 .server-view.theme-midnight ::-webkit-scrollbar {
-  width: 10px;
+  width:
+    10px;
 }
 
 .server-view.theme-midnight ::-webkit-scrollbar-track {
-  background: #09070d;
+  background:
+    #09070d;
 }
 
 .server-view.theme-midnight ::-webkit-scrollbar-thumb {
-  background: #33233f;
+  background:
+    #33233f;
 
-  border-radius: 10px;
+  border-radius:
+    10px;
 
   border:
     2px solid #09070d;
 }
 
 .server-view.theme-midnight ::-webkit-scrollbar-thumb:hover {
-  background: #513766;
+  background:
+    #513766;
 }
