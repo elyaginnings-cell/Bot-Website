@@ -2214,3 +2214,471 @@
     rgba(79, 84, 92, 0.5)
     transparent;
 }
+/* =========================================================
+   MIDNIGHT PURPLE — SERVER VIEW
+   ========================================================= */
+
+.server-view.theme-midnight {
+  --sv-bg-primary: #17121f;
+  --sv-bg-secondary: #100c17;
+  --sv-bg-tertiary: #09070d;
+
+  --sv-brand: #a855f7;
+  --sv-brand-hover: #9333ea;
+
+  --sv-text: #eee7f8;
+  --sv-muted: #a89ab8;
+
+  --sv-link: #c084fc;
+  --sv-mention-text: #e9d5ff;
+
+  --sv-embed: #15101d;
+  --sv-input: #17121f;
+
+  background:
+    radial-gradient(
+      ellipse 90% 55% at 50% -10%,
+      rgba(168, 85, 247, 0.20),
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 70% 50% at 100% 100%,
+      rgba(126, 34, 206, 0.13),
+      transparent 65%
+    ),
+    linear-gradient(
+      135deg,
+      #09070d 0%,
+      #100c17 45%,
+      #17121f 100%
+    );
+
+  color: var(--sv-text);
+}
+
+/* Top bar */
+
+.server-view.theme-midnight .sv-topbar {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(24, 17, 32, 0.96),
+      rgba(14, 10, 20, 0.94)
+    );
+
+  border-bottom-color:
+    rgba(168, 85, 247, 0.18);
+
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.025),
+    0 8px 30px rgba(0, 0, 0, 0.28);
+
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+/* Channels */
+
+.server-view.theme-midnight .sv-channels {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(20, 14, 27, 0.98),
+      rgba(10, 8, 14, 0.98)
+    );
+
+  border-right-color:
+    rgba(168, 85, 247, 0.13);
+
+  box-shadow:
+    10px 0 35px rgba(0, 0, 0, 0.18);
+}
+
+.server-view.theme-midnight .sv-channels-header {
+  color: #b9aac8;
+}
+
+.server-view.theme-midnight .sv-category-name {
+  color: #8f7d9f;
+}
+
+.server-view.theme-midnight .sv-channel {
+  color: #b9adbf;
+}
+
+.server-view.theme-midnight .sv-channel:hover {
+  color: #f3eaff;
+
+  background:
+    rgba(168, 85, 247, 0.10);
+
+  box-shadow:
+    inset 0 0 0 1px
+      rgba(168, 85, 247, 0.06);
+}
+
+.server-view.theme-midnight .sv-channel.active {
+  color: #ffffff;
+
+  background:
+    linear-gradient(
+      90deg,
+      rgba(168, 85, 247, 0.24),
+      rgba(126, 34, 206, 0.10)
+    );
+
+  box-shadow:
+    inset 3px 0 0 #a855f7,
+    0 0 20px rgba(168, 85, 247, 0.08);
+}
+
+.server-view.theme-midnight .sv-channel-hash {
+  color: #8f7aa1;
+}
+
+.server-view.theme-midnight .sv-channel.active
+.sv-channel-hash {
+  color: #c084fc;
+}
+
+/* Chat */
+
+.server-view.theme-midnight .sv-chat {
+  background:
+    radial-gradient(
+      ellipse 70% 45% at 55% 0%,
+      rgba(168, 85, 247, 0.055),
+      transparent 65%
+    ),
+    linear-gradient(
+      180deg,
+      #100c17,
+      #0c0910
+    );
+}
+
+.server-view.theme-midnight .sv-chat-header {
+  background:
+    rgba(16, 12, 23, 0.88);
+
+  border-bottom-color:
+    rgba(168, 85, 247, 0.13);
+
+  box-shadow:
+    0 5px 25px rgba(0, 0, 0, 0.16);
+
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.server-view.theme-midnight .sv-channel-icon {
+  color: #a78bba;
+}
+
+.server-view.theme-midnight .sv-channel-name {
+  color: #f5effa;
+}
+
+.server-view.theme-midnight .sv-channel-topic {
+  color: #8f8299;
+}
+
+/* Messages */
+
+.server-view.theme-midnight .sv-msg {
+  transition:
+    background 120ms ease,
+    transform 120ms ease;
+}
+
+.server-view.theme-midnight .sv-msg:hover {
+  background:
+    rgba(168, 85, 247, 0.045);
+}
+
+.server-view.theme-midnight .sv-author {
+  color: #f3eaff;
+}
+
+.server-view.theme-midnight .sv-time {
+  color: #786a84;
+}
+
+.server-view.theme-midnight .sv-msg-content {
+  color: #ddd4e6;
+}
+
+.server-view.theme-midnight .sv-av {
+  border:
+    1px solid rgba(168, 85, 247, 0.24);
+
+  box-shadow:
+    0 2px 10px rgba(0, 0, 0, 0.28);
+}
+
+.server-view.theme-midnight .sv-msg:hover .sv-av {
+  border-color:
+    rgba(192, 132, 252, 0.52);
+
+  box-shadow:
+    0 0 14px rgba(168, 85, 247, 0.18);
+}
+
+/* Bot badge */
+
+.server-view.theme-midnight .sv-bot-badge {
+  background:
+    linear-gradient(
+      135deg,
+      #a855f7,
+      #7e22ce
+    );
+
+  color: #ffffff;
+
+  box-shadow:
+    0 2px 8px rgba(126, 34, 206, 0.25);
+}
+
+/* Mentions */
+
+.server-view.theme-midnight .sv-mention {
+  color: var(--sv-mention-text);
+
+  background:
+    rgba(168, 85, 247, 0.16);
+
+  border-radius: 4px;
+  padding: 1px 3px;
+}
+
+.server-view.theme-midnight .sv-mention:hover {
+  background:
+    rgba(168, 85, 247, 0.25);
+}
+
+/* Links */
+
+.server-view.theme-midnight a {
+  color: var(--sv-link);
+}
+
+.server-view.theme-midnight a:hover {
+  color: #e9d5ff;
+}
+
+/* Reply */
+
+.server-view.theme-midnight .sv-reply-preview {
+  color: #9f91aa;
+}
+
+.server-view.theme-midnight .sv-reply-line {
+  background:
+    linear-gradient(
+      180deg,
+      #a855f7,
+      #6d28d9
+    );
+}
+
+/* Embeds */
+
+.server-view.theme-midnight .sv-embed {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(24, 16, 32, 0.98),
+      rgba(15, 10, 21, 0.98)
+    );
+
+  border-color:
+    rgba(168, 85, 247, 0.16);
+
+  box-shadow:
+    0 5px 20px rgba(0, 0, 0, 0.18);
+}
+
+.server-view.theme-midnight .sv-embed-title {
+  color: #d8b4fe;
+}
+
+.server-view.theme-midnight .sv-embed-description {
+  color: #b9acbf;
+}
+
+/* Composer */
+
+.server-view.theme-midnight .sv-composer-wrap {
+  background:
+    rgba(10, 7, 14, 0.92);
+
+  border-top-color:
+    rgba(168, 85, 247, 0.10);
+}
+
+.server-view.theme-midnight .sv-composer {
+  background:
+    rgba(23, 18, 31, 0.96);
+
+  border-color:
+    rgba(168, 85, 247, 0.16);
+
+  box-shadow:
+    0 5px 25px rgba(0, 0, 0, 0.20);
+}
+
+.server-view.theme-midnight .sv-composer:focus-within {
+  border-color:
+    rgba(168, 85, 247, 0.48);
+
+  box-shadow:
+    0 0 0 3px
+      rgba(168, 85, 247, 0.08),
+    0 8px 30px rgba(0, 0, 0, 0.24);
+}
+
+.server-view.theme-midnight #sv-input {
+  color: #eee7f8;
+}
+
+.server-view.theme-midnight #sv-input::placeholder {
+  color: #74687d;
+}
+
+.server-view.theme-midnight .sv-send-btn {
+  background:
+    linear-gradient(
+      135deg,
+      #a855f7,
+      #7e22ce
+    );
+
+  color: #ffffff;
+
+  box-shadow:
+    0 5px 15px rgba(126, 34, 206, 0.24);
+}
+
+.server-view.theme-midnight .sv-send-btn:hover:not(:disabled) {
+  background:
+    linear-gradient(
+      135deg,
+      #b86cff,
+      #9333ea
+    );
+
+  box-shadow:
+    0 7px 20px rgba(168, 85, 247, 0.30);
+}
+
+/* Buttons */
+
+.server-view.theme-midnight .sv-icon-btn {
+  color: #a99ab4;
+}
+
+.server-view.theme-midnight .sv-icon-btn:hover {
+  color: #ffffff;
+
+  background:
+    rgba(168, 85, 247, 0.13);
+}
+
+/* Settings */
+
+.server-view.theme-midnight .sv-settings-panel {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(24, 17, 32, 0.98),
+      rgba(12, 8, 17, 0.98)
+    );
+
+  border-color:
+    rgba(168, 85, 247, 0.18);
+
+  box-shadow:
+    0 18px 45px rgba(0, 0, 0, 0.38);
+}
+
+.server-view.theme-midnight .sv-settings-panel h4 {
+  color: #f0e8f5;
+}
+
+.server-view.theme-midnight .sv-settings-row label {
+  color: #a99bb2;
+}
+
+.server-view.theme-midnight .sv-settings-row select,
+.server-view.theme-midnight .sv-settings-row input {
+  color: #eee7f8;
+
+  background:
+    #100c17;
+
+  border-color:
+    rgba(168, 85, 247, 0.17);
+}
+
+.server-view.theme-midnight .sv-settings-row select:focus,
+.server-view.theme-midnight .sv-settings-row input:focus {
+  border-color:
+    rgba(168, 85, 247, 0.55);
+
+  outline: none;
+
+  box-shadow:
+    0 0 0 3px
+      rgba(168, 85, 247, 0.09);
+}
+
+/* Empty/error states */
+
+.server-view.theme-midnight .sv-empty {
+  color: #786c83;
+}
+
+.server-view.theme-midnight .sv-error {
+  color: #d9a8e8;
+}
+
+/* Lightbox */
+
+.server-view.theme-midnight .sv-lightbox {
+  background:
+    rgba(3, 2, 5, 0.90);
+}
+
+/* Scrollbar */
+
+.server-view.theme-midnight ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.server-view.theme-midnight ::-webkit-scrollbar-track {
+  background: #0a070e;
+}
+
+.server-view.theme-midnight ::-webkit-scrollbar-thumb {
+  background:
+    #33243e;
+
+  border:
+    2px solid #0a070e;
+
+  border-radius: 999px;
+}
+
+.server-view.theme-midnight ::-webkit-scrollbar-thumb:hover {
+  background:
+    #5b3970;
+}
+
+/* Mobile drawer */
+
+.server-view.theme-midnight .sv-drawer-backdrop {
+  background:
+    rgba(3, 2, 5, 0.68);
+}
