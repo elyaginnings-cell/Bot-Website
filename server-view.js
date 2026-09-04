@@ -452,8 +452,16 @@
         encodeURIComponent(activeChannelId);
 
       var response =
-        await fetch(url, {
-          method: "GET",
+  await fetch(url, {
+    method: "GET",
+    credentials: "include",
+    cache: "no-store",
+    headers: {
+      "Accept": "application/json"
+    }
+  });
+
+if (!response.ok) {
 
       if (!response.ok) {
         throw new Error(
