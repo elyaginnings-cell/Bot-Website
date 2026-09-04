@@ -18,10 +18,10 @@
 
   function esc(value) {
     return String(value == null ? "" : value)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;");
+      .replace(/&/g, "&")
+      .replace(/</g, "<")
+      .replace(/>/g, ">")
+      .replace(/"/g, """);
   }
 
   function getServer() {
@@ -50,7 +50,7 @@
   }
 
   function loadPrefs() {
-    var theme = localStorage.getItem("svTheme") || "midnight";
+    var theme = localStorage.getItem("svTheme") || "discord";
     var density = localStorage.getItem("svDensity") || "default";
     var fontSize = localStorage.getItem("svFontSize") || "16";
 
@@ -85,8 +85,8 @@
     var fontElement = document.getElementById("sv-font-size");
 
     var theme = themeElement
-      ? themeElement.value || "midnight"
-      : "midnight";
+      ? themeElement.value || "discord"
+      : "discord";
 
     var density = densityElement
       ? densityElement.value || "default"
@@ -107,19 +107,14 @@
 
     if (theme === "darker") {
       view.classList.add("theme-darker");
-    }
-
-    if (theme === "light") {
+    } else if (theme === "light") {
       view.classList.add("theme-light");
-    }
-
-    if (theme === "garden") {
+    } else if (theme === "garden") {
       view.classList.add("theme-garden");
-    }
-
-    if (theme === "midnight") {
+    } else if (theme === "midnight") {
       view.classList.add("theme-midnight");
     }
+    // "discord" (and any other) = default Discord palette (no extra class)
 
     if (density === "compact") {
       view.classList.add("density-compact");
@@ -284,30 +279,22 @@
       }
 
       html +=
-        '<div class="sv-category">' +
-          '<div class="sv-category-name">' +
-            esc(category.name || "CATEGORY") +
-          '</div>';
+        '<div class="sv-cat">' +
+          esc(category.name || "CATEGORY") +
+        '</div>';
 
       children.forEach(function (channel) {
         html += renderChannel(channel);
       });
-
-      html += "</div>";
     });
 
     var uncategorized =
       byParent["_none"] || [];
 
     if (uncategorized.length) {
-      html +=
-        '<div class="sv-category">';
-
       uncategorized.forEach(function (channel) {
         html += renderChannel(channel);
       });
-
-      html += "</div>";
     }
 
     list.innerHTML = html;
@@ -337,14 +324,14 @@
 
     return (
       '<button type="button" ' +
-      'class="sv-channel' + active + '" ' +
+      'class="sv-ch' + active + '" ' +
       'data-channel-id="' +
       esc(channel.id) +
       '">' +
-        '<span class="sv-channel-hash">' +
+        '<span class="sv-hash">' +
           icon +
         '</span>' +
-        '<span class="sv-channel-label">' +
+        '<span class="sv-ch-label">' +
           esc(channel.name || "channel") +
         '</span>' +
       '</button>'
@@ -380,11 +367,11 @@
 
     var channel =
       getChannels().find(function (item) {
-        return item.id === channelId;
+      return item.id === channelId;
       });
 
     var channelName =
-      document.getElementById("sv-channel-name");
+      document.getElementById("sv-channel-title");
 
     var channelTopic =
       document.getElementById("sv-channel-topic");
@@ -617,9 +604,9 @@
         'alt="" ' +
         'loading="lazy" ' +
         'referrerpolicy="no-referrer" ' +
-        'onerror="this.onerror=null;this.src=&quot;' +
+        'onerror="this.onerror=null;this.src="' +
         defaultAvatar +
-        '&quot;">';
+        '"">';
     } else {
       avatar =
         '<img class="sv-av" ' +
@@ -752,19 +739,19 @@
 
     escaped =
       escaped.replace(
-        /&lt;@!?(\d+)&gt;/g,
+        /<@!?(\d+)>/g,
         '<span class="sv-mention">@user</span>'
       );
 
     escaped =
       escaped.replace(
-        /&lt;@&amp;(\d+)&gt;/g,
+        /<@&(\d+)>/g,
         '<span class="sv-mention">@role</span>'
       );
 
     escaped =
       escaped.replace(
-        /&lt;#(\d+)&gt;/g,
+        /<#(\d+)>/g,
         '<span class="sv-mention">#channel</span>'
       );
 
@@ -1026,70 +1013,66 @@
         content: content
       };
 
-      if (replyTo && replyTo.id) {
-        payload.replyTo = replyTo.id;
+      if (replyTo) {
+        payload.replyTo = replyTo;
       }
 
       var response =
-        await fetch(
-          "/api/messages",
-          {
-            method: "POST",
-            credentials: "include",
-            headers: {
-              "Content-Type":
-                "application/json",
-              "Accept":
-                "application/json"
-            },
-            body: JSON.stringify(payload)
-          }
-        );
+        await fetch("/api/messages", {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+          },
+          body: JSON.stringify(payload)
+        });
 
       if (!response.ok) {
-        var errorText = "";
-
-        try {
-          var errorData =
-            await response.json();
-
-          errorText =
-            errorData.error ||
-            errorData.message ||
-            "";
-        } catch (_) {
-          errorText = "";
-        }
-
         throw new Error(
-          errorText ||
-          "Unable to send message."
+          "Send failed: " +
+          response.status
         );
       }
 
       input.value = "";
-
       clearReply();
-
-      await loadMessages(true);
+      loadMessages(true);
 
     } catch (error) {
       console.error(
         "Server View send failed:",
         error
       );
-
-      alert(
-        error.message ||
-        "Unable to send message."
-      );
+      alert("Failed to send message.");
     } finally {
       sending = false;
 
       if (send) {
-        send.disabled =
-          !activeChannelId;
+        send.disabled = false;
       }
+
+      if (input) {
+        input.focus();
+      }
+    }
+  }
+
+  function startPoll() {
+    stopPoll();
+
+    pollTimer =
+      setInterval(function () {
+        if (activeChannelId && !loading && !sending) {
+          loadMessages(false);
+        }
+      }, 4000);
+  }
+
+  function stopPoll() {
+    if (pollTimer) {
+      clearInterval(pollTimer);
+      pollTimer = null;
     }
   }
 
@@ -1102,25 +1085,24 @@
     if (bar) {
       bar.hidden = true;
     }
-
-    var label =
-      document.getElementById("sv-reply-label");
-
-    if (label) {
-      label.textContent =
-        "Replying…";
-    }
   }
 
   function setReply(message) {
-    if (!message) {
+    if (!message || !message.id) {
       return;
     }
 
-    replyTo = message;
+    replyTo = message.id;
+
+    var bar =
+      document.getElementById("sv-reply-bar");
 
     var label =
       document.getElementById("sv-reply-label");
+
+    if (bar) {
+      bar.hidden = false;
+    }
 
     if (label) {
       var author =
@@ -1130,148 +1112,68 @@
         author.displayName ||
         author.globalName ||
         author.username ||
-        "Unknown";
+        "message";
 
       label.textContent =
-        "Replying to " +
-        name;
-    }
-
-    var bar =
-      document.getElementById("sv-reply-bar");
-
-    if (bar) {
-      bar.hidden = false;
-    }
-
-    var input =
-      document.getElementById("sv-input");
-
-    if (input) {
-      input.focus();
+        "Replying to " + name;
     }
   }
 
   function onMessagesClick(event) {
-    var imageButton =
-      event.target.closest &&
-      event.target.closest(
-        "[data-lightbox]"
-      );
+    var target = event.target;
 
-    if (imageButton) {
-      openLightbox(
-        imageButton.getAttribute(
-          "data-lightbox"
-        )
-      );
-
+    if (!target) {
       return;
     }
 
-    var messageElement =
-      event.target.closest &&
-      event.target.closest(
-        ".sv-msg"
-      );
+    var lightboxBtn =
+      target.closest("[data-lightbox]");
 
-    if (!messageElement) {
+    if (lightboxBtn) {
+      var url =
+        lightboxBtn.getAttribute("data-lightbox");
+
+      openLightbox(url);
       return;
     }
 
-    var id =
-      messageElement.getAttribute(
-        "data-message-id"
-      );
+    var msg =
+      target.closest("[data-message-id]");
 
-    if (!id) {
-      return;
-    }
-
-    var message =
-      lastMessages.find(function (item) {
-        return item &&
-          String(item.id) === String(id);
-      });
-
-    if (
-      event.target.closest &&
-      event.target.closest(
-        "a,button,img"
-      )
-    ) {
-      return;
-    }
-
-    if (message) {
-      setReply(message);
+    if (msg && target.closest(".sv-msg-meta")) {
+      // could add reply button later
     }
   }
 
   function openLightbox(url) {
-    var lightbox =
-      document.getElementById(
-        "sv-lightbox"
-      );
+    var box =
+      document.getElementById("sv-lightbox");
 
-    var image =
-      document.getElementById(
-        "sv-lightbox-img"
-      );
+    var img =
+      document.getElementById("sv-lightbox-img");
 
-    if (!lightbox || !image || !url) {
+    if (!box || !img || !url) {
       return;
     }
 
-    image.src = url;
-    lightbox.hidden = false;
+    img.src = url;
+    box.hidden = false;
   }
 
   function closeLightbox() {
-    var lightbox =
-      document.getElementById(
-        "sv-lightbox"
-      );
+    var box =
+      document.getElementById("sv-lightbox");
 
-    var image =
-      document.getElementById(
-        "sv-lightbox-img"
-      );
+    var img =
+      document.getElementById("sv-lightbox-img");
 
-    if (image) {
-      image.src = "";
+    if (box) {
+      box.hidden = true;
     }
 
-    if (lightbox) {
-      lightbox.hidden = true;
+    if (img) {
+      img.src = "";
     }
-  }
-
-  function startPoll() {
-    stopPoll();
-
-    pollTimer =
-      setInterval(
-        function () {
-          if (
-            document.body.classList.contains(
-              "server-view-open"
-            ) &&
-            activeChannelId
-          ) {
-            loadMessages(false);
-          }
-        },
-        5000
-      );
-  }
-
-  function stopPoll() {
-    if (pollTimer) {
-      clearInterval(pollTimer);
-    }
-
-    pollTimer = null;
   }
 
   function bindOnce() {
@@ -1281,25 +1183,35 @@
 
     bound = true;
 
-    var closeButton =
-      document.getElementById(
-        "close-server-view"
-      );
+    var back =
+      document.getElementById("sv-back");
 
-    if (closeButton) {
-      closeButton.addEventListener(
+    if (back) {
+      back.addEventListener(
         "click",
         closeServerView
       );
     }
 
-    var backButton =
-      document.getElementById("sv-back");
+    var closeBtn =
+      document.getElementById(
+        "close-server-view"
+      );
 
-    if (backButton) {
-      backButton.addEventListener(
+    if (closeBtn) {
+      closeBtn.addEventListener(
         "click",
         closeServerView
+      );
+    }
+
+    var composer =
+      document.getElementById("sv-composer");
+
+    if (composer) {
+      composer.addEventListener(
+        "submit",
+        sendMessage
       );
     }
 
@@ -1315,25 +1227,13 @@
       );
     }
 
-    var form =
-      document.getElementById(
-        "sv-composer"
-      );
-
-    if (form) {
-      form.addEventListener(
-        "submit",
-        sendMessage
-      );
-    }
-
-    var settingsButton =
+    var settingsBtn =
       document.getElementById(
         "sv-settings-btn"
       );
 
-    if (settingsButton) {
-      settingsButton.addEventListener(
+    if (settingsBtn) {
+      settingsBtn.addEventListener(
         "click",
         function () {
           var panel =
