@@ -7,7 +7,7 @@
   }
   if (!document.querySelector('script[src*="login-auth.js"]')) {
     const s = document.createElement("script");
-    s.src = "login-auth.js?v=3";
+    s.src = "login-auth.js?v=4";
     document.head.appendChild(s);
   }
   if (!document.querySelector('script[src*="theme-boot.js"]')) {
