@@ -1,32 +1,222 @@
 /* =========================================================
-   MIDNIGHT PURPLE (OPTIMIZED PATCH)
+   GATTO DISCORD BOT DASHBOARD — SERVER VIEW STYLESHEET
    ========================================================= */
 
-.server-view.theme-midnight .sv-composer input::placeholder {
-  color: #a08eb0; /* Improved contrast for readability */
+.server-view {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
 }
 
-.server-view.theme-midnight .sv-composer:focus-within {
-  border-color: rgba(168, 85, 247, 0.75);
-  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.18);
+.server-view[hidden] {
+  display: none !important;
+}
+
+.sv-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  width: 100%;
+}
+
+.sv-topbar {
+  height: 60px;
+  background: rgba(13, 10, 20, 0.95);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  backdrop-filter: blur(16px);
+}
+
+.sv-topbar-left, .sv-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sv-server-name {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--text);
+}
+
+.sv-server-pill {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.sv-icon-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-soft);
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.sv-icon-btn:hover {
+  background: rgba(255, 77, 240, 0.1);
+  color: #fff;
+  border-color: var(--border-strong);
+}
+
+.sv-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+.sv-channels {
+  width: 260px;
+  background: rgba(10, 5, 18, 0.95);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+}
+
+.sv-channels-head {
+  padding: 16px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sv-channel-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sv-ch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  color: var(--text-soft);
+  font-size: 14px;
+  cursor: pointer;
+  transition: var(--transition);
+  background: transparent;
+  border: none;
+  width: 100%;
+  text-align: left;
+}
+
+.sv-ch:hover {
+  background: rgba(255, 77, 240, 0.08);
+  color: var(--text);
+}
+
+.sv-ch.active {
+  background: linear-gradient(135deg, rgba(255, 77, 240, 0.2), rgba(184, 61, 255, 0.15));
+  color: #fff;
+  border: 1px solid var(--border);
+}
+
+.sv-chat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: rgba(7, 3, 13, 0.85);
+  position: relative;
+  min-width: 0;
+}
+
+.sv-chat-head {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(13, 10, 20, 0.7);
+  backdrop-filter: blur(12px);
+}
+
+.sv-chat-header-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sv-channel-icon {
+  font-size: 18px;
+  color: var(--pink);
+}
+
+.sv-channel-name {
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--text);
+}
+
+.sv-channel-topic {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.sv-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sv-composer-wrap {
+  padding: 16px 20px;
+  background: rgba(13, 10, 20, 0.95);
+  border-top: 1px solid var(--border);
+}
+
+.sv-composer {
+  display: flex;
+  gap: 12px;
+  background: rgba(20, 9, 34, 0.8);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 8px 12px;
+  align-items: center;
+}
+
+.sv-composer input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-size: 14px;
   outline: none;
 }
 
-/* Smooth out scrollbar interactions */
-.server-view.theme-midnight ::-webkit-scrollbar-thumb {
-  background: #402c52;
-  border-radius: 4px;
-  transition: background 160ms ease;
+.sv-send-btn {
+  background: linear-gradient(135deg, var(--pink), var(--purple));
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 8px 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
 }
 
-.server-view.theme-midnight ::-webkit-scrollbar-thumb:hover {
-  background: #6b478a; /* Slightly richer hover state */
-}
-
-/* Polished Settings Panel Inputs */
-.server-view.theme-midnight .sv-settings-panel select:focus,
-.server-view.theme-midnight .sv-settings-panel input:focus {
-  border-color: var(--sv-brand);
-  box-shadow: 0 0 10px rgba(168, 85, 247, 0.25);
-  outline: none;
+.sv-send-btn:hover {
+  opacity: 0.9;
 }
