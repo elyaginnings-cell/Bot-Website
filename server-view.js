@@ -1011,9 +1011,13 @@
         payload.replyTo = replyTo;
       }
 
-      var response =
-        await fetch("/api/messages", {
-          method: "POST",
+      var response = await fetch(
+  "/api/messages?guildId=" +
+    encodeURIComponent(server.id) +
+    "&channelId=" +
+    encodeURIComponent(activeChannelId),
+  {
+    method: "POST",
           credentials: "include",
           headers: {
             "Content-Type": "application/json",
