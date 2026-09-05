@@ -1,4 +1,17 @@
+import { clearSessionCookies } from "../lib/session.js";
+
+function isLogoutRequest(req) {
+  const url = String(req.url || "");
+  const action = String(req.query?.action || "");
+  return action === "logout" || url.includes("/logout") || url.includes("action=logout");
+}
+
 export default function handler(req, res) {
+  if (isLogoutRequest(req)) {
+    clearSessionCookies(res);
+    return res.redirect(302, "/");
+  }
+
   const clientId = process.env.DISCORD_CLIENT_ID;
   const redirectUri = process.env.DISCORD_REDIRECT_URI;
 
