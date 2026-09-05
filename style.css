@@ -1,3 +1,27 @@
 @import url("style-part-1.css");
 @import url("style-part-2.css");
 @import url("style-part-3.css");
+
+/* Minimal fix only: keep server picker above other cards */
+.server-bar {
+  position: relative;
+  z-index: 400;
+  overflow: visible !important;
+}
+
+.server-selector {
+  position: relative;
+  z-index: 410;
+  overflow: visible !important;
+}
+
+.server-list {
+  z-index: 5000 !important;
+}
+
+.main,
+.content,
+.header.card,
+.server-bar.card {
+  overflow: visible !important;
+}
