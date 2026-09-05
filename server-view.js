@@ -18,10 +18,10 @@
 
   function esc(value) {
     return String(value == null ? "" : value)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;");
+      .replace(/&/g, "&")
+      .replace(/</g, "<")
+      .replace(/>/g, ">")
+      .replace(/"/g, """);
   }
 
   function getServer() {
@@ -396,11 +396,16 @@
     sending = true;
     input.disabled = true;
     try {
-      var body = { guildId: server.id, channelId: activeChannelId, content: content };
+      var body = { content: content };
       var nameInput = document.getElementById("sv-display-name");
       if (nameInput && nameInput.value.trim()) body.displayName = nameInput.value.trim().slice(0, 80);
       if (replyTo && replyTo.id) body.replyTo = replyTo.id;
-      var response = await fetch("/api/messages", {
+      var postUrl =
+        "/api/messages?guildId=" +
+        encodeURIComponent(server.id) +
+        "&channelId=" +
+        encodeURIComponent(activeChannelId);
+      var response = await fetch(postUrl, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json", "Accept": "application/json" },
