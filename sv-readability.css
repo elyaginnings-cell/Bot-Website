@@ -1,0 +1,54 @@
+/* Server view readability overrides */
+.server-view {
+  color: #ffffff !important;
+  --sv-text: #ffffff;
+  --sv-text-muted: #c4c8ce;
+  --sv-header: #ffffff;
+  --sv-interactive: #e3e5e8;
+  --sv-interactive-hover: #ffffff;
+  --sv-interactive-active: #ffffff;
+}
+
+.server-view .sv-msg-content,
+.server-view .sv-author,
+.server-view .sv-channel-title,
+.server-view .sv-server-pill,
+.server-view .sv-ch,
+.server-view .sv-embed-desc,
+.server-view .sv-embed-field-value,
+.server-view .sv-embed-title {
+  color: #ffffff !important;
+}
+
+.server-view .sv-text-muted,
+.server-view .sv-time,
+.server-view .sv-cat,
+.server-view .sv-hash {
+  color: #c4c8ce !important;
+}
+
+.server-view .sv-name-wrap input,
+.server-view #sv-input,
+.server-view textarea,
+.server-view select {
+  color: #ffffff !important;
+}
+
+@media (max-width: 768px) {
+  .server-view .sv-topbar {
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 8px;
+  }
+  .server-view .sv-top-left {
+    flex: 1;
+    min-width: 0;
+    flex-wrap: wrap;
+  }
+  .server-view .sv-composer {
+    padding-bottom: max(10px, env(safe-area-inset-bottom));
+  }
+  .server-view .sv-messages {
+    padding: 8px 0 12px;
+  }
+}
