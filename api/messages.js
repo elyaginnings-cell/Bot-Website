@@ -17,8 +17,19 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: "Missing DASHBOARD_API_SECRET" });
     }
 
-    const guildId = req.query?.guildId;
-    const channelId = req.query?.channelId;
+    // Prefer query params; for POST also accept body
+    let guildId = req.query?.guildId;
+    let channelId = req.query?.channelId;
+
+    if (req.method === "POST") {
+      const body =
+        typeof req.body === "string"
+          ? JSON.parse(req.body || "{}")
+          : req.body || {};
+      if (!guildId) guildId = body.guildId;
+      if (!channelId) channelId = body.channelId;
+    }
+
     if (!guildId || !channelId) {
       return res.status(400).json({ error: "Missing guildId or channelId" });
     }
@@ -46,13 +57,16 @@ export default async function handler(req, res) {
           ? JSON.parse(req.body || "{}")
           : req.body || {};
 
+      // Don't forward guildId/channelId to bot API if present
+      const { guildId: _g, channelId: _c, ...payload } = body;
+
       const response = await fetch(base, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${dashboardSecret}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(body),
+        body: JSON.stringify(payload),
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) return res.status(response.status).json(data);
