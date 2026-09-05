@@ -2,7 +2,93 @@
 @import url("style-part-2.css");
 @import url("style-part-3.css");
 
-/* Minimal fix only: keep server picker above other cards */
+/* =========================================================
+   GLOBAL READABILITY — default theme text is white
+   ========================================================= */
+:root {
+  --text: #ffffff !important;
+  --text-soft: #e8e0f5 !important;
+  --text-muted: #c4b3d9 !important;
+}
+
+html,
+body {
+  color: #ffffff !important;
+  background-color: #07030d;
+  color-scheme: dark;
+}
+
+body,
+h1, h2, h3, h4, h5, h6,
+p, span, strong, label, a,
+.header h1,
+.header p,
+.hero h2,
+.hero p,
+.form-card h2,
+.form-card h3,
+.subhead,
+.eyebrow,
+.form-hint,
+.input-group label,
+.account-info strong,
+.account-info span,
+.server-current strong,
+.label,
+.nav-item,
+.quick-card,
+.quick-card strong,
+.quick-card p,
+.stat-card,
+.stat-card strong,
+.connection-status,
+.sidebar-brand strong,
+.sidebar-brand span {
+  color: #ffffff !important;
+}
+
+.header p,
+.hero p,
+.form-hint,
+.input-group label,
+.account-info span,
+.label,
+.sidebar-brand span,
+.view-mode-label,
+.nav-item:not(.active),
+.quick-card p,
+.connection-status {
+  color: #e0d4f0 !important;
+}
+
+/* Inputs / selects readable on dark */
+input,
+select,
+textarea,
+.view-mode-select {
+  color: #ffffff !important;
+  background: rgba(0, 0, 0, 0.45) !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
+  caret-color: #ffffff;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: rgba(255, 255, 255, 0.45) !important;
+}
+
+select option {
+  background: #160a24 !important;
+  color: #ffffff !important;
+}
+
+.toggle span {
+  color: #ffffff !important;
+}
+
+/* =========================================================
+   SERVER PICKER ABOVE CARDS
+   ========================================================= */
 .server-bar {
   position: relative;
   z-index: 400;
@@ -24,4 +110,300 @@
 .header.card,
 .server-bar.card {
   overflow: visible !important;
+}
+
+/* =========================================================
+   DESKTOP LAYOUT (default + forced desktop)
+   ========================================================= */
+@media (min-width: 961px) {
+  body.mode-auto #app,
+  body.mode-desktop #app {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    padding: 22px;
+    gap: 22px;
+    max-width: 1480px;
+    margin: 0 auto;
+  }
+
+  body.mode-auto .sidebar,
+  body.mode-desktop .sidebar {
+    width: 264px;
+    height: calc(100dvh - 44px);
+    position: sticky;
+    top: 22px;
+    flex-shrink: 0;
+  }
+
+  body.mode-auto .navigation,
+  body.mode-desktop .navigation {
+    flex-direction: column;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  body.mode-auto .main,
+  body.mode-desktop .main {
+    flex: 1;
+    min-width: 0;
+  }
+
+  body.mode-auto .header,
+  body.mode-desktop .header {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  body.mode-auto .header-actions,
+  body.mode-desktop .header-actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+    width: auto;
+  }
+
+  body.mode-auto .stats-grid,
+  body.mode-desktop .stats-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  body.mode-auto .quick-grid.three,
+  body.mode-desktop .quick-grid.three {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  body.mode-auto .config-grid,
+  body.mode-desktop .config-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* =========================================================
+   MOBILE + TABLET (auto under 960px, and forced mobile)
+   ========================================================= */
+@media (max-width: 960px) {
+  body.mode-auto #app,
+  body.mode-mobile #app {
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    gap: 10px;
+    max-width: none;
+    width: 100%;
+  }
+
+  body.mode-auto .sidebar,
+  body.mode-mobile .sidebar {
+    width: 100%;
+    height: auto;
+    max-height: none;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    border-radius: 16px;
+    padding: 12px;
+  }
+
+  body.mode-auto .navigation,
+  body.mode-mobile .navigation {
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    gap: 6px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  body.mode-auto .navigation::-webkit-scrollbar,
+  body.mode-mobile .navigation::-webkit-scrollbar {
+    display: none;
+  }
+
+  body.mode-auto .nav-item,
+  body.mode-mobile .nav-item {
+    white-space: nowrap;
+    flex-shrink: 0;
+    padding: 9px 12px;
+    font-size: 12px;
+    min-height: 40px;
+  }
+
+  body.mode-auto .sidebar-bottom,
+  body.mode-mobile .sidebar-bottom {
+    display: none;
+  }
+
+  body.mode-auto .main,
+  body.mode-mobile .main {
+    width: 100%;
+    min-width: 0;
+  }
+
+  body.mode-auto .header,
+  body.mode-mobile .header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  body.mode-auto .header-actions,
+  body.mode-mobile .header-actions {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    gap: 8px;
+  }
+
+  body.mode-auto .view-mode-wrap,
+  body.mode-mobile .view-mode-wrap,
+  body.mode-auto .account,
+  body.mode-mobile .account,
+  body.mode-auto .header-actions .button,
+  body.mode-mobile .header-actions .button {
+    width: 100%;
+  }
+
+  body.mode-auto .view-mode-wrap,
+  body.mode-mobile .view-mode-wrap {
+    justify-content: space-between;
+  }
+
+  body.mode-auto .account,
+  body.mode-mobile .account {
+    justify-content: space-between;
+  }
+
+  body.mode-auto .server-bar,
+  body.mode-mobile .server-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  body.mode-auto .server-selector,
+  body.mode-mobile .server-selector,
+  body.mode-auto .server-selector .button,
+  body.mode-mobile .server-selector .button {
+    width: 100%;
+  }
+
+  body.mode-auto .server-list,
+  body.mode-mobile .server-list {
+    left: 0;
+    right: 0;
+    width: 100%;
+  }
+
+  body.mode-auto .stats-grid,
+  body.mode-mobile .stats-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  body.mode-auto .quick-grid,
+  body.mode-mobile .quick-grid,
+  body.mode-auto .quick-grid.three,
+  body.mode-mobile .quick-grid.three,
+  body.mode-auto .config-grid,
+  body.mode-mobile .config-grid {
+    grid-template-columns: 1fr;
+  }
+
+  body.mode-auto .level-role-form,
+  body.mode-mobile .level-role-form {
+    grid-template-columns: 1fr;
+  }
+
+  body.mode-auto .card,
+  body.mode-mobile .card {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  body.mode-auto .stats-grid,
+  body.mode-mobile .stats-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  body.mode-auto .header h1,
+  body.mode-mobile .header h1 {
+    font-size: 20px;
+  }
+
+  body.mode-auto .hero h2,
+  body.mode-mobile .hero h2 {
+    font-size: 20px;
+  }
+
+  body.mode-auto .hero-icon,
+  body.mode-mobile .hero-icon {
+    display: none;
+  }
+}
+
+/* Forced mobile mode even on wide screens */
+body.mode-mobile #app {
+  flex-direction: column;
+  padding: 10px;
+  gap: 10px;
+  max-width: none;
+}
+
+body.mode-mobile .sidebar {
+  width: 100%;
+  height: auto;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+body.mode-mobile .navigation {
+  flex-direction: row;
+  overflow-x: auto;
+}
+
+body.mode-mobile .sidebar-bottom {
+  display: none;
+}
+
+body.mode-mobile .header {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+body.mode-mobile .header-actions {
+  flex-direction: column;
+  width: 100%;
+}
+
+body.mode-mobile .server-bar {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+body.mode-mobile .stats-grid {
+  grid-template-columns: 1fr 1fr;
+}
+
+body.mode-mobile .quick-grid,
+body.mode-mobile .quick-grid.three,
+body.mode-mobile .config-grid,
+body.mode-mobile .level-role-form {
+  grid-template-columns: 1fr;
+}
+
+/* Forced desktop mode even on narrow screens */
+body.mode-desktop #app {
+  flex-direction: row;
+  flex-wrap: nowrap;
+}
+
+body.mode-desktop .sidebar {
+  width: 240px;
+  flex-shrink: 0;
+}
+
+body.mode-desktop .navigation {
+  flex-direction: column;
 }
