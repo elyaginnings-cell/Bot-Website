@@ -17,17 +17,43 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: "Missing DASHBOARD_API_SECRET" });
     }
 
-    // Prefer query params; for POST also accept body
     let guildId = req.query?.guildId;
     let channelId = req.query?.channelId;
 
-    if (req.method === "POST") {
-      const body =
-        typeof req.body === "string"
+    const body =
+      req.method === "POST"
+        ? typeof req.body === "string"
           ? JSON.parse(req.body || "{}")
-          : req.body || {};
+          : req.body || {}
+        : {};
+
+    if (req.method === "POST") {
       if (!guildId) guildId = body.guildId;
       if (!channelId) channelId = body.channelId;
+    }
+
+    if (req.method === "POST" && body.action && ["warn", "mute", "ban", "kick"].includes(String(body.action))) {
+      if (!guildId || !body.userId) {
+        return res.status(400).json({ error: "Missing guildId or userId" });
+      }
+      const response = await fetch(`${RAILWAY_API}/api/guild/${guildId}/punish`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${dashboardSecret}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          action: body.action,
+          userId: body.userId,
+          reason: body.reason,
+          duration: body.duration,
+          evidence: body.evidence || null,
+          moderatorTag: body.moderatorTag || "Dashboard",
+        }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) return res.status(response.status).json(data);
+      return res.status(200).json(data);
     }
 
     if (!guildId || !channelId) {
@@ -52,14 +78,7 @@ export default async function handler(req, res) {
     }
 
     if (req.method === "POST") {
-      const body =
-        typeof req.body === "string"
-          ? JSON.parse(req.body || "{}")
-          : req.body || {};
-
-      // Don't forward guildId/channelId to bot API if present
       const { guildId: _g, channelId: _c, ...payload } = body;
-
       const response = await fetch(base, {
         method: "POST",
         headers: {
