@@ -3,37 +3,11 @@
  * Editable in Settings. Defaults match Amazon branding.
  */
 (function () {
-  // Amazon "a" smile mark (from provided logo), 32x32 PNG
-  var DEFAULT_ICON =
-    "data:image/png;base64," +
-    "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAIAAAD8GO2jAAABuklEQVR4nO2Wv0vDUBDH3zVp" +
-    "WttqBQdBHRwUHFwEBwdxcXBxcHBwcHBwcHBxcHBwcHBwdnFwcHBwcHBwdnFwEBwcHBwcHBwd" +
-    "HBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHB" +
-    "wdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwd" +
-    "HBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHB" +
-    "wdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwd" +
-    "HBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHB" +
-    "wdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwd" +
-    "HBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHB" +
-    "wdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwd" +
-    "HBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHB" +
-    "wdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwd" +
-    "HBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHB" +
-    "wdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwd" +
-    "HBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHB" +
-    "wdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwd" +
-    "HBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHB" +
-    "wdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwd" +
-    "HBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHB" +
-    "wdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwdHBwd" +
-    "AAA=";
-
-  // Prefer the real PNG asset when present; fall back to inline mark
   var DEFAULTS = {
     siteName: "Amazon.com. Spend Less. Smile More.",
     shortName: "Amazon",
     tagline: "Spend Less. Smile More.",
-    iconUrl: "/amazon-favicon.png"
+    iconUrl: "/amazon-favicon.svg"
   };
 
   function load() {
@@ -68,12 +42,13 @@
     if (!links.length) {
       var link = document.createElement("link");
       link.rel = "icon";
-      link.type = "image/png";
+      link.type = url.indexOf(".svg") >= 0 ? "image/svg+xml" : "image/png";
       document.head.appendChild(link);
       links = [link];
     }
     Array.prototype.forEach.call(links, function (link) {
-      link.href = url;
+      link.href = url + (url.indexOf("data:") === 0 ? "" : (url.indexOf("?") >= 0 ? "&" : "?") + "v=1");
+      if (url.indexOf(".svg") >= 0) link.type = "image/svg+xml";
     });
   }
 
@@ -94,11 +69,7 @@
       var img = document.createElement("img");
       img.src = brand.iconUrl;
       img.alt = brand.shortName;
-      img.onerror = function () {
-        img.onerror = null;
-        img.src = DEFAULT_ICON;
-      };
-      img.style.cssText = "width:100%;height:100%;object-fit:contain;border-radius:8px";
+      img.style.cssText = "width:100%;height:100%;object-fit:contain;border-radius:8px;background:#fff";
       brandIcon.appendChild(img);
     }
 
@@ -114,11 +85,7 @@
       var limg = document.createElement("img");
       limg.src = brand.iconUrl;
       limg.alt = brand.shortName;
-      limg.onerror = function () {
-        limg.onerror = null;
-        limg.src = DEFAULT_ICON;
-      };
-      limg.style.cssText = "width:64px;height:64px;object-fit:contain";
+      limg.style.cssText = "width:64px;height:64px;object-fit:contain;background:#fff;border-radius:12px";
       loginIcon.appendChild(limg);
     }
 
@@ -134,10 +101,6 @@
     var preview = document.getElementById("site-icon-preview");
     if (preview) {
       preview.src = brand.iconUrl;
-      preview.onerror = function () {
-        preview.onerror = null;
-        preview.src = DEFAULT_ICON;
-      };
       preview.hidden = false;
     }
 
