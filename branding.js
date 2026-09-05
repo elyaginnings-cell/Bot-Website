@@ -1,116 +1,30 @@
 /**
- * Site branding — name, tagline, tab icon
- * Editable in Settings. Defaults match Amazon branding.
+ * Site branding — ONLY the browser tab title is customizable.
+ * The rest of the dashboard stays as Coffee Shop / your bot.
  */
 (function () {
-  var DEFAULTS = {
-    siteName: "Amazon.com. Spend Less. Smile More.",
-    shortName: "Amazon",
-    tagline: "Spend Less. Smile More.",
-    iconUrl: "/amazon-favicon.svg"
-  };
+  var DEFAULT_TAB_TITLE = "Amazon.com. Spend Less. Smile More.";
 
-  function load() {
+  function loadTabTitle() {
     try {
-      var raw = localStorage.getItem("siteBranding");
-      if (!raw) return Object.assign({}, DEFAULTS);
-      var parsed = JSON.parse(raw);
-      return {
-        siteName: (parsed.siteName && String(parsed.siteName).trim()) || DEFAULTS.siteName,
-        shortName: (parsed.shortName && String(parsed.shortName).trim()) || DEFAULTS.shortName,
-        tagline: (parsed.tagline && String(parsed.tagline).trim()) || DEFAULTS.tagline,
-        iconUrl: (parsed.iconUrl && String(parsed.iconUrl).trim()) || DEFAULTS.iconUrl
-      };
-    } catch (e) {
-      return Object.assign({}, DEFAULTS);
-    }
+      var raw = localStorage.getItem("siteTabTitle");
+      if (raw && String(raw).trim()) return String(raw).trim();
+    } catch (e) {}
+    return DEFAULT_TAB_TITLE;
   }
 
-  function save(data) {
-    var next = {
-      siteName: (data.siteName && String(data.siteName).trim()) || DEFAULTS.siteName,
-      shortName: (data.shortName && String(data.shortName).trim()) || DEFAULTS.shortName,
-      tagline: (data.tagline && String(data.tagline).trim()) || DEFAULTS.tagline,
-      iconUrl: (data.iconUrl && String(data.iconUrl).trim()) || DEFAULTS.iconUrl
-    };
-    localStorage.setItem("siteBranding", JSON.stringify(next));
+  function saveTabTitle(title) {
+    var next = (title && String(title).trim()) || DEFAULT_TAB_TITLE;
+    try {
+      localStorage.setItem("siteTabTitle", next);
+    } catch (e) {}
     return next;
   }
 
-  function ensureFavicon(url) {
-    var links = document.querySelectorAll('link[rel="icon"], link[rel="shortcut icon"]');
-    if (!links.length) {
-      var link = document.createElement("link");
-      link.rel = "icon";
-      link.type = url.indexOf(".svg") >= 0 ? "image/svg+xml" : "image/png";
-      document.head.appendChild(link);
-      links = [link];
-    }
-    Array.prototype.forEach.call(links, function (link) {
-      link.href = url + (url.indexOf("data:") === 0 ? "" : (url.indexOf("?") >= 0 ? "&" : "?") + "v=1");
-      if (url.indexOf(".svg") >= 0) link.type = "image/svg+xml";
-    });
-  }
-
-  function apply(brand) {
-    brand = brand || load();
-    document.title = brand.siteName;
-    ensureFavicon(brand.iconUrl);
-
-    var brandStrong = document.querySelector(".sidebar-brand strong");
-    if (brandStrong) brandStrong.textContent = brand.shortName;
-
-    var brandSpan = document.querySelector(".sidebar-brand span");
-    if (brandSpan) brandSpan.textContent = brand.tagline;
-
-    var brandIcon = document.querySelector(".brand-icon");
-    if (brandIcon) {
-      brandIcon.innerHTML = "";
-      var img = document.createElement("img");
-      img.src = brand.iconUrl;
-      img.alt = brand.shortName;
-      img.style.cssText = "width:100%;height:100%;object-fit:contain;border-radius:8px;background:#fff";
-      brandIcon.appendChild(img);
-    }
-
-    var loginH1 = document.querySelector(".login-card h1");
-    if (loginH1) loginH1.textContent = brand.shortName;
-
-    var loginP = document.querySelector(".login-card > p");
-    if (loginP) loginP.textContent = brand.tagline;
-
-    var loginIcon = document.querySelector(".login-icon");
-    if (loginIcon) {
-      loginIcon.innerHTML = "";
-      var limg = document.createElement("img");
-      limg.src = brand.iconUrl;
-      limg.alt = brand.shortName;
-      limg.style.cssText = "width:64px;height:64px;object-fit:contain;background:#fff;border-radius:12px";
-      loginIcon.appendChild(limg);
-    }
-
+  function applyTabTitle(title) {
+    document.title = title || loadTabTitle();
     var nameEl = document.getElementById("site-name");
-    var shortEl = document.getElementById("site-short-name");
-    var tagEl = document.getElementById("site-tagline");
-    var iconEl = document.getElementById("site-icon-url");
-    if (nameEl) nameEl.value = brand.siteName;
-    if (shortEl) shortEl.value = brand.shortName;
-    if (tagEl) tagEl.value = brand.tagline;
-    if (iconEl) iconEl.value = brand.iconUrl.indexOf("data:") === 0 ? "" : brand.iconUrl;
-
-    var preview = document.getElementById("site-icon-preview");
-    if (preview) {
-      preview.src = brand.iconUrl;
-      preview.hidden = false;
-    }
-
-    window.__siteBranding = brand;
-  }
-
-  function resetDefaults() {
-    localStorage.removeItem("siteBranding");
-    apply(Object.assign({}, DEFAULTS));
-    return Object.assign({}, DEFAULTS);
+    if (nameEl) nameEl.value = document.title;
   }
 
   function bindSettings() {
@@ -118,24 +32,12 @@
     if (saveBtn && !saveBtn.__bound) {
       saveBtn.__bound = true;
       saveBtn.addEventListener("click", function () {
-        var iconVal =
-          (document.getElementById("site-icon-url") &&
-            document.getElementById("site-icon-url").value.trim()) ||
-          "";
-        var current = load();
-        var data = {
-          siteName: document.getElementById("site-name") && document.getElementById("site-name").value,
-          shortName:
-            document.getElementById("site-short-name") &&
-            document.getElementById("site-short-name").value,
-          tagline: document.getElementById("site-tagline") && document.getElementById("site-tagline").value,
-          iconUrl: iconVal || current.iconUrl || DEFAULTS.iconUrl
-        };
-        var saved = save(data);
-        apply(saved);
+        var nameEl = document.getElementById("site-name");
+        var next = saveTabTitle(nameEl && nameEl.value);
+        applyTabTitle(next);
         var status = document.getElementById("branding-status");
         if (status) {
-          status.textContent = "Saved. Tab title and icon updated.";
+          status.textContent = "Tab title saved.";
           status.style.color = "#57F287";
         }
       });
@@ -144,43 +46,21 @@
     if (resetBtn && !resetBtn.__bound) {
       resetBtn.__bound = true;
       resetBtn.addEventListener("click", function () {
-        resetDefaults();
+        try {
+          localStorage.removeItem("siteTabTitle");
+        } catch (e) {}
+        applyTabTitle(DEFAULT_TAB_TITLE);
         var status = document.getElementById("branding-status");
         if (status) {
-          status.textContent = "Reset to Amazon defaults.";
+          status.textContent = "Tab title reset to default.";
           status.style.color = "#57F287";
         }
-      });
-    }
-    var fileInput = document.getElementById("site-icon-file");
-    if (fileInput && !fileInput.__bound) {
-      fileInput.__bound = true;
-      fileInput.addEventListener("change", function () {
-        var file = fileInput.files && fileInput.files[0];
-        if (!file) return;
-        if (file.size > 500000) {
-          alert("Icon must be under 500KB");
-          return;
-        }
-        var reader = new FileReader();
-        reader.onload = function () {
-          var current = load();
-          current.iconUrl = String(reader.result);
-          save(current);
-          apply(current);
-          var status = document.getElementById("branding-status");
-          if (status) {
-            status.textContent = "Icon uploaded.";
-            status.style.color = "#57F287";
-          }
-        };
-        reader.readAsDataURL(file);
       });
     }
   }
 
   function boot() {
-    apply(load());
+    applyTabTitle(loadTabTitle());
     bindSettings();
   }
 
@@ -194,8 +74,4 @@
     var t = e.target && e.target.closest && e.target.closest('[data-tab="settings"]');
     if (t) setTimeout(bindSettings, 0);
   });
-
-  window.__applySiteBranding = apply;
-  window.__loadSiteBranding = load;
-  window.__resetSiteBranding = resetDefaults;
 })();

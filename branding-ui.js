@@ -1,4 +1,4 @@
-/** Inject Settings branding form if missing */
+/** Settings: tab title only */
 (function () {
   function ensureSettingsForm() {
     var section = document.getElementById("settings");
@@ -7,23 +7,12 @@
     section.innerHTML =
       '<div class="card form-card wide">' +
       '<span class="eyebrow">SETTINGS</span>' +
-      '<h2>Website branding</h2>' +
-      '<p class="form-hint">Change the tab name, sidebar name, and tab icon. Defaults match Amazon.</p>' +
-      '<div class="input-group"><label for="site-name">Browser tab title</label>' +
+      '<h2>Browser tab title</h2>' +
+      '<p class="form-hint">This only changes the name in the browser tab. Your dashboard stays Coffee Shop / your bot.</p>' +
+      '<div class="input-group"><label for="site-name">Tab title</label>' +
       '<input id="site-name" type="text" maxlength="120" placeholder="Amazon.com. Spend Less. Smile More."></div>' +
-      '<div class="input-group"><label for="site-short-name">Short name (sidebar &amp; login)</label>' +
-      '<input id="site-short-name" type="text" maxlength="40" placeholder="Amazon"></div>' +
-      '<div class="input-group"><label for="site-tagline">Tagline</label>' +
-      '<input id="site-tagline" type="text" maxlength="80" placeholder="Spend Less. Smile More."></div>' +
-      '<div class="input-group"><label for="site-icon-url">Tab icon URL (optional)</label>' +
-      '<input id="site-icon-url" type="url" placeholder="Leave blank to keep current / default Amazon icon"></div>' +
-      '<div class="input-group"><label for="site-icon-file">Or upload icon</label>' +
-      '<input id="site-icon-file" type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml"></div>' +
-      '<div class="input-group" style="display:flex;align-items:center;gap:12px">' +
-      '<img id="site-icon-preview" alt="Icon preview" width="48" height="48" style="border-radius:8px;background:#fff;object-fit:contain">' +
-      '<span class="form-hint" style="margin:0">Preview</span></div>' +
-      '<button class="button" id="save-branding" type="button">Save branding</button> ' +
-      '<button class="button secondary" id="reset-branding" type="button">Reset to Amazon</button>' +
+      '<button class="button" id="save-branding" type="button">Save tab title</button> ' +
+      '<button class="button secondary" id="reset-branding" type="button">Reset default</button>' +
       '<p class="form-hint" id="branding-status"></p>' +
       '<h3 class="subhead">Layout</h3>' +
       '<p class="form-hint">Use the View selector in the header for Auto / Desktop / Mobile.</p>' +
