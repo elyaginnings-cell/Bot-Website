@@ -1,11 +1,22 @@
 (function(){
-  var a=document.createElement("script");
-  a.src="script-part1.js?v=revert1";
-  a.onload=function(){
-    var b=document.createElement("script");
-    b.src="script-part2.js?v=revert1";
-    document.head.appendChild(b);
-  };
-  a.onerror=function(){console.error("Failed loading script-part1");};
-  document.head.appendChild(a);
+  function load(src){
+    return new Promise(function(resolve, reject){
+      var s = document.createElement("script");
+      s.src = src;
+      s.onload = function(){ resolve(); };
+      s.onerror = function(){ reject(new Error("Failed to load " + src)); };
+      document.head.appendChild(s);
+    });
+  }
+  load("script-part1.js?v=fix2")
+    .then(function(){ return load("script-part2.js?v=fix2"); })
+    .then(function(){
+      if (typeof bootDashboard === "function") bootDashboard();
+      else if (typeof setupEventListeners === "function") {
+        try { setupEventListeners(); } catch(e) {}
+        try { if (typeof initViewMode === "function") initViewMode(); } catch(e) {}
+        try { if (typeof checkLogin === "function") checkLogin(); } catch(e) {}
+      }
+    })
+    .catch(function(err){ console.error(err); });
 })();

@@ -47,11 +47,14 @@ const SHOP_TYPE_META = {
   daily_reset: { role: false, duration: false, amount: false, title: false, hint: "Reset daily claim." },
 };
 
-document.addEventListener("DOMContentLoaded", () => {
+function bootDashboard() {
+  if (window.__dashboardBooted) return;
+  window.__dashboardBooted = true;
   initViewMode();
   setupEventListeners();
   checkLogin();
-});
+}
+window.bootDashboard = bootDashboard;
 
 function initViewMode() {
   const select = document.getElementById("view-mode");
