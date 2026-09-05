@@ -64,7 +64,6 @@ export default async function handler(req, res) {
       ? botStorage.hasDatabaseUrl !== false
       : null;
 
-    // Prefer website Postgres for the Memory badge (dashboard saves live there)
     let label = "…";
     if (websitePostgresOk && botUsingPg) label = "Postgres ✓";
     else if (websitePostgresOk) label = "Website Postgres ✓";
@@ -74,9 +73,16 @@ export default async function handler(req, res) {
     else if (bot) label = "Online";
     else label = "Offline";
 
+    const clientId =
+      process.env.DISCORD_CLIENT_ID ||
+      bot?.bot?.id ||
+      bot?.id ||
+      null;
+
     return res.status(200).json({
       online: !!bot?.online,
       bot,
+      clientId,
       storage: {
         usingPostgres: websitePostgresOk || botUsingPg,
         websitePostgres: websitePostgresOk,

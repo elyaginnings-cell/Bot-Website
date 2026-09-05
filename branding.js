@@ -76,18 +76,11 @@
     if (!urlEl) return;
     var info = await fetchBotInfo();
     var clientId =
+      (info && info.clientId) ||
+      (info && info.bot && info.bot.clientId) ||
       (info && info.bot && info.bot.bot && info.bot.bot.id) ||
       (info && info.bot && info.bot.id) ||
       null;
-    // /api/bot-status returns { bot: { online, bot: {id...}, ... } }
-    if (!clientId && info && info.bot && info.bot.bot) clientId = info.bot.bot.id;
-    if (!clientId && info && info.bot && info.bot.id) clientId = info.bot.id;
-    // nested shape from our proxy
-    try {
-      if (!clientId && info && info.bot && info.bot.bot && info.bot.bot.id) {
-        clientId = info.bot.bot.id;
-      }
-    } catch (e) {}
     var perms = permsEl ? permsEl.value : "8";
     if (!clientId) {
       urlEl.value = "";
