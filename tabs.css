@@ -1,0 +1,155 @@
+/* Destination tabs — desktop rail + mobile dock */
+
+.navigation {
+  display: flex !important;
+  flex-direction: column;
+  gap: 6px !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  padding: 4px 2px 8px;
+}
+
+.nav-item {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 12px !important;
+  width: 100%;
+  min-height: 44px !important;
+  padding: 10px 12px !important;
+  border-radius: 14px !important;
+  border: 1px solid transparent !important;
+  background: rgba(255, 255, 255, 0.03) !important;
+  color: #efe6f8 !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  line-height: 1.2;
+  text-align: left;
+}
+
+.nav-item span {
+  width: 28px !important;
+  height: 28px !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px !important;
+  border-radius: 9px;
+  background: rgba(255, 77, 240, 0.12);
+  flex-shrink: 0;
+}
+
+.nav-item em {
+  font-style: normal !important;
+  font-weight: 650;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nav-item:hover {
+  background: rgba(255, 77, 240, 0.1) !important;
+  border-color: rgba(255, 77, 240, 0.22) !important;
+}
+
+.nav-item.active {
+  background: linear-gradient(135deg, rgba(255, 77, 240, 0.95), rgba(181, 59, 255, 0.95)) !important;
+  color: #fff !important;
+  box-shadow: 0 8px 22px rgba(255, 77, 240, 0.24);
+}
+
+.nav-item.active span {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+@media (min-width: 961px) {
+  body.mode-auto .sidebar,
+  body.mode-desktop .sidebar {
+    width: 248px !important;
+  }
+  body.mode-auto .navigation,
+  body.mode-desktop .navigation {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+}
+
+@media (max-width: 960px) {
+  body.mode-auto #app,
+  body.mode-mobile #app {
+    padding-bottom: 92px !important;
+  }
+  body.mode-auto .sidebar,
+  body.mode-mobile .sidebar {
+    position: static !important;
+    height: auto !important;
+    border-radius: 16px !important;
+  }
+  body.mode-auto .navigation,
+  body.mode-mobile .navigation {
+    position: fixed;
+    left: 10px;
+    right: 10px;
+    bottom: max(10px, env(safe-area-inset-bottom));
+    z-index: 80;
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    gap: 8px !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    padding: 8px;
+    border: 1px solid rgba(255, 77, 240, 0.28);
+    border-radius: 18px;
+    background: rgba(14, 6, 24, 0.94);
+    backdrop-filter: blur(18px);
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  body.mode-auto .navigation::-webkit-scrollbar,
+  body.mode-mobile .navigation::-webkit-scrollbar {
+    display: none;
+  }
+  body.mode-auto .nav-item,
+  body.mode-mobile .nav-item {
+    flex: 0 0 auto !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 4px !important;
+    min-width: 72px !important;
+    min-height: 58px !important;
+    padding: 8px 10px !important;
+    font-size: 11px !important;
+  }
+  body.mode-auto .nav-item em,
+  body.mode-mobile .nav-item em {
+    font-size: 11px;
+    max-width: 70px;
+  }
+}
+
+body.mode-mobile #app { padding-bottom: 92px !important; }
+body.mode-mobile .navigation {
+  position: fixed;
+  left: 10px;
+  right: 10px;
+  bottom: max(10px, env(safe-area-inset-bottom));
+  z-index: 80;
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  gap: 8px !important;
+  overflow-x: auto !important;
+  padding: 8px;
+  border-radius: 18px;
+  background: rgba(14, 6, 24, 0.94);
+}
+body.mode-mobile .nav-item {
+  flex-direction: column !important;
+  min-width: 72px !important;
+  min-height: 58px !important;
+}
+body.mode-desktop .sidebar { width: 248px !important; }
+body.mode-desktop .navigation { display: flex !important; flex-direction: column !important; }
