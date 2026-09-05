@@ -34,6 +34,14 @@ function syncGlobals() {
 }
 syncGlobals();
 
+function resolveGuildIcon(guild) {
+  if (!guild) return "https://cdn.discordapp.com/embed/avatars/0.png";
+  var icon = guild.icon;
+  if (!icon) return "https://cdn.discordapp.com/embed/avatars/0.png";
+  if (String(icon).indexOf("http") === 0) return icon;
+  return "https://cdn.discordapp.com/icons/" + guild.id + "/" + icon + ".png?size=128";
+}
+
 const SHOP_TYPE_META = {
   role: { role: true, duration: false, amount: false, title: false, hint: "Permanent role: member keeps it forever." },
   temp_role: { role: true, duration: true, amount: false, title: false, hint: "Temporary role: auto-removed after hours." },
@@ -240,9 +248,7 @@ async function loadServers() {
       const button = document.createElement("button");
       button.type = "button";
       button.className = "server-item";
-      const iconUrl = guild.icon
-        ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png?size=128`
-        : "https://cdn.discordapp.com/embed/avatars/0.png";
+      const iconUrl = resolveGuildIcon(guild);
       const img = document.createElement("img");
       img.src = iconUrl;
       const name = document.createElement("span");
@@ -264,9 +270,7 @@ async function selectServer(guild) {
   selectedServer = {
     id: guild.id,
     name: guild.name || "Unknown",
-    icon: guild.icon
-      ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png?size=128`
-      : "https://cdn.discordapp.com/embed/avatars/0.png",
+    icon: resolveGuildIcon(guild),
     owner: !!guild.owner,
     members: guild.approximate_member_count || 0,
     online: guild.approximate_presence_count || 0,
@@ -334,6 +338,7 @@ async function refreshSelectedServer() {
     selectedServer.members = updated.approximate_member_count || 0;
     selectedServer.online = updated.approximate_presence_count || 0;
     selectedServer.owner = !!updated.owner;
+    selectedServer.icon = resolveGuildIcon(updated);
     localStorage.setItem("selectedServer", JSON.stringify(selectedServer));
     syncGlobals();
     renderServerDetails(selectedServer);
