@@ -1,0 +1,142 @@
+/* MOBILE + RESPONSIVE (original) */
+@media (max-width: 960px) {
+  body.mode-auto #app {
+    flex-direction: column;
+    padding: 10px;
+    gap: 10px;
+    max-width: none;
+  }
+
+  body.mode-auto .sidebar {
+    width: 100%;
+    height: auto;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    border-radius: 17px;
+    padding: 12px;
+  }
+
+  body.mode-auto .navigation {
+    flex-direction: row;
+    overflow-x: auto;
+    gap: 6px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  body.mode-auto .navigation::-webkit-scrollbar {
+    display: none;
+  }
+
+  body.mode-auto .nav-item {
+    white-space: nowrap;
+    flex-shrink: 0;
+    padding: 9px 12px;
+    font-size: 12px;
+  }
+
+  body.mode-auto .sidebar-bottom {
+    display: none;
+  }
+
+  body.mode-auto .header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  body.mode-auto .header-actions {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+
+  body.mode-auto .view-mode-wrap {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  body.mode-auto .account {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  body.mode-auto .server-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  body.mode-auto .server-selector,
+  body.mode-auto .server-selector .button {
+    width: 100%;
+  }
+
+  body.mode-auto .server-list {
+    left: 0;
+    right: 0;
+    width: 100%;
+  }
+
+  body.mode-auto .stats-grid,
+  body.mode-auto .quick-grid,
+  body.mode-auto .quick-grid.three,
+  body.mode-auto .config-grid {
+    grid-template-columns: 1fr;
+  }
+
+  body.mode-auto .level-role-form {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .header h1 {
+    font-size: 20px;
+  }
+
+  .server-icon {
+    width: 44px;
+    height: 44px;
+  }
+}
+
+body.mode-mobile #app,
+body.mode-auto.force-mobile #app {
+  flex-direction: column;
+  padding: 10px;
+  gap: 10px;
+}
+
+body.mode-mobile .sidebar,
+body.mode-auto.force-mobile .sidebar {
+  width: 100%;
+  height: auto;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+body.mode-mobile .navigation,
+body.mode-auto.force-mobile .navigation {
+  flex-direction: row;
+  overflow-x: auto;
+}
+
+body.mode-desktop #app {
+  flex-direction: row;
+}
+
+@keyframes pageAppear {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes loginAppear {
+  from { opacity: 0; transform: translateY(12px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
