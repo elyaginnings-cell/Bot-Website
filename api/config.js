@@ -5,6 +5,31 @@ const RAILWAY_API =
   process.env.BOT_API_URL ||
   "https://discord-bot-production-1488.up.railway.app";
 
+async function fetchBotConfig(guildId, dashboardSecret) {
+  const response = await fetch(`${RAILWAY_API}/api/guild/${guildId}/config`, {
+    headers: { Authorization: `Bearer ${dashboardSecret}` },
+    cache: "no-store",
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    return { ok: false, status: response.status, error: data.error || "Bot config failed", data };
+  }
+  return { ok: true, config: data.config || null, data };
+}
+
+async function pushBotConfig(guildId, dashboardSecret, body) {
+  const response = await fetch(`${RAILWAY_API}/api/guild/${guildId}/config`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${dashboardSecret}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+  const data = await response.json().catch(() => ({}));
+  return { ok: response.ok, status: response.status, data };
+}
+
 export default async function handler(req, res) {
   try {
     try {
@@ -24,29 +49,54 @@ export default async function handler(req, res) {
     }
 
     if (req.method === "GET") {
+      // Website Postgres is the source of truth for the dashboard.
+      // Never overwrite a stored save with a stale bot response.
+      let stored = null;
+      let pgError = null;
       try {
-        const response = await fetch(`${RAILWAY_API}/api/guild/${guildId}/config`, {
-          headers: { Authorization: `Bearer ${dashboardSecret}` },
-          cache: "no-store",
-        });
-        const data = await response.json().catch(() => ({}));
-        if (response.ok && data?.config) {
-          try {
-            await saveGuildConfig(guildId, data.config);
-          } catch (mirrorErr) {
-            console.error("Config mirror save failed:", mirrorErr.message);
-          }
-          return res.status(200).json(data);
-        }
-      } catch (botErr) {
-        console.error("Bot config GET failed:", botErr.message);
+        stored = await loadGuildConfig(guildId);
+      } catch (err) {
+        pgError = err.message;
+        console.error("Postgres load failed:", err.message);
       }
 
-      const stored = await loadGuildConfig(guildId);
-      if (stored) {
-        return res.status(200).json({ config: stored, source: "postgres" });
+      let bot = { ok: false };
+      try {
+        bot = await fetchBotConfig(guildId, dashboardSecret);
+      } catch (err) {
+        bot = { ok: false, error: err.message };
       }
-      return res.status(404).json({ error: "Config not found" });
+
+      if (stored) {
+        return res.status(200).json({
+          config: stored,
+          source: "postgres",
+          botOnline: !!bot.ok,
+          pgError: null,
+        });
+      }
+
+      if (bot.ok && bot.config) {
+        // Seed website Postgres from bot on first load only
+        try {
+          await saveGuildConfig(guildId, bot.config);
+        } catch (mirrorErr) {
+          console.error("Config seed save failed:", mirrorErr.message);
+          pgError = mirrorErr.message;
+        }
+        return res.status(200).json({
+          config: bot.config,
+          source: "bot",
+          botOnline: true,
+          pgError,
+        });
+      }
+
+      return res.status(404).json({
+        error: "Config not found",
+        pgError,
+        botError: bot.error || null,
+      });
     }
 
     if (req.method === "POST") {
@@ -55,6 +105,25 @@ export default async function handler(req, res) {
           ? JSON.parse(req.body || "{}")
           : req.body || {};
 
+      // Ensure we have a base config so partial saves don't wipe other fields
+      let base = null;
+      try {
+        base = await loadGuildConfig(guildId);
+      } catch (err) {
+        console.error("Postgres base load failed:", err.message);
+      }
+      if (!base) {
+        try {
+          const bot = await fetchBotConfig(guildId, dashboardSecret);
+          if (bot.ok && bot.config) base = bot.config;
+        } catch (_) {}
+      }
+      if (base) {
+        try {
+          await saveGuildConfig(guildId, base);
+        } catch (_) {}
+      }
+
       let mirrored = null;
       try {
         mirrored = await mergeGuildConfig(guildId, body);
@@ -62,25 +131,20 @@ export default async function handler(req, res) {
         console.error("Website Postgres config save failed:", pgErr.message);
         return res.status(500).json({
           error:
-            "Failed to save to Postgres. Check DATABASE_URL on Vercel (public Railway URL).",
+            "Failed to save to Postgres. On Vercel set DATABASE_URL to the Railway PUBLIC URL (host like xxx.proxy.rlwy.net).",
           detail: pgErr.message,
         });
       }
 
-      let botData = null;
+      // Push the same patch to the live bot so runtime updates immediately
       let botOk = false;
+      let botData = {};
       try {
-        const response = await fetch(`${RAILWAY_API}/api/guild/${guildId}/config`, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${dashboardSecret}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(body),
-        });
-        botData = await response.json().catch(() => ({}));
-        botOk = response.ok;
-        if (response.ok && botData?.config) {
+        const pushed = await pushBotConfig(guildId, dashboardSecret, body);
+        botOk = pushed.ok;
+        botData = pushed.data || {};
+        if (pushed.ok && botData.config) {
+          // Prefer the bot's normalized full config shape when available
           try {
             await saveGuildConfig(guildId, botData.config);
             mirrored = botData.config;
@@ -92,14 +156,14 @@ export default async function handler(req, res) {
 
       return res.status(200).json({
         ok: true,
-        config: botOk && botData?.config ? botData.config : mirrored,
+        config: mirrored,
         savedToPostgres: true,
         savedToBot: botOk,
-        logResult: botData?.logResult || null,
-        changes: botData?.changes || null,
+        logResult: botData.logResult || null,
+        changes: botData.changes || null,
         warning: botOk
           ? null
-          : "Saved to website Postgres. Bot did not accept the update (it may be offline). Settings will still load from Postgres.",
+          : "Saved on the website (Postgres). The bot did not accept the update — check Railway is online and DASHBOARD_API_SECRET matches.",
       });
     }
 
