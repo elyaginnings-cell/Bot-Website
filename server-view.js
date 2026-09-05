@@ -18,10 +18,10 @@
 
   function esc(value) {
   return String(value == null ? "" : value)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
+    .replace(/&/g, "&")
+    .replace(/</g, "<")
+    .replace(/>/g, ">")
+    .replace(/"/g, """);
 }
 
   function getServer() {
@@ -451,17 +451,14 @@
         "&channelId=" +
         encodeURIComponent(activeChannelId);
 
-      var response =
-  await fetch(url, {
-    method: "GET",
-    credentials: "include",
-    cache: "no-store",
-    headers: {
-      "Accept": "application/json"
-    }
-  });
-
-if (!response.ok) {
+      var response = await fetch(url, {
+        method: "GET",
+        credentials: "include",
+        cache: "no-store",
+        headers: {
+          "Accept": "application/json"
+        }
+      });
 
       if (!response.ok) {
         throw new Error(
@@ -470,8 +467,7 @@ if (!response.ok) {
         );
       }
 
-      var data =
-        await response.json();
+      var data = await response.json();
 
       var messages =
         Array.isArray(data)
@@ -481,7 +477,6 @@ if (!response.ok) {
             : [];
 
       renderMessages(messages, !!force);
-
     } catch (error) {
       console.error(
         "Server View message loading failed:",
@@ -644,7 +639,7 @@ if (!response.ok) {
 
     var embeds =
       renderEmbeds(
-        message.embeds
+      message.embeds
       );
 
     var reply =
@@ -897,191 +892,68 @@ if (!response.ok) {
 
       if (description) {
         html +=
-          '<div class="sv-embed-description">' +
-            esc(description) +
+          '<div class="sv-embed-desc">' +
+            esc(description).replace(/\n/g, "<br>") +
           '</div>';
       }
 
       if (image) {
         html +=
-          '<img class="sv-embed-image" ' +
-          'src="' +
+          '<button class="sv-attachment-image-btn" type="button" data-lightbox="' +
           esc(image) +
-          '" ' +
-          'loading="lazy" ' +
-          'alt="">';
+          '">' +
+            '<img class="sv-embed-image" src="' +
+            esc(image) +
+            '" alt="" loading="lazy">' +
+          '</button>';
       } else if (thumbnail) {
         html +=
-          '<img class="sv-embed-thumbnail" ' +
-          'src="' +
+          '<button class="sv-attachment-image-btn" type="button" data-lightbox="' +
           esc(thumbnail) +
-          '" ' +
-          'loading="lazy" ' +
-          'alt="">';
+          '">' +
+            '<img class="sv-embed-thumb" src="' +
+            esc(thumbnail) +
+            '" alt="" loading="lazy">' +
+          '</button>';
       }
 
-      html += "</div>";
+      html += '</div>';
     });
 
     return html;
   }
 
-  function formatTime(timestamp) {
-    var date =
-      new Date(timestamp);
-
-    if (
-      !date ||
-      Number.isNaN(date.getTime())
-    ) {
+  function formatTime(value) {
+    try {
+      var date = new Date(value);
+      if (isNaN(date.getTime())) return "";
+      return date.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+    } catch (e) {
       return "";
     }
-
-    return date.toLocaleString(
-      [],
-      {
-        month: "short",
-        day: "numeric",
-        hour: "numeric",
-        minute: "2-digit"
-      }
-    );
   }
 
-  function truncate(value, length) {
-    value =
-      String(value || "");
-
-    if (value.length <= length) {
-      return value;
-    }
-
-    return value.slice(
-      0,
-      length - 1
-    ) + "…";
+  function truncate(str, max) {
+    str = String(str || "");
+    if (str.length <= max) return str;
+    return str.slice(0, max - 1) + "…";
   }
 
-  function isNearBottom(element) {
-    return (
-      element.scrollHeight -
-      element.scrollTop -
-      element.clientHeight <
-      180
-    );
+  function isNearBottom(el) {
+    if (!el) return true;
+    return el.scrollHeight - el.scrollTop - el.clientHeight < 120;
   }
-
-  async function sendMessage(event) {
-  event.preventDefault();
-
-  if (sending || !activeChannelId) {
-    return;
-  }
-
-  var input =
-    document.getElementById("sv-input");
-
-  var send =
-    document.getElementById("sv-send");
-
-  if (!input) {
-    return;
-  }
-
-  var content =
-    input.value.trim();
-
-  if (!content) {
-    return;
-  }
-
-  var server =
-    getServer();
-
-  if (!server || !server.id) {
-    return;
-  }
-
-  sending = true;
-
-  if (send) {
-    send.disabled = true;
-  }
-
-  try {
-    var payload = {
-      guildId: server.id,
-      channelId: activeChannelId,
-      content: content
-    };
-
-    if (replyTo) {
-      payload.replyTo = replyTo;
-    }
-
-    var response = await fetch(
-      "/api/messages?guildId=" +
-        encodeURIComponent(server.id) +
-        "&channelId=" +
-        encodeURIComponent(activeChannelId),
-      {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        body: JSON.stringify(payload)
-      }
-    );
-
-    if (!response.ok) {
-      const errorData =
-        await response.json().catch(() => ({}));
-
-      throw new Error(
-        errorData.error ||
-        ("Send failed: " + response.status)
-      );
-    }
-
-    input.value = "";
-    clearReply();
-    loadMessages(true);
-
-  } catch (error) {
-    console.error(
-      "Server View send failed:",
-      error
-    );
-
-    alert(
-      "Failed to send message.\n\n" +
-      (error?.message || error)
-    );
-
-  } finally {
-    sending = false;
-
-    if (send) {
-      send.disabled = false;
-    }
-
-    if (input) {
-      input.focus();
-    }
-  }
-}
 
   function startPoll() {
     stopPoll();
-
-    pollTimer =
-      setInterval(function () {
-        if (activeChannelId && !loading && !sending) {
-          loadMessages(false);
-        }
-      }, 4000);
+    pollTimer = setInterval(function () {
+      if (activeChannelId && !loading && !sending) {
+        loadMessages(false);
+      }
+    }, 4000);
   }
 
   function stopPoll() {
@@ -1093,310 +965,223 @@ if (!response.ok) {
 
   function clearReply() {
     replyTo = null;
-
-    var bar =
-      document.getElementById("sv-reply-bar");
-
-    if (bar) {
-      bar.hidden = true;
-    }
+    var bar = document.getElementById("sv-reply-bar");
+    if (bar) bar.hidden = true;
+    var label = document.getElementById("sv-reply-label");
+    if (label) label.textContent = "Replying…";
   }
 
   function setReply(message) {
-    if (!message || !message.id) {
-      return;
-    }
-
-    replyTo = message.id;
-
-    var bar =
-      document.getElementById("sv-reply-bar");
-
-    var label =
-      document.getElementById("sv-reply-label");
-
-    if (bar) {
-      bar.hidden = false;
-    }
-
+    if (!message || !message.id) return;
+    replyTo = message;
+    var bar = document.getElementById("sv-reply-bar");
+    var label = document.getElementById("sv-reply-label");
+    var author =
+      (message.author &&
+        (message.author.displayName ||
+          message.author.globalName ||
+          message.author.username)) ||
+      "message";
     if (label) {
-      var author =
-        message.author || {};
-
-      var name =
-        author.displayName ||
-        author.globalName ||
-        author.username ||
-        "message";
-
       label.textContent =
-        "Replying to " + name;
+        "Replying to " + author +
+        (message.content
+          ? ": " + truncate(message.content, 60)
+          : "");
     }
+    if (bar) bar.hidden = false;
+    var input = document.getElementById("sv-input");
+    if (input) input.focus();
   }
 
-  function onMessagesClick(event) {
-    var target = event.target;
+  async function sendMessage(e) {
+    if (e) e.preventDefault();
+    if (sending || !activeChannelId) return;
 
-    if (!target) {
-      return;
-    }
+    var input = document.getElementById("sv-input");
+    if (!input) return;
 
-    var lightboxBtn =
-      target.closest("[data-lightbox]");
+    var content = (input.value || "").trim();
+    if (!content) return;
 
-    if (lightboxBtn) {
-      var url =
-        lightboxBtn.getAttribute("data-lightbox");
+    var server = getServer();
+    if (!server || !server.id) return;
 
-      openLightbox(url);
-      return;
-    }
+    sending = true;
+    input.disabled = true;
 
-    var msg =
-      target.closest("[data-message-id]");
+    try {
+      var body = {
+        guildId: server.id,
+        channelId: activeChannelId,
+        content: content
+      };
 
-    if (msg && target.closest(".sv-msg-meta")) {
-      // could add reply button later
+      var nameInput = document.getElementById("sv-display-name");
+      if (nameInput && nameInput.value.trim()) {
+        body.displayName = nameInput.value.trim().slice(0, 80);
+      }
+
+      if (replyTo && replyTo.id) {
+        body.replyTo = replyTo.id;
+      }
+
+      var response = await fetch("/api/messages", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify(body)
+      });
+
+      if (!response.ok) {
+        var errData = await response.json().catch(function () { return {}; });
+        throw new Error(errData.error || ("Send failed: " + response.status));
+      }
+
+      input.value = "";
+      clearReply();
+      await loadMessages(true);
+    } catch (error) {
+      console.error("Send failed:", error);
+      alert(error.message || "Failed to send message.");
+    } finally {
+      sending = false;
+      if (input) {
+        input.disabled = false;
+        input.focus();
+      }
     }
   }
 
   function openLightbox(url) {
-    var box =
-      document.getElementById("sv-lightbox");
-
-    var img =
-      document.getElementById("sv-lightbox-img");
-
-    if (!box || !img || !url) {
-      return;
-    }
-
+    var box = document.getElementById("sv-lightbox");
+    var img = document.getElementById("sv-lightbox-img");
+    if (!box || !img || !url) return;
     img.src = url;
     box.hidden = false;
   }
 
   function closeLightbox() {
-    var box =
-      document.getElementById("sv-lightbox");
+    var box = document.getElementById("sv-lightbox");
+    var img = document.getElementById("sv-lightbox-img");
+    if (box) box.hidden = true;
+    if (img) img.src = "";
+  }
 
-    var img =
-      document.getElementById("sv-lightbox-img");
+  function onMessagesClick(e) {
+    var target = e.target;
+    if (!target) return;
 
-    if (box) {
-      box.hidden = true;
+    var btn = target.closest("[data-lightbox]");
+    if (btn) {
+      e.preventDefault();
+      openLightbox(btn.getAttribute("data-lightbox"));
+      return;
     }
 
-    if (img) {
-      img.src = "";
+    var msg = target.closest("[data-message-id]");
+    if (msg && (e.altKey || e.metaKey || target.classList.contains("sv-author"))) {
+      var id = msg.getAttribute("data-message-id");
+      var found = lastMessages.find(function (m) {
+        return m && m.id === id;
+      });
+      if (found) setReply(found);
     }
   }
 
   function bindOnce() {
-    if (bound) {
-      return;
-    }
-
+    if (bound) return;
     bound = true;
 
-    var back =
-      document.getElementById("sv-back");
+    var back = document.getElementById("sv-back");
+    if (back) back.addEventListener("click", closeServerView);
 
-    if (back) {
-      back.addEventListener(
-        "click",
-        closeServerView
-      );
-    }
+    var closeBtn = document.getElementById("close-server-view");
+    if (closeBtn) closeBtn.addEventListener("click", closeServerView);
 
-    var closeBtn =
-      document.getElementById(
-        "close-server-view"
-      );
-
-    if (closeBtn) {
-      closeBtn.addEventListener(
-        "click",
-        closeServerView
-      );
-    }
-
-    var composer =
-      document.getElementById("sv-composer");
-
-    if (composer) {
-      composer.addEventListener(
-        "submit",
-        sendMessage
-      );
-    }
-
-    var refresh =
-      document.getElementById("sv-refresh");
-
-    if (refresh) {
-      refresh.addEventListener(
-        "click",
-        function () {
-          loadMessages(true);
-        }
-      );
-    }
-
-    var settingsBtn =
-      document.getElementById(
-        "sv-settings-btn"
-      );
-
+    var settingsBtn = document.getElementById("sv-settings-btn");
     if (settingsBtn) {
-      settingsBtn.addEventListener(
-        "click",
-        function () {
-          var panel =
-            document.getElementById(
-              "sv-settings-panel"
-            );
-
-          if (panel) {
-            panel.hidden =
-              !panel.hidden;
-          }
-        }
-      );
+      settingsBtn.addEventListener("click", function () {
+        var panel = document.getElementById("sv-settings-panel");
+        if (panel) panel.hidden = !panel.hidden;
+      });
     }
 
-    [
-      "sv-theme",
-      "sv-density",
-      "sv-font-size"
-    ].forEach(function (id) {
-      var element =
-        document.getElementById(id);
+    var refresh = document.getElementById("sv-refresh");
+    if (refresh) {
+      refresh.addEventListener("click", function () {
+        loadMessages(true);
+      });
+    }
 
-      if (element) {
-        element.addEventListener(
-          "change",
-          applyPrefs
-        );
+    var form = document.getElementById("sv-composer");
+    if (form) form.addEventListener("submit", sendMessage);
+
+    ["sv-theme", "sv-density", "sv-font-size"].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) {
+        el.addEventListener("change", applyPrefs);
       }
     });
 
-    var lightbox =
-      document.getElementById(
-        "sv-lightbox"
-      );
-
+    var lightbox = document.getElementById("sv-lightbox");
     if (lightbox) {
-      lightbox.addEventListener(
-        "click",
-        closeLightbox
-      );
+      lightbox.addEventListener("click", closeLightbox);
     }
 
-    var menu =
-      document.getElementById(
-        "sv-menu-btn"
-      );
-
+    var menu = document.getElementById("sv-menu-btn");
     if (menu) {
-      menu.addEventListener(
-        "click",
-        openDrawer
-      );
+      menu.addEventListener("click", openDrawer);
     }
 
-    var channelClose =
-      document.getElementById(
-        "sv-channels-close"
-      );
-
+    var channelClose = document.getElementById("sv-channels-close");
     if (channelClose) {
-      channelClose.addEventListener(
-        "click",
-        closeDrawer
-      );
+      channelClose.addEventListener("click", closeDrawer);
     }
 
-    var backdrop =
-      document.getElementById(
-        "sv-drawer-backdrop"
-      );
-
+    var backdrop = document.getElementById("sv-drawer-backdrop");
     if (backdrop) {
-      backdrop.addEventListener(
-        "click",
-        closeDrawer
-      );
+      backdrop.addEventListener("click", closeDrawer);
     }
 
-    var messages =
-      document.getElementById(
-        "sv-messages"
-      );
-
+    var messages = document.getElementById("sv-messages");
     if (messages) {
-      messages.addEventListener(
-        "click",
-        onMessagesClick
-      );
+      messages.addEventListener("click", onMessagesClick);
     }
 
-    var cancelReply =
-      document.getElementById(
-        "sv-reply-cancel"
-      );
-
+    var cancelReply = document.getElementById("sv-reply-cancel");
     if (cancelReply) {
-      cancelReply.addEventListener(
-        "click",
-        clearReply
-      );
+      cancelReply.addEventListener("click", clearReply);
     }
 
-    var nameInput =
-      document.getElementById(
-        "sv-display-name"
-      );
-
+    var nameInput = document.getElementById("sv-display-name");
     if (nameInput) {
       nameInput.value =
-        localStorage.getItem(
-          "svDisplayName"
-        ) || "";
+        localStorage.getItem("svDisplayName") || "";
 
-      nameInput.addEventListener(
-        "change",
-        function () {
-          localStorage.setItem(
-            "svDisplayName",
-            nameInput.value
-              .trim()
-              .slice(0, 80)
-          );
-        }
-      );
+      nameInput.addEventListener("change", function () {
+        localStorage.setItem(
+          "svDisplayName",
+          nameInput.value.trim().slice(0, 80)
+        );
+      });
     }
 
     loadPrefs();
   }
 
-  window.openServerView =
-    openServerView;
-
-  window.closeServerView =
-    closeServerView;
+  window.openServerView = openServerView;
+  window.closeServerView = closeServerView;
 
   function boot() {
     bindOnce();
   }
 
-  if (
-    document.readyState ===
-    "loading"
-  ) {
-    document.addEventListener(
-      "DOMContentLoaded",
-      boot
-    );
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot);
   } else {
     boot();
   }
