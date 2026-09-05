@@ -261,9 +261,9 @@
     }
     var timestamp = formatTime(message.createdTimestamp || message.createdAt || Date.now());
     var botBadge = author.bot ? '<span class="sv-bot-badge">BOT</span>' : "";
-    var content = renderContent(message.content || "");
+    var content = renderContent(message.content || "", message.mentions);
     var attachments = renderAttachments(message.attachments);
-    var embeds = renderEmbeds(message.embeds);
+    var embeds = renderEmbeds(message.embeds, message.mentions);
     var reply = renderReply(message);
     var components = renderComponents(message.components);
     var replyBtn = message.id
@@ -306,15 +306,55 @@
     return '<div class="sv-reply-preview"><span class="sv-reply-line"></span><span class="sv-reply-text"><strong>' + esc(replyName) + '</strong>' + (replyContent ? " " + esc(truncate(replyContent, 100)) : "") + '</span></div>';
   }
 
-  function renderContent(content) {
+  function formatRichText(content, mentions) {
     if (!content) return "";
+    mentions = mentions || {};
+    var users = mentions.users || {};
+    var roles = mentions.roles || {};
+    var channels = mentions.channels || {};
+
     var escaped = esc(content);
     escaped = escaped.replace(/\n/g, "<br>");
-    escaped = escaped.replace(/<@!?(\d+)>/g, '<span class="sv-mention">@user</span>');
-    escaped = escaped.replace(/<@\x26(\d+)>/g, '<span class="sv-mention">@role</span>');
-    escaped = escaped.replace(/<#(\d+)>/g, '<span class="sv-mention">#channel</span>');
-    escaped = escaped.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
+
+    // Custom / animated emoji <:name:id> <a:name:id>
+    escaped = escaped.replace(/&lt;(a?):([A-Za-z0-9_]+):(\d+)&gt;/g, function (_, anim, name, id) {
+      var ext = anim ? "gif" : "png";
+      var src = "https://cdn.discordapp.com/emojis/" + id + "." + ext + "?size=48&quality=lossless";
+      return '<img class="sv-emoji" src="' + src + '" alt=":' + esc(name) + ':" title=":' + esc(name) + ':" loading="lazy" referrerpolicy="no-referrer">';
+    });
+
+    // User mentions
+    escaped = escaped.replace(/&lt;@!?(\d+)&gt;/g, function (_, id) {
+      var u = users[id];
+      var label = u ? (u.displayName || u.globalName || u.username || id) : id;
+      return '<span class="sv-mention sv-mention-user">@' + esc(label) + "</span>";
+    });
+
+    // Role mentions
+    escaped = escaped.replace(/&lt;@&amp;(\d+)&gt;/g, function (_, id) {
+      var r = roles[id];
+      var label = r ? r.name : "role";
+      var style = r && r.color && r.color !== "#000000" ? ' style="color:' + esc(r.color) + '"' : "";
+      return '<span class="sv-mention sv-mention-role"' + style + ">@" + esc(label) + "</span>";
+    });
+
+    // Channel mentions
+    escaped = escaped.replace(/&lt;#(\d+)&gt;/g, function (_, id) {
+      var c = channels[id];
+      var label = c ? c.name : "channel";
+      return '<span class="sv-mention sv-mention-channel">#' + esc(label) + "</span>";
+    });
+
+    // Links
+    escaped = escaped.replace(/(https?:\/\/[^\s<]+)/g, function (url) {
+      return '<a href="' + url + '" target="_blank" rel="noopener noreferrer">' + url + "</a>";
+    });
+
     return escaped;
+  }
+
+  function renderContent(content, mentions) {
+    return formatRichText(content, mentions);
   }
 
   function renderAttachments(attachments) {
@@ -325,11 +365,16 @@
       var url = attachment.url || attachment.proxyURL || "";
       if (!url) return;
       var contentType = attachment.contentType || "";
-      var isImage = contentType.indexOf("image/") === 0 || /\.(png|jpe?g|gif|webp|avif)$/i.test(url);
-      if (isImage) {
-        html += '<button class="sv-attachment-image-btn" type="button" data-lightbox="' + esc(url) + '"><img class="sv-attachment-image" src="' + esc(url) + '" alt="' + esc(attachment.name || "Image") + '" loading="lazy" referrerpolicy="no-referrer"></button>';
+      var name = attachment.name || "";
+      var isGif = contentType.indexOf("image/gif") === 0 || /\.gif($|\?)/i.test(url) || /\.gif($|\?)/i.test(name);
+      var isImage = contentType.indexOf("image/") === 0 || /\.(png|jpe?g|gif|webp|avif)($|\?)/i.test(url) || /\.(png|jpe?g|gif|webp|avif)$/i.test(name);
+      var isVideo = contentType.indexOf("video/") === 0 || /\.(mp4|webm|mov)($|\?)/i.test(url);
+      if (isImage || isGif) {
+        html += '<button class="sv-attachment-image-btn" type="button" data-lightbox="' + esc(url) + '"><img class="sv-attachment-image' + (isGif ? " sv-gif" : "") + '" src="' + esc(url) + '" alt="' + esc(name || "Image") + '" loading="lazy" referrerpolicy="no-referrer"></button>';
+      } else if (isVideo) {
+        html += '<video class="sv-attachment-video" src="' + esc(url) + '" controls playsinline preload="metadata"></video>';
       } else {
-        html += '<a class="sv-attachment" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">\uD83D\uDCCE ' + esc(attachment.name || "Attachment") + '</a>';
+        html += '<a class="sv-attachment" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">\uD83D\uDCCE ' + esc(name || "Attachment") + '</a>';
       }
     });
     return html;
@@ -341,7 +386,7 @@
     return media.url || media.proxyURL || media.proxy_url || "";
   }
 
-  function renderEmbeds(embeds) {
+  function renderEmbeds(embeds, mentions) {
     if (!Array.isArray(embeds)) return "";
     var html = "";
     embeds.forEach(function (embed) {
@@ -373,12 +418,12 @@
         if (url) html += '<a class="sv-embed-title" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">' + esc(title) + '</a>';
         else html += '<div class="sv-embed-title">' + esc(title) + '</div>';
       }
-      if (description) html += '<div class="sv-embed-desc">' + esc(description).replace(/\n/g, "<br>") + '</div>';
+      if (description) html += '<div class="sv-embed-desc">' + formatRichText(description, mentions) + '</div>';
       if (fields.length) {
         html += '<div class="sv-embed-fields">';
         fields.forEach(function (f) {
           if (!f) return;
-          html += '<div class="sv-embed-field' + (f.inline ? " inline" : "") + '"><div class="sv-embed-field-name">' + esc(f.name || "") + '</div><div class="sv-embed-field-value">' + esc(f.value || "").replace(/\n/g, "<br>") + '</div></div>';
+          html += '<div class="sv-embed-field' + (f.inline ? " inline" : "") + '"><div class="sv-embed-field-name">' + formatRichText(f.name || "", mentions) + '</div><div class="sv-embed-field-value">' + formatRichText(f.value || "", mentions) + '</div></div>';
         });
         html += '</div>';
       }
@@ -507,8 +552,8 @@
   function closeLightbox() {
     var box = document.getElementById("sv-lightbox");
     var img = document.getElementById("sv-lightbox-img");
-    if (box) box.hidden = true;
     if (img) img.src = "";
+    if (box) box.hidden = true;
   }
 
   function onMessagesClick(e) {
