@@ -265,7 +265,37 @@
     var attachments = renderAttachments(message.attachments);
     var embeds = renderEmbeds(message.embeds);
     var reply = renderReply(message);
-    return '<article class="sv-msg' + (grouped ? " grouped" : "") + '" data-message-id="' + esc(message.id || "") + '"><div class="sv-av-wrap">' + avatar + '</div><div class="sv-msg-body"><div class="sv-msg-meta"><span class="sv-author">' + esc(authorName) + '</span>' + botBadge + '<time class="sv-time">' + esc(timestamp) + '</time></div>' + reply + '<div class="sv-msg-content">' + content + '</div>' + attachments + embeds + '</div></article>';
+    var components = renderComponents(message.components);
+    var replyBtn = message.id
+      ? '<button type="button" class="sv-reply-btn" data-reply-id="' + esc(message.id) + '" title="Reply">Reply</button>'
+      : "";
+    return '<article class="sv-msg' + (grouped ? " grouped" : "") + '" data-message-id="' + esc(message.id || "") + '"><div class="sv-av-wrap">' + avatar + '</div><div class="sv-msg-body"><div class="sv-msg-meta"><span class="sv-author">' + esc(authorName) + '</span>' + botBadge + '<time class="sv-time">' + esc(timestamp) + '</time>' + replyBtn + '</div>' + reply + '<div class="sv-msg-content">' + content + '</div>' + attachments + embeds + components + '</div></article>';
+  }
+
+  function renderComponents(rows) {
+    if (!Array.isArray(rows) || !rows.length) return "";
+    var html = '<div class="sv-components">';
+    rows.forEach(function (row) {
+      var items = (row && row.components) || [];
+      if (!items.length) return;
+      html += '<div class="sv-component-row">';
+      items.forEach(function (c) {
+        if (!c) return;
+        if (c.type === "button" || c.type === 2) {
+          var label = c.label || (c.emoji && c.emoji.name) || "Button";
+          if (c.url) {
+            html += '<a class="sv-component-btn" href="' + esc(c.url) + '" target="_blank" rel="noopener noreferrer">' + esc(label) + '</a>';
+          } else {
+            html += '<button type="button" class="sv-component-btn disabled" disabled title="Bot-only button">' + esc(label) + '</button>';
+          }
+        } else if (c.type === "select" || c.type === 3) {
+          html += '<div class="sv-component-select">' + esc(c.placeholder || "Select\u2026") + '</div>';
+        }
+      });
+      html += '</div>';
+    });
+    html += '</div>';
+    return html;
   }
 
   function renderReply(message) {
@@ -297,12 +327,18 @@
       var contentType = attachment.contentType || "";
       var isImage = contentType.indexOf("image/") === 0 || /\.(png|jpe?g|gif|webp|avif)$/i.test(url);
       if (isImage) {
-        html += '<button class="sv-attachment-image-btn" type="button" data-lightbox="' + esc(url) + '"><img class="sv-attachment-image" src="' + esc(url) + '" alt="' + esc(attachment.name || "Image") + '" loading="lazy"></button>';
+        html += '<button class="sv-attachment-image-btn" type="button" data-lightbox="' + esc(url) + '"><img class="sv-attachment-image" src="' + esc(url) + '" alt="' + esc(attachment.name || "Image") + '" loading="lazy" referrerpolicy="no-referrer"></button>';
       } else {
         html += '<a class="sv-attachment" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">\uD83D\uDCCE ' + esc(attachment.name || "Attachment") + '</a>';
       }
     });
     return html;
+  }
+
+  function embedMediaUrl(media) {
+    if (!media) return "";
+    if (typeof media === "string") return media;
+    return media.url || media.proxyURL || media.proxy_url || "";
   }
 
   function renderEmbeds(embeds) {
@@ -313,17 +349,47 @@
       var title = embed.title || "";
       var description = embed.description || "";
       var url = embed.url || "";
-      var image = embed.image && embed.image.url ? embed.image.url : "";
-      var thumbnail = embed.thumbnail && embed.thumbnail.url ? embed.thumbnail.url : "";
-      if (!title && !description && !image && !thumbnail) return;
-      html += '<div class="sv-embed">';
+      var image = embedMediaUrl(embed.image);
+      var thumbnail = embedMediaUrl(embed.thumbnail);
+      var author = embed.author || null;
+      var footer = embed.footer || null;
+      var fields = Array.isArray(embed.fields) ? embed.fields : [];
+      var color = embed.color != null ? Number(embed.color) : null;
+      if (!title && !description && !image && !thumbnail && !author && !fields.length && !footer) return;
+      var bar = color != null && !isNaN(color)
+        ? "border-left:4px solid #" + ("000000" + (color >>> 0).toString(16)).slice(-6) + ";"
+        : "";
+      html += '<div class="sv-embed" style="' + bar + '">';
+      if (author && author.name) {
+        html += '<div class="sv-embed-author">';
+        if (author.iconURL || author.icon_url) {
+          html += '<img class="sv-embed-author-icon" src="' + esc(author.iconURL || author.icon_url) + '" alt="" loading="lazy">';
+        }
+        if (author.url) html += '<a href="' + esc(author.url) + '" target="_blank" rel="noopener noreferrer">' + esc(author.name) + '</a>';
+        else html += '<span>' + esc(author.name) + '</span>';
+        html += '</div>';
+      }
       if (title) {
         if (url) html += '<a class="sv-embed-title" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">' + esc(title) + '</a>';
         else html += '<div class="sv-embed-title">' + esc(title) + '</div>';
       }
       if (description) html += '<div class="sv-embed-desc">' + esc(description).replace(/\n/g, "<br>") + '</div>';
-      if (image) html += '<button class="sv-attachment-image-btn" type="button" data-lightbox="' + esc(image) + '"><img class="sv-embed-image" src="' + esc(image) + '" alt="" loading="lazy"></button>';
-      else if (thumbnail) html += '<button class="sv-attachment-image-btn" type="button" data-lightbox="' + esc(thumbnail) + '"><img class="sv-embed-thumb" src="' + esc(thumbnail) + '" alt="" loading="lazy"></button>';
+      if (fields.length) {
+        html += '<div class="sv-embed-fields">';
+        fields.forEach(function (f) {
+          if (!f) return;
+          html += '<div class="sv-embed-field' + (f.inline ? " inline" : "") + '"><div class="sv-embed-field-name">' + esc(f.name || "") + '</div><div class="sv-embed-field-value">' + esc(f.value || "").replace(/\n/g, "<br>") + '</div></div>';
+        });
+        html += '</div>';
+      }
+      if (image) {
+        html += '<button class="sv-attachment-image-btn" type="button" data-lightbox="' + esc(image) + '"><img class="sv-embed-image" src="' + esc(image) + '" alt="" loading="lazy" referrerpolicy="no-referrer"></button>';
+      } else if (thumbnail) {
+        html += '<button class="sv-attachment-image-btn" type="button" data-lightbox="' + esc(thumbnail) + '"><img class="sv-embed-thumb" src="' + esc(thumbnail) + '" alt="" loading="lazy" referrerpolicy="no-referrer"></button>';
+      }
+      if (footer && footer.text) {
+        html += '<div class="sv-embed-footer">' + esc(footer.text) + '</div>';
+      }
       html += '</div>';
     });
     return html;
@@ -448,17 +514,26 @@
   function onMessagesClick(e) {
     var target = e.target;
     if (!target) return;
-    var btn = target.closest("[data-lightbox]");
-    if (btn) {
+    var lightboxBtn = target.closest("[data-lightbox]");
+    if (lightboxBtn) {
       e.preventDefault();
-      openLightbox(btn.getAttribute("data-lightbox"));
+      openLightbox(lightboxBtn.getAttribute("data-lightbox"));
+      return;
+    }
+    var replyBtn = target.closest("[data-reply-id]");
+    if (replyBtn) {
+      e.preventDefault();
+      e.stopPropagation();
+      var rid = replyBtn.getAttribute("data-reply-id");
+      var found = lastMessages.find(function (m) { return m && m.id === rid; });
+      if (found) setReply(found);
       return;
     }
     var msg = target.closest("[data-message-id]");
-    if (msg && (e.altKey || e.metaKey || target.classList.contains("sv-author"))) {
+    if (msg && (e.altKey || e.metaKey)) {
       var id = msg.getAttribute("data-message-id");
-      var found = lastMessages.find(function (m) { return m && m.id === id; });
-      if (found) setReply(found);
+      var found2 = lastMessages.find(function (m) { return m && m.id === id; });
+      if (found2) setReply(found2);
     }
   }
 
