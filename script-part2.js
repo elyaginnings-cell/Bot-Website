@@ -350,17 +350,20 @@ async function saveBirthday() {
 async function refreshStorageStatus() {
   const el = document.getElementById("storage-status");
   if (!el) return;
+  el.textContent = "…";
   try {
     const res = await fetch("/api/bot-status", { credentials: "include", cache: "no-store" });
+    const data = await res.json().catch(() => ({}));
     if (!res.ok) {
-      el.textContent = "Unknown";
+      el.textContent = data.error ? "Error" : "Unknown";
       return;
     }
-    const data = await res.json();
     const s = data.storage || data;
-    if (s.usingPostgres) el.textContent = "Postgres ✓";
-    else if (s.hasDatabaseUrl === false) el.textContent = "File only ⚠️";
-    else el.textContent = s.usingPostgres === false ? "File fallback" : "Online";
+    if (s.label) el.textContent = s.label;
+    else if (s.websitePostgres || s.usingPostgres) el.textContent = "Postgres ✓";
+    else if (s.websiteHasDatabaseUrl === false && s.botHasDatabaseUrl === false) el.textContent = "File only ⚠️";
+    else if (s.usingPostgres === false) el.textContent = "File fallback";
+    else el.textContent = data.online ? "Online" : "Offline";
   } catch {
     el.textContent = "—";
   }
