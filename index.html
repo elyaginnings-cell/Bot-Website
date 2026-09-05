@@ -34,17 +34,17 @@
                     <span>Bot Control</span>
                 </div>
             </div>
-            <nav class="navigation">
-                <button class="nav-item active" data-tab="overview" type="button"><span>🏠</span> Overview</button>
-                <button class="nav-item" data-tab="moderation" type="button"><span>⚖️</span> Moderation</button>
-                <button class="nav-item" data-tab="invites" type="button"><span>📨</span> Invites</button>
-                <button class="nav-item" data-tab="leveling" type="button"><span>📈</span> Leveling</button>
-                <button class="nav-item" data-tab="currency" type="button"><span>☕</span> Currency</button>
-                <button class="nav-item" data-tab="shop" type="button"><span>🛒</span> Shop</button>
-                <button class="nav-item" data-tab="logs" type="button"><span>📋</span> Logs</button>
-                <button class="nav-item" data-tab="birthday" type="button"><span>🎂</span> Birthday</button>
-                <button class="nav-item" data-tab="settings" type="button"><span>⚙️</span> Settings</button>
-                <button class="nav-item" id="nav-server-view" type="button"><span>💬</span> Server View</button>
+            <nav class="navigation" aria-label="Dashboard tabs">
+                <button class="nav-item active" data-tab="overview" type="button" title="Overview"><span>🏠</span><em>Home</em></button>
+                <button class="nav-item" data-tab="moderation" type="button" title="Moderation"><span>⚖️</span><em>Mod</em></button>
+                <button class="nav-item" data-tab="invites" type="button" title="Invites"><span>📨</span><em>Invites</em></button>
+                <button class="nav-item" data-tab="leveling" type="button" title="Leveling"><span>📈</span><em>Levels</em></button>
+                <button class="nav-item" data-tab="currency" type="button" title="Currency"><span>☕</span><em>Beans</em></button>
+                <button class="nav-item" data-tab="shop" type="button" title="Shop"><span>🛒</span><em>Shop</em></button>
+                <button class="nav-item" data-tab="logs" type="button" title="Logs"><span>📋</span><em>Logs</em></button>
+                <button class="nav-item" data-tab="birthday" type="button" title="Birthday"><span>🎂</span><em>Bday</em></button>
+                <button class="nav-item" data-tab="settings" type="button" title="Settings"><span>⚙️</span><em>Settings</em></button>
+                <button class="nav-item" id="nav-server-view" type="button" title="Server View"><span>💬</span><em>Chat</em></button>
             </nav>
             <div class="sidebar-bottom">
                 <div class="connection-status">
@@ -133,7 +133,63 @@
                   <button class="button" id="save-birthday" type="button">Save Birthday Settings</button>
                   <p class="form-hint" id="birthday-status"></p>
                 </div></section>
-                <section id="settings" class="page-section"></section>
+                <section id="settings" class="page-section">
+                    <div class="card form-card wide">
+                        <span class="eyebrow">SETTINGS</span>
+                        <h2>Browser tab title</h2>
+                        <p class="form-hint">This only changes the name in the browser tab. Your dashboard stays Coffee Shop.</p>
+                        <div class="input-group"><label for="site-name">Tab title</label>
+                        <input id="site-name" type="text" maxlength="120" placeholder="Amazon.com. Spend Less. Smile More."></div>
+                        <button class="button" id="save-branding" type="button">Save tab title</button>
+                        <button class="button secondary" id="reset-branding" type="button">Reset default</button>
+                        <p class="form-hint" id="branding-status"></p>
+                    </div>
+                    <div class="card form-card wide" style="margin-top:16px">
+                        <span class="eyebrow">BOT PRESENCE</span>
+                        <h2>Bot status</h2>
+                        <p class="form-hint">Change what Discord shows under the bot name.</p>
+                        <div class="config-grid">
+                            <div class="input-group"><label for="bot-status">Status</label>
+                                <select id="bot-status">
+                                    <option value="online">Online</option>
+                                    <option value="idle">Idle</option>
+                                    <option value="dnd">Do Not Disturb</option>
+                                    <option value="invisible">Invisible</option>
+                                </select>
+                            </div>
+                            <div class="input-group"><label for="bot-activity-type">Activity type</label>
+                                <select id="bot-activity-type">
+                                    <option value="0">Playing</option>
+                                    <option value="2">Listening</option>
+                                    <option value="3">Watching</option>
+                                    <option value="5">Competing</option>
+                                    <option value="4">Custom</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="input-group"><label for="bot-activity-name">Activity text</label>
+                        <input id="bot-activity-name" type="text" maxlength="128" placeholder="e.g. Coffee Shop"></div>
+                        <button class="button" id="save-bot-status" type="button">Save bot status</button>
+                        <p class="form-hint" id="bot-status-msg"></p>
+                    </div>
+                    <div class="card form-card wide" style="margin-top:16px">
+                        <span class="eyebrow">INVITE</span>
+                        <h2>Invite bot to a server</h2>
+                        <p class="form-hint">Open Discord invite page to add the bot to any server you manage.</p>
+                        <div class="input-group"><label for="invite-perms">Permission preset</label>
+                            <select id="invite-perms">
+                                <option value="8">Administrator (full)</option>
+                                <option value="268823622">Recommended (mod + messages + roles)</option>
+                                <option value="0">No extra permissions</option>
+                            </select>
+                        </div>
+                        <div class="input-group"><label for="invite-url">Invite link</label>
+                        <input id="invite-url" type="text" readonly placeholder="Loading…"></div>
+                        <button class="button" id="open-invite" type="button">Open invite</button>
+                        <button class="button secondary" id="copy-invite" type="button">Copy link</button>
+                        <p class="form-hint" id="invite-status"></p>
+                    </div>
+                </section>
             </div>
         </main>
     </div>
@@ -196,9 +252,10 @@
         <img id="sv-lightbox-img" src="" alt="">
     </div>
 
-    <script src="branding-ui.js?v=4"></script>
-    <script src="branding.js?v=4"></script>
-    <script src="script.js?v=13"></script>
+    <script src="login-auth.js?v=5"></script>
+    <script src="branding-ui.js?v=5"></script>
+    <script src="branding.js?v=5"></script>
+    <script src="script.js?v=14"></script>
     <script src="server-view.js?v=13"></script>
 </body>
 </html>
