@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="server-view-theme-garden.css">
     <link rel="stylesheet" href="server-view-reply.css">
     <link rel="stylesheet" href="sv-rich.css">
+    <link rel="stylesheet" href="sv-readability.css">
 </head>
 <body class="mode-auto">
 
@@ -174,14 +175,12 @@
                     <div class="sv-settings-row"><label for="sv-density">Density</label><select id="sv-density"><option value="default">Default</option><option value="compact">Compact</option><option value="cozy">Cozy</option></select></div>
                     <div class="sv-settings-row"><label for="sv-font-size">Font size</label><select id="sv-font-size"><option value="14">14</option><option value="16" selected>16</option><option value="18">18</option></select></div>
                 </div>
-                <div id="sv-messages" class="sv-messages">
-                    <p class="sv-empty">Pick a channel on the left to start reading chat.</p>
+                <div id="sv-messages" class="sv-messages"></div>
+                <div id="sv-reply-bar" class="sv-reply-bar" hidden>
+                    <span id="sv-reply-label">Replying…</span>
+                    <button type="button" id="sv-reply-cancel" class="sv-reply-cancel">Cancel</button>
                 </div>
                 <div class="sv-composer-wrap">
-                    <div id="sv-reply-bar" class="sv-reply-bar" hidden>
-                        <div class="sv-reply-bar-text" id="sv-reply-label">Replying…</div>
-                        <button type="button" class="sv-reply-cancel" id="sv-reply-cancel" title="Cancel reply">×</button>
-                    </div>
                     <form id="sv-composer" class="sv-composer">
                         <input id="sv-input" type="text" placeholder="Select a channel…" disabled autocomplete="off" maxlength="2000">
                         <button type="submit" class="sv-send-btn" id="sv-send" disabled>Send</button>
@@ -195,7 +194,7 @@
         <img id="sv-lightbox-img" src="" alt="">
     </div>
 
-    <script src="script.js?v=10"></script>
-    <script src="server-view.js?v=10"></script>
+    <script src="script.js?v=11"></script>
+    <script src="server-view.js?v=11"></script>
 </body>
 </html>
