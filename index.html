@@ -18,7 +18,7 @@
     <link rel="stylesheet" href="sv-rich.css">
     <link rel="stylesheet" href="sv-mentions.css?v=1">
     <link rel="stylesheet" href="sv-readability.css">
-    <link rel="stylesheet" href="server-view-members.css?v=3">
+    <link rel="stylesheet" href="server-view-members.css?v=4">
 </head>
 <body class="mode-auto">
 
@@ -195,7 +195,7 @@
                 </div>
             </div>
             <div class="sv-top-right">
-                <button type="button" class="sv-icon-btn" id="sv-members-btn" title="Members">👥</button>
+                <button type="button" class="sv-icon-btn" id="sv-members-btn" title="Members" onclick="if(window.svSwitchTab){window.svSwitchTab('members')}return false;">👥</button>
                 <button type="button" class="sv-icon-btn" id="sv-settings-btn" title="Settings">⚙</button>
                 <button type="button" class="sv-icon-btn" id="close-server-view" title="Close">×</button>
             </div>
@@ -208,8 +208,8 @@
                     <button type="button" class="sv-channels-close" id="sv-channels-close" aria-label="Close">×</button>
                 </div>
                 <div id="sv-sidebar-tabs" class="sv-sidebar-tabs">
-                    <button type="button" class="sv-side-tab active" data-sv-tab="channels">Channels</button>
-                    <button type="button" class="sv-side-tab" data-sv-tab="members">Members</button>
+                    <button type="button" class="sv-side-tab active" data-sv-tab="channels" onclick="if(window.svSwitchTab){window.svSwitchTab('channels')}return false;">Channels</button>
+                    <button type="button" class="sv-side-tab" data-sv-tab="members" onclick="if(window.svSwitchTab){window.svSwitchTab('members')}return false;">Members</button>
                 </div>
                 <div id="sv-channel-list" class="sv-channel-list"></div>
                 <div id="sv-member-panel" class="sv-member-panel" hidden>
@@ -260,7 +260,31 @@
     <script src="server-view-layout.js?v=1"></script>
     <script src="sv-mentions-fix.js?v=3"></script>
     <script src="server-view-punish.js?v=4"></script>
-    <script src="server-view-members.js?v=3"></script>
+    <script>
+    window.svSwitchTab = window.svSwitchTab || function (tab) {
+      var active = tab === "members" ? "members" : "channels";
+      var view = document.getElementById("server-view");
+      if (view) view.classList.add("drawer-open");
+      document.querySelectorAll("[data-sv-tab]").forEach(function (b) {
+        b.classList.toggle("active", b.getAttribute("data-sv-tab") === active);
+      });
+      var ch = document.getElementById("sv-channel-list");
+      var mp = document.getElementById("sv-member-panel");
+      if (ch) {
+        ch.hidden = active !== "channels";
+        ch.style.display = active === "channels" ? "" : "none";
+      }
+      if (mp) {
+        mp.hidden = active !== "members";
+        mp.style.display = active === "members" ? "flex" : "none";
+      }
+      if (active === "members" && typeof window.__svLoadMembers === "function") {
+        window.__svLoadMembers();
+      }
+      return false;
+    };
+    </script>
+    <script src="server-view-members.js?v=4"></script>
     <script src="sv-punish-attr-fix.js?v=1"></script>
 </body>
 </html>
