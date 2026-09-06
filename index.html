@@ -261,7 +261,7 @@
     <script src="sv-mentions-fix.js?v=3"></script>
     <script src="server-view-punish.js?v=4"></script>
     <script>
-    window.svSwitchTab = window.svSwitchTab || function (tab) {
+    window.svSwitchTab = function (tab) {
       var active = tab === "members" ? "members" : "channels";
       var view = document.getElementById("server-view");
       if (view) view.classList.add("drawer-open");
@@ -281,12 +281,18 @@
       }
       if (active === "members") {
         if (list) list.innerHTML = '<p class="sv-empty">Loading members…</p>';
+        clearTimeout(window.__svMembersHardTimer);
+        window.__svMembersHardTimer = setTimeout(function () {
+          if (list && /Loading members/i.test(list.textContent || "")) {
+            list.innerHTML = '<p class="sv-empty sv-error"><strong>Still loading after 8s</strong><br>Open DevTools → Network, check /api/members. Add DISCORD_BOT_TOKEN on Vercel and redeploy.</p>';
+          }
+        }, 8000);
         if (typeof window.__svLoadMembers === "function") window.__svLoadMembers();
       }
       return false;
     };
     </script>
-    <script src="server-view-members.js?v=5"></script>
+    <script src="sv-members-load.js?v=1"></script>
     <script src="sv-punish-attr-fix.js?v=1"></script>
 </body>
 </html>
