@@ -103,10 +103,21 @@ function setupEventListeners() {
   document.getElementById("server-button")?.addEventListener("click", loadServers);
   function launchServerView(e) {
     if (e) e.preventDefault();
+    // Prefer the public API from server-view.js
     if (typeof window.openServerView === "function") {
       window.openServerView();
-    } else {
-      alert("Server View script not loaded. Hard refresh (Ctrl+Shift+R).");
+      return;
+    }
+    // Fallback: server-view.js also binds its own click handlers on these
+    // buttons. Do NOT alert — that caused a false "script not loaded" popup
+    // every time even though Server View opened fine afterwards.
+    var view = document.getElementById("server-view");
+    if (view) {
+      // Trigger the native handler path if present; otherwise show the view
+      view.hidden = false;
+      document.body.classList.add("server-view-open");
+      var app = document.getElementById("app");
+      if (app) app.hidden = true;
     }
   }
   document.getElementById("open-server-view")?.addEventListener("click", launchServerView);
