@@ -1,35 +1,36 @@
 /* Server View — Channels / Members sidebar tabs */
 
 .server-view .sv-sidebar-tabs {
-  display: flex;
+  display: flex !important;
   gap: 4px;
   padding: 8px 10px 6px;
   flex-shrink: 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.15);
 }
 
 .server-view .sv-side-tab {
   flex: 1;
   border: none;
   border-radius: 6px;
-  padding: 7px 8px;
+  padding: 8px 8px;
   font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
+  font-weight: 700;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
   cursor: pointer;
   background: transparent;
-  color: #949ba4;
+  color: #b5bac1;
   transition: background 0.12s ease, color 0.12s ease;
 }
 
 .server-view .sv-side-tab:hover {
-  background: rgba(255, 255, 255, 0.06);
-  color: #dbdee1;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
 }
 
 .server-view .sv-side-tab.active {
-  background: rgba(88, 101, 242, 0.25);
+  background: #5865f2;
   color: #fff;
 }
 
@@ -75,7 +76,7 @@
   min-height: 0;
   height: 0;
   overflow-x: hidden;
-  overflow-y: scroll;
+  overflow-y: scroll !important;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
   touch-action: pan-y;
@@ -122,19 +123,11 @@
   background: #80848e;
 }
 
-.server-view .sv-member-status.sv-status-online {
-  background: #23a559;
-}
-.server-view .sv-member-status.sv-status-idle {
-  background: #f0b232;
-}
-.server-view .sv-member-status.sv-status-dnd {
-  background: #f23f43;
-}
+.server-view .sv-member-status.sv-status-online { background: #23a559; }
+.server-view .sv-member-status.sv-status-idle { background: #f0b232; }
+.server-view .sv-member-status.sv-status-dnd { background: #f23f43; }
 .server-view .sv-member-status.sv-status-offline,
-.server-view .sv-member-status.sv-status-invisible {
-  background: #80848e;
-}
+.server-view .sv-member-status.sv-status-invisible { background: #80848e; }
 
 .server-view .sv-member-info {
   flex: 1 1 auto;
@@ -179,10 +172,14 @@
   background: #a12828;
 }
 
-/* Light theme tweaks */
+/* Highlight the topbar members button */
+.server-view #sv-members-btn {
+  font-size: 16px;
+}
+
 .server-view.theme-light .sv-side-tab.active {
-  background: rgba(88, 101, 242, 0.18);
-  color: #1e1f22;
+  background: #5865f2;
+  color: #fff;
 }
 
 .server-view.theme-light .sv-member-search {
@@ -192,4 +189,9 @@
 
 .server-view.theme-light .sv-member-name {
   color: #060607;
+}
+
+.server-view.theme-light .sv-sidebar-tabs {
+  background: rgba(0, 0, 0, 0.04);
+  border-bottom-color: rgba(0, 0, 0, 0.08);
 }
