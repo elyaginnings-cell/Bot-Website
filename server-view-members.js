@@ -38,16 +38,9 @@
     return "https://cdn.discordapp.com/embed/avatars/" + n + ".png";
   }
 
-  function getListEl() {
-    return document.getElementById("sv-member-list");
-  }
-
   function setListHtml(html) {
-    var list = getListEl();
-    if (!list) {
-      console.warn("[members] #sv-member-list missing");
-      return;
-    }
+    var list = document.getElementById("sv-member-list");
+    if (!list) return;
     list.innerHTML = html;
     list.style.display = "block";
     list.style.visibility = "visible";
@@ -95,6 +88,7 @@
     }
 
     if (activeTab === "members") {
+      loading = false;
       setListHtml('<p class="sv-empty">Loading members…</p>');
       loadMembers();
     }
@@ -121,23 +115,32 @@
       "&limit=150";
     if (query) url += "&q=" + encodeURIComponent(query);
 
-    fetch(url, {
+    var controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+    var timer = setTimeout(function () {
+      if (controller) controller.abort();
+    }, 15000);
+
+    var opts = {
       credentials: "include",
       cache: "no-store",
       headers: { Accept: "application/json" }
-    })
+    };
+    if (controller) opts.signal = controller.signal;
+
+    fetch(url, opts)
       .then(function (res) {
         return res.text().then(function (text) {
           var data = {};
           try {
             data = text ? JSON.parse(text) : {};
           } catch (e) {
-            data = { error: "Bad JSON from API", raw: String(text).slice(0, 200) };
+            data = { error: "Bad response from server", raw: String(text).slice(0, 180) };
           }
           return { ok: res.ok, status: res.status, data: data };
         });
       })
       .then(function (result) {
+        clearTimeout(timer);
         if (!result.ok) {
           throw new Error(
             result.data.error ||
@@ -156,9 +159,15 @@
         renderMembers(members, result.data);
       })
       .catch(function (err) {
+        clearTimeout(timer);
+        var msg = err.message || "Unknown error";
+        if (err.name === "AbortError") {
+          msg =
+            "Timed out after 15s. Redeploy the Discord bot on Railway so /api/guild/.../members exists.";
+        }
         setListHtml(
           '<p class="sv-empty sv-error"><strong>Could not load members</strong><br>' +
-            esc(err.message || "Unknown error") +
+            esc(msg) +
             "</p>"
         );
       })
@@ -208,10 +217,8 @@
         '<img class="sv-member-av" src="' +
         esc(avatar) +
         '" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.src=\'https://cdn.discordapp.com/embed/avatars/0.png\'">';
-      html += "</div>";
-      html += '<div class="sv-member-info">';
-      html += '<span class="sv-member-name">' + esc(name) + "</span>";
-      html += bot;
+      html += "</div><div class="sv-member-info">";
+      html += '<span class="sv-member-name">' + esc(name) + "</span>" + bot;
       if (sub) html += '<span class="sv-member-sub">' + esc(sub) + "</span>";
       html += "</div>";
 
@@ -233,6 +240,7 @@
     var q = (e.target && e.target.value) || "";
     clearTimeout(searchTimer);
     searchTimer = setTimeout(function () {
+      loading = false;
       loadMembers(String(q).trim());
     }, 280);
   }
@@ -263,7 +271,6 @@
 
   function bind() {
     document.addEventListener("click", handleActivate, true);
-
     var search = document.getElementById("sv-member-search");
     if (search && !search.dataset.bound) {
       search.dataset.bound = "1";
