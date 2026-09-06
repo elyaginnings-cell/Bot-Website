@@ -1,0 +1,119 @@
+/* Server View layout fixes: scrollable channel list, collapsible sidebar, composer access */
+
+/* Always show the menu (channels) button */
+.server-view .sv-menu-btn {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Channel sidebar must fill height and clip so the list can scroll */
+.server-view .sv-channels {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+  max-height: 100%;
+  overflow: hidden;
+}
+
+/* Force the channel list to be the scroll container */
+.server-view .sv-channel-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 0; /* flexbox scroll trick */
+  overflow-x: hidden;
+  overflow-y: scroll !important;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  padding-bottom: 24px;
+}
+
+/* Desktop: hide sidebar when not open (menu toggles it) */
+@media (min-width: 769px) {
+  .server-view .sv-channels {
+    position: relative;
+    transform: none;
+    width: 240px;
+    transition: width 0.18s ease, opacity 0.18s ease, margin 0.18s ease;
+  }
+
+  .server-view:not(.drawer-open) .sv-channels {
+    width: 0;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    opacity: 0;
+    pointer-events: none;
+    overflow: hidden;
+    box-shadow: none;
+    border: none;
+  }
+
+  .server-view.drawer-open .sv-channels {
+    width: 240px;
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .server-view .sv-channels-close {
+    display: flex;
+  }
+
+  .server-view .sv-drawer-backdrop {
+    display: none !important;
+  }
+}
+
+/* Mobile drawer: ensure full height + scrollable list */
+@media (max-width: 768px) {
+  .server-view .sv-channels {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    height: 100%;
+    max-height: 100%;
+    width: min(280px, 85vw);
+    transform: translateX(-105%);
+    z-index: 6;
+  }
+
+  .server-view.drawer-open .sv-channels {
+    transform: translateX(0);
+  }
+
+  .server-view.drawer-open .sv-drawer-backdrop {
+    display: block;
+  }
+}
+
+/* Composer must stay above overlays and remain interactive */
+.server-view .sv-composer-wrap {
+  position: relative;
+  z-index: 3;
+  flex-shrink: 0;
+  pointer-events: auto;
+}
+
+.server-view .sv-composer,
+.server-view #sv-input,
+.server-view #sv-send {
+  pointer-events: auto;
+}
+
+.server-view #sv-input:not(:disabled) {
+  cursor: text;
+}
+
+/* When drawer is open on mobile, don't let chat steal touches under the panel */
+@media (max-width: 768px) {
+  .server-view.drawer-open .sv-chat {
+    pointer-events: none;
+  }
+  .server-view.drawer-open .sv-channels,
+  .server-view.drawer-open .sv-drawer-backdrop {
+    pointer-events: auto;
+  }
+}
