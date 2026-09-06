@@ -7,7 +7,7 @@
 
   var membersCache = [];
   var loading = false;
-  var activeTab = "channels"; // channels | members
+  var activeTab = "channels";
   var searchTimer = null;
 
   function esc(value) {
@@ -22,6 +22,17 @@
     if (window.selectedServer && window.selectedServer.id) return window.selectedServer;
     if (window.__svGuildId) return { id: String(window.__svGuildId) };
     return null;
+  }
+
+  function defaultAvatar(id) {
+    var n = 0;
+    try {
+      // Discord default avatar index from snowflake
+      n = Number(String(id).slice(-2)) % 6;
+    } catch (_) {
+      n = 0;
+    }
+    return "https://cdn.discordapp.com/embed/avatars/" + n + ".png";
   }
 
   function ensureSidebarTabs() {
@@ -53,7 +64,6 @@
       aside.appendChild(panel);
     }
 
-    // Style channel list as a panel sibling
     var chList = document.getElementById("sv-channel-list");
     if (chList) chList.classList.add("sv-side-panel");
   }
@@ -75,7 +85,13 @@
     if (activeTab === "members") {
       loadMembers();
       var search = document.getElementById("sv-member-search");
-      if (search) setTimeout(function () { search.focus(); }, 50);
+      if (search) {
+        setTimeout(function () {
+          try {
+            search.focus();
+          } catch (_) {}
+        }, 50);
+      }
     }
   }
 
@@ -132,7 +148,7 @@
       list.innerHTML =
         '<p class="sv-empty">No members found.' +
         (meta && meta.cached === 0
-          ? "<br>Bot may need the Server Members intent."
+          ? "<br>Bot may need the <strong>Server Members Intent</strong> enabled in the Discord Developer Portal."
           : "") +
         "</p>";
       return;
@@ -143,13 +159,11 @@
       if (!m || !m.id) return;
       var name = m.displayName || m.globalName || m.username || "User";
       var sub = m.username && m.username !== name ? "@" + m.username : "";
-      var avatar =
-        m.avatar ||
-        "https://cdn.discordapp.com/embed/avatars/" +
-          (Number(BigInt(m.id) >> 22n) % 6) +
-          ".png";
+      var avatar = m.avatar || defaultAvatar(m.id);
       var bot = m.bot ? '<span class="sv-bot-badge">BOT</span>' : "";
-      var status = m.status ? '<span class="sv-member-status sv-status-' + esc(m.status) + '"></span>' : "";
+      var status = m.status
+        ? '<span class="sv-member-status sv-status-' + esc(m.status) + '"></span>'
+        : "";
 
       html +=
         '<div class="sv-member-row" data-member-id="' +
@@ -159,7 +173,7 @@
         status +
         '<img class="sv-member-av" src="' +
         esc(avatar) +
-        '" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.src=\'https://cdn.discordapp.com/embed/avatars/0.png\'">' +
+        '" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src=\'https://cdn.discordapp.com/embed/avatars/0.png\'">' +
         "</div>" +
         '<div class="sv-member-info">' +
         '<span class="sv-member-name">' +
@@ -210,15 +224,11 @@
     if (tab) {
       e.preventDefault();
       setTab(tab.getAttribute("data-sv-tab"));
-      return;
     }
-
-    // Punish buttons use existing server-view-punish.js delegation
   }
 
   function onServerViewOpen() {
     ensureSidebarTabs();
-    // Stay on channels by default; members loads on tab click
     setTab("channels");
   }
 
@@ -232,7 +242,6 @@
       search.addEventListener("input", onSearchInput);
     }
 
-    // When server view opens, ensure tabs exist
     ["open-server-view", "nav-server-view"].forEach(function (id) {
       var btn = document.getElementById(id);
       if (btn && !btn.dataset.membersBound) {
@@ -243,7 +252,6 @@
       }
     });
 
-    // Observe for re-renders of channel list
     var obs = new MutationObserver(function () {
       ensureSidebarTabs();
       var search2 = document.getElementById("sv-member-search");
