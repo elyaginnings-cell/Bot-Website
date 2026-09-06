@@ -1,0 +1,65 @@
+/* Toggle / checkbox labels — readable on all sizes */
+
+label.toggle,
+.toggle {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: flex-start !important;
+  gap: 12px !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 10px 0 14px !important;
+  min-height: 0 !important;
+  padding: 4px 0 !important;
+  box-sizing: border-box;
+}
+
+label.toggle input[type="checkbox"],
+.toggle input[type="checkbox"] {
+  flex: 0 0 auto !important;
+  width: 18px !important;
+  height: 18px !important;
+  min-width: 18px !important;
+  max-width: 18px !important;
+  margin: 3px 0 0 0 !important;
+  padding: 0 !important;
+  accent-color: #ff4df0;
+  cursor: pointer;
+}
+
+label.toggle > span,
+.toggle > span {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  display: block !important;
+  font-size: 14px !important;
+  line-height: 1.45 !important;
+  font-weight: 500 !important;
+  color: #ffffff !important;
+  white-space: normal !important;
+  word-break: break-word !important;
+  overflow-wrap: anywhere !important;
+}
+
+@media (max-width: 960px) {
+  label.toggle,
+  .toggle {
+    gap: 14px !important;
+    margin: 12px 0 16px !important;
+  }
+
+  label.toggle input[type="checkbox"],
+  .toggle input[type="checkbox"] {
+    width: 16px !important;
+    height: 16px !important;
+    min-width: 16px !important;
+    max-width: 16px !important;
+    margin-top: 4px !important;
+  }
+
+  label.toggle > span,
+  .toggle > span {
+    font-size: 15px !important;
+    line-height: 1.5 !important;
+  }
+}
