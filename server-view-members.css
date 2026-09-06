@@ -7,6 +7,9 @@
   flex-shrink: 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(0, 0, 0, 0.15);
+  position: relative;
+  z-index: 30 !important;
+  pointer-events: auto !important;
 }
 
 .server-view .sv-side-tab {
@@ -18,10 +21,15 @@
   font-weight: 700;
   letter-spacing: 0.03em;
   text-transform: uppercase;
-  cursor: pointer;
+  cursor: pointer !important;
   background: transparent;
   color: #b5bac1;
   transition: background 0.12s ease, color 0.12s ease;
+  position: relative;
+  z-index: 31 !important;
+  pointer-events: auto !important;
+  -webkit-tap-highlight-color: rgba(88, 101, 242, 0.35);
+  touch-action: manipulation;
 }
 
 .server-view .sv-side-tab:hover {
@@ -40,6 +48,9 @@
   flex: 1 1 auto;
   min-height: 0;
   height: 0;
+  position: relative;
+  z-index: 2;
+  pointer-events: auto !important;
 }
 
 .server-view .sv-member-panel[hidden] {
@@ -65,6 +76,7 @@
   background: #1e1f22;
   color: #dbdee1;
   outline: none;
+  pointer-events: auto !important;
 }
 
 .server-view .sv-member-search::placeholder {
@@ -81,6 +93,7 @@
   overscroll-behavior: contain;
   touch-action: pan-y;
   padding: 4px 6px 20px;
+  pointer-events: auto !important;
 }
 
 .server-view .sv-member-row {
@@ -161,10 +174,13 @@
   padding: 4px 8px;
   font-size: 11px;
   font-weight: 600;
-  cursor: pointer;
+  cursor: pointer !important;
   background: #da373c;
   color: #fff;
   opacity: 0.92;
+  pointer-events: auto !important;
+  position: relative;
+  z-index: 5;
 }
 
 .server-view .sv-member-punish:hover {
@@ -172,9 +188,16 @@
   background: #a12828;
 }
 
-/* Highlight the topbar members button */
 .server-view #sv-members-btn {
   font-size: 16px;
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  position: relative;
+  z-index: 40 !important;
+}
+
+.server-view .sv-channels {
+  pointer-events: auto !important;
 }
 
 .server-view.theme-light .sv-side-tab.active {
