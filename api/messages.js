@@ -48,7 +48,9 @@ export default async function handler(req, res) {
           reason: body.reason,
           duration: body.duration,
           evidence: body.evidence || null,
+          channelId: channelId && channelId !== "punish" ? channelId : null,
           moderatorTag: body.moderatorTag || "Dashboard",
+          moderatorId: body.moderatorId || null,
         }),
       });
       const data = await response.json().catch(() => ({}));
