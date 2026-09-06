@@ -34,6 +34,11 @@
     el.style.color = ok === false ? "#ff7180" : "#57F287";
   }
 
+  function setPresenceMsg(text, ok) {
+    setMsg("presence-status", text, ok);
+    setMsg("bot-status-msg", text, ok);
+  }
+
   function buildInviteUrl(clientId, perms) {
     if (!clientId) return "";
     var p = encodeURIComponent(String(perms == null ? "8" : perms));
@@ -68,6 +73,35 @@
       if (typeEl && data.activityType != null) typeEl.value = String(data.activityType);
       if (nameEl && data.activityName != null) nameEl.value = data.activityName;
     } catch (e) {}
+  }
+
+  async function savePresence() {
+    var status = (document.getElementById("bot-status") || {}).value || "online";
+    var activityType = Number((document.getElementById("bot-activity-type") || {}).value || 0);
+    var activityName = ((document.getElementById("bot-activity-name") || {}).value || "").trim();
+    setPresenceMsg("Saving…", true);
+    try {
+      var res = await fetch("/api/presence", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          status: status,
+          activityType: activityType,
+          activityName: activityName
+        })
+      });
+      var data = await res.json().catch(function () {
+        return {};
+      });
+      if (!res.ok) {
+        setPresenceMsg(data.error || "Failed to update status", false);
+        return;
+      }
+      setPresenceMsg("Bot status updated.", true);
+    } catch (e) {
+      setPresenceMsg(e.message || "Failed", false);
+    }
   }
 
   async function refreshInvite() {
@@ -115,32 +149,17 @@
       });
     }
 
-    var saveStatus = document.getElementById("save-bot-status");
-    if (saveStatus && !saveStatus.__bound) {
-      saveStatus.__bound = true;
-      saveStatus.addEventListener("click", async function () {
-        var status = (document.getElementById("bot-status") || {}).value || "online";
-        var activityType = Number((document.getElementById("bot-activity-type") || {}).value || 0);
-        var activityName = ((document.getElementById("bot-activity-name") || {}).value || "").trim();
-        setMsg("bot-status-msg", "Saving…", true);
-        try {
-          var res = await fetch("/api/presence", {
-            method: "POST",
-            credentials: "include",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ status: status, activityType: activityType, activityName: activityName })
-          });
-          var data = await res.json().catch(function () { return {}; });
-          if (!res.ok) {
-            setMsg("bot-status-msg", data.error || "Failed to update status", false);
-            return;
-          }
-          setMsg("bot-status-msg", "Bot status updated.", true);
-        } catch (e) {
-          setMsg("bot-status-msg", e.message || "Failed", false);
-        }
-      });
-    }
+    // Support both button ids used in the HTML over time
+    ["save-bot-status", "save-presence"].forEach(function (id) {
+      var btn = document.getElementById(id);
+      if (btn && !btn.__bound) {
+        btn.__bound = true;
+        btn.addEventListener("click", function (e) {
+          e.preventDefault();
+          savePresence();
+        });
+      }
+    });
 
     var permsEl = document.getElementById("invite-perms");
     if (permsEl && !permsEl.__bound) {
