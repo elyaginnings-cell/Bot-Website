@@ -20,7 +20,7 @@ function mapDiscordMember(raw) {
   if (user.avatar && id) {
     avatar = `https://cdn.discordapp.com/avatars/${id}/${user.avatar}.png?size=64`;
   } else if (id) {
-    const idx = Number(BigInt(id) % 6n);
+    const idx = Number(String(id).replace(/\D/g, "").slice(-2) || "0") % 6;
     avatar = `https://cdn.discordapp.com/embed/avatars/${idx}.png`;
   }
   return {
@@ -38,14 +38,12 @@ async function fetchWithTimeout(url, options, ms) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), ms);
   try {
-    const res = await fetch(url, { ...options, signal: controller.signal });
-    return res;
+    return await fetch(url, { ...options, signal: controller.signal });
   } finally {
     clearTimeout(timer);
   }
 }
 
-/** Discord REST — works without the Railway bot HTTP route. */
 async function fromDiscordApi(guildId, limit, q) {
   const token = botToken();
   if (!token) return null;
@@ -55,7 +53,6 @@ async function fromDiscordApi(guildId, limit, q) {
     {
       headers: {
         Authorization: `Bot ${token}`,
-        "Content-Type": "application/json",
       },
       cache: "no-store",
     },
@@ -150,14 +147,9 @@ export default async function handler(req, res) {
 
     const errors = [];
 
-    // 1) Prefer Discord API with bot token on Vercel (no Railway hang)
     try {
       const direct = await fromDiscordApi(guildId, limit, q);
-      if (direct && Array.isArray(direct.members) && direct.members.length) {
-        return res.status(200).json(direct);
-      }
       if (direct) {
-        // empty list is still a valid response
         return res.status(200).json(direct);
       }
     } catch (err) {
@@ -165,12 +157,11 @@ export default async function handler(req, res) {
       console.warn("[members] Discord API:", err.message || err);
     }
 
-    // 2) Fall back to Railway bot HTTP
     const dashboardSecret = process.env.DASHBOARD_API_SECRET;
     if (!dashboardSecret) {
       return res.status(500).json({
         error:
-          "Missing bot token and DASHBOARD_API_SECRET. Set DISCORD_BOT_TOKEN (or BOT_TOKEN) on Vercel.",
+          "Set DISCORD_BOT_TOKEN (or BOT_TOKEN) on Vercel to the same token as the Discord bot.",
         errors,
       });
     }
@@ -180,11 +171,11 @@ export default async function handler(req, res) {
       return res.status(200).json(data);
     } catch (err) {
       errors.push("railway: " + (err.message || String(err)));
+      const timedOut = err.name === "AbortError";
       return res.status(504).json({
-        error:
-          err.name === "AbortError"
-            ? "Timed out talking to the bot. Set DISCORD_BOT_TOKEN on Vercel to load members directly."
-            : err.message || "Failed to load members",
+        error: timedOut
+          ? "Timed out talking to the bot. Add DISCORD_BOT_TOKEN on Vercel (same as Railway bot token) to load members directly from Discord."
+          : err.message || "Failed to load members",
         errors,
       });
     }
