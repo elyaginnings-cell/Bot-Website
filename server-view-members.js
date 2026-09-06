@@ -1,14 +1,13 @@
 /**
- * Server View - Members tab (Channels | Members)
+ * Server View - Members tab
+ * Exposes window.svSwitchTab for inline onclick + event handlers.
  */
 (function () {
   "use strict";
 
   var membersCache = [];
   var loading = false;
-  var activeTab = "channels";
   var searchTimer = null;
-  var boundOnce = false;
 
   function esc(value) {
     var s = String(value == null ? "" : value);
@@ -41,17 +40,14 @@
   }
 
   function setTab(tab) {
-    activeTab = tab === "members" ? "members" : "channels";
+    var activeTab = tab === "members" ? "members" : "channels";
     openDrawer();
 
     var tabs = document.querySelectorAll("[data-sv-tab]");
     for (var i = 0; i < tabs.length; i++) {
       var btn = tabs[i];
-      if (btn.getAttribute("data-sv-tab") === activeTab) {
-        btn.classList.add("active");
-      } else {
-        btn.classList.remove("active");
-      }
+      if (btn.getAttribute("data-sv-tab") === activeTab) btn.classList.add("active");
+      else btn.classList.remove("active");
     }
 
     var chList = document.getElementById("sv-channel-list");
@@ -81,10 +77,13 @@
       }
     }
 
-    if (activeTab === "members") {
-      loadMembers();
-    }
+    if (activeTab === "members") loadMembers();
+    return false;
   }
+
+  // Global for inline HTML onclick
+  window.svSwitchTab = setTab;
+  window.__svSetSidebarTab = setTab;
 
   function loadMembers(query) {
     var list = document.getElementById("sv-member-list");
@@ -135,6 +134,8 @@
       });
   }
 
+  window.__svLoadMembers = loadMembers;
+
   function renderMembers(members, meta) {
     var list = document.getElementById("sv-member-list");
     if (!list) return;
@@ -142,7 +143,7 @@
     if (!members || !members.length) {
       var hint =
         meta && meta.cached === 0
-          ? "<br>Enable <strong>Server Members Intent</strong> for the bot in the Discord Developer Portal, then redeploy."
+          ? "<br>Enable <strong>Server Members Intent</strong> for the bot, then redeploy."
           : "";
       list.innerHTML = '<p class="sv-empty">No members found.' + hint + "</p>";
       return;
@@ -167,10 +168,8 @@
         '<img class="sv-member-av" src="' +
         esc(avatar) +
         '" alt="" loading="lazy" referrerpolicy="no-referrer">';
-      html += "</div>";
-      html += '<div class="sv-member-info">';
-      html += '<span class="sv-member-name">' + esc(name) + "</span>";
-      html += bot;
+      html += "</div><div class="sv-member-info">';
+      html += '<span class="sv-member-name">' + esc(name) + "</span>" + bot;
       if (sub) html += '<span class="sv-member-sub">' + esc(sub) + "</span>";
       html += "</div>";
 
@@ -182,7 +181,6 @@
           esc(name) +
           '" data-punish-msg="" title="Punish">Punish</button>';
       }
-
       html += "</div>";
     }
 
@@ -192,7 +190,7 @@
         members.length +
         " of " +
         meta.total +
-        ". Use search to find others.</p>";
+        ". Search to find others.</p>";
     }
 
     list.innerHTML = html;
@@ -206,64 +204,40 @@
     }, 280);
   }
 
-  function onTabClick(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    var btn = e.currentTarget || e.target;
-    if (!btn) return;
-    if (btn.getAttribute && !btn.getAttribute("data-sv-tab") && btn.closest) {
-      btn = btn.closest("[data-sv-tab]");
-    }
-    if (!btn || !btn.getAttribute) return;
-    var tab = btn.getAttribute("data-sv-tab");
-    if (tab) setTab(tab);
-  }
+  function handleActivate(e) {
+    var t = e.target;
+    if (!t) return;
 
-  function bindTabs() {
-    var tabs = document.querySelectorAll("[data-sv-tab]");
-    for (var i = 0; i < tabs.length; i++) {
-      var btn = tabs[i];
-      if (btn.dataset.svTabBound === "1") continue;
-      btn.dataset.svTabBound = "1";
-      btn.addEventListener("click", onTabClick);
+    // Top bar members button
+    if (t.id === "sv-members-btn" || (t.closest && t.closest("#sv-members-btn"))) {
+      e.preventDefault();
+      e.stopPropagation();
+      setTab("members");
+      return;
     }
 
-    var membersBtn = document.getElementById("sv-members-btn");
-    if (membersBtn && membersBtn.dataset.svTabBound !== "1") {
-      membersBtn.dataset.svTabBound = "1";
-      membersBtn.addEventListener("click", function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        setTab("members");
-      });
-    }
-
-    var search = document.getElementById("sv-member-search");
-    if (search && search.dataset.bound !== "1") {
-      search.dataset.bound = "1";
-      search.addEventListener("input", onSearchInput);
+    var tabBtn = t.getAttribute && t.getAttribute("data-sv-tab")
+      ? t
+      : t.closest
+        ? t.closest("[data-sv-tab]")
+        : null;
+    if (tabBtn) {
+      e.preventDefault();
+      e.stopPropagation();
+      setTab(tabBtn.getAttribute("data-sv-tab"));
     }
   }
 
   function bind() {
-    if (boundOnce) {
-      bindTabs();
-      return;
-    }
-    boundOnce = true;
-    bindTabs();
+    // Capture phase so we win over other handlers
+    document.addEventListener("click", handleActivate, true);
+    document.addEventListener("pointerup", handleActivate, true);
 
-    // Re-bind if DOM changes
-    if (document.body) {
-      var obs = new MutationObserver(function () {
-        bindTabs();
-      });
-      obs.observe(document.body, { childList: true, subtree: true });
+    var search = document.getElementById("sv-member-search");
+    if (search && !search.dataset.bound) {
+      search.dataset.bound = "1";
+      search.addEventListener("input", onSearchInput);
     }
-
-    // Also expose for debugging
-    window.__svSetSidebarTab = setTab;
-    window.__svLoadMembers = loadMembers;
   }
 
   if (document.readyState === "loading") {
