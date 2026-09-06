@@ -81,7 +81,6 @@
     return false;
   }
 
-  // Global for inline HTML onclick
   window.svSwitchTab = setTab;
   window.__svSetSidebarTab = setTab;
 
@@ -141,11 +140,16 @@
     if (!list) return;
 
     if (!members || !members.length) {
-      var hint =
-        meta && meta.cached === 0
-          ? "<br>Enable <strong>Server Members Intent</strong> for the bot, then redeploy."
-          : "";
-      list.innerHTML = '<p class="sv-empty">No members found.' + hint + "</p>";
+      var extra = "";
+      if (meta && meta.fetchError) {
+        extra += "<br><small>" + esc(meta.fetchError) + "</small>";
+      }
+      if (meta && meta.memberCount) {
+        extra += "<br><small>Server reports " + esc(meta.memberCount) + " members.</small>";
+      }
+      extra +=
+        "<br><small>Redeploy the bot on Railway after enabling Server Members Intent, then try again.</small>";
+      list.innerHTML = '<p class="sv-empty">No members found.' + extra + "</p>";
       return;
     }
 
@@ -208,7 +212,6 @@
     var t = e.target;
     if (!t) return;
 
-    // Top bar members button
     if (t.id === "sv-members-btn" || (t.closest && t.closest("#sv-members-btn"))) {
       e.preventDefault();
       e.stopPropagation();
@@ -229,7 +232,6 @@
   }
 
   function bind() {
-    // Capture phase so we win over other handlers
     document.addEventListener("click", handleActivate, true);
     document.addEventListener("pointerup", handleActivate, true);
 
