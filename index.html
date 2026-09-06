@@ -18,7 +18,7 @@
     <link rel="stylesheet" href="sv-rich.css">
     <link rel="stylesheet" href="sv-mentions.css?v=1">
     <link rel="stylesheet" href="sv-readability.css">
-    <link rel="stylesheet" href="server-view-members.css?v=4">
+    <link rel="stylesheet" href="server-view-members.css?v=5">
 </head>
 <body class="mode-auto">
 
@@ -216,7 +216,7 @@
                     <div class="sv-member-search-wrap">
                         <input type="search" id="sv-member-search" class="sv-member-search" placeholder="Search members…" autocomplete="off">
                     </div>
-                    <div id="sv-member-list" class="sv-member-list"></div>
+                    <div id="sv-member-list" class="sv-member-list"><p class="sv-empty">Open Members to load…</p></div>
                 </div>
             </aside>
             <section class="sv-chat">
@@ -270,6 +270,7 @@
       });
       var ch = document.getElementById("sv-channel-list");
       var mp = document.getElementById("sv-member-panel");
+      var list = document.getElementById("sv-member-list");
       if (ch) {
         ch.hidden = active !== "channels";
         ch.style.display = active === "channels" ? "" : "none";
@@ -278,13 +279,14 @@
         mp.hidden = active !== "members";
         mp.style.display = active === "members" ? "flex" : "none";
       }
-      if (active === "members" && typeof window.__svLoadMembers === "function") {
-        window.__svLoadMembers();
+      if (active === "members") {
+        if (list) list.innerHTML = '<p class="sv-empty">Loading members…</p>';
+        if (typeof window.__svLoadMembers === "function") window.__svLoadMembers();
       }
       return false;
     };
     </script>
-    <script src="server-view-members.js?v=4"></script>
+    <script src="server-view-members.js?v=5"></script>
     <script src="sv-punish-attr-fix.js?v=1"></script>
 </body>
 </html>
