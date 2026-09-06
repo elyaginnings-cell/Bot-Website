@@ -1,6 +1,7 @@
 (function () {
   "use strict";
   var state = { userId: "", userName: "", messageId: "", channelId: "" };
+  var submitting = false;
 
   function ensureStyles() {
     if (document.querySelector('link[data-sv-punish-css]')) return;
@@ -34,7 +35,6 @@
   function decodeAttr(value) {
     if (value == null) return "";
     var s = String(value);
-    // Undo accidental HTML entity encoding in attributes
     s = s
       .replace(/"/g, '"')
       .replace(/&#34;/g, '"')
@@ -74,7 +74,11 @@
     wrap.addEventListener("click", function (e) {
       if (e.target === wrap) closeModalAndFlag();
     });
-    document.getElementById("sv-punish-apply").addEventListener("click", submitPunish);
+    document.getElementById("sv-punish-apply").addEventListener("click", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      submitPunish();
+    });
     document.getElementById("sv-punish-action").addEventListener("change", syncDuration);
     syncDuration();
   }
@@ -93,6 +97,7 @@
   function closeModalAndFlag() {
     closeModal();
     document.body.classList.remove("sv-punish-open");
+    submitting = false;
   }
 
   function currentUserId() {
@@ -103,13 +108,13 @@
 
   window.openPunishModal = function (info) {
     ensureModal();
+    submitting = false;
     info = info || {};
     var userId = decodeAttr(info.userId || info.user_id || "");
     var userName = decodeAttr(info.userName || info.user_name || "user") || "user";
     var messageId = decodeAttr(info.messageId || info.message_id || "");
     var channelId = decodeAttr(info.channelId || info.channel_id || getActiveChannelId() || "");
 
-    // Only digits (Discord snowflake)
     if (userId && !/^\d{5,}$/.test(userId)) {
       var m = userId.match(/(\d{17,20})/);
       if (m) userId = m[1];
@@ -141,8 +146,10 @@
     var reason = document.getElementById("sv-punish-reason");
     var msg = document.getElementById("sv-punish-msg");
     var action = document.getElementById("sv-punish-action");
+    var btn = document.getElementById("sv-punish-apply");
     if (name) name.textContent = userName || "user";
     if (reason) reason.value = "";
+    if (btn) btn.disabled = false;
     if (msg) {
       if (userId) {
         msg.textContent = "User: " + userId;
@@ -158,6 +165,9 @@
   };
 
   async function submitPunish() {
+    if (submitting) return;
+    submitting = true;
+
     var server = getServer();
     if (!server || !server.id) {
       var m = document.getElementById("sv-punish-msg");
@@ -165,6 +175,7 @@
         m.textContent = "No server selected. Open Server View from a chosen server.";
         m.style.color = "#f23f43";
       }
+      submitting = false;
       return;
     }
 
@@ -175,6 +186,7 @@
         m2.textContent = "No user selected.";
         m2.style.color = "#f23f43";
       }
+      submitting = false;
       return;
     }
 
@@ -233,7 +245,7 @@
         msg.textContent = err.message || "Failed";
         msg.style.color = "#f23f43";
       }
-    } finally {
+      submitting = false;
       if (btn) btn.disabled = false;
     }
   }
