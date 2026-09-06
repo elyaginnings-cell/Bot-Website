@@ -8,6 +8,7 @@
     <link rel="shortcut icon" href="/amazon-favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="style.css?v=6">
     <link rel="stylesheet" href="server-view.css">
+    <link rel="stylesheet" href="sv-layout-fix.css?v=1">
     <link rel="stylesheet" href="server-view-components.css">
     <link rel="stylesheet" href="server-view-theme-garden.css">
     <link rel="stylesheet" href="server-view-reply.css">
@@ -168,7 +169,7 @@
                             </div>
                         </div>
                         <div class="input-group"><label for="bot-activity-name">Activity text</label>
-                        <input id="bot-activity-name" type="text" maxlength="128" placeholder="Coffee Shop"></div>
+                            <input id="bot-activity-name" type="text" maxlength="128" placeholder="Coffee Shop"></div>
                         <button class="button" id="save-presence" type="button">Save bot status</button>
                         <p class="form-hint" id="presence-status"></p>
                     </div>
@@ -178,19 +179,27 @@
     </div>
 
     <div id="server-view" class="server-view" hidden>
-        <div class="sv-top">
-            <button type="button" class="sv-back" id="sv-back">← Back</button>
-            <div class="sv-top-center">
-                <span id="sv-server-pill" class="sv-server-pill">Server</span>
-                <strong id="sv-server-name">Server</strong>
+        <header class="sv-topbar">
+            <div class="sv-top-left">
+                <button type="button" class="sv-back" id="sv-back">← Back</button>
+                <button type="button" class="sv-menu-btn" id="sv-menu-btn" aria-label="Channels">☰</button>
+                <span class="sv-server-pill" id="sv-server-pill">Server</span>
+                <div class="sv-name-wrap">
+                    <label for="sv-display-name">As</label>
+                    <input id="sv-display-name" type="text" maxlength="80" placeholder="Display name" autocomplete="off">
+                </div>
             </div>
-            <button type="button" class="sv-menu" id="sv-menu">☰</button>
-        </div>
+            <div class="sv-top-right">
+                <button type="button" class="sv-icon-btn" id="sv-settings-btn" title="Settings">⚙</button>
+                <button type="button" class="sv-icon-btn" id="close-server-view" title="Close">×</button>
+            </div>
+        </header>
         <div class="sv-body">
-            <aside class="sv-sidebar" id="sv-sidebar">
-                <div class="sv-sidebar-head">
-                    <strong id="sv-server-name-side">Channels</strong>
-                    <button type="button" class="sv-settings-btn" id="sv-settings-btn">⚙</button>
+            <button type="button" class="sv-drawer-backdrop" id="sv-drawer-backdrop" aria-label="Close drawer"></button>
+            <aside class="sv-channels" id="sv-channels">
+                <div class="sv-channels-head">
+                    <strong id="sv-server-name">Server</strong>
+                    <button type="button" class="sv-channels-close" id="sv-channels-close" aria-label="Close">×</button>
                 </div>
                 <div id="sv-channel-list" class="sv-channel-list"></div>
             </aside>
@@ -231,7 +240,8 @@
     <script src="branding-ui.js?v=5"></script>
     <script src="branding.js?v=5"></script>
     <script src="script.js?v=14"></script>
-    <script src="server-view.js?v=13"></script>
+    <script src="server-view.js?v=14"></script>
+    <script src="server-view-layout.js?v=1"></script>
     <script src="server-view-punish.js?v=2"></script>
 </body>
 </html>
