@@ -5,9 +5,17 @@
     if (document.querySelector('link[data-sv-punish-css]')) return;
     var l = document.createElement("link");
     l.rel = "stylesheet";
-    l.href = "server-view-punish.css?v=1";
+    l.href = "server-view-punish.css?v=3";
     l.dataset.svPunishCss = "1";
     document.head.appendChild(l);
+  }
+  function getServer() {
+    if (window.selectedServer && window.selectedServer.id) return window.selectedServer;
+    // Fallback: read from server view UI so punish works without leaving
+    var nameEl = document.getElementById("sv-server-name") || document.getElementById("selected-server-name");
+    var id = window.__svGuildId || (window.selectedServer && window.selectedServer.id);
+    if (id) return { id: id, name: nameEl ? nameEl.textContent : "Server" };
+    return null;
   }
   function ensureModal() {
     ensureStyles();
@@ -53,21 +61,39 @@
   }
   window.openPunishModal = function (info) {
     ensureModal();
-    state = info || state;
+    state = Object.assign({ userId: "", userName: "", messageId: "", channelId: "" }, info || {});
+    // Remember guild while in server view
+    var server = getServer();
+    if (server && server.id) window.__svGuildId = server.id;
     var name = document.getElementById("sv-punish-name");
     var reason = document.getElementById("sv-punish-reason");
     var msg = document.getElementById("sv-punish-msg");
+    var action = document.getElementById("sv-punish-action");
     if (name) name.textContent = state.userName || "user";
     if (reason) reason.value = "";
     if (msg) msg.textContent = "";
+    if (action) action.value = "warn";
+    syncDuration();
     var modal = document.getElementById("sv-punish-modal");
-    if (modal) modal.hidden = false;
+    if (modal) {
+      modal.hidden = false;
+      // Keep server-view open underneath — do not navigate home
+      document.body.classList.add("sv-punish-open");
+    }
     if (reason) reason.focus();
   };
   async function submitPunish() {
-    var server = window.selectedServer;
-    if (!server || !server.id) { alert("Choose a server first."); return; }
-    if (!state.userId) { alert("No user selected."); return; }
+    var server = getServer();
+    if (!server || !server.id) {
+      var m = document.getElementById("sv-punish-msg");
+      if (m) m.textContent = "No server selected. Open Server View from a chosen server.";
+      return;
+    }
+    if (!state.userId) {
+      var m2 = document.getElementById("sv-punish-msg");
+      if (m2) m2.textContent = "No user selected.";
+      return;
+    }
     var action = document.getElementById("sv-punish-action").value;
     var reason = (document.getElementById("sv-punish-reason").value || "").trim() || "No reason provided";
     var duration = document.getElementById("sv-punish-duration").value || "10m";
@@ -93,13 +119,29 @@
       var data = await res.json().catch(function () { return {}; });
       if (!res.ok || data.ok === false) throw new Error(data.error || "Punish failed");
       if (msg) msg.textContent = data.message || "Done.";
-      setTimeout(closeModal, 900);
+      // Stay in server view — only close the modal
+      setTimeout(function () {
+        closeModal();
+        document.body.classList.remove("sv-punish-open");
+      }, 900);
     } catch (err) {
       if (msg) msg.textContent = err.message || "Failed";
     } finally {
       if (btn) btn.disabled = false;
     }
   }
+  function closeModalAndFlag() {
+    closeModal();
+    document.body.classList.remove("sv-punish-open");
+  }
+  // Override cancel to clear flag
+  document.addEventListener("DOMContentLoaded", function () {
+    ensureModal();
+    var cancel = document.getElementById("sv-punish-cancel");
+    if (cancel) {
+      cancel.onclick = closeModalAndFlag;
+    }
+  });
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", ensureModal);
   else ensureModal();
 })();
