@@ -6,7 +6,7 @@
     if (document.querySelector('link[data-sv-punish-css]')) return;
     var l = document.createElement("link");
     l.rel = "stylesheet";
-    l.href = "server-view-punish.css?v=4";
+    l.href = "server-view-punish.css?v=5";
     l.dataset.svPunishCss = "1";
     document.head.appendChild(l);
   }
@@ -15,15 +15,34 @@
     if (window.selectedServer && window.selectedServer.id) return window.selectedServer;
     var nameEl = document.getElementById("sv-server-name") || document.getElementById("selected-server-name");
     var id = window.__svGuildId || (window.selectedServer && window.selectedServer.id);
-    if (id) return { id: id, name: nameEl ? nameEl.textContent : "Server" };
+    if (id) return { id: String(id), name: nameEl ? nameEl.textContent : "Server" };
     return null;
   }
 
   function getActiveChannelId() {
-    // Prefer channel title data, fall back to any selected channel button
     var active = document.querySelector("#sv-channel-list .sv-ch.active");
-    if (active && active.getAttribute("data-channel-id")) return active.getAttribute("data-channel-id");
+    if (active) {
+      var id =
+        active.getAttribute("data-channel-id") ||
+        active.dataset.channelId ||
+        "";
+      if (id) return String(id);
+    }
     return state.channelId || "";
+  }
+
+  function decodeAttr(value) {
+    if (value == null) return "";
+    var s = String(value);
+    // Undo accidental HTML entity encoding in attributes
+    s = s
+      .replace(/"/g, '"')
+      .replace(/&#34;/g, '"')
+      .replace(/&/g, "&")
+      .replace(/</g, "<")
+      .replace(/>/g, ">")
+      .trim();
+    return s;
   }
 
   function ensureModal() {
@@ -76,13 +95,25 @@
     document.body.classList.remove("sv-punish-open");
   }
 
+  function currentUserId() {
+    var modal = document.getElementById("sv-punish-modal");
+    var fromModal = modal && (modal.dataset.userId || modal.getAttribute("data-user-id"));
+    return String(state.userId || fromModal || window.__svPunishUserId || "").trim();
+  }
+
   window.openPunishModal = function (info) {
     ensureModal();
     info = info || {};
-    var userId = String(info.userId || info.user_id || "").trim();
-    var userName = String(info.userName || info.user_name || "user").trim() || "user";
-    var messageId = String(info.messageId || info.message_id || "").trim();
-    var channelId = String(info.channelId || info.channel_id || getActiveChannelId() || "").trim();
+    var userId = decodeAttr(info.userId || info.user_id || "");
+    var userName = decodeAttr(info.userName || info.user_name || "user") || "user";
+    var messageId = decodeAttr(info.messageId || info.message_id || "");
+    var channelId = decodeAttr(info.channelId || info.channel_id || getActiveChannelId() || "");
+
+    // Only digits (Discord snowflake)
+    if (userId && !/^\d{5,}$/.test(userId)) {
+      var m = userId.match(/(\d{17,20})/);
+      if (m) userId = m[1];
+    }
 
     state = {
       userId: userId,
@@ -90,28 +121,39 @@
       messageId: messageId,
       channelId: channelId
     };
+    window.__svPunishUserId = userId;
+    window.__svPunishState = state;
 
     var server = getServer();
-    if (server && server.id) window.__svGuildId = server.id;
+    if (server && server.id) window.__svGuildId = String(server.id);
+
+    var modal = document.getElementById("sv-punish-modal");
+    if (modal) {
+      modal.dataset.userId = userId;
+      modal.dataset.userName = userName;
+      modal.dataset.messageId = messageId;
+      modal.dataset.channelId = channelId;
+      modal.hidden = false;
+      document.body.classList.add("sv-punish-open");
+    }
 
     var name = document.getElementById("sv-punish-name");
     var reason = document.getElementById("sv-punish-reason");
     var msg = document.getElementById("sv-punish-msg");
     var action = document.getElementById("sv-punish-action");
-    if (name) name.textContent = state.userName || "user";
+    if (name) name.textContent = userName || "user";
     if (reason) reason.value = "";
     if (msg) {
-      msg.textContent = state.userId ? "" : "No user id on that message — try another message.";
-      msg.style.color = state.userId ? "#57F287" : "#f23f43";
+      if (userId) {
+        msg.textContent = "User: " + userId;
+        msg.style.color = "#949ba4";
+      } else {
+        msg.textContent = "No user id on that message — try another message.";
+        msg.style.color = "#f23f43";
+      }
     }
     if (action) action.value = "warn";
     syncDuration();
-
-    var modal = document.getElementById("sv-punish-modal");
-    if (modal) {
-      modal.hidden = false;
-      document.body.classList.add("sv-punish-open");
-    }
     if (reason) reason.focus();
   };
 
@@ -125,7 +167,9 @@
       }
       return;
     }
-    if (!state.userId) {
+
+    var userId = currentUserId();
+    if (!userId) {
       var m2 = document.getElementById("sv-punish-msg");
       if (m2) {
         m2.textContent = "No user selected.";
@@ -133,12 +177,25 @@
       }
       return;
     }
+
     var action = document.getElementById("sv-punish-action").value;
     var reason =
       (document.getElementById("sv-punish-reason").value || "").trim() || "No reason provided";
     var duration = document.getElementById("sv-punish-duration").value || "10m";
     var msg = document.getElementById("sv-punish-msg");
     var btn = document.getElementById("sv-punish-apply");
+    var messageId =
+      state.messageId ||
+      (document.getElementById("sv-punish-modal") &&
+        document.getElementById("sv-punish-modal").dataset.messageId) ||
+      "";
+    var channelId =
+      state.channelId ||
+      getActiveChannelId() ||
+      (document.getElementById("sv-punish-modal") &&
+        document.getElementById("sv-punish-modal").dataset.channelId) ||
+      "punish";
+
     if (msg) {
       msg.textContent = "Applying…";
       msg.style.color = "#dbdee1";
@@ -150,13 +207,13 @@
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          guildId: server.id,
-          channelId: state.channelId || getActiveChannelId() || "punish",
+          guildId: String(server.id),
+          channelId: String(channelId),
           action: action,
-          userId: state.userId,
+          userId: String(userId),
           reason: reason,
           duration: duration,
-          evidence: state.messageId || null,
+          evidence: messageId || null,
           moderatorTag: "Dashboard"
         })
       });
@@ -181,33 +238,58 @@
     }
   }
 
-  // Capture-phase click so we always get user id even if other handlers fail
-  function onDocClick(e) {
-    var btn = e.target && e.target.closest ? e.target.closest("[data-punish-user], .sv-punish-btn") : null;
-    if (!btn) return;
-    e.preventDefault();
-    e.stopPropagation();
+  function extractFromButton(btn) {
+    if (!btn) return { userId: "", userName: "user", messageId: "" };
+    var userId =
+      decodeAttr(btn.getAttribute("data-punish-user")) ||
+      decodeAttr(btn.dataset.punishUser) ||
+      "";
+    var userName =
+      decodeAttr(btn.getAttribute("data-punish-name")) ||
+      decodeAttr(btn.dataset.punishName) ||
+      "user";
+    var messageId =
+      decodeAttr(btn.getAttribute("data-punish-msg")) ||
+      decodeAttr(btn.dataset.punishMsg) ||
+      "";
 
-    var userId = btn.getAttribute("data-punish-user") || "";
-    var userName = btn.getAttribute("data-punish-name") || "user";
-    var messageId = btn.getAttribute("data-punish-msg") || "";
-
-    // Fallback: parent message row
-    if (!userId) {
-      var row = btn.closest("[data-author-id], .sv-msg");
-      if (row) {
-        userId = row.getAttribute("data-author-id") || "";
-        if (!messageId) messageId = row.getAttribute("data-message-id") || "";
+    var row = btn.closest(".sv-msg, [data-author-id]");
+    if (row) {
+      if (!userId) {
+        userId =
+          decodeAttr(row.getAttribute("data-author-id")) ||
+          decodeAttr(row.dataset.authorId) ||
+          "";
+      }
+      if (!messageId) {
+        messageId =
+          decodeAttr(row.getAttribute("data-message-id")) ||
+          decodeAttr(row.dataset.messageId) ||
+          "";
+      }
+      if (!userName || userName === "user") {
         var authorEl = row.querySelector(".sv-author");
-        if (authorEl && userName === "user") userName = authorEl.textContent.trim() || "user";
+        if (authorEl) userName = authorEl.textContent.trim() || userName;
       }
     }
+    return { userId: userId, userName: userName, messageId: messageId };
+  }
 
-    userId = String(userId || "").trim();
+  function onDocClick(e) {
+    var t = e.target;
+    if (!t || !t.closest) return;
+    var btn = t.closest(".sv-punish-btn, [data-punish-user]");
+    if (!btn) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+
+    var info = extractFromButton(btn);
     window.openPunishModal({
-      userId: userId,
-      userName: userName,
-      messageId: messageId,
+      userId: info.userId,
+      userName: info.userName,
+      messageId: info.messageId,
       channelId: getActiveChannelId()
     });
   }
