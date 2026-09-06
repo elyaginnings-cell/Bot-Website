@@ -1,0 +1,288 @@
+/* =========================================================
+   Mobile layout + remove buttons + readable forms
+   ========================================================= */
+
+/* Red remove buttons matching dashboard danger theme */
+.level-role-row button,
+button[data-remove-level],
+button[data-remove-shop],
+.level-roles-list button[type="button"] {
+  flex-shrink: 0;
+  margin-left: auto;
+  padding: 8px 14px;
+  min-height: 36px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 82, 97, 0.45);
+  background: rgba(255, 82, 97, 0.14);
+  color: #ff7a86;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: none;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.level-role-row button:hover,
+button[data-remove-level]:hover,
+button[data-remove-shop]:hover,
+.level-roles-list button[type="button"]:hover {
+  background: rgba(255, 82, 97, 0.28);
+  border-color: rgba(255, 82, 97, 0.7);
+  color: #ffb0b6;
+}
+
+.level-role-row {
+  flex-wrap: wrap;
+  word-break: break-word;
+}
+
+/* ---------- Mobile: fit page, readable text, tab dock ---------- */
+@media (max-width: 960px) {
+  html,
+  body {
+    overflow-x: hidden !important;
+    max-width: 100vw;
+  }
+
+  body.mode-auto #app,
+  body.mode-mobile #app {
+    width: 100% !important;
+    max-width: 100vw !important;
+    padding: 8px 8px 88px !important;
+    gap: 10px !important;
+    box-sizing: border-box;
+  }
+
+  /* Compact brand strip; tabs move to bottom dock */
+  body.mode-auto .sidebar,
+  body.mode-mobile .sidebar {
+    width: 100% !important;
+    height: auto !important;
+    position: static !important;
+    padding: 10px 12px !important;
+    border-radius: 14px !important;
+    gap: 0 !important;
+  }
+
+  body.mode-auto .sidebar-brand,
+  body.mode-mobile .sidebar-brand {
+    padding-bottom: 0 !important;
+    border-bottom: none !important;
+  }
+
+  body.mode-auto .sidebar-brand strong,
+  body.mode-mobile .sidebar-brand strong {
+    font-size: 15px !important;
+  }
+
+  body.mode-auto .sidebar-brand span,
+  body.mode-mobile .sidebar-brand span {
+    font-size: 10px !important;
+  }
+
+  /* Bottom tab dock — scrollable, not bunched */
+  body.mode-auto .navigation,
+  body.mode-mobile .navigation {
+    position: fixed !important;
+    left: 6px !important;
+    right: 6px !important;
+    bottom: max(6px, env(safe-area-inset-bottom)) !important;
+    z-index: 90 !important;
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: stretch !important;
+    gap: 4px !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    padding: 6px !important;
+    border: 1px solid rgba(255, 77, 240, 0.28) !important;
+    border-radius: 16px !important;
+    background: rgba(12, 5, 20, 0.96) !important;
+    backdrop-filter: blur(16px);
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  body.mode-auto .navigation::-webkit-scrollbar,
+  body.mode-mobile .navigation::-webkit-scrollbar {
+    display: none;
+  }
+
+  body.mode-auto .nav-item,
+  body.mode-mobile .nav-item {
+    flex: 0 0 auto !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 2px !important;
+    min-width: 56px !important;
+    max-width: 64px !important;
+    min-height: 52px !important;
+    padding: 6px 4px !important;
+    font-size: 10px !important;
+    line-height: 1.15 !important;
+    border-radius: 12px !important;
+  }
+
+  body.mode-auto .nav-item span,
+  body.mode-mobile .nav-item span {
+    width: 24px !important;
+    height: 24px !important;
+    font-size: 14px !important;
+    border-radius: 7px !important;
+  }
+
+  body.mode-auto .nav-item em,
+  body.mode-mobile .nav-item em {
+    font-size: 9px !important;
+    max-width: 56px !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Readable main content */
+  body.mode-auto .main,
+  body.mode-mobile .main,
+  body.mode-auto .content,
+  body.mode-mobile .content,
+  body.mode-auto .card,
+  body.mode-mobile .card {
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  body.mode-auto .card,
+  body.mode-mobile .card {
+    padding: 14px 12px !important;
+    border-radius: 14px !important;
+  }
+
+  body.mode-auto .header h1,
+  body.mode-mobile .header h1 {
+    font-size: 18px !important;
+    line-height: 1.25 !important;
+    word-break: break-word;
+  }
+
+  body.mode-auto .header p,
+  body.mode-mobile .header p,
+  body.mode-auto .hero p,
+  body.mode-mobile .hero p,
+  body.mode-auto .form-hint,
+  body.mode-mobile .form-hint {
+    font-size: 13px !important;
+    line-height: 1.45 !important;
+  }
+
+  body.mode-auto .hero h2,
+  body.mode-mobile .hero h2,
+  body.mode-auto .form-card h2,
+  body.mode-mobile .form-card h2 {
+    font-size: 18px !important;
+    line-height: 1.3 !important;
+    word-break: break-word;
+  }
+
+  body.mode-auto .subhead,
+  body.mode-mobile .subhead {
+    font-size: 13px !important;
+    margin: 14px 0 8px !important;
+  }
+
+  body.mode-auto .input-group label,
+  body.mode-mobile .input-group label {
+    font-size: 12px !important;
+    margin-bottom: 5px !important;
+  }
+
+  body.mode-auto .input-group input,
+  body.mode-mobile .input-group input,
+  body.mode-auto .input-group select,
+  body.mode-mobile .input-group select,
+  body.mode-auto .form-card input,
+  body.mode-mobile .form-card input,
+  body.mode-auto .form-card select,
+  body.mode-mobile .form-card select {
+    min-height: 44px !important;
+    font-size: 15px !important;
+  }
+
+  body.mode-auto .config-grid,
+  body.mode-mobile .config-grid,
+  body.mode-auto .level-role-form,
+  body.mode-mobile .level-role-form,
+  body.mode-auto .quick-grid,
+  body.mode-mobile .quick-grid,
+  body.mode-auto .quick-grid.three,
+  body.mode-mobile .quick-grid.three {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  body.mode-auto .stats-grid,
+  body.mode-mobile .stats-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+  }
+
+  body.mode-auto .stat-card,
+  body.mode-mobile .stat-card {
+    min-height: 64px !important;
+    padding: 12px !important;
+    gap: 8px !important;
+  }
+
+  body.mode-auto .stat-card strong,
+  body.mode-mobile .stat-card strong {
+    font-size: 14px !important;
+    word-break: break-word;
+  }
+
+  body.mode-auto .account-info strong,
+  body.mode-mobile .account-info strong {
+    max-width: 42vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  body.mode-auto .server-current strong,
+  body.mode-mobile .server-current strong {
+    font-size: 14px !important;
+    word-break: break-word;
+  }
+
+  body.mode-auto .toggle,
+  body.mode-mobile .toggle {
+    gap: 10px !important;
+    align-items: flex-start !important;
+  }
+
+  body.mode-auto .toggle span,
+  body.mode-mobile .toggle span {
+    font-size: 14px !important;
+    line-height: 1.35 !important;
+    word-break: break-word;
+  }
+}
+
+@media (max-width: 400px) {
+  body.mode-auto .nav-item,
+  body.mode-mobile .nav-item {
+    min-width: 50px !important;
+    max-width: 56px !important;
+    min-height: 48px !important;
+  }
+
+  body.mode-auto .nav-item em,
+  body.mode-mobile .nav-item em {
+    font-size: 8px !important;
+  }
+
+  body.mode-auto .stats-grid,
+  body.mode-mobile .stats-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
