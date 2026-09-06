@@ -1,6 +1,6 @@
 /**
- * Server View mentions fix
- * Resolves <@id>, <@&id>, <#id> using rolesCache / channelsCache / message mentions.
+ * Server View mentions — convert <@id> <@&id> <#id> in content + embeds.
+ * formatRichText escapes HTML before matching, so tokens appear as <@...>.
  */
 (function () {
   "use strict";
@@ -13,165 +13,150 @@
       .replace(/"/g, """);
   }
 
-  function roleMap() {
-    var map = {};
+  function roleById(id) {
+    id = String(id);
     var list = window.rolesCache;
-    if (Array.isArray(list)) {
-      list.forEach(function (r) {
-        if (r && r.id) map[String(r.id)] = r;
-      });
+    if (!Array.isArray(list)) return null;
+    for (var i = 0; i < list.length; i++) {
+      if (list[i] && String(list[i].id) === id) return list[i];
     }
-    return map;
+    return null;
   }
 
-  function channelMap() {
-    var map = {};
+  function channelById(id) {
+    id = String(id);
     var list = window.channelsCache;
-    if (Array.isArray(list)) {
-      list.forEach(function (c) {
-        if (c && c.id) map[String(c.id)] = c;
-      });
+    if (!Array.isArray(list)) return null;
+    for (var i = 0; i < list.length; i++) {
+      if (list[i] && String(list[i].id) === id) return list[i];
     }
-    return map;
+    return null;
   }
 
-  function colorCss(role) {
-    if (!role) return "";
-    var c = role.color;
-    if (c == null || c === 0 || c === "#000000" || c === "#000") return "";
-    if (typeof c === "number") {
-      var hex = ("000000" + (c >>> 0).toString(16)).slice(-6);
-      return "color:#" + hex;
+  function roleColor(role) {
+    if (!role || role.color == null || role.color === 0 || role.color === "#000000") return "";
+    if (typeof role.color === "number") {
+      return "color:#" + ("000000" + (role.color >>> 0).toString(16)).slice(-6);
     }
-    if (typeof c === "string" && c.charAt(0) === "#") return "color:" + c;
+    if (typeof role.color === "string" && role.color.charAt(0) === "#") return "color:" + role.color;
     return "";
   }
 
-  function enhanceMentionsIn(root) {
-    if (!root) return;
-    var roles = roleMap();
-    var channels = channelMap();
+  function mentionHtml(kind, id) {
+    id = String(id);
+    if (kind === "user") {
+      return '<span class="sv-mention sv-mention-user">@user</span>';
+    }
+    if (kind === "role") {
+      var r = roleById(id);
+      var label = r && r.name ? r.name : "role";
+      var style = roleColor(r);
+      return (
+        '<span class="sv-mention sv-mention-role"' +
+        (style ? ' style="' + style + '"' : "") +
+        ">@" +
+        esc(label) +
+        "</span>"
+      );
+    }
+    // channel
+    var c = channelById(id);
+    var name = c && c.name ? c.name : "channel";
+    return '<span class="sv-mention sv-mention-channel">#' + esc(name) + "</span>";
+  }
 
-    // Text nodes that still contain raw Discord mention markup (escaped)
-    var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
-    var nodes = [];
-    while (walker.nextNode()) nodes.push(walker.currentNode);
-
-    nodes.forEach(function (textNode) {
-      var text = textNode.nodeValue;
-      if (!text || text.indexOf("<") === -1 && text.indexOf("<") === -1) {
-        // also handle already-escaped content in HTML text: look for patterns after parent innerHTML path below
-      }
-      if (!text) return;
-      if (text.indexOf("@") === -1 && text.indexOf("#") === -1 && text.indexOf("<") === -1) return;
-
-      // Only process if it looks like raw mention tokens
-      if (!/<@!?\d+>|<@&\d+>|<#\d+>|<@!?\d+>|<@&\d+>|<#\d+>/.test(text)) return;
-
-      var html = esc(text)
-        .replace(/&lt;/g, "<")
-        .replace(/&gt;/g, ">");
-
-      // If double-escaped somehow, normalize once
-      html = text
-        .replace(/&/g, "&")
-        .replace(/</g, "<")
-        .replace(/>/g, ">");
-
-      html = html.replace(/<@!?(\d+)>/g, function (_, id) {
-        return '<span class="sv-mention sv-mention-user">@user</span>';
+  function replaceTokens(html) {
+    if (!html) return html;
+    var next = html
+      .replace(/<@!?(\d+)>/g, function (_, id) {
+        return mentionHtml("user", id);
+      })
+      .replace(/<@&(\d+)>/g, function (_, id) {
+        return mentionHtml("role", id);
+      })
+      .replace(/<@&(\d+)>/g, function (_, id) {
+        return mentionHtml("role", id);
+      })
+      .replace(/<#(\d+)>/g, function (_, id) {
+        return mentionHtml("channel", id);
+      })
+      .replace(/<@!?(\d+)>/g, function (_, id) {
+        return mentionHtml("user", id);
+      })
+      .replace(/<@&(\d+)>/g, function (_, id) {
+        return mentionHtml("role", id);
+      })
+      .replace(/<#(\d+)>/g, function (_, id) {
+        return mentionHtml("channel", id);
       });
-      html = html.replace(/<@&(\d+)>/g, function (_, id) {
-        var r = roles[id];
-        var label = r && r.name ? r.name : "role";
-        var style = colorCss(r);
-        return (
-          '<span class="sv-mention sv-mention-role"' +
-          (style ? ' style="' + style + '"' : "") +
-          ">@" +
-          esc(label) +
-          "</span>"
-        );
-      });
-      // Also match <@&123> when & not entity-encoded as &
-      html = html.replace(/<@&(\d+)>/g, function (_, id) {
-        var r = roles[id];
-        var label = r && r.name ? r.name : "role";
-        var style = colorCss(r);
-        return (
-          '<span class="sv-mention sv-mention-role"' +
-          (style ? ' style="' + style + '"' : "") +
-          ">@" +
-          esc(label) +
-          "</span>"
-        );
-      });
-      html = html.replace(/<#(\d+)>/g, function (_, id) {
-        var c = channels[id];
-        var label = c && c.name ? c.name : "channel";
-        return '<span class="sv-mention sv-mention-channel">#' + esc(label) + "</span>";
-      });
+    return next;
+  }
 
-      if (html === text.replace(/&/g, "&").replace(/</g, "<").replace(/>/g, ">")) return;
-
-      var wrap = document.createElement("span");
-      wrap.innerHTML = html;
-      var parent = textNode.parentNode;
-      if (!parent) return;
-      while (wrap.firstChild) parent.insertBefore(wrap.firstChild, textNode);
-      parent.removeChild(textNode);
-    });
-
-    // Upgrade already-rendered mention spans that only show numeric ids
-    root.querySelectorAll(".sv-mention-user").forEach(function (el) {
-      var t = (el.textContent || "").trim();
-      if (/^@\d{17,20}$/.test(t)) {
-        el.textContent = "@user";
-      }
-    });
+  function upgradeLabels(root) {
     root.querySelectorAll(".sv-mention-role").forEach(function (el) {
       var t = (el.textContent || "").trim();
-      var m = t.match(/^@(\d{17,20})$/);
-      if (m && roles[m[1]] && roles[m[1]].name) {
-        el.textContent = "@" + roles[m[1]].name;
-        var style = colorCss(roles[m[1]]);
-        if (style) el.setAttribute("style", style);
-      } else if (t === "@role" || t === "@unknown") {
-        /* keep */
+      var m = t.match(/^@(\d{5,})$/);
+      if (m) {
+        var r = roleById(m[1]);
+        if (r && r.name) {
+          el.textContent = "@" + r.name;
+          var st = roleColor(r);
+          if (st) el.setAttribute("style", st);
+        }
       }
     });
     root.querySelectorAll(".sv-mention-channel").forEach(function (el) {
       var t = (el.textContent || "").trim();
-      var m = t.match(/^#(\d{17,20})$/);
-      if (m && channels[m[1]] && channels[m[1]].name) {
-        el.textContent = "#" + channels[m[1]].name;
+      var m = t.match(/^#(\d{5,})$/);
+      if (m) {
+        var c = channelById(m[1]);
+        if (c && c.name) el.textContent = "#" + c.name;
       }
     });
   }
 
-  function patchFormatRichText() {
-    // Observe message container for new content
+  function processAll(root) {
+    root = root || document.getElementById("sv-messages");
+    if (!root) return;
+    var selectors =
+      ".sv-msg-content, .sv-embed-desc, .sv-embed-field-name, .sv-embed-field-value, .sv-embed-title, .sv-reply-text";
+    root.querySelectorAll(selectors).forEach(function (el) {
+      var before = el.innerHTML;
+      if (!before) return;
+      var after = replaceTokens(before);
+      if (after !== before) el.innerHTML = after;
+      upgradeLabels(el);
+    });
+    upgradeLabels(root);
+  }
+
+  var timer = null;
+  function schedule() {
+    clearTimeout(timer);
+    timer = setTimeout(function () {
+      processAll();
+    }, 40);
+  }
+
+  function bind() {
     var box = document.getElementById("sv-messages");
     if (!box) return;
-    enhanceMentionsIn(box);
+    processAll(box);
     if (box.dataset.mentionObs) return;
     box.dataset.mentionObs = "1";
-    var obs = new MutationObserver(function () {
-      enhanceMentionsIn(box);
-    });
+    var obs = new MutationObserver(schedule);
     obs.observe(box, { childList: true, subtree: true });
   }
 
   function boot() {
-    patchFormatRichText();
-    // Re-run when server view opens
-    ["open-server-view", "nav-server-view"].forEach(function (id) {
+    bind();
+    ["open-server-view", "nav-server-view", "sv-refresh"].forEach(function (id) {
       var el = document.getElementById(id);
       if (el && !el.dataset.mentionBound) {
         el.dataset.mentionBound = "1";
         el.addEventListener("click", function () {
-          setTimeout(patchFormatRichText, 100);
-          setTimeout(patchFormatRichText, 500);
+          setTimeout(bind, 100);
+          setTimeout(bind, 500);
         });
       }
     });
