@@ -1,5 +1,10 @@
 import { requireAnySession } from "../lib/requireAuth.js";
-import { loadGuildConfig, mergeGuildConfig, saveGuildConfig } from "../lib/guildConfig.js";
+import {
+  loadGuildConfig,
+  mergeGuildConfig,
+  saveGuildConfig,
+  preferWebsiteShop,
+} from "../lib/guildConfig.js";
 
 const RAILWAY_API =
   process.env.BOT_API_URL ||
@@ -49,8 +54,6 @@ export default async function handler(req, res) {
     }
 
     if (req.method === "GET") {
-      // Website Postgres is the source of truth for the dashboard.
-      // Never overwrite a stored save with a stale bot response.
       let stored = null;
       let pgError = null;
       try {
@@ -68,6 +71,16 @@ export default async function handler(req, res) {
       }
 
       if (stored) {
+        // If bot has MORE shop items (e.g. added in Discord somehow), merge up
+        if (bot.ok && bot.config) {
+          const merged = preferWebsiteShop(stored, bot.config);
+          if (JSON.stringify(merged.shop) !== JSON.stringify(stored.shop)) {
+            try {
+              await saveGuildConfig(guildId, merged);
+              stored = merged;
+            } catch (_) {}
+          }
+        }
         return res.status(200).json({
           config: stored,
           source: "postgres",
@@ -77,7 +90,6 @@ export default async function handler(req, res) {
       }
 
       if (bot.ok && bot.config) {
-        // Seed website Postgres from bot on first load only
         try {
           await saveGuildConfig(guildId, bot.config);
         } catch (mirrorErr) {
@@ -105,25 +117,7 @@ export default async function handler(req, res) {
           ? JSON.parse(req.body || "{}")
           : req.body || {};
 
-      // Ensure we have a base config so partial saves don't wipe other fields
-      let base = null;
-      try {
-        base = await loadGuildConfig(guildId);
-      } catch (err) {
-        console.error("Postgres base load failed:", err.message);
-      }
-      if (!base) {
-        try {
-          const bot = await fetchBotConfig(guildId, dashboardSecret);
-          if (bot.ok && bot.config) base = bot.config;
-        } catch (_) {}
-      }
-      if (base) {
-        try {
-          await saveGuildConfig(guildId, base);
-        } catch (_) {}
-      }
-
+      // Website Postgres is the source of truth for shop items.
       let mirrored = null;
       try {
         mirrored = await mergeGuildConfig(guildId, body);
@@ -136,18 +130,30 @@ export default async function handler(req, res) {
         });
       }
 
-      // Push the same patch to the live bot so runtime updates immediately
+      // Push the *full merged config* to the bot so it gets complete shop.items,
+      // not just the tiny addShopItem patch (which old bot handlers may mishandle).
+      const pushBody = {
+        ...body,
+        shop: mirrored?.shop,
+        shopEnabled:
+          body.shopEnabled !== undefined
+            ? body.shopEnabled
+            : mirrored?.shop?.enabled,
+      };
+
       let botOk = false;
       let botData = {};
       try {
-        const pushed = await pushBotConfig(guildId, dashboardSecret, body);
+        const pushed = await pushBotConfig(guildId, dashboardSecret, pushBody);
         botOk = pushed.ok;
         botData = pushed.data || {};
+
+        // NEVER let a thinner bot response wipe website shop items.
         if (pushed.ok && botData.config) {
-          // Prefer the bot's normalized full config shape when available
+          const safe = preferWebsiteShop(mirrored, botData.config);
           try {
-            await saveGuildConfig(guildId, botData.config);
-            mirrored = botData.config;
+            await saveGuildConfig(guildId, safe);
+            mirrored = safe;
           } catch (_) {}
         }
       } catch (botErr) {
