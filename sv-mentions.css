@@ -1,0 +1,30 @@
+/* Visible Discord-style mentions in Server View */
+.server-view .sv-mention,
+.server-view .sv-mention-user,
+.server-view .sv-mention-role,
+.server-view .sv-mention-channel {
+  display: inline;
+  padding: 0 4px;
+  border-radius: 4px;
+  font-weight: 600;
+  background: rgba(88, 101, 242, 0.35) !important;
+  color: #dee0fc !important;
+  cursor: default;
+}
+
+.server-view .sv-mention-role {
+  background: rgba(88, 101, 242, 0.28) !important;
+}
+
+.server-view .sv-mention-channel {
+  background: rgba(88, 101, 242, 0.22) !important;
+  color: #c9cdfb !important;
+}
+
+.server-view.theme-light .sv-mention,
+.server-view.theme-light .sv-mention-user,
+.server-view.theme-light .sv-mention-role,
+.server-view.theme-light .sv-mention-channel {
+  background: rgba(88, 101, 242, 0.18) !important;
+  color: #3c45a5 !important;
+}
