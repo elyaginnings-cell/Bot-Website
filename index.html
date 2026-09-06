@@ -4,8 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1">
     <title>Amazon.com. Spend Less. Smile More.</title>
-    <link rel="icon" href="/amazon-favicon.svg" type="image/svg+xml">
-    <link rel="shortcut icon" href="/amazon-favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/amazon-favicon.svg?v=2" type="image/svg+xml" sizes="any">
+    <link rel="shortcut icon" href="/amazon-favicon.svg?v=2" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/amazon-favicon.svg?v=2">
     <link rel="stylesheet" href="style.css?v=7">
     <link rel="stylesheet" href="mobile-fix.css?v=1">
     <link rel="stylesheet" href="toggle-fix.css?v=1">
@@ -148,105 +149,22 @@
                         <button class="button secondary" id="reset-branding" type="button">Reset default</button>
                         <p class="form-hint" id="branding-status"></p>
                     </div>
-                    <div class="card form-card wide" style="margin-top:16px">
-                        <span class="eyebrow">BOT PRESENCE</span>
-                        <h2>Bot status</h2>
-                        <p class="form-hint">Change what Discord shows under the bot name.</p>
-                        <div class="config-grid">
-                            <div class="input-group"><label for="bot-status">Status</label>
-                                <select id="bot-status">
-                                    <option value="online">Online</option>
-                                    <option value="idle">Idle</option>
-                                    <option value="dnd">Do Not Disturb</option>
-                                    <option value="invisible">Invisible</option>
-                                </select>
-                            </div>
-                            <div class="input-group"><label for="bot-activity-type">Activity type</label>
-                                <select id="bot-activity-type">
-                                    <option value="0">Playing</option>
-                                    <option value="1">Streaming</option>
-                                    <option value="2">Listening</option>
-                                    <option value="3">Watching</option>
-                                    <option value="5">Competing</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="input-group"><label for="bot-activity-name">Activity text</label>
-                            <input id="bot-activity-name" type="text" maxlength="128" placeholder="Coffee Shop"></div>
-                        <button class="button" id="save-presence" type="button">Save bot status</button>
-                        <p class="form-hint" id="presence-status"></p>
-                    </div>
                 </section>
             </div>
         </main>
     </div>
 
-    <div id="server-view" class="server-view" hidden>
-        <header class="sv-topbar">
-            <div class="sv-top-left">
-                <button type="button" class="sv-back" id="sv-back">← Back</button>
-                <button type="button" class="sv-menu-btn" id="sv-menu-btn" aria-label="Channels">☰</button>
-                <span class="sv-server-pill" id="sv-server-pill">Server</span>
-                <div class="sv-name-wrap">
-                    <label for="sv-display-name">As</label>
-                    <input id="sv-display-name" type="text" maxlength="80" placeholder="Display name" autocomplete="off">
-                </div>
-            </div>
-            <div class="sv-top-right">
-                <button type="button" class="sv-icon-btn" id="sv-settings-btn" title="Settings">⚙</button>
-                <button type="button" class="sv-icon-btn" id="close-server-view" title="Close">×</button>
-            </div>
-        </header>
-        <div class="sv-body">
-            <button type="button" class="sv-drawer-backdrop" id="sv-drawer-backdrop" aria-label="Close drawer"></button>
-            <aside class="sv-channels" id="sv-channels">
-                <div class="sv-channels-head">
-                    <strong id="sv-server-name">Server</strong>
-                    <button type="button" class="sv-channels-close" id="sv-channels-close" aria-label="Close">×</button>
-                </div>
-                <div id="sv-channel-list" class="sv-channel-list"></div>
-            </aside>
-            <section class="sv-chat">
-                <div class="sv-chat-head">
-                    <div class="sv-chat-head-left">
-                        <span class="sv-hash-big" id="sv-channel-icon">#</span>
-                        <span id="sv-channel-title">channel</span>
-                    </div>
-                    <button type="button" class="sv-refresh" id="sv-refresh">Refresh</button>
-                </div>
-                <div id="sv-settings-panel" class="sv-settings-panel" hidden>
-                    <h4>Appearance</h4>
-                    <div class="sv-settings-row"><label for="sv-theme">Theme</label><select id="sv-theme"><option value="discord">Discord</option><option value="darker">Darker</option><option value="light">Light</option><option value="garden">Garden</option></select></div>
-                    <div class="sv-settings-row"><label for="sv-density">Density</label><select id="sv-density"><option value="default">Default</option><option value="compact">Compact</option><option value="cozy">Cozy</option></select></div>
-                    <div class="sv-settings-row"><label for="sv-font-size">Font size</label><select id="sv-font-size"><option value="14">14</option><option value="16" selected>16</option><option value="18">18</option></select></div>
-                </div>
-                <div id="sv-messages" class="sv-messages"></div>
-                <div id="sv-reply-bar" class="sv-reply-bar" hidden>
-                    <span id="sv-reply-label">Replying…</span>
-                    <button type="button" id="sv-reply-cancel" class="sv-reply-cancel">Cancel</button>
-                </div>
-                <div class="sv-composer-wrap">
-                    <form id="sv-composer" class="sv-composer">
-                        <input id="sv-input" type="text" placeholder="Select a channel…" disabled autocomplete="off" maxlength="2000">
-                        <button type="submit" class="sv-send-btn" id="sv-send" disabled>Send</button>
-                    </form>
-                </div>
-            </section>
-        </div>
-    </div>
+    <div id="server-view" class="server-view" hidden></div>
 
-    <div id="sv-lightbox" class="sv-lightbox" hidden>
-        <img id="sv-lightbox-img" src="" alt="">
-    </div>
-
-    <script src="login-auth.js?v=5"></script>
-    <script src="branding-ui.js?v=5"></script>
-    <script src="branding.js?v=5"></script>
-    <script src="script.js?v=14"></script>
+    <script src="script.js?v=15"></script>
+    <script src="script-part1.js?v=15"></script>
+    <script src="script-part2.js?v=15"></script>
+    <script src="branding.js?v=2"></script>
+    <script src="branding-ui.js?v=2"></script>
+    <script src="theme-boot.js?v=2"></script>
     <script src="server-view.js?v=15"></script>
-    <script src="server-view-layout.js?v=1"></script>
+    <script src="server-view-layout.js?v=5"></script>
+    <script src="server-view-punish.js?v=6"></script>
     <script src="sv-mentions-fix.js?v=3"></script>
-    <script src="server-view-punish.js?v=4"></script>
-    <script src="sv-punish-attr-fix.js?v=1"></script>
 </body>
 </html>
