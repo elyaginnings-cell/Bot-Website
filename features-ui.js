@@ -129,22 +129,26 @@
         '<p class="form-hint" id="qotd-status"></p></div></section>' +
 
         '<section id="selfroles" class="page-section"><div class="card form-card wide">' +
-        '<span class="eyebrow">SELF ROLES</span><h2>Self-assign role panel</h2>' +
-        '<p class="form-hint">Configure roles here, then run <code>/selfroles-setup</code> in Discord to post the button panel. Members click buttons to toggle roles.</p>' +
+        '<span class="eyebrow">SELF ROLES</span><h2>Role categories</h2>' +
+        '<p class="form-hint">Create categories (Colors, Notifications, Region…). Each can be <strong>multi-select</strong> or <strong>single-select</strong>. Save, then run <code>/selfroles-setup</code> — one Discord panel per category.</p>' +
         '<label class="toggle"><input type="checkbox" id="sr-enabled" checked> <span>Enabled</span></label>' +
         '<div class="input-group"><label>Panel channel</label><select id="sr-channel"><option value="">Select a channel...</option></select></div>' +
-        '<div class="input-group"><label>Panel title</label><input id="sr-title" type="text" value="Self Roles" maxlength="256"></div>' +
-        '<div class="input-group"><label>Panel description</label><input id="sr-desc" type="text" value="Click a button to toggle a role on or off." maxlength="2000"></div>' +
-        '<h3 class="subhead">Add a role</h3><div class="level-role-form">' +
+        '<h3 class="subhead">New category</h3><div class="config-grid">' +
+        '<div class="input-group"><label>Name</label><input id="sr-cat-name" type="text" placeholder="e.g. Colors" maxlength="100"></div>' +
+        '<div class="input-group"><label>Mode</label><select id="sr-cat-mode"><option value="multi">Multi-select (any)</option><option value="single">Single-select (one only)</option></select></div>' +
+        '<div class="input-group" style="grid-column:1/-1"><label>Description</label><input id="sr-cat-desc" type="text" placeholder="Shown on the panel" maxlength="500"></div></div>' +
+        '<button class="button" id="sr-add-cat" type="button">Add category</button>' +
+        '<div id="sr-categories" class="level-roles-list" style="margin-top:1rem"></div>' +
+        '<h3 class="subhead">Add role to a category</h3><div class="level-role-form">' +
+        '<div class="input-group"><label>Category</label><select id="sr-target-cat"><option value="">Select category...</option></select></div>' +
         '<div class="input-group"><label>Role</label><select id="sr-role"><option value="">Select a role...</option></select></div>' +
-        '<div class="input-group"><label>Button label</label><input id="sr-label" type="text" placeholder="e.g. Announcements" maxlength="80"></div>' +
-        '<div class="input-group"><label>Emoji (optional)</label><input id="sr-emoji" type="text" placeholder="🔔" maxlength="32"></div>' +
-        '<div class="input-group"><label>Button style</label><select id="sr-style">' +
+        '<div class="input-group"><label>Button label</label><input id="sr-label" type="text" placeholder="e.g. Blue" maxlength="80"></div>' +
+        '<div class="input-group"><label>Emoji</label><input id="sr-emoji" type="text" placeholder="🔵" maxlength="32"></div>' +
+        '<div class="input-group"><label>Style</label><select id="sr-style">' +
         '<option value="Secondary">Grey</option><option value="Primary">Blurple</option>' +
         '<option value="Success">Green</option><option value="Danger">Red</option></select></div>' +
         '<button class="button" id="sr-add-role" type="button">Add role</button></div>' +
-        '<div id="sr-roles-list" class="level-roles-list"></div>' +
-        '<button class="button" id="save-selfroles" type="button">Save Self Roles</button>' +
+        '<button class="button" id="save-selfroles" type="button" style="margin-top:1rem">Save Self Roles</button>' +
         '<p class="form-hint" id="sr-status"></p></div></section>';
 
       var wrap = document.createElement("div");
