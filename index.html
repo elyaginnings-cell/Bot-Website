@@ -7,32 +7,256 @@
     <link rel="icon" href="/amazon-favicon.svg?v=2" type="image/svg+xml" sizes="any">
     <link rel="shortcut icon" href="/amazon-favicon.svg?v=2" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/amazon-favicon.svg?v=2">
-    <link rel="stylesheet" href="style.css?v=3">
-    <link rel="stylesheet" href="style-part-1.css?v=3">
-    <link rel="stylesheet" href="style-part-2.css?v=3">
-    <link rel="stylesheet" href="style-part-3.css?v=3">
-    <link rel="stylesheet" href="tabs.css?v=3">
-    <link rel="stylesheet" href="themes-extra.css?v=3">
-    <link rel="stylesheet" href="mobile-fix.css?v=3">
-    <link rel="stylesheet" href="toggle-fix.css?v=3">
-    <link rel="stylesheet" href="login-extra.css?v=3">
-    <link rel="stylesheet" href="polish.css?v=3">
-    <link rel="stylesheet" href="server-view.css?v=3">
-    <link rel="stylesheet" href="server-view-components.css?v=3">
-    <link rel="stylesheet" href="server-view-members.css?v=3">
-    <link rel="stylesheet" href="server-view-punish.css?v=3">
-    <link rel="stylesheet" href="server-view-reply.css?v=3">
-    <link rel="stylesheet" href="server-view-theme-garden.css?v=3">
-    <link rel="stylesheet" href="sv-layout-fix.css?v=3">
-    <link rel="stylesheet" href="sv-mentions.css?v=3">
-    <link rel="stylesheet" href="sv-msg-actions-patch.css?v=3">
-    <link rel="stylesheet" href="sv-readability.css?v=3">
-    <link rel="stylesheet" href="sv-rich.css?v=3">
-    <script src="theme-boot.js?v=3"></script>
+    <link rel="stylesheet" href="style.css?v=7">
+    <link rel="stylesheet" href="mobile-fix.css?v=1">
+    <link rel="stylesheet" href="toggle-fix.css?v=1">
+    <link rel="stylesheet" href="server-view.css">
+    <link rel="stylesheet" href="sv-layout-fix.css?v=1">
+    <link rel="stylesheet" href="server-view-components.css">
+    <link rel="stylesheet" href="server-view-theme-garden.css">
+    <link rel="stylesheet" href="server-view-reply.css">
+    <link rel="stylesheet" href="sv-rich.css">
+    <link rel="stylesheet" href="sv-mentions.css?v=1">
+    <link rel="stylesheet" href="sv-readability.css">
+    <link rel="stylesheet" href="server-view-members.css?v=5">
 </head>
-<body class="theme-dark">
-    <div id="app" class="app-shell">
-      <!-- PLACEHOLDER - content will be read from file -->
+<body class="mode-auto">
+
+    <div id="login-screen" class="login-screen">
+        <div class="login-card">
+            <div class="login-icon">☕</div>
+            <h1>Coffee Shop</h1>
+            <p>Bot Control Dashboard</p>
+            <button class="button login-btn" id="login-button" type="button">Login with Discord</button>
+        </div>
     </div>
+
+    <div id="app" hidden>
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-icon">☕</div>
+                <div>
+                    <strong>Coffee Shop</strong>
+                    <span>Bot Control</span>
+                </div>
+            </div>
+            <nav class="navigation" aria-label="Dashboard tabs">
+                <button class="nav-item active" data-tab="overview" type="button" title="Overview"><span>🏠</span><em>Home</em></button>
+                <button class="nav-item" data-tab="moderation" type="button" title="Moderation"><span>⚖️</span><em>Mod</em></button>
+                <button class="nav-item" data-tab="invites" type="button" title="Invites"><span>📨</span><em>Invites</em></button>
+                <button class="nav-item" data-tab="leveling" type="button" title="Leveling"><span>📈</span><em>Levels</em></button>
+                <button class="nav-item" data-tab="currency" type="button" title="Currency"><span>☕</span><em>Beans</em></button>
+                <button class="nav-item" data-tab="shop" type="button" title="Shop"><span>🛒</span><em>Shop</em></button>
+                <button class="nav-item" data-tab="logs" type="button" title="Logs"><span>📋</span><em>Logs</em></button>
+                <button class="nav-item" data-tab="birthday" type="button" title="Birthday"><span>🎂</span><em>Birthday</em></button>
+                <button class="nav-item" data-tab="bump" type="button" title="Bump rewards"><span>📢</span><em>Bump</em></button>
+                <button class="nav-item" data-tab="verification" type="button" title="Verification"><span>✅</span><em>Verify</em></button>
+                <button class="nav-item" data-tab="suggestions" type="button" title="Suggestions"><span>💡</span><em>Ideas</em></button>
+                <button class="nav-item" data-tab="tickets" type="button" title="Tickets"><span>🎫</span><em>Tickets</em></button>
+                <button class="nav-item" data-tab="qotd" type="button" title="QOTD"><span>❓</span><em>QOTD</em></button>
+                <button class="nav-item" data-tab="settings" type="button" title="Settings"><span>⚙️</span><em>Settings</em></button>
+                <button class="nav-item" id="nav-server-view" type="button" title="Server View"><span>🖥️</span><em>Server</em></button>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-chip">
+                    <img id="user-avatar" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="">
+                    <span id="username">User</span>
+                </div>
+                <button class="button ghost" id="logout-button" type="button">Logout</button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="page-header">
+                <div>
+                    <h1 id="page-title">Overview</h1>
+                    <p id="page-description">Manage your Discord server systems.</p>
+                </div>
+                <div class="header-actions">
+                    <button class="button" id="server-button" type="button">Select Server</button>
+                    <button class="button" id="open-server-view" type="button">Open Server View</button>
+                    <select id="view-mode" title="View mode">
+                        <option value="auto">Auto</option>
+                        <option value="desktop">Desktop</option>
+                        <option value="mobile">Mobile</option>
+                    </select>
+                </div>
+            </header>
+            <div id="server-list" class="server-list" hidden></div>
+
+            <div class="server-summary card" id="server-summary">
+                <div class="server-icon" id="selected-server-icon"></div>
+                <div>
+                    <strong id="selected-server-name">No server selected</strong>
+                    <p><span id="server-member-count">0</span> members · <span id="server-online-count">0</span> online · <span id="server-owner-status">—</span></p>
+                </div>
+            </div>
+
+            <section id="overview" class="page-section active">
+                <div class="quick-grid">
+                    <button class="quick-card card" data-section-link="moderation" type="button"><span class="quick-icon">⚖️</span><div><strong>Moderation</strong><p>Warns & logs</p></div><span class="arrow">→</span></button>
+                    <button class="quick-card card" data-section-link="leveling" type="button"><span class="quick-icon">📈</span><div><strong>Leveling</strong><p>XP & roles</p></div><span class="arrow">→</span></button>
+                    <button class="quick-card card" data-section-link="currency" type="button"><span class="quick-icon">☕</span><div><strong>Currency</strong><p>Beans & rewards</p></div><span class="arrow">→</span></button>
+                    <button class="quick-card card" data-section-link="shop" type="button"><span class="quick-icon">🛒</span><div><strong>Shop</strong><p>Items & roles</p></div><span class="arrow">→</span></button>
+                    <button class="quick-card card" data-section-link="bump" type="button"><span class="quick-icon">📢</span><div><strong>Bump</strong><p>Disboard rewards</p></div><span class="arrow">→</span></button>
+                    <button class="quick-card card" data-section-link="verification" type="button"><span class="quick-icon">✅</span><div><strong>Verify</strong><p>Member gate</p></div><span class="arrow">→</span></button>
+                    <button class="quick-card card" data-section-link="suggestions" type="button"><span class="quick-icon">💡</span><div><strong>Suggestions</strong><p>Idea board</p></div><span class="arrow">→</span></button>
+                    <button class="quick-card card" data-section-link="tickets" type="button"><span class="quick-icon">🎫</span><div><strong>Tickets</strong><p>Support</p></div><span class="arrow">→</span></button>
+                    <button class="quick-card card" data-section-link="qotd" type="button"><span class="quick-icon">❓</span><div><strong>QOTD</strong><p>Daily question</p></div><span class="arrow">→</span></button>
+                </div>
+            </section>
+
+            <!-- Other core sections are loaded via existing structure; key new panels below -->
+
+            <section id="currency" class="page-section">
+              <div class="card form-card wide">
+                <span class="eyebrow">CURRENCY</span>
+                <h2>Beans economy</h2>
+                <label class="toggle"><input type="checkbox" id="cur-enabled" checked> <span>Currency enabled</span></label>
+                <div class="config-grid">
+                  <div class="input-group"><label>Name</label><input id="cur-name" type="text" value="Beans"></div>
+                  <div class="input-group"><label>Emoji</label><input id="cur-emoji" type="text" value="☕"></div>
+                  <div class="input-group"><label>Daily min</label><input id="cur-daily-min" type="number" value="150"></div>
+                  <div class="input-group"><label>Daily max</label><input id="cur-daily-max" type="number" value="300"></div>
+                  <div class="input-group"><label>Streak bonus</label><input id="cur-streak-bonus" type="number" value="25"></div>
+                  <div class="input-group"><label>Max streak days</label><input id="cur-max-streak" type="number" value="7"></div>
+                  <div class="input-group"><label>Weekly min</label><input id="cur-weekly-min" type="number" value="800"></div>
+                  <div class="input-group"><label>Weekly max</label><input id="cur-weekly-max" type="number" value="1500"></div>
+                  <div class="input-group"><label>Work min</label><input id="cur-work-min" type="number" value="40"></div>
+                  <div class="input-group"><label>Work max</label><input id="cur-work-max" type="number" value="120"></div>
+                  <div class="input-group"><label>Work CD (min)</label><input id="cur-work-cd" type="number" value="30"></div>
+                  <div class="input-group"><label>Beg min</label><input id="cur-beg-min" type="number" value="5"></div>
+                  <div class="input-group"><label>Beg max</label><input id="cur-beg-max" type="number" value="40"></div>
+                  <div class="input-group"><label>Beg CD (min)</label><input id="cur-beg-cd" type="number" value="15"></div>
+                  <div class="input-group"><label>Beg fail %</label><input id="cur-beg-fail" type="number" value="35"></div>
+                </div>
+                <label class="toggle"><input type="checkbox" id="cur-bank-enabled" checked> <span>Bank enabled (deposit / withdraw)</span></label>
+                <label class="toggle"><input type="checkbox" id="cur-chat-enabled"> <span>Chat coin drops</span></label>
+                <div class="config-grid">
+                  <div class="input-group"><label>Chat chance %</label><input id="cur-chat-chance" type="number" value="8"></div>
+                  <div class="input-group"><label>Chat min</label><input id="cur-chat-min" type="number" value="5"></div>
+                  <div class="input-group"><label>Chat max</label><input id="cur-chat-max" type="number" value="20"></div>
+                  <div class="input-group"><label>Chat CD (sec)</label><input id="cur-chat-cd" type="number" value="60"></div>
+                </div>
+                <label class="toggle"><input type="checkbox" id="cur-flip-enabled"> <span>Coinflip enabled</span></label>
+                <div class="input-group"><label>Coinflip max bet (0 = unlimited)</label><input id="cur-flip-max" type="number" value="0"></div>
+                <button class="button" id="save-currency" type="button">Save Currency Settings</button>
+                <p class="form-hint" id="currency-status"></p>
+              </div>
+            </section>
+
+            <section id="bump" class="page-section">
+              <div class="card form-card wide">
+                <span class="eyebrow">BUMP</span>
+                <h2>Disboard bump rewards</h2>
+                <p class="form-hint">Auto-detects successful bumps and awards Beans.</p>
+                <label class="toggle"><input type="checkbox" id="bump-enabled" checked> <span>Enabled</span></label>
+                <div class="config-grid">
+                  <div class="input-group"><label>Reward min</label><input id="bump-reward-min" type="number" value="50"></div>
+                  <div class="input-group"><label>Reward max</label><input id="bump-reward-max" type="number" value="150"></div>
+                  <div class="input-group"><label>Cooldown (min)</label><input id="bump-cooldown" type="number" value="110"></div>
+                </div>
+                <button class="button" id="save-bump" type="button">Save Bump Settings</button>
+                <p class="form-hint" id="bump-status"></p>
+              </div>
+            </section>
+
+            <section id="verification" class="page-section">
+              <div class="card form-card wide">
+                <span class="eyebrow">VERIFICATION</span>
+                <h2>Member verification</h2>
+                <p class="form-hint">After saving, run <code>/verification-setup</code> in Discord to post the button.</p>
+                <label class="toggle"><input type="checkbox" id="verify-enabled" checked> <span>Enabled</span></label>
+                <div class="input-group"><label for="verify-channel">Verify channel</label><select id="verify-channel"><option value="">Select a channel...</option></select></div>
+                <div class="input-group"><label for="verify-role">Verified role</label><select id="verify-role"><option value="">Select a role...</option></select></div>
+                <div class="input-group"><label for="verify-log-channel">Log channel</label><select id="verify-log-channel"><option value="">Select a channel...</option></select></div>
+                <div class="input-group"><label for="verify-btn-label">Button label</label><input id="verify-btn-label" type="text" value="Verify"></div>
+                <div class="input-group"><label for="verify-title">Embed title</label><input id="verify-title" type="text" value="Verification"></div>
+                <div class="input-group"><label for="verify-desc">Embed description</label><input id="verify-desc" type="text" value="Press the button below to gain access to the server."></div>
+                <button class="button" id="save-verification" type="button">Save Verification Settings</button>
+                <p class="form-hint" id="verify-status"></p>
+              </div>
+            </section>
+
+            <section id="suggestions" class="page-section">
+              <div class="card form-card wide">
+                <span class="eyebrow">SUGGESTIONS</span>
+                <h2>Suggestion board</h2>
+                <label class="toggle"><input type="checkbox" id="suggest-enabled" checked> <span>Enabled</span></label>
+                <div class="input-group"><label for="suggest-channel">Suggestions channel</label><select id="suggest-channel"><option value="">Select a channel...</option></select></div>
+                <div class="input-group"><label for="suggest-staff-channel">Staff review channel</label><select id="suggest-staff-channel"><option value="">Select a channel...</option></select></div>
+                <button class="button" id="save-suggestions" type="button">Save Suggestions Settings</button>
+                <p class="form-hint" id="suggest-status"></p>
+              </div>
+            </section>
+
+            <section id="tickets" class="page-section">
+              <div class="card form-card wide">
+                <span class="eyebrow">TICKETS</span>
+                <h2>Support tickets</h2>
+                <p class="form-hint">After saving, run <code>/ticket-panel</code> in a channel to post the dropdown panel.</p>
+                <label class="toggle"><input type="checkbox" id="ticket-enabled" checked> <span>Enabled</span></label>
+                <div class="input-group"><label for="ticket-category-id">Discord category ID (for ticket channels)</label><input id="ticket-category-id" type="text" placeholder="Category snowflake ID"></div>
+                <div class="input-group"><label for="ticket-transcript-channel">Transcript channel</label><select id="ticket-transcript-channel"><option value="">Select a channel...</option></select></div>
+                <div class="input-group"><label for="ticket-welcome">Welcome message</label><input id="ticket-welcome" type="text" value="Staff will be with you shortly. Please describe your issue."></div>
+                <h3 class="subhead">Staff roles</h3>
+                <div class="level-role-form">
+                  <div class="input-group"><label>Role</label><select id="ticket-staff-role"><option value="">Select a role...</option></select></div>
+                  <button class="button" id="add-ticket-staff" type="button">Add staff role</button>
+                </div>
+                <div id="ticket-staff-list" class="level-roles-list"></div>
+                <button class="button" id="save-tickets" type="button">Save Ticket Settings</button>
+                <p class="form-hint" id="ticket-status"></p>
+              </div>
+            </section>
+
+            <section id="qotd" class="page-section">
+              <div class="card form-card wide">
+                <span class="eyebrow">QOTD</span>
+                <h2>Question of the Day</h2>
+                <p class="form-hint">Staff use <code>/qotd &lt;question&gt;</code>. Optional manager role is pinged.</p>
+                <label class="toggle"><input type="checkbox" id="qotd-enabled" checked> <span>Enabled</span></label>
+                <div class="input-group"><label for="qotd-channel">QOTD channel</label><select id="qotd-channel"><option value="">Select a channel...</option></select></div>
+                <div class="input-group"><label for="qotd-manager-role">Manager role to ping</label><select id="qotd-manager-role"><option value="">None</option></select></div>
+                <button class="button" id="save-qotd" type="button">Save QOTD Settings</button>
+                <p class="form-hint" id="qotd-status"></p>
+              </div>
+            </section>
+
+            <section id="settings" class="page-section">
+              <div class="card form-card wide">
+                <span class="eyebrow">SETTINGS</span>
+                <h2>Layout</h2>
+                <p class="form-hint">View mode is saved in your browser.</p>
+              </div>
+            </section>
+
+            <!-- Placeholder sections for existing features so nav does not break -->
+            <section id="moderation" class="page-section"><div class="card form-card wide"><span class="eyebrow">MODERATION</span><h2>Warn logs</h2><div class="input-group"><label>Warn channel</label><select id="warn-channel"><option value="">Select...</option></select></div><button class="button" id="save-moderation" type="button">Save</button><p class="form-hint" id="moderation-status"></p></div></section>
+            <section id="invites" class="page-section"><div class="card form-card wide"><span class="eyebrow">INVITES</span><h2>Invite leaderboard</h2><div class="input-group"><label>Channel</label><select id="invite-channel"><option value="">Select...</option></select></div><button class="button" id="save-invites" type="button">Save</button></div></section>
+            <section id="leveling" class="page-section"><div class="card form-card wide"><span class="eyebrow">LEVELING</span><h2>Leveling settings</h2><label class="toggle"><input type="checkbox" id="lvl-enabled" checked> <span>Enabled</span></label><button class="button" id="save-leveling" type="button">Save</button></div></section>
+            <section id="shop" class="page-section"><div class="card form-card wide"><span class="eyebrow">SHOP</span><h2>Shop</h2><label class="toggle"><input type="checkbox" id="shop-enabled"> <span>Enabled</span></label><button class="button" id="save-shop-toggle" type="button">Save</button></div></section>
+            <section id="logs" class="page-section"><div class="card form-card wide"><span class="eyebrow">LOGS</span><h2>Dashboard logs</h2><div class="input-group"><label>Log channel</label><select id="log-channel"><option value="">Select...</option></select></div><button class="button" id="save-logs" type="button">Save</button><button class="button" id="test-log" type="button">Test</button></div></section>
+            <section id="birthday" class="page-section"><div class="card form-card wide"><span class="eyebrow">BIRTHDAY</span><h2>Birthdays</h2><button class="button" id="save-birthday" type="button">Save</button></div></section>
+
+        </main>
+    </div>
+
+    <!-- Server view shell (existing scripts populate) -->
+    <div id="server-view" class="server-view" hidden></div>
+
+    <script src="script.js?v=7"></script>
+    <script src="script-part1.js?v=7"></script>
+    <script src="script-part2.js?v=7"></script>
+    <script src="branding.js?v=1"></script>
+    <script src="branding-ui.js?v=1"></script>
+    <script src="server-view.js?v=7"></script>
+    <script src="server-view-layout.js?v=1"></script>
+    <script src="server-view-members.js?v=1"></script>
+    <script src="server-view-punish.js?v=1"></script>
+    <script src="server-view-globals.js?v=1"></script>
+    <script src="sv-members-load.js?v=1"></script>
+    <script src="sv-punish-attr-fix.js?v=1"></script>
+    <script src="features-config.js?v=1"></script>
 </body>
 </html>
