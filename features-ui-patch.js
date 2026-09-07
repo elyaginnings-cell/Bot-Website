@@ -1,10 +1,10 @@
 /**
- * features-ui-patch v11 — applications tab + analytics
+ * features-ui-patch v12 — applications tab + analytics + suggest ping
  */
 (function () {
   "use strict";
-  if (window.__featuresUIPatchV11) return;
-  window.__featuresUIPatchV11 = true;
+  if (window.__featuresUIPatchV12) return;
+  window.__featuresUIPatchV12 = true;
 
   function $(id) { return document.getElementById(id); }
 
@@ -79,17 +79,54 @@
         '<button class="button" id="save-applications" type="button" style="margin-top:1rem">Save Application Settings</button>' +
         '<p class="form-hint" id="app-status"></p>' +
         '<p class="form-hint">After saving, run <code>/application-panel</code> in Discord to post the button.</p>' +
-        '</div></section>'
+        "</div></section>"
     );
+  }
+
+  function ensureAnalytics() {
+    ensureNavItem("analytics", "📊", "Stats", "Server analytics");
+    if ($("analytics")) return;
+    ensureSection(
+      "analytics",
+      '<section id="analytics" class="page-section"><div class="card form-card wide">' +
+        '<span class="eyebrow">ANALYTICS</span><h2>Server analytics</h2>' +
+        '<label class="toggle"><input type="checkbox" id="analytics-enabled" checked> <span>Enabled</span></label>' +
+        '<div class="input-group"><label>Log channel (optional)</label><select id="analytics-log-channel"><option value="">None</option></select></div>' +
+        '<div class="input-group"><label>Track messages</label><label class="toggle"><input type="checkbox" id="analytics-track-messages" checked> <span>Count messages</span></label></div>' +
+        '<div class="input-group"><label>Track members</label><label class="toggle"><input type="checkbox" id="analytics-track-members" checked> <span>Joins / leaves</span></label></div>' +
+        '<button class="button" id="save-analytics" type="button">Save Analytics Settings</button>' +
+        '<p class="form-hint" id="analytics-status"></p>' +
+        '<div id="analytics-snapshot" class="level-roles-list"></div>' +
+        '<button class="button secondary" id="refresh-analytics" type="button">Refresh</button>' +
+        "</div></section>"
+    );
+  }
+
+  function ensureSuggestPing() {
+    if ($("suggest-ping-role")) return;
+    var sec = $("suggestions");
+    if (!sec) return;
+    var saveBtn = $("save-suggestions");
+    var group = document.createElement("div");
+    group.className = "input-group";
+    group.innerHTML =
+      '<label>Ping role (on new suggestion)</label>' +
+      '<select id="suggest-ping-role"><option value="">None</option></select>';
+    if (saveBtn && saveBtn.parentNode) saveBtn.parentNode.insertBefore(group, saveBtn);
   }
 
   var n = 0;
   function boot() {
     n++;
     ensureApps();
-    if (n < 60) setTimeout(boot, 200);
+    ensureAnalytics();
+    ensureSuggestPing();
+    if (typeof window.fillExtraSelects === "function") {
+      try { window.fillExtraSelects(); } catch (_) {}
+    }
+    if (n < 80) setTimeout(boot, 200);
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
   else boot();
-  console.log("[features-ui-patch] v11 applications");
+  console.log("[features-ui-patch] v12 applications + refill selects");
 })();
