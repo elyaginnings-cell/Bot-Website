@@ -20,11 +20,12 @@
     document.open();
     document.write(html);
     document.close();
+    // UI inject first (nav + panels), then save/load wiring
     var a = document.createElement("script");
-    a.src = "/features-ui.js?v=5";
+    a.src = "/features-ui.js?v=8";
     a.onload = function () {
       var b = document.createElement("script");
-      b.src = "/features-config.js?v=17";
+      b.src = "/features-config.js?v=19";
       document.body.appendChild(b);
     };
     document.body.appendChild(a);
