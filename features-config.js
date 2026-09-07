@@ -28,17 +28,6 @@
     var channels = window.channelsCache || [];
     var roles = window.rolesCache || [];
 
-    [
-      "bump-enabled",
-      // channels
-      "verify-channel",
-      "verify-log-channel",
-      "suggest-channel",
-      "suggest-staff-channel",
-      "ticket-transcript-channel",
-      "qotd-channel",
-    ].forEach(function () {});
-
     var channelIds = [
       "verify-channel",
       "verify-log-channel",
@@ -80,7 +69,6 @@
       if (current) el.value = current;
     });
 
-    // Multi staff roles list display
     renderTicketStaffRoles();
   }
 
@@ -175,11 +163,6 @@
     setVal("qotd-manager-role", Q.managerRoleId || "");
 
     fillExtraSelects();
-  }
-
-  async function saveExtraCurrencyFields() {
-    // Called after original saveCurrency — patch weekly/beg/bank into same object
-    // We override saveCurrency by wrapping it
   }
 
   async function saveBump() {
@@ -303,12 +286,10 @@
     }
   }
 
-  // Wrap original saveCurrency to include weekly/beg/bank
   function patchSaveCurrency() {
     if (typeof window.saveCurrency !== "function" && typeof saveCurrency !== "function") {
       return;
     }
-    var orig = window.saveCurrency || saveCurrency;
     window.saveCurrency = async function () {
       try {
         setStatus("currency-status", "Saving…", true);
@@ -350,7 +331,6 @@
         setStatus("currency-status", "❌ " + (e.message || "Failed"), false);
       }
     };
-    // Re-bind button if needed
     var btn = $("save-currency");
     if (btn) {
       btn.onclick = function (e) {
@@ -394,7 +374,27 @@
   }
 
   function extendTitles() {
-    // showSection titles are in script-part1 — we patch via event
+    var EXTRA = {
+      bump: ["Bump", "Disboard bump rewards."],
+      verification: ["Verification", "Member gate & verified role."],
+      suggestions: ["Suggestions", "Public idea board."],
+      tickets: ["Tickets", "Support ticket system."],
+      qotd: ["QOTD", "Question of the Day."],
+      currency: ["Currency", "Daily, weekly, beg, bank, work, chat drops."],
+    };
+    var orig = window.showSection;
+    if (typeof orig === "function") {
+      window.showSection = function (section) {
+        orig(section);
+        var info = EXTRA[section];
+        if (info) {
+          var t = document.getElementById("page-title");
+          var d = document.getElementById("page-description");
+          if (t) t.textContent = info[0];
+          if (d) d.textContent = info[1];
+        }
+      };
+    }
   }
 
   function bindButtons() {
@@ -407,7 +407,6 @@
   }
 
   function boot() {
-    // Wait for main dashboard scripts
     var tries = 0;
     function tryPatch() {
       tries++;
@@ -421,6 +420,7 @@
         patchSaveCurrency();
         patchApplyConfig();
         patchFillSelects();
+        extendTitles();
         bindButtons();
         applyExtraConfig();
         console.log("[features-config] panels ready");
