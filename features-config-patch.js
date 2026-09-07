@@ -1,19 +1,18 @@
 /**
- * features-config-patch v21 — tickets + analytics + qotd + suggest ping
- * Fills category selects, wires saves, renders snapshot.
+ * features-config-patch v22 — tickets (category select + ID fallback) + analytics + saves
  */
 (function () {
   "use strict";
-  if (window.__featuresConfigPatchV21) return;
-  window.__featuresConfigPatchV21 = true;
+  if (window.__featuresConfigPatchV22) return;
+  window.__featuresConfigPatchV22 = true;
 
   function $(id) { return document.getElementById(id); }
   function setVal(id, v) { var el = $(id); if (el) el.value = v == null ? "" : String(v); }
   function setCheck(id, on) { var el = $(id); if (el) el.checked = !!on; }
-  function setStatus(id, text, ok) {
+  function setStatus(id, t, ok) {
     var el = $(id);
     if (!el) return;
-    el.textContent = text || "";
+    el.textContent = t || "";
     el.style.color = ok === false ? "#f87171" : ok ? "#4ade80" : "";
   }
 
@@ -31,57 +30,100 @@
     return window.rolesCache || [];
   }
 
+  function ensureTicketCategoryField() {
+    var el = $("ticket-category-id");
+    if (!el) return null;
+    if (el.tagName === "SELECT") {
+      if (!$("ticket-category-manual") && el.parentNode) {
+        var hint = document.createElement("p");
+        hint.className = "form-hint";
+        hint.id = "ticket-category-hint";
+        hint.textContent = "If the list is empty, paste a category snowflake below.";
+        el.parentNode.appendChild(hint);
+        var man = document.createElement("input");
+        man.id = "ticket-category-manual";
+        man.type = "text";
+        man.placeholder = "Or paste category ID…";
+        man.style.marginTop = "0.35rem";
+        el.parentNode.appendChild(man);
+      }
+      return el;
+    }
+    var parent = el.parentNode;
+    var sel = document.createElement("select");
+    sel.id = "ticket-category-id";
+    sel.innerHTML = '<option value="">Select a category…</option>';
+    parent.replaceChild(sel, el);
+    var hint2 = document.createElement("p");
+    hint2.className = "form-hint";
+    hint2.id = "ticket-category-hint";
+    hint2.textContent = "If empty, paste a category snowflake below.";
+    parent.appendChild(hint2);
+    if (!$("ticket-category-manual")) {
+      var man2 = document.createElement("input");
+      man2.id = "ticket-category-manual";
+      man2.type = "text";
+      man2.placeholder = "Or paste category ID…";
+      man2.style.marginTop = "0.35rem";
+      parent.appendChild(man2);
+    }
+    return sel;
+  }
+
   function fillSelects() {
     var ch = channels();
     var rl = roles();
     var cats = ch.filter(function (c) {
-      return c.type === 4 || c.type === "GUILD_CATEGORY" || String(c.type).toLowerCase() === "category";
+      return c && (c.type === 4 || c.type === "GUILD_CATEGORY" || String(c.type) === "4");
     });
-    var texts = ch.filter(function (c) {
-      return c.type === 0 || c.type === 5 || c.type === "GUILD_TEXT" || c.type === "GUILD_ANNOUNCEMENT" ||
-        (!c.type && c.name);
-    });
-
+    ensureTicketCategoryField();
     var catEl = $("ticket-category-id");
     if (catEl && catEl.tagName === "SELECT") {
-      var cv = catEl.value;
+      var cur = catEl.value;
       catEl.innerHTML = '<option value="">Select a category…</option>';
-      cats.forEach(function (x) {
-        var o = document.createElement("option");
-        o.value = x.id;
-        o.textContent = x.name;
-        catEl.appendChild(o);
-      });
-      if (cv) catEl.value = cv;
+      if (!cats.length) {
+        var o0 = document.createElement("option");
+        o0.disabled = true;
+        o0.textContent = "(No categories found — use ID below)";
+        catEl.appendChild(o0);
+      } else {
+        cats.forEach(function (c) {
+          var o = document.createElement("option");
+          o.value = c.id;
+          o.textContent = c.name || c.id;
+          catEl.appendChild(o);
+        });
+      }
+      if (cur) catEl.value = cur;
     }
-
     ["ticket-transcript-channel", "analytics-log-channel", "suggest-channel", "suggest-staff-channel", "qotd-channel"].forEach(function (id) {
       var el = $(id);
-      if (!el) return;
-      var cur = el.value;
-      var noneLabel = id.indexOf("analytics") >= 0 ? "None" : "Select a channel...";
+      if (!el || el.tagName !== "SELECT") return;
+      var c = el.value;
+      var noneLabel = id.indexOf("analytics") >= 0 ? "None" : "Select a channel…";
       el.innerHTML = '<option value="">' + noneLabel + "</option>";
-      (texts.length ? texts : ch).forEach(function (x) {
+      ch.filter(function (x) {
+        return x && (x.type === 0 || x.type === 5 || x.type == null || x.type === "GUILD_TEXT");
+      }).forEach(function (x) {
         var o = document.createElement("option");
         o.value = x.id;
-        o.textContent = "#" + x.name;
+        o.textContent = "#" + (x.name || x.id);
         el.appendChild(o);
       });
-      if (cur) el.value = cur;
+      if (c) el.value = c;
     });
-
     ["ticket-staff-role", "suggest-ping-role", "qotd-manager-role"].forEach(function (id) {
       var el = $(id);
-      if (!el) return;
-      var cur = el.value;
-      el.innerHTML = '<option value="">' + (id.indexOf("ping") >= 0 || id.indexOf("manager") >= 0 ? "None" : "Select a role...") + "</option>";
+      if (!el || el.tagName !== "SELECT") return;
+      var c = el.value;
+      el.innerHTML = '<option value="">Select…</option>';
       rl.forEach(function (x) {
         var o = document.createElement("option");
         o.value = x.id;
-        o.textContent = x.name;
+        o.textContent = x.name || x.id;
         el.appendChild(o);
       });
-      if (cur) el.value = cur;
+      if (c) el.value = c;
     });
   }
 
@@ -108,30 +150,9 @@
           await window.saveConfig({ tickets: { staffRoleIds: next } });
           if (window.loadGuildData) await window.loadGuildData();
           else apply();
-        } catch (e) {
-          alert(e.message || "Failed");
-        }
+        } catch (e) { alert(e.message || "Failed"); }
       });
     });
-  }
-
-  function renderSnapshot() {
-    var snap = $("analytics-snapshot");
-    if (!snap) return;
-    var A = (window.currentConfig || {}).analytics || {};
-    var lines = [];
-    lines.push('<p class="form-hint"><strong>Tracking status</strong></p>');
-    lines.push('<p class="form-hint">Enabled: <strong>' + (A.enabled !== false ? "yes" : "no") +
-      "</strong> · Messages: <strong>" + (A.trackMessages !== false ? "on" : "off") +
-      "</strong> · Members: <strong>" + (A.trackMembers !== false ? "on" : "off") + "</strong></p>');
-    if (A.logChannelId) lines.push('<p class="form-hint">Log channel: <code>' + A.logChannelId + "</code></p>");
-    if (A.messages != null || A.totalJoins != null) {
-      lines.push('<p class="form-hint">Tracked messages: <strong>' + (A.messages || 0) +
-        "</strong> · Joins: <strong>" + (A.totalJoins || 0) +
-        "</strong> · Leaves: <strong>" + (A.totalLeaves || 0) + "</strong></p>');
-    }
-    lines.push('<p class="form-hint" style="margin-top:0.75rem">For a live report in Discord, run <code>/analytics</code> (requires Manage Server).</p>');
-    snap.innerHTML = lines.join("");
   }
 
   function apply() {
@@ -147,20 +168,31 @@
     setCheck("analytics-track-members", A.trackMembers !== false);
     setCheck("ticket-enabled", T.enabled !== false);
     setVal("ticket-category-id", T.categoryId || "");
+    setVal("ticket-category-manual", T.categoryId || "");
     setVal("ticket-transcript-channel", T.transcriptChannelId || "");
-    setVal("ticket-welcome", T.welcomeMessage || "Staff will be with you shortly. Please describe your issue.");
+    setVal("ticket-welcome", T.welcomeMessage || "Staff will be with you shortly.");
     setCheck("qotd-enabled", Q.enabled !== false);
     setVal("qotd-channel", Q.channelId || "");
     setVal("qotd-manager-role", Q.managerRoleId || "");
     fillSelects();
-    setVal("ticket-category-id", T.categoryId || "");
-    setVal("ticket-transcript-channel", T.transcriptChannelId || "");
-    setVal("analytics-log-channel", A.logChannelId || "");
-    setVal("suggest-ping-role", S.pingRoleId || "");
-    setVal("qotd-channel", Q.channelId || "");
-    setVal("qotd-manager-role", Q.managerRoleId || "");
     renderTicketStaff();
-    renderSnapshot();
+    var snap = $("analytics-snapshot");
+    if (snap) {
+      snap.innerHTML =
+        '<p class="form-hint"><strong>Tracking:</strong> enabled=' +
+        (A.enabled !== false ? "on" : "off") +
+        ", messages=" + (A.trackMessages !== false ? "on" : "off") +
+        ", members=" + (A.trackMembers !== false ? "on" : "off") +
+        '</p><p class="form-hint">Run <code>/analytics</code> in Discord for live numbers (Manage Server).</p>';
+    }
+  }
+
+  function getTicketCategoryId() {
+    var sel = $("ticket-category-id");
+    var man = $("ticket-category-manual");
+    var fromSel = sel && sel.value ? String(sel.value).trim() : "";
+    var fromMan = man && man.value ? String(man.value).trim() : "";
+    return fromSel || fromMan || null;
   }
 
   async function saveA() {
@@ -174,36 +206,9 @@
           trackMembers: $("analytics-track-members") ? $("analytics-track-members").checked : true
         }
       });
-      setStatus("analytics-status", d && d.savedToBot === false ? "Saved (bot offline)" : "✅ Analytics saved.", true);
-      renderSnapshot();
-    } catch (e) {
-      setStatus("analytics-status", "❌ " + (e.message || "Failed"), false);
-    }
-  }
-
-  async function saveT() {
-    try {
-      setStatus("ticket-status", "Saving…", true);
-      var existing = ((window.currentConfig || {}).tickets || {}).staffRoleIds || [];
-      var d = await window.saveConfig({
-        tickets: {
-          enabled: $("ticket-enabled") ? $("ticket-enabled").checked : true,
-          categoryId: $("ticket-category-id") ? ($("ticket-category-id").value || "").trim() || null : null,
-          transcriptChannelId: $("ticket-transcript-channel") ? $("ticket-transcript-channel").value || null : null,
-          welcomeMessage: $("ticket-welcome") ? $("ticket-welcome").value || "Staff will be with you shortly." : "Staff will be with you shortly.",
-          staffRoleIds: existing
-        }
-      });
-      setStatus(
-        "ticket-status",
-        d && d.savedToBot === false
-          ? "Saved on website. Bot offline — run /ticket-panel after bot is up."
-          : "✅ Tickets saved. Run /ticket-panel in Discord.",
-        true
-      );
-    } catch (e) {
-      setStatus("ticket-status", "❌ " + (e.message || "Failed"), false);
-    }
+      setStatus("analytics-status", d && d.savedToBot === false ? "Saved on website (bot offline — redeploy Railway)" : "✅ Analytics saved.", true);
+      if (window.loadGuildData) await window.loadGuildData(); else apply();
+    } catch (e) { setStatus("analytics-status", "❌ " + (e.message || "Failed"), false); }
   }
 
   async function saveS() {
@@ -218,9 +223,7 @@
         }
       });
       setStatus("suggest-status", d && d.savedToBot === false ? "Saved (bot offline)" : "✅ Suggestions saved.", true);
-    } catch (e) {
-      setStatus("suggest-status", "❌ " + (e.message || "Failed"), false);
-    }
+    } catch (e) { setStatus("suggest-status", "❌ " + (e.message || "Failed"), false); }
   }
 
   async function saveQ() {
@@ -234,9 +237,25 @@
         }
       });
       setStatus("qotd-status", d && d.savedToBot === false ? "Saved (bot offline)" : "✅ QOTD saved.", true);
-    } catch (e) {
-      setStatus("qotd-status", "❌ " + (e.message || "Failed"), false);
-    }
+    } catch (e) { setStatus("qotd-status", "❌ " + (e.message || "Failed"), false); }
+  }
+
+  async function saveT() {
+    try {
+      setStatus("ticket-status", "Saving…", true);
+      var existing = ((window.currentConfig || {}).tickets || {}).staffRoleIds || [];
+      var d = await window.saveConfig({
+        tickets: {
+          enabled: $("ticket-enabled") ? $("ticket-enabled").checked : true,
+          categoryId: getTicketCategoryId(),
+          transcriptChannelId: $("ticket-transcript-channel") ? $("ticket-transcript-channel").value || null : null,
+          welcomeMessage: $("ticket-welcome") ? $("ticket-welcome").value || "Staff will be with you shortly." : "Staff will be with you shortly.",
+          staffRoleIds: existing
+        }
+      });
+      setStatus("ticket-status", d && d.savedToBot === false ? "Saved on website. Bot offline — redeploy then /ticket-panel." : "✅ Tickets saved. Run /ticket-panel in Discord.", true);
+      if (window.loadGuildData) await window.loadGuildData(); else apply();
+    } catch (e) { setStatus("ticket-status", "❌ " + (e.message || "Failed"), false); }
   }
 
   async function addStaff() {
@@ -246,53 +265,24 @@
       var cur = ((window.currentConfig || {}).tickets || {}).staffRoleIds || [];
       if (cur.map(String).indexOf(String(rid)) >= 0) return alert("Already added");
       await window.saveConfig({ tickets: { staffRoleIds: cur.concat([rid]) } });
-      if (window.loadGuildData) await window.loadGuildData();
-      else apply();
-    } catch (e) {
-      alert(e.message || "Failed");
-    }
+      if (window.loadGuildData) await window.loadGuildData(); else apply();
+    } catch (e) { alert(e.message || "Failed"); }
   }
 
   function wire() {
-    var a = $("save-analytics");
-    if (a && !a.__p21) {
-      a.__p21 = 1;
-      a.addEventListener("click", function (e) { e.preventDefault(); e.stopImmediatePropagation(); saveA(); }, true);
+    function bind(id, fn) {
+      var el = $(id);
+      if (el && !el.__p22) {
+        el.__p22 = 1;
+        el.addEventListener("click", function (e) { e.preventDefault(); e.stopImmediatePropagation(); fn(); }, true);
+      }
     }
-    var t = $("save-tickets");
-    if (t && !t.__p21) {
-      t.__p21 = 1;
-      t.addEventListener("click", function (e) { e.preventDefault(); e.stopImmediatePropagation(); saveT(); }, true);
-    }
-    var s = $("save-suggestions");
-    if (s && !s.__p21) {
-      s.__p21 = 1;
-      s.addEventListener("click", function (e) { e.preventDefault(); e.stopImmediatePropagation(); saveS(); }, true);
-    }
-    var q = $("save-qotd");
-    if (q && !q.__p21) {
-      q.__p21 = 1;
-      q.addEventListener("click", function (e) { e.preventDefault(); e.stopImmediatePropagation(); saveQ(); }, true);
-    }
-    var as = $("add-ticket-staff");
-    if (as && !as.__p21) {
-      as.__p21 = 1;
-      as.addEventListener("click", addStaff);
-    }
-    var r = $("refresh-analytics");
-    if (r && !r.__p21) {
-      r.__p21 = 1;
-      r.addEventListener("click", function () { apply(); });
-    }
-
-    var orig = window.showSection;
-    if (typeof orig === "function" && !window.__showSectionPatchedV21) {
-      window.__showSectionPatchedV21 = true;
-      window.showSection = function (section) {
-        orig(section);
-        setTimeout(function () { fillSelects(); apply(); }, 60);
-      };
-    }
+    bind("save-analytics", saveA);
+    bind("save-suggestions", saveS);
+    bind("save-qotd", saveQ);
+    bind("save-tickets", saveT);
+    bind("add-ticket-staff", addStaff);
+    bind("refresh-analytics", apply);
   }
 
   var n = 0;
@@ -300,6 +290,7 @@
     n++;
     wire();
     apply();
+    fillSelects();
     if (n < 80) setTimeout(boot, 200);
   }
 
@@ -309,11 +300,17 @@
       configurable: true,
       enumerable: true,
       get: function () { return _v; },
-      set: function (v) { _v = v; setTimeout(apply, 40); }
+      set: function (v) { _v = v; setTimeout(apply, 30); }
     });
   } catch (_) {}
 
+  var lastCh = 0;
+  setInterval(function () {
+    var ch = channels();
+    if (ch.length !== lastCh) { lastCh = ch.length; fillSelects(); }
+  }, 1000);
+
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
   else boot();
-  console.log("[features-config-patch] v21 tickets category + analytics");
+  console.log("[features-config-patch] v22 tickets+analytics+category fallback");
 })();
