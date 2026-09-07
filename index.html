@@ -20,16 +20,20 @@
     document.open();
     document.write(html);
     document.close();
-    // Inject config panels script after good HTML is in place
-    var s = document.createElement("script");
-    s.src = "/features-config.js?v=10";
-    document.body.appendChild(s);
+    // UI inject first (nav + panels), then save/load wiring
+    var a = document.createElement("script");
+    a.src = "/features-ui.js?v=1";
+    a.onload = function () {
+      var b = document.createElement("script");
+      b.src = "/features-config.js?v=11";
+      document.body.appendChild(b);
+    };
+    document.body.appendChild(a);
   } catch (e) {
     document.body.innerHTML =
       "<div style=\"font-family:system-ui;padding:2rem;max-width:32rem\">" +
       "<h1>Could not load dashboard</h1>" +
-      "<p>" + (e && e.message ? e.message : e) + "</p>" +
-      "</div>";
+      "<p>" + (e && e.message ? e.message : e) + "</p></div>";
   }
 })();
 </script>
