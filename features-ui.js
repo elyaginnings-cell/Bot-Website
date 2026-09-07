@@ -129,24 +129,27 @@
         '<p class="form-hint" id="qotd-status"></p></div></section>' +
 
         '<section id="selfroles" class="page-section"><div class="card form-card wide">' +
-        '<span class="eyebrow">SELF ROLES</span><h2>Role categories</h2>' +
-        '<p class="form-hint">Create categories (Colors, Notifications, Region…). Each can be <strong>multi-select</strong> or <strong>single-select</strong>. Save, then run <code>/selfroles-setup</code> — one Discord panel per category.</p>' +
+        '<span class="eyebrow">SELF ROLES</span><h2>Role sections</h2>' +
+        '<p class="form-hint">Each category becomes a polished embed + dropdown in Discord (like YAGPDB). Multi = any combo, single = one only. Save, then run <code>/selfroles-setup</code>.</p>' +
         '<label class="toggle"><input type="checkbox" id="sr-enabled" checked> <span>Enabled</span></label>' +
         '<div class="input-group"><label>Panel channel</label><select id="sr-channel"><option value="">Select a channel...</option></select></div>' +
-        '<h3 class="subhead">New category</h3><div class="config-grid">' +
-        '<div class="input-group"><label>Name</label><input id="sr-cat-name" type="text" placeholder="e.g. Colors" maxlength="100"></div>' +
-        '<div class="input-group"><label>Mode</label><select id="sr-cat-mode"><option value="multi">Multi-select (any)</option><option value="single">Single-select (one only)</option></select></div>' +
-        '<div class="input-group" style="grid-column:1/-1"><label>Description</label><input id="sr-cat-desc" type="text" placeholder="Shown on the panel" maxlength="500"></div></div>' +
-        '<button class="button" id="sr-add-cat" type="button">Add category</button>' +
+        '<h3 class="subhead">New section</h3><div class="config-grid">' +
+        '<div class="input-group"><label>Emoji</label><input id="sr-cat-emoji" type="text" placeholder="🔔" maxlength="32"></div>' +
+        '<div class="input-group"><label>Name</label><input id="sr-cat-name" type="text" placeholder="e.g. Notifications" maxlength="100"></div>' +
+        '<div class="input-group"><label>Mode</label><select id="sr-cat-mode"><option value="multi">Multi-select</option><option value="single">Single-select</option></select></div>' +
+        '<div class="input-group" style="grid-column:1/-1"><label>Description</label><textarea id="sr-cat-desc" rows="2" placeholder="Choose exactly which notifications you would like to receive." maxlength="500"></textarea></div>' +
+        '<div class="input-group" style="grid-column:1/-1"><label>Tip / privacy note (optional)</label><input id="sr-cat-tip" type="text" placeholder="Only select notifications you actually want." maxlength="300"></div>' +
+        '<div class="input-group"><label>Footer label</label><input id="sr-cat-footer" type="text" placeholder="Multiple selections allowed" maxlength="200"></div>' +
+        '<div class="input-group"><label>Dropdown placeholder</label><input id="sr-cat-placeholder" type="text" placeholder="Choose your notifications..." maxlength="150"></div>' +
+        '</div>' +
+        '<button class="button" id="sr-add-cat" type="button">Add section</button>' +
         '<div id="sr-categories" class="level-roles-list" style="margin-top:1rem"></div>' +
-        '<h3 class="subhead">Add role to a category</h3><div class="level-role-form">' +
-        '<div class="input-group"><label>Category</label><select id="sr-target-cat"><option value="">Select category...</option></select></div>' +
+        '<h3 class="subhead">Add role to a section</h3><div class="level-role-form">' +
+        '<div class="input-group"><label>Section</label><select id="sr-target-cat"><option value="">Select section...</option></select></div>' +
         '<div class="input-group"><label>Role</label><select id="sr-role"><option value="">Select a role...</option></select></div>' +
-        '<div class="input-group"><label>Button label</label><input id="sr-label" type="text" placeholder="e.g. Blue" maxlength="80"></div>' +
-        '<div class="input-group"><label>Emoji</label><input id="sr-emoji" type="text" placeholder="🔵" maxlength="32"></div>' +
-        '<div class="input-group"><label>Style</label><select id="sr-style">' +
-        '<option value="Secondary">Grey</option><option value="Primary">Blurple</option>' +
-        '<option value="Success">Green</option><option value="Danger">Red</option></select></div>' +
+        '<div class="input-group"><label>Label</label><input id="sr-label" type="text" placeholder="e.g. Announcements" maxlength="100"></div>' +
+        '<div class="input-group"><label>Emoji</label><input id="sr-emoji" type="text" placeholder="📢" maxlength="32"></div>' +
+        '<div class="input-group" style="grid-column:1/-1"><label>Option description (optional)</label><input id="sr-role-desc" type="text" placeholder="Shown under the option in the dropdown" maxlength="100"></div>' +
         '<button class="button" id="sr-add-role" type="button">Add role</button></div>' +
         '<button class="button" id="save-selfroles" type="button" style="margin-top:1rem">Save Self Roles</button>' +
         '<p class="form-hint" id="sr-status"></p></div></section>';
