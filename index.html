@@ -1,25 +1,18 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Loading dashboard…</title>
+<html><head><meta charset="UTF-8"><title>Loading…</title>
 <link rel="icon" href="/amazon-favicon.svg" type="image/svg+xml">
-</head>
-<body>
+</head><body>
 <script>
-(async function () {
-  try {
-    var a = await fetch("/index.p1.b64?v=3").then(function (r) { return r.text(); });
-    var b = await fetch("/index.p2.b64?v=3").then(function (r) { return r.text(); });
-    var html = atob((a + b).replace(/\s/g, ""));
-    document.open();
-    document.write(html);
-    document.close();
-  } catch (e) {
-    document.body.innerHTML = "<p>Failed to load dashboard. Hard-refresh or check Vercel deploy.</p><pre>" + e + "</pre>";
+(async function(){
+  var n = 21;
+  var parts = [];
+  for (var i=0;i<n;i++) {
+    parts.push(fetch("/dc"+i+".txt?v=6").then(function(r){ return r.text(); }));
   }
+  var texts = await Promise.all(parts);
+  document.open();
+  document.write(texts.join(""));
+  document.close();
 })();
 </script>
-</body>
-</html>
+</body></html>
