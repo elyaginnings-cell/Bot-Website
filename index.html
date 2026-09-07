@@ -10,7 +10,6 @@
 <script>
 (async function () {
   try {
-    // Last known-good index.html commit
     var url = "https://raw.githubusercontent.com/elyaginnings-cell/Bot-Website/147232bd5d52eb2ba98a5e5277445508e2c8e705/index.html";
     var res = await fetch(url + "?t=" + Date.now());
     if (!res.ok) throw new Error("HTTP " + res.status);
@@ -21,12 +20,15 @@
     document.open();
     document.write(html);
     document.close();
+    // Inject config panels script after good HTML is in place
+    var s = document.createElement("script");
+    s.src = "/features-config.js?v=10";
+    document.body.appendChild(s);
   } catch (e) {
     document.body.innerHTML =
       "<div style=\"font-family:system-ui;padding:2rem;max-width:32rem\">" +
       "<h1>Could not load dashboard</h1>" +
       "<p>" + (e && e.message ? e.message : e) + "</p>" +
-      "<p>Hard-refresh, or open the raw good commit and copy index.html onto main.</p>" +
       "</div>";
   }
 })();
