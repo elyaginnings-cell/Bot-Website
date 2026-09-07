@@ -1,6 +1,6 @@
 /**
  * Extra feature config panels: economy extras, bump, verification,
- * suggestions, tickets, QOTD, self-roles. Hooks into existing saveConfig / applyConfig.
+ * suggestions, tickets, QOTD, self-roles categories. Hooks into existing saveConfig / applyConfig.
  */
 (function () {
   "use strict";
@@ -117,50 +117,103 @@
     });
   }
 
-  function renderSelfRolesList() {
-    var list = $("sr-roles-list");
-    if (!list) return;
+  function getSelfRolesState() {
     var cfg = (window.currentConfig && window.currentConfig.selfRoles) || {};
-    var roles = cfg.roles || [];
+    if (!Array.isArray(cfg.categories)) cfg.categories = [];
+    if (Array.isArray(cfg.roles) && cfg.roles.length && !cfg.categories.length) {
+      cfg.categories = [
+        {
+          id: "legacy",
+          name: "Roles",
+          description: "",
+          mode: "multi",
+          roles: cfg.roles,
+        },
+      ];
+    }
+    return cfg;
+  }
+
+  function fillCategorySelect() {
+    var el = $("sr-target-cat");
+    if (!el) return;
+    var cfg = getSelfRolesState();
+    var current = el.value;
+    el.innerHTML = '<option value="">Select category...</option>';
+    (cfg.categories || []).forEach(function (c) {
+      var opt = document.createElement("option");
+      opt.value = c.id;
+      opt.textContent = c.name + (c.mode === "single" ? " (single)" : " (multi)");
+      el.appendChild(opt);
+    });
+    if (current) el.value = current;
+  }
+
+  function renderSelfRolesList() {
+    var list = $("sr-categories");
+    if (!list) return;
+    var cfg = getSelfRolesState();
+    var cats = cfg.categories || [];
     var roleCache = window.rolesCache || [];
-    if (!roles.length) {
-      list.innerHTML = '<p class="form-hint">No self-roles yet. Add one above.</p>';
+    if (!cats.length) {
+      list.innerHTML = '<p class="form-hint">No categories yet. Create one above.</p>';
+      fillCategorySelect();
       return;
     }
-    list.innerHTML = roles
-      .map(function (r, i) {
-        var role = roleCache.find(function (x) {
-          return String(x.id) === String(r.roleId);
-        });
-        var name = role ? role.name : r.roleId;
-        var em = r.emoji ? r.emoji + " " : "";
+    list.innerHTML = cats
+      .map(function (c, ci) {
+        var mode = c.mode === "single" ? "Single-select" : "Multi-select";
+        var rolesHtml = (c.roles || [])
+          .map(function (r, ri) {
+            var role = roleCache.find(function (x) {
+              return String(x.id) === String(r.roleId);
+            });
+            var name = role ? role.name : r.roleId;
+            var em = r.emoji ? r.emoji + " " : "";
+            return (
+              '<div class="level-role-row" style="margin-left:0.75rem">' +
+              em +
+              "<strong>" +
+              (r.label || "Role") +
+              "</strong> — @" +
+              name +
+              ' <button type="button" data-rm-role="' +
+              ci +
+              ":" +
+              ri +
+              '">Remove</button></div>'
+            );
+          })
+          .join("") ||
+          '<p class="form-hint" style="margin-left:0.75rem">No roles in this category.</p>';
         return (
-          '<div class="level-role-row">' +
-          em +
-          "<strong>" +
-          (r.label || "Role") +
-          "</strong> — @" +
-          name +
-          " (" +
-          (r.style || "Secondary") +
-          ') <button type="button" data-remove-sr="' +
-          i +
-          '">Remove</button></div>'
+          '<div class="level-role-row" style="flex-direction:column;align-items:stretch;gap:0.35rem;margin-bottom:0.75rem;padding:0.75rem;border:1px solid rgba(255,255,255,0.08);border-radius:8px">' +
+          "<div><strong>" +
+          (c.name || "Category") +
+          '</strong> <span class="form-hint">· ' +
+          mode +
+          '</span> <button type="button" data-rm-cat="' +
+          ci +
+          '">Delete category</button></div>' +
+          (c.description
+            ? '<p class="form-hint" style="margin:0">' + c.description + "</p>"
+            : "") +
+          rolesHtml +
+          "</div>"
         );
       })
       .join("");
-    list.querySelectorAll("[data-remove-sr]").forEach(function (btn) {
+
+    list.querySelectorAll("[data-rm-cat]").forEach(function (btn) {
       btn.addEventListener("click", async function () {
         try {
-          var idx = Number(btn.getAttribute("data-remove-sr"));
-          var cur = ((window.currentConfig || {}).selfRoles || {}).roles || [];
-          var next = cur.filter(function (_, i) {
-            return i !== idx;
+          var ci = Number(btn.getAttribute("data-rm-cat"));
+          var cfg = getSelfRolesState();
+          var next = (cfg.categories || []).filter(function (_, i) {
+            return i !== ci;
           });
           await window.saveConfig({
-            selfRoles: Object.assign({}, (window.currentConfig || {}).selfRoles || {}, {
-              roles: next,
-            }),
+            selfRoles: Object.assign({}, cfg, { categories: next }),
           });
           if (typeof window.loadGuildData === "function") await window.loadGuildData();
           else applyExtraConfig();
@@ -169,6 +222,129 @@
         }
       });
     });
+    list.querySelectorAll("[data-rm-role]").forEach(function (btn) {
+      btn.addEventListener("click", async function () {
+        try {
+          var parts = btn.getAttribute("data-rm-role").split(":");
+          var ci = Number(parts[0]);
+          var ri = Number(parts[1]);
+          var cfg = getSelfRolesState();
+          var cats = (cfg.categories || []).map(function (c, i) {
+            if (i !== ci) return c;
+            return Object.assign({}, c, {
+              roles: (c.roles || []).filter(function (_, j) {
+                return j !== ri;
+              }),
+            });
+          });
+          await window.saveConfig({
+            selfRoles: Object.assign({}, cfg, { categories: cats }),
+          });
+          if (typeof window.loadGuildData === "function") await window.loadGuildData();
+          else applyExtraConfig();
+        } catch (e) {
+          alert(e.message || "Failed");
+        }
+      });
+    });
+    fillCategorySelect();
+  }
+
+  async function saveSelfRoles() {
+    try {
+      setStatus("sr-status", "Saving…", true);
+      var cfg = getSelfRolesState();
+      var data = await window.saveConfig({
+        selfRoles: {
+          enabled: $("sr-enabled")?.checked !== false,
+          channelId: $("sr-channel")?.value || null,
+          title: "Self Roles",
+          description: "Pick your roles below.",
+          categories: cfg.categories || [],
+        },
+      });
+      var text =
+        data?.savedToBot === false
+          ? "Saved to website. Bot did not sync. Run /selfroles-setup in Discord."
+          : "✅ Saved. Run /selfroles-setup in Discord to post/refresh panels.";
+      setStatus("sr-status", text, true);
+    } catch (e) {
+      setStatus("sr-status", "❌ " + (e.message || "Failed"), false);
+    }
+  }
+
+  async function addCategory() {
+    var name = ($("sr-cat-name")?.value || "").trim();
+    if (!name) return alert("Enter a category name");
+    try {
+      var cfg = getSelfRolesState();
+      var cats = (cfg.categories || []).slice();
+      if (cats.length >= 15) return alert("Max 15 categories");
+      cats.push({
+        id: Math.random().toString(36).slice(2, 10),
+        name: name.slice(0, 100),
+        description: ($("sr-cat-desc")?.value || "").trim().slice(0, 500),
+        mode: $("sr-cat-mode")?.value === "single" ? "single" : "multi",
+        roles: [],
+      });
+      await window.saveConfig({
+        selfRoles: Object.assign({}, cfg, {
+          categories: cats,
+          enabled: $("sr-enabled")?.checked !== false,
+          channelId: $("sr-channel")?.value || null,
+        }),
+      });
+      if ($("sr-cat-name")) $("sr-cat-name").value = "";
+      if ($("sr-cat-desc")) $("sr-cat-desc").value = "";
+      if (typeof window.loadGuildData === "function") await window.loadGuildData();
+      else applyExtraConfig();
+    } catch (e) {
+      alert(e.message || "Failed");
+    }
+  }
+
+  async function addSelfRole() {
+    var catId = $("sr-target-cat")?.value;
+    var rid = $("sr-role")?.value;
+    var label = ($("sr-label")?.value || "").trim();
+    if (!catId) return alert("Pick a category");
+    if (!rid) return alert("Pick a role");
+    if (!label) return alert("Enter a button label");
+    try {
+      var cfg = getSelfRolesState();
+      var cats = (cfg.categories || []).map(function (c) {
+        if (String(c.id) !== String(catId)) return c;
+        var roles = (c.roles || []).slice();
+        if (
+          roles.some(function (r) {
+            return String(r.roleId) === String(rid);
+          })
+        ) {
+          throw new Error("That role is already in this category");
+        }
+        if (roles.length >= 25) throw new Error("Max 25 roles per category");
+        roles.push({
+          roleId: rid,
+          label: label.slice(0, 80),
+          emoji: ($("sr-emoji")?.value || "").trim() || null,
+          style: $("sr-style")?.value || "Secondary",
+        });
+        return Object.assign({}, c, { roles: roles });
+      });
+      await window.saveConfig({
+        selfRoles: Object.assign({}, cfg, {
+          categories: cats,
+          enabled: $("sr-enabled")?.checked !== false,
+          channelId: $("sr-channel")?.value || null,
+        }),
+      });
+      if ($("sr-label")) $("sr-label").value = "";
+      if ($("sr-emoji")) $("sr-emoji").value = "";
+      if (typeof window.loadGuildData === "function") await window.loadGuildData();
+      else applyExtraConfig();
+    } catch (e) {
+      alert(e.message || "Failed");
+    }
   }
 
   function applyExtraConfig() {
@@ -222,78 +398,8 @@
     var SR = c.selfRoles || {};
     setCheck("sr-enabled", SR.enabled !== false);
     setVal("sr-channel", SR.channelId || "");
-    setVal("sr-title", SR.title || "Self Roles");
-    setVal("sr-desc", SR.description || "Click a button to toggle a role on or off.");
 
     fillExtraSelects();
-  }
-
-  async function saveSelfRoles() {
-    try {
-      setStatus("sr-status", "Saving…", true);
-      var existing = ((window.currentConfig || {}).selfRoles || {}).roles || [];
-      var data = await window.saveConfig({
-        selfRoles: {
-          enabled: $("sr-enabled")?.checked !== false,
-          channelId: $("sr-channel")?.value || null,
-          title: $("sr-title")?.value || "Self Roles",
-          description:
-            $("sr-desc")?.value ||
-            "Click a button to toggle a role on or off.",
-          roles: existing,
-        },
-      });
-      var text =
-        data?.savedToBot === false
-          ? "Saved to website. Bot did not sync. Run /selfroles-setup in Discord."
-          : "✅ Self-roles saved. Run /selfroles-setup in Discord to post/refresh the panel.";
-      setStatus("sr-status", text, true);
-    } catch (e) {
-      setStatus("sr-status", "❌ " + (e.message || "Failed"), false);
-    }
-  }
-
-  async function addSelfRole() {
-    var rid = $("sr-role")?.value;
-    var label = ($("sr-label")?.value || "").trim();
-    if (!rid) return alert("Pick a role");
-    if (!label) return alert("Enter a button label");
-    try {
-      var cur = ((window.currentConfig || {}).selfRoles || {}).roles || [];
-      if (
-        cur.some(function (r) {
-          return String(r.roleId) === String(rid);
-        })
-      ) {
-        return alert("That role is already on the panel");
-      }
-      if (cur.length >= 25) return alert("Maximum 25 self-roles");
-      var next = cur.concat([
-        {
-          roleId: rid,
-          label: label.slice(0, 80),
-          emoji: ($("sr-emoji")?.value || "").trim() || null,
-          style: $("sr-style")?.value || "Secondary",
-        },
-      ]);
-      await window.saveConfig({
-        selfRoles: Object.assign({}, (window.currentConfig || {}).selfRoles || {}, {
-          roles: next,
-          enabled: $("sr-enabled")?.checked !== false,
-          channelId: $("sr-channel")?.value || null,
-          title: $("sr-title")?.value || "Self Roles",
-          description:
-            $("sr-desc")?.value ||
-            "Click a button to toggle a role on or off.",
-        }),
-      });
-      if ($("sr-label")) $("sr-label").value = "";
-      if ($("sr-emoji")) $("sr-emoji").value = "";
-      if (typeof window.loadGuildData === "function") await window.loadGuildData();
-      else applyExtraConfig();
-    } catch (e) {
-      alert(e.message || "Failed");
-    }
   }
 
   async function saveBump() {
@@ -516,7 +622,7 @@
       suggestions: ["Suggestions", "Public idea board."],
       tickets: ["Tickets", "Support ticket system."],
       qotd: ["QOTD", "Question of the Day."],
-      selfroles: ["Self Roles", "Member self-assign role panel."],
+      selfroles: ["Self Roles", "Category-based self-assign roles (multi / single)."],
       currency: ["Currency", "Daily, weekly, beg, bank, work, chat drops."],
     };
     var orig = window.showSection;
@@ -543,6 +649,7 @@
     $("save-qotd")?.addEventListener("click", saveQotd);
     $("save-selfroles")?.addEventListener("click", saveSelfRoles);
     $("sr-add-role")?.addEventListener("click", addSelfRole);
+    $("sr-add-cat")?.addEventListener("click", addCategory);
   }
 
   function boot() {
