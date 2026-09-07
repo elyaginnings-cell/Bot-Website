@@ -1,6 +1,6 @@
 /**
  * Extra feature config panels: economy extras, bump, verification,
- * suggestions, tickets, QOTD. Hooks into existing saveConfig / applyConfig.
+ * suggestions, tickets, QOTD, self-roles. Hooks into existing saveConfig / applyConfig.
  */
 (function () {
   "use strict";
@@ -35,6 +35,7 @@
       "suggest-staff-channel",
       "ticket-transcript-channel",
       "qotd-channel",
+      "sr-channel",
     ];
     channelIds.forEach(function (id) {
       var el = $(id);
@@ -54,6 +55,7 @@
       "verify-role",
       "qotd-manager-role",
       "ticket-staff-role",
+      "sr-role",
     ];
     roleIds.forEach(function (id) {
       var el = $(id);
@@ -70,6 +72,7 @@
     });
 
     renderTicketStaffRoles();
+    renderSelfRolesList();
   }
 
   function renderTicketStaffRoles() {
@@ -105,6 +108,60 @@
             return String(x) !== String(rid);
           });
           await window.saveConfig({ tickets: { staffRoleIds: next } });
+          if (typeof window.loadGuildData === "function") await window.loadGuildData();
+          else applyExtraConfig();
+        } catch (e) {
+          alert(e.message || "Failed");
+        }
+      });
+    });
+  }
+
+  function renderSelfRolesList() {
+    var list = $("sr-roles-list");
+    if (!list) return;
+    var cfg = (window.currentConfig && window.currentConfig.selfRoles) || {};
+    var roles = cfg.roles || [];
+    var roleCache = window.rolesCache || [];
+    if (!roles.length) {
+      list.innerHTML = '<p class="form-hint">No self-roles yet. Add one above.</p>';
+      return;
+    }
+    list.innerHTML = roles
+      .map(function (r, i) {
+        var role = roleCache.find(function (x) {
+          return String(x.id) === String(r.roleId);
+        });
+        var name = role ? role.name : r.roleId;
+        var em = r.emoji ? r.emoji + " " : "";
+        return (
+          '<div class="level-role-row">' +
+          em +
+          "<strong>" +
+          (r.label || "Role") +
+          "</strong> — @" +
+          name +
+          " (" +
+          (r.style || "Secondary") +
+          ') <button type="button" data-remove-sr="' +
+          i +
+          '">Remove</button></div>'
+        );
+      })
+      .join("");
+    list.querySelectorAll("[data-remove-sr]").forEach(function (btn) {
+      btn.addEventListener("click", async function () {
+        try {
+          var idx = Number(btn.getAttribute("data-remove-sr"));
+          var cur = ((window.currentConfig || {}).selfRoles || {}).roles || [];
+          var next = cur.filter(function (_, i) {
+            return i !== idx;
+          });
+          await window.saveConfig({
+            selfRoles: Object.assign({}, (window.currentConfig || {}).selfRoles || {}, {
+              roles: next,
+            }),
+          });
           if (typeof window.loadGuildData === "function") await window.loadGuildData();
           else applyExtraConfig();
         } catch (e) {
@@ -162,7 +219,81 @@
     setVal("qotd-channel", Q.channelId || "");
     setVal("qotd-manager-role", Q.managerRoleId || "");
 
+    var SR = c.selfRoles || {};
+    setCheck("sr-enabled", SR.enabled !== false);
+    setVal("sr-channel", SR.channelId || "");
+    setVal("sr-title", SR.title || "Self Roles");
+    setVal("sr-desc", SR.description || "Click a button to toggle a role on or off.");
+
     fillExtraSelects();
+  }
+
+  async function saveSelfRoles() {
+    try {
+      setStatus("sr-status", "Saving…", true);
+      var existing = ((window.currentConfig || {}).selfRoles || {}).roles || [];
+      var data = await window.saveConfig({
+        selfRoles: {
+          enabled: $("sr-enabled")?.checked !== false,
+          channelId: $("sr-channel")?.value || null,
+          title: $("sr-title")?.value || "Self Roles",
+          description:
+            $("sr-desc")?.value ||
+            "Click a button to toggle a role on or off.",
+          roles: existing,
+        },
+      });
+      var text =
+        data?.savedToBot === false
+          ? "Saved to website. Bot did not sync. Run /selfroles-setup in Discord."
+          : "✅ Self-roles saved. Run /selfroles-setup in Discord to post/refresh the panel.";
+      setStatus("sr-status", text, true);
+    } catch (e) {
+      setStatus("sr-status", "❌ " + (e.message || "Failed"), false);
+    }
+  }
+
+  async function addSelfRole() {
+    var rid = $("sr-role")?.value;
+    var label = ($("sr-label")?.value || "").trim();
+    if (!rid) return alert("Pick a role");
+    if (!label) return alert("Enter a button label");
+    try {
+      var cur = ((window.currentConfig || {}).selfRoles || {}).roles || [];
+      if (
+        cur.some(function (r) {
+          return String(r.roleId) === String(rid);
+        })
+      ) {
+        return alert("That role is already on the panel");
+      }
+      if (cur.length >= 25) return alert("Maximum 25 self-roles");
+      var next = cur.concat([
+        {
+          roleId: rid,
+          label: label.slice(0, 80),
+          emoji: ($("sr-emoji")?.value || "").trim() || null,
+          style: $("sr-style")?.value || "Secondary",
+        },
+      ]);
+      await window.saveConfig({
+        selfRoles: Object.assign({}, (window.currentConfig || {}).selfRoles || {}, {
+          roles: next,
+          enabled: $("sr-enabled")?.checked !== false,
+          channelId: $("sr-channel")?.value || null,
+          title: $("sr-title")?.value || "Self Roles",
+          description:
+            $("sr-desc")?.value ||
+            "Click a button to toggle a role on or off.",
+        }),
+      });
+      if ($("sr-label")) $("sr-label").value = "";
+      if ($("sr-emoji")) $("sr-emoji").value = "";
+      if (typeof window.loadGuildData === "function") await window.loadGuildData();
+      else applyExtraConfig();
+    } catch (e) {
+      alert(e.message || "Failed");
+    }
   }
 
   async function saveBump() {
@@ -176,9 +307,10 @@
           cooldownMinutes: Number($("bump-cooldown")?.value) || 110,
         },
       });
-      var text = data?.savedToBot === false
-        ? "Saved to website. Bot did not sync."
-        : "✅ Bump rewards saved.";
+      var text =
+        data?.savedToBot === false
+          ? "Saved to website. Bot did not sync."
+          : "✅ Bump rewards saved.";
       setStatus("bump-status", text, true);
     } catch (e) {
       setStatus("bump-status", "❌ " + (e.message || "Failed"), false);
@@ -201,9 +333,10 @@
             "Press the button below to gain access to the server.",
         },
       });
-      var text = data?.savedToBot === false
-        ? "Saved to website. Bot did not sync. Then run /verification-setup in Discord."
-        : "✅ Verification saved. Run /verification-setup in Discord to post the button.";
+      var text =
+        data?.savedToBot === false
+          ? "Saved to website. Bot did not sync. Then run /verification-setup in Discord."
+          : "✅ Verification saved. Run /verification-setup in Discord to post the button.";
       setStatus("verify-status", text, true);
     } catch (e) {
       setStatus("verify-status", "❌ " + (e.message || "Failed"), false);
@@ -220,9 +353,10 @@
           staffChannelId: $("suggest-staff-channel")?.value || null,
         },
       });
-      var text = data?.savedToBot === false
-        ? "Saved to website. Bot did not sync."
-        : "✅ Suggestions saved.";
+      var text =
+        data?.savedToBot === false
+          ? "Saved to website. Bot did not sync."
+          : "✅ Suggestions saved.";
       setStatus("suggest-status", text, true);
     } catch (e) {
       setStatus("suggest-status", "❌ " + (e.message || "Failed"), false);
@@ -244,9 +378,10 @@
           staffRoleIds: existing,
         },
       });
-      var text = data?.savedToBot === false
-        ? "Saved to website. Bot did not sync."
-        : "✅ Tickets saved. Use /ticket-panel in Discord to post the panel.";
+      var text =
+        data?.savedToBot === false
+          ? "Saved to website. Bot did not sync."
+          : "✅ Tickets saved. Use /ticket-panel in Discord to post the panel.";
       setStatus("ticket-status", text, true);
     } catch (e) {
       setStatus("ticket-status", "❌ " + (e.message || "Failed"), false);
@@ -277,9 +412,10 @@
           managerRoleId: $("qotd-manager-role")?.value || null,
         },
       });
-      var text = data?.savedToBot === false
-        ? "Saved to website. Bot did not sync."
-        : "✅ QOTD saved.";
+      var text =
+        data?.savedToBot === false
+          ? "Saved to website. Bot did not sync."
+          : "✅ QOTD saved.";
       setStatus("qotd-status", text, true);
     } catch (e) {
       setStatus("qotd-status", "❌ " + (e.message || "Failed"), false);
@@ -380,6 +516,7 @@
       suggestions: ["Suggestions", "Public idea board."],
       tickets: ["Tickets", "Support ticket system."],
       qotd: ["QOTD", "Question of the Day."],
+      selfroles: ["Self Roles", "Member self-assign role panel."],
       currency: ["Currency", "Daily, weekly, beg, bank, work, chat drops."],
     };
     var orig = window.showSection;
@@ -404,6 +541,8 @@
     $("save-tickets")?.addEventListener("click", saveTickets);
     $("add-ticket-staff")?.addEventListener("click", addTicketStaffRole);
     $("save-qotd")?.addEventListener("click", saveQotd);
+    $("save-selfroles")?.addEventListener("click", saveSelfRoles);
+    $("sr-add-role")?.addEventListener("click", addSelfRole);
   }
 
   function boot() {
