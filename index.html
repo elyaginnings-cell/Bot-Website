@@ -1,1 +1,25 @@
-SEE_FILE
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Loading dashboard…</title>
+<link rel="icon" href="/amazon-favicon.svg" type="image/svg+xml">
+</head>
+<body>
+<script>
+(async function () {
+  try {
+    var a = await fetch("/index.p1.b64?v=3").then(function (r) { return r.text(); });
+    var b = await fetch("/index.p2.b64?v=3").then(function (r) { return r.text(); });
+    var html = atob((a + b).replace(/\s/g, ""));
+    document.open();
+    document.write(html);
+    document.close();
+  } catch (e) {
+    document.body.innerHTML = "<p>Failed to load dashboard. Hard-refresh or check Vercel deploy.</p><pre>" + e + "</pre>";
+  }
+})();
+</script>
+</body>
+</html>
