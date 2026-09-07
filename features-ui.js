@@ -22,7 +22,8 @@
       { tab: "verification", icon: "✅", label: "Verify", title: "Verification" },
       { tab: "suggestions", icon: "💡", label: "Ideas", title: "Suggestions" },
       { tab: "tickets", icon: "🎫", label: "Tickets", title: "Tickets" },
-      { tab: "qotd", icon: "❓", label: "QOTD", title: "QOTD" }
+      { tab: "qotd", icon: "❓", label: "QOTD", title: "QOTD" },
+      { tab: "selfroles", icon: "🎭", label: "Roles", title: "Self Roles" }
     ];
 
     tabs.forEach(function (t) {
@@ -125,7 +126,26 @@
         '<div class="input-group"><label>QOTD channel</label><select id="qotd-channel"><option value="">Select a channel...</option></select></div>' +
         '<div class="input-group"><label>Manager role</label><select id="qotd-manager-role"><option value="">None</option></select></div>' +
         '<button class="button" id="save-qotd" type="button">Save QOTD Settings</button>' +
-        '<p class="form-hint" id="qotd-status"></p></div></section>';
+        '<p class="form-hint" id="qotd-status"></p></div></section>' +
+
+        '<section id="selfroles" class="page-section"><div class="card form-card wide">' +
+        '<span class="eyebrow">SELF ROLES</span><h2>Self-assign role panel</h2>' +
+        '<p class="form-hint">Configure roles here, then run <code>/selfroles-setup</code> in Discord to post the button panel. Members click buttons to toggle roles.</p>' +
+        '<label class="toggle"><input type="checkbox" id="sr-enabled" checked> <span>Enabled</span></label>' +
+        '<div class="input-group"><label>Panel channel</label><select id="sr-channel"><option value="">Select a channel...</option></select></div>' +
+        '<div class="input-group"><label>Panel title</label><input id="sr-title" type="text" value="Self Roles" maxlength="256"></div>' +
+        '<div class="input-group"><label>Panel description</label><input id="sr-desc" type="text" value="Click a button to toggle a role on or off." maxlength="2000"></div>' +
+        '<h3 class="subhead">Add a role</h3><div class="level-role-form">' +
+        '<div class="input-group"><label>Role</label><select id="sr-role"><option value="">Select a role...</option></select></div>' +
+        '<div class="input-group"><label>Button label</label><input id="sr-label" type="text" placeholder="e.g. Announcements" maxlength="80"></div>' +
+        '<div class="input-group"><label>Emoji (optional)</label><input id="sr-emoji" type="text" placeholder="🔔" maxlength="32"></div>' +
+        '<div class="input-group"><label>Button style</label><select id="sr-style">' +
+        '<option value="Secondary">Grey</option><option value="Primary">Blurple</option>' +
+        '<option value="Success">Green</option><option value="Danger">Red</option></select></div>' +
+        '<button class="button" id="sr-add-role" type="button">Add role</button></div>' +
+        '<div id="sr-roles-list" class="level-roles-list"></div>' +
+        '<button class="button" id="save-selfroles" type="button">Save Self Roles</button>' +
+        '<p class="form-hint" id="sr-status"></p></div></section>';
 
       var wrap = document.createElement("div");
       wrap.innerHTML = html;
