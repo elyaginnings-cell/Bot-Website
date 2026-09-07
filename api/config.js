@@ -71,7 +71,6 @@ export default async function handler(req, res) {
       }
 
       if (stored) {
-        // If bot has MORE shop items (e.g. added in Discord somehow), merge up
         if (bot.ok && bot.config) {
           const merged = preferWebsiteShop(stored, bot.config);
           if (JSON.stringify(merged.shop) !== JSON.stringify(stored.shop)) {
@@ -117,10 +116,21 @@ export default async function handler(req, res) {
           ? JSON.parse(req.body || "{}")
           : req.body || {};
 
-      // Website Postgres is the source of truth for shop items.
       let mirrored = null;
       try {
         mirrored = await mergeGuildConfig(guildId, body);
+        // Persist systems that older mergeGuildConfig may not yet map (analytics, etc.)
+        const extraKeys = ["analytics", "qotd", "suggestions", "tickets", "verification", "bump"];
+        let needsResave = false;
+        for (const k of extraKeys) {
+          if (body[k] && typeof body[k] === "object") {
+            mirrored[k] = { ...(mirrored[k] || {}), ...body[k] };
+            needsResave = true;
+          }
+        }
+        if (needsResave) {
+          await saveGuildConfig(guildId, mirrored);
+        }
       } catch (pgErr) {
         console.error("Website Postgres config save failed:", pgErr.message);
         return res.status(500).json({
@@ -130,8 +140,6 @@ export default async function handler(req, res) {
         });
       }
 
-      // Push the *full merged config* to the bot so it gets complete shop.items,
-      // not just the tiny addShopItem patch (which old bot handlers may mishandle).
       const pushBody = {
         ...body,
         shop: mirrored?.shop,
@@ -148,7 +156,6 @@ export default async function handler(req, res) {
         botOk = pushed.ok;
         botData = pushed.data || {};
 
-        // NEVER let a thinner bot response wipe website shop items.
         if (pushed.ok && botData.config) {
           const safe = preferWebsiteShop(mirrored, botData.config);
           try {
