@@ -1,11 +1,10 @@
 /**
- * Stable server-view extras (v3)
- * settings menu + @mentions — does not break sending
+ * Lightweight server-view helpers — channel/role menu + @mentions.
+ * Safe: does not touch message send path.
  */
 (function () {
-  "use strict";
-  if (window.__svStableV3) return;
-  window.__svStableV3 = true;
+  if (window.__svStableV4) return;
+  window.__svStableV4 = true;
 
   function guildId() {
     if (window.selectedServer && window.selectedServer.id) return String(window.selectedServer.id);
@@ -21,18 +20,16 @@
       .replace(/"/g, "&quot;");
   }
 
-  async function postManage(url, body) {
+  async function postManage(path, body) {
     var gid = guildId();
     if (!gid) throw new Error("No server selected");
-    var res = await fetch(url + "?guildId=" + encodeURIComponent(gid), {
+    var res = await fetch(path + "?guildId=" + encodeURIComponent(gid), {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json", Accept: "application/json" },
       body: JSON.stringify(Object.assign({ guildId: gid }, body)),
     });
-    var data = await res.json().catch(function () {
-      return {};
-    });
+    var data = await res.json().catch(function () { return {}; });
     if (!res.ok) throw new Error(data.error || "HTTP " + res.status);
     return data;
   }
@@ -40,7 +37,6 @@
   function injectMenu() {
     var nameEl = document.getElementById("sv-server-name");
     if (!nameEl || document.getElementById("sv-server-menu-btn")) return;
-
     var parent = nameEl.parentNode;
     if (!parent) return;
 
@@ -52,44 +48,33 @@
     var btn = document.createElement("button");
     btn.id = "sv-server-menu-btn";
     btn.type = "button";
-    btn.textContent = "▾";
+    btn.textContent = "\u25BE";
     btn.title = "Server settings";
-    btn.style.cssText =
-      "background:transparent;border:0;color:#b5bac1;cursor:pointer;padding:4px 6px;border-radius:4px";
+    btn.style.cssText = "background:transparent;border:0;color:#b5bac1;cursor:pointer;padding:4px 6px;border-radius:4px";
     wrap.appendChild(btn);
 
     var menu = document.createElement("div");
     menu.id = "sv-server-menu";
     menu.hidden = true;
-    menu.style.cssText =
-      "position:absolute;top:100%;left:0;min-width:220px;background:#111214;border:1px solid #1e1f22;border-radius:8px;padding:6px;z-index:100;box-shadow:0 8px 24px rgba(0,0,0,.45)";
+    menu.style.cssText = "position:absolute;top:100%;left:0;min-width:220px;background:#111214;border:1px solid #1e1f22;border-radius:8px;padding:6px;z-index:100;box-shadow:0 8px 24px rgba(0,0,0,.45)";
+    function item(act, label) {
+      return '<button type="button" data-act="' + act + '" style="display:block;width:100%;text-align:left;background:transparent;border:0;color:#dbdee1;padding:8px 10px;border-radius:4px;cursor:pointer;font-size:13px">' + label + "</button>";
+    }
     menu.innerHTML =
       item("create-channel", "Create channel") +
       item("create-category", "Create category") +
       item("delete-channel", "Delete selected channel") +
       '<hr style="border:0;border-top:1px solid #1e1f22;margin:4px 0">' +
       item("create-role", "Create role") +
-      item("delete-role", "Delete role…");
+      item("delete-role", "Delete role\u2026");
     wrap.appendChild(menu);
-
-    function item(act, label) {
-      return (
-        '<button type="button" data-act="' +
-        act +
-        '" style="display:block;width:100%;text-align:left;background:transparent;border:0;color:#dbdee1;padding:8px 10px;border-radius:4px;cursor:pointer;font-size:13px">' +
-        label +
-        "</button>"
-      );
-    }
 
     btn.addEventListener("click", function (e) {
       e.preventDefault();
       e.stopPropagation();
       menu.hidden = !menu.hidden;
     });
-    document.addEventListener("click", function () {
-      menu.hidden = true;
-    });
+    document.addEventListener("click", function () { menu.hidden = true; });
     menu.addEventListener("click", function (e) {
       e.stopPropagation();
       var t = e.target.closest("[data-act]");
@@ -133,8 +118,8 @@
         await postManage("/api/role-manage", { action: "delete", roleId: rid.trim() });
         alert("Role deleted");
       }
-    } catch (e) {
-      alert(e.message || "Failed");
+    } catch (err) {
+      alert(err.message || "Failed");
     }
   }
 
@@ -142,8 +127,7 @@
   function ensureBox() {
     if (box) return box;
     box = document.createElement("div");
-    box.style.cssText =
-      "position:fixed;z-index:99999;background:#2b2d31;border:1px solid #1e1f22;border-radius:8px;max-height:220px;overflow:auto;padding:4px;display:none";
+    box.style.cssText = "position:fixed;z-index:99999;background:#2b2d31;border:1px solid #1e1f22;border-radius:8px;max-height:220px;overflow:auto;padding:4px;display:none";
     document.body.appendChild(box);
     return box;
   }
@@ -162,30 +146,19 @@
     }
     var q = (m[1] || "").toLowerCase();
     var members = Array.isArray(window.membersCache) ? window.membersCache : [];
-    var hits = members
-      .filter(function (mem) {
-        if (!mem || !mem.id) return false;
-        var name = String(mem.displayName || mem.username || "");
-        return !q || name.toLowerCase().indexOf(q) >= 0;
-      })
-      .slice(0, 8);
+    var hits = members.filter(function (mem) {
+      if (!mem || !mem.id) return false;
+      var name = String(mem.displayName || mem.username || "");
+      return !q || name.toLowerCase().indexOf(q) >= 0;
+    }).slice(0, 8);
     if (!hits.length) {
       b.style.display = "none";
       return;
     }
-    b.innerHTML = hits
-      .map(function (mem) {
-        var name = mem.displayName || mem.username || mem.id;
-        return (
-          '<button type="button" data-id="' +
-          esc(mem.id) +
-          '" style="display:block;width:100%;text-align:left;background:transparent;border:0;color:#dbdee1;padding:8px;cursor:pointer">@' +
-          esc(name) +
-          (mem.bot ? " (bot)" : "") +
-          "</button>"
-        );
-      })
-      .join("");
+    b.innerHTML = hits.map(function (mem) {
+      var name = mem.displayName || mem.username || mem.id;
+      return '<button type="button" data-id="' + esc(mem.id) + '" style="display:block;width:100%;text-align:left;background:transparent;border:0;color:#dbdee1;padding:8px;cursor:pointer">@' + esc(name) + (mem.bot ? " (bot)" : "") + "</button>";
+    }).join("");
     var rect = input.getBoundingClientRect();
     b.style.left = Math.max(8, rect.left) + "px";
     b.style.bottom = window.innerHeight - rect.top + 6 + "px";
@@ -210,5 +183,5 @@
   document.addEventListener("keyup", onKeyup, true);
   setInterval(tick, 2000);
   tick();
-  console.log("[sv-stable] v3 ready");
+  console.log("[sv-stable] v4 ready");
 })();

@@ -1,16 +1,7 @@
 {
-  "outputDirectory": ".",
   "rewrites": [
     { "source": "/api/signup", "destination": "/api/auth-login?action=signup" },
     { "source": "/api/logout", "destination": "/api/login?action=logout" },
     { "source": "/api/roles", "destination": "/api/channels?resource=roles" }
-  ],
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
-      ]
-    }
   ]
 }
