@@ -1,11 +1,11 @@
 /**
  * Server View management — create/delete channels & categories, @mentions
- * Injects controls without breaking existing channel click → message load.
+ * Does NOT replace native channel buttons (those set activeChannelId for send).
  */
 (function () {
   "use strict";
-  if (window.__svManageV2) return;
-  window.__svManageV2 = true;
+  if (window.__svManageV3) return;
+  window.__svManageV3 = true;
 
   function esc(v) {
     return String(v == null ? "" : v)
@@ -66,289 +66,150 @@
     return null;
   }
 
-  /** Re-run server-view's own renderer by toggling open if needed */
-  function rererenderViaServerView() {
-    try {
-      // Force server-view to rebuild from channelsCache
-      if (typeof window.openServerView === "function") {
-        // openServerView already calls renderChannels internally when invoked
-        // We call a lightweight custom event some builds listen for
-        window.dispatchEvent(new Event("sv-channels-updated"));
-      }
-    } catch (_) {}
-
-    // Always inject manage UI after whatever render happened
-    setTimeout(injectManageUi, 50);
-  }
-
-  async function refreshAndRender() {
+  /** Re-open server view so native renderChannels + selectChannel stay intact */
+  async function refreshNativeChannelList() {
     try {
       await pullChannelsFromDiscord();
     } catch (e) {
-      console.warn("[sv-manage] channel refresh:", e.message || e);
+      console.warn("[sv-manage] refresh:", e.message || e);
     }
-    // Rebuild channel list using DOM from existing buttons when possible
-    rebuildListKeepingHandlers();
+    if (typeof window.openServerView === "function") {
+      try {
+        window.openServerView();
+      } catch (_) {}
+    }
+    setTimeout(injectManageBar, 100);
   }
 
-  function rebuildListKeepingHandlers() {
+  function injectManageBar() {
     var list = document.getElementById("sv-channel-list");
     if (!list) return;
 
-    var ch = channels();
-    var categories = ch.filter(function (c) {
-      return Number(c.type) === 4;
-    });
-    var texts = ch.filter(function (c) {
-      return Number(c.type) === 0 || Number(c.type) === 5 || Number(c.type) === 2;
-    });
-    var byParent = {};
-    texts.forEach(function (c) {
-      var k = c.parentId || "_none";
-      if (!byParent[k]) byParent[k] = [];
-      byParent[k].push(c);
-    });
+    // Ensure native channel buttons still exist — if a previous broken
+    // version wiped them into our custom rows only, rebuild via openServerView
+    var nativeBtns = list.querySelectorAll("button.sv-ch[data-channel-id]");
+    if (!nativeBtns.length && channels().length) {
+      // leave list; openServerView should have filled it
+    }
 
-    var html =
-      '<div class="sv-manage-bar">' +
+    if (document.getElementById("sv-manage-bar")) {
+      wireManageButtons();
+      wireDeleteButtons();
+      return;
+    }
+
+    var bar = document.createElement("div");
+    bar.id = "sv-manage-bar";
+    bar.className = "sv-manage-bar";
+    bar.innerHTML =
       '<button type="button" class="sv-manage-btn" id="sv-create-text">+ Channel</button>' +
       '<button type="button" class="sv-manage-btn" id="sv-create-cat">+ Category</button>' +
-      '<button type="button" class="sv-manage-btn" id="sv-refresh-ch" title="Refresh channel list">↻</button>' +
-      "</div>";
+      '<button type="button" class="sv-manage-btn" id="sv-refresh-ch" title="Refresh">↻</button>';
 
-    categories.forEach(function (cat) {
-      html +=
-        '<div class="sv-cat-row">' +
-        '<div class="sv-cat">' +
-        esc((cat.name || "CATEGORY").toUpperCase()) +
-        "</div>" +
-        '<button type="button" class="sv-ch-action" data-del-ch="' +
-        esc(cat.id) +
-        '" data-del-name="' +
-        esc(cat.name || "category") +
-        '" title="Delete category">×</button></div>';
-      (byParent[cat.id] || []).forEach(function (c) {
-        html += rowChannel(c);
+    list.insertBefore(bar, list.firstChild);
+    wireManageButtons();
+    wireDeleteButtons();
+  }
+
+  function wireManageButtons() {
+    var ct = document.getElementById("sv-create-text");
+    var cc = document.getElementById("sv-create-cat");
+    var rf = document.getElementById("sv-refresh-ch");
+    if (ct && !ct.__bound) {
+      ct.__bound = 1;
+      ct.addEventListener("click", onCreateText);
+    }
+    if (cc && !cc.__bound) {
+      cc.__bound = 1;
+      cc.addEventListener("click", onCreateCat);
+    }
+    if (rf && !rf.__bound) {
+      rf.__bound = 1;
+      rf.addEventListener("click", function () {
+        refreshNativeChannelList().catch(function (e) {
+          alert(e.message || "Refresh failed");
+        });
       });
-    });
-    (byParent["_none"] || []).forEach(function (c) {
-      html += rowChannel(c);
-    });
+    }
+  }
 
-    list.innerHTML = html;
+  /** Add × delete next to each native channel button without removing listeners */
+  function wireDeleteButtons() {
+    var list = document.getElementById("sv-channel-list");
+    if (!list) return;
 
-    // Wire channel open → use same path as original server-view
     list.querySelectorAll("button.sv-ch[data-channel-id]").forEach(function (btn) {
-      btn.addEventListener("click", function () {
-        selectChannelNative(btn.getAttribute("data-channel-id"));
-      });
-    });
+      if (btn.parentElement && btn.parentElement.classList.contains("sv-ch-row")) return;
+      if (btn.__svDelWrapped) return;
+      btn.__svDelWrapped = 1;
 
-    list.querySelectorAll("[data-del-ch]").forEach(function (btn) {
-      btn.addEventListener("click", function (e) {
+      var id = btn.getAttribute("data-channel-id");
+      var labelEl = btn.querySelector(".sv-ch-label");
+      var name = labelEl ? labelEl.textContent : id;
+
+      var wrap = document.createElement("div");
+      wrap.className = "sv-ch-row";
+      btn.parentNode.insertBefore(wrap, btn);
+      wrap.appendChild(btn);
+
+      var del = document.createElement("button");
+      del.type = "button";
+      del.className = "sv-ch-action";
+      del.title = "Delete channel";
+      del.textContent = "×";
+      del.addEventListener("click", function (e) {
         e.preventDefault();
         e.stopPropagation();
-        var id = btn.getAttribute("data-del-ch");
-        var name = btn.getAttribute("data-del-name") || "this";
-        if (!confirm("Delete \"" + name + "\"? This cannot be undone.")) return;
+        if (!confirm('Delete "' + name + '"? This cannot be undone.')) return;
         manage({ action: "delete", channelId: id })
           .then(function () {
-            return refreshAndRender();
+            return refreshNativeChannelList();
           })
           .catch(function (err) {
             alert(err.message || "Delete failed");
           });
       });
+      wrap.appendChild(del);
     });
 
-    var ct = document.getElementById("sv-create-text");
-    var cc = document.getElementById("sv-create-cat");
-    var rf = document.getElementById("sv-refresh-ch");
-    if (ct) ct.onclick = onCreateText;
-    if (cc) cc.onclick = onCreateCat;
-    if (rf)
-      rf.onclick = function () {
-        refreshAndRender().catch(function (e) {
-          alert(e.message || "Refresh failed");
-        });
-      };
-  }
-
-  function rowChannel(c) {
-    var icon = Number(c.type) === 2 ? "🔊" : Number(c.type) === 5 ? "📢" : "#";
-    return (
-      '<div class="sv-ch-row">' +
-      '<button type="button" class="sv-ch" data-channel-id="' +
-      esc(c.id) +
-      '"><span class="sv-hash">' +
-      icon +
-      '</span><span class="sv-ch-label">' +
-      esc(c.name || "channel") +
-      "</span></button>" +
-      '<button type="button" class="sv-ch-action" data-del-ch="' +
-      esc(c.id) +
-      '" data-del-name="' +
-      esc(c.name || "channel") +
-      '" title="Delete">×</button></div>'
-    );
-  }
-
-  /**
-   * Select a channel in a way that works with server-view.js internals:
-   * - set title/placeholder
-   * - trigger message load via the refresh control which uses activeChannelId
-   * - also monkey-patch active channel onto a global the messages API uses
-   */
-  function selectChannelNative(channelId) {
-    if (!channelId) return;
-    window.__svActiveChannelId = channelId;
-
-    var ch = channels().find(function (c) {
-      return String(c.id) === String(channelId);
-    });
-    var title = document.getElementById("sv-channel-title");
-    var icon = document.getElementById("sv-channel-icon");
-    if (title) title.textContent = ch ? ch.name || "channel" : "channel";
-    if (icon) icon.textContent = ch && Number(ch.type) === 5 ? "📢" : "#";
-
-    var list = document.getElementById("sv-channel-list");
-    if (list) {
-      list.querySelectorAll("[data-channel-id]").forEach(function (el) {
-        el.classList.toggle("active", el.getAttribute("data-channel-id") === channelId);
-      });
-    }
-
-    var input = document.getElementById("sv-input");
-    var send = document.getElementById("sv-send");
-    if (input) {
-      input.disabled = false;
-      input.placeholder = "Message #" + (ch ? ch.name || "channel" : "channel");
-      input.focus();
-    }
-    if (send) send.disabled = false;
-
-    // Patch into server-view's private activeChannelId by temporarily
-    // rewriting fetch URLs for messages to the selected channel.
-    installMessageChannelPatch(channelId);
-
-    // Force message reload
-    loadMessagesFor(channelId, true);
-
-    // Close mobile drawer
-    var view = document.getElementById("server-view");
-    if (view) view.classList.remove("drawer-open");
-  }
-
-  function installMessageChannelPatch(channelId) {
-    if (window.__svFetchPatched) return;
-    window.__svFetchPatched = true;
-    var orig = window.fetch;
-    window.fetch = function (input, init) {
-      try {
-        var url = typeof input === "string" ? input : input && input.url;
-        if (url && url.indexOf("/api/messages") === 0 && window.__svActiveChannelId) {
-          var u = new URL(url, window.location.origin);
-          u.searchParams.set("channelId", window.__svActiveChannelId);
-          if (typeof input === "string") input = u.pathname + u.search;
-          else if (input && input.url) input = new Request(u.toString(), input);
-        }
-        // Also patch POST body channelId for sends
-        if (
-          url &&
-          url.indexOf("/api/messages") === 0 &&
-          init &&
-          init.method &&
-          String(init.method).toUpperCase() === "POST" &&
-          window.__svActiveChannelId &&
-          init.body
-        ) {
-          try {
-            var body = typeof init.body === "string" ? JSON.parse(init.body) : init.body;
-            if (body && typeof body === "object") {
-              body.channelId = window.__svActiveChannelId;
-              init = Object.assign({}, init, { body: JSON.stringify(body) });
-            }
-          } catch (_) {}
-        }
-      } catch (_) {}
-      return orig.call(this, input, init);
-    };
-  }
-
-  async function loadMessagesFor(channelId, force) {
-    var server = window.selectedServer;
-    var gid = guildId();
-    if (!gid || !channelId) return;
-    var container = document.getElementById("sv-messages");
-    if (container && force) container.innerHTML = '<p class="sv-empty">Loading…</p>';
-    try {
-      var url =
-        "/api/messages?guildId=" +
-        encodeURIComponent(gid) +
-        "&channelId=" +
-        encodeURIComponent(channelId) +
-        "&_=" +
-        Date.now();
-      var res = await fetch(url, {
-        credentials: "include",
-        cache: "no-store",
-        headers: { Accept: "application/json" },
-      });
-      var data = await res.json().catch(function () {
-        return {};
-      });
-      if (!res.ok) throw new Error(data.error || "HTTP " + res.status);
-      var messages = Array.isArray(data)
-        ? data
-        : Array.isArray(data.messages)
-          ? data.messages
-          : [];
-      // Prefer native renderer if messages already on screen from server-view
-      // Otherwise paint a simple list so chat still works
-      if (typeof window.__svRenderMessages === "function") {
-        window.__svRenderMessages(messages, true);
-      } else {
-        paintSimpleMessages(messages);
-      }
-    } catch (e) {
-      if (container)
-        container.innerHTML =
-          '<p class="sv-empty sv-error">' + esc(e.message || "Failed to load messages") + "</p>";
-    }
-  }
-
-  function paintSimpleMessages(messages) {
-    var container = document.getElementById("sv-messages");
-    if (!container) return;
-    if (!messages.length) {
-      container.innerHTML = '<p class="sv-empty">No messages yet.</p>';
-      return;
-    }
-    var html = "";
-    messages.forEach(function (m) {
-      var a = m.author || {};
-      var name = a.displayName || a.globalName || a.username || "User";
-      var content = esc(m.content || "").replace(/\n/g, "<br>");
-      // Show mentions as @name when we can
-      content = content.replace(/&lt;@!?(\d+)&gt;/g, function (_, id) {
-        var mem = members().find(function (x) {
-          return String(x.id) === String(id);
-        });
+    // Category headers: add delete on .sv-cat elements
+    list.querySelectorAll(".sv-cat").forEach(function (catEl) {
+      if (catEl.__svDelWrapped) return;
+      catEl.__svDelWrapped = 1;
+      var catName = (catEl.textContent || "").trim();
+      var match = channels().find(function (c) {
         return (
-          '<span class="sv-mention sv-mention-user">@' +
-          esc(mem ? mem.displayName || mem.username : id) +
-          "</span>"
+          Number(c.type) === 4 &&
+          String(c.name || "")
+            .toUpperCase() === catName.toUpperCase()
         );
       });
-      html +=
-        '<article class="sv-msg"><div class="sv-msg-body"><div class="sv-msg-meta"><span class="sv-author">' +
-        esc(name) +
-        '</span></div><div class="sv-msg-content">' +
-        content +
-        "</div></div></article>";
+      if (!match) return;
+
+      var row = document.createElement("div");
+      row.className = "sv-cat-row";
+      catEl.parentNode.insertBefore(row, catEl);
+      row.appendChild(catEl);
+
+      var del = document.createElement("button");
+      del.type = "button";
+      del.className = "sv-ch-action";
+      del.title = "Delete category";
+      del.textContent = "×";
+      del.addEventListener("click", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!confirm('Delete category "' + catName + '"?')) return;
+        manage({ action: "delete", channelId: match.id })
+          .then(function () {
+            return refreshNativeChannelList();
+          })
+          .catch(function (err) {
+            alert(err.message || "Delete failed");
+          });
+      });
+      row.appendChild(del);
     });
-    container.innerHTML = html;
-    container.scrollTop = container.scrollHeight;
   }
 
   function onCreateText() {
@@ -374,7 +235,7 @@
     }
     manage({ action: "create", kind: "text", name: name, parentId: parentId })
       .then(function () {
-        return refreshAndRender();
+        return refreshNativeChannelList();
       })
       .catch(function (err) {
         alert(err.message || "Create failed");
@@ -386,14 +247,14 @@
     if (!name) return;
     manage({ action: "create", kind: "category", name: name })
       .then(function () {
-        return refreshAndRender();
+        return refreshNativeChannelList();
       })
       .catch(function (err) {
         alert(err.message || "Create failed");
       });
   }
 
-  /* @mention autocomplete */
+  /* @mention autocomplete — does not touch send path */
   var mentionBox = null;
   function ensureMentionBox() {
     if (mentionBox) return mentionBox;
@@ -435,8 +296,6 @@
         return (
           '<button type="button" class="sv-mention-item" data-mention-id="' +
           esc(m.id) +
-          '" data-mention-name="' +
-          esc(name) +
           '">@' +
           esc(name) +
           (m.username && m.username !== name
@@ -453,11 +312,7 @@
     box.hidden = false;
     box.querySelectorAll("[data-mention-id]").forEach(function (btn) {
       btn.addEventListener("click", function () {
-        insertMention(
-          input,
-          btn.getAttribute("data-mention-id"),
-          btn.getAttribute("data-mention-name")
-        );
+        insertMention(input, btn.getAttribute("data-mention-id"));
         hideMentions();
       });
     });
@@ -515,15 +370,6 @@
     document.head.appendChild(s);
   }
 
-  function injectManageUi() {
-    var list = document.getElementById("sv-channel-list");
-    if (!list) return;
-    if (!document.getElementById("sv-create-text")) {
-      rebuildListKeepingHandlers();
-    }
-  }
-
-  // Wrap openServerView so we refresh channels when entering server view
   function patchOpen() {
     if (window.__svManageOpenPatched) return;
     if (typeof window.openServerView !== "function") return;
@@ -531,32 +377,14 @@
     var orig = window.openServerView;
     window.openServerView = function () {
       orig.apply(this, arguments);
-      setTimeout(function () {
-        refreshAndRender();
-      }, 300);
+      setTimeout(injectManageBar, 150);
+      setTimeout(injectManageBar, 500);
     };
-  }
-
-  // Patch composer send to always use __svActiveChannelId when set
-  function patchComposer() {
-    var form = document.getElementById("sv-composer");
-    if (!form || form.__svManageSend) return;
-    form.__svManageSend = true;
-    form.addEventListener(
-      "submit",
-      function (e) {
-        if (!window.__svActiveChannelId) return; // let native handler run
-        // Native handler still runs; fetch patch rewrites channelId
-        installMessageChannelPatch(window.__svActiveChannelId);
-      },
-      true
-    );
   }
 
   function boot() {
     injectStyles();
     patchOpen();
-    patchComposer();
     document.addEventListener("keyup", onInputKeyup, true);
     document.addEventListener("click", function (e) {
       if (!e.target.closest("#sv-mention-box") && !e.target.closest("#sv-input"))
@@ -564,12 +392,11 @@
     });
     setInterval(function () {
       patchOpen();
-      patchComposer();
-      injectManageUi();
-    }, 1500);
+      injectManageBar();
+    }, 2000);
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
   else boot();
-  console.log("[sv-manage] v2 ready — create/delete channels + @mentions");
+  console.log("[sv-manage] v3 — manage UI only; native send/select preserved");
 })();
