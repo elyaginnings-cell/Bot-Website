@@ -9,26 +9,49 @@
 <body>
 <script>
 (async function () {
+  var loaded = [];
+  var failed = [];
   try {
+    // Shell HTML (layout). Feature scripts always load from THIS deployment afterward.
     var url = "https://raw.githubusercontent.com/elyaginnings-cell/Bot-Website/147232bd5d52eb2ba98a5e5277445508e2c8e705/index.html";
     var res = await fetch(url + "?t=" + Date.now());
-    if (!res.ok) throw new Error("HTTP " + res.status);
+    if (!res.ok) throw new Error("Shell HTTP " + res.status);
     var html = await res.text();
     if (html.length < 5000 || html.indexOf("server-view") === -1) {
-      throw new Error("Unexpected content length " + html.length);
+      throw new Error("Unexpected shell length " + html.length);
     }
     document.open();
     document.write(html);
     document.close();
+
     function loadScript(src) {
-      return new Promise(function (resolve, reject) {
+      return new Promise(function (resolve) {
         var s = document.createElement("script");
         s.src = src;
-        s.onload = resolve;
-        s.onerror = reject;
+        s.onload = function () {
+          loaded.push(src);
+          resolve(true);
+        };
+        s.onerror = function () {
+          failed.push(src);
+          console.error("[boot] failed to load", src);
+          resolve(false);
+        };
         document.body.appendChild(s);
       });
     }
+
+    function loadCss(href) {
+      var l = document.createElement("link");
+      l.rel = "stylesheet";
+      l.href = href;
+      document.head.appendChild(l);
+    }
+
+    // Cache-bust pack assets from the live deployment
+    var bust = String(Date.now());
+    loadCss("/sv-discord-pack.css?v=" + bust);
+
     await loadScript("/features-ui.js?v=7");
     await loadScript("/features-config.js?v=18");
     await loadScript("/features-ui-patch.js?v=12");
@@ -37,7 +60,25 @@
     await loadScript("/sr-panels.js?v=2");
     await loadScript("/sv-members-load.js?v=3");
     await loadScript("/sv-manage.js?v=4");
-    await loadScript("/sv-discord-pack.js?v=1");
+    var packOk = await loadScript("/sv-discord-pack.js?v=" + bust);
+
+    // Visible boot marker so we know new code reached the browser
+    var marker = document.createElement("div");
+    marker.id = "sv-boot-marker";
+    marker.textContent = packOk
+      ? "SV pack loaded — open Server View"
+      : "SV pack FAILED to load — check Vercel deploy";
+    marker.style.cssText =
+      "position:fixed;bottom:8px;right:8px;z-index:999999;background:#111;color:#fff;padding:6px 10px;border-radius:8px;font:12px system-ui;opacity:.85;max-width:240px";
+    document.body.appendChild(marker);
+    setTimeout(function () {
+      if (marker && packOk) marker.remove();
+    }, 8000);
+
+    if (failed.length) {
+      console.warn("[boot] some scripts failed", failed);
+    }
+    console.log("[boot] loaded", loaded.length, "scripts; packOk=", packOk);
   } catch (e) {
     document.body.innerHTML =
       "<div style=\"font-family:system-ui;padding:2rem;max-width:32rem\">" +

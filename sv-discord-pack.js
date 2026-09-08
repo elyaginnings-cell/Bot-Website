@@ -1,23 +1,15 @@
 /**
- * Discord-like server view enhancements:
- * settings menu, role-colored names, member groups, mentions, replies polish, unread, emoji bar
+ * Discord-like server view pack v2 — aggressive inject (does not rely only on openServerView patch)
  */
 (function () {
   "use strict";
-  if (window.__svDiscordPackV1) return;
-  window.__svDiscordPackV1 = true;
+  if (window.__svDiscordPackV2) return;
+  window.__svDiscordPackV2 = true;
+  console.log("[sv-discord-pack] v2 booting");
 
   var guildRoles = [];
   var guildEmojis = [];
-  var lastSeenByChannel = {};
-  var unreadChannels = {};
-  var presenceMap = {}; // id -> online|idle|dnd|offline
-
-  try {
-    lastSeenByChannel = JSON.parse(localStorage.getItem("svLastSeen") || "{}") || {};
-  } catch (_) {
-    lastSeenByChannel = {};
-  }
+  var presenceMap = {};
 
   function esc(v) {
     return String(v == null ? "" : v)
@@ -62,14 +54,26 @@
     }
   }
 
-  /* ——— Server settings dropdown (next to server name) ——— */
+  function ensureCss() {
+    if (document.getElementById("sv-discord-pack-css")) return;
+    var l = document.createElement("link");
+    l.id = "sv-discord-pack-css";
+    l.rel = "stylesheet";
+    l.href = "/sv-discord-pack.css?v=2";
+    document.head.appendChild(l);
+  }
+
+  /* Server menu next to #sv-server-name */
   function injectServerMenu() {
     var nameEl = document.getElementById("sv-server-name");
-    if (!nameEl || document.getElementById("sv-server-menu-btn")) return;
+    if (!nameEl) return false;
+    if (document.getElementById("sv-server-menu-btn")) return true;
 
     var wrap = document.createElement("div");
     wrap.className = "sv-server-menu-wrap";
+    wrap.id = "sv-server-menu-wrap";
     var parent = nameEl.parentNode;
+    if (!parent) return false;
     parent.insertBefore(wrap, nameEl);
     wrap.appendChild(nameEl);
 
@@ -93,16 +97,21 @@
       "<button type=\"button\" data-act=\"create-role\">Create role</button>" +
       "<button type=\"button\" data-act=\"delete-role\">Delete role…</button>" +
       "<hr>" +
-      "<button type=\"button\" data-act=\"refresh\">Refresh channels</button>";
+      "<button type=\"button\" data-act=\"refresh\">Refresh</button>";
     wrap.appendChild(menu);
 
     btn.addEventListener("click", function (e) {
+      e.preventDefault();
       e.stopPropagation();
       menu.hidden = !menu.hidden;
     });
-    document.addEventListener("click", function () {
-      menu.hidden = true;
-    });
+    document.addEventListener(
+      "click",
+      function () {
+        menu.hidden = true;
+      },
+      true
+    );
     menu.addEventListener("click", function (e) {
       e.stopPropagation();
       var t = e.target.closest("[data-act]");
@@ -110,10 +119,22 @@
       menu.hidden = true;
       handleMenuAct(t.getAttribute("data-act"));
     });
+
+    // Badge so user can see pack is active inside server view
+    if (!document.getElementById("sv-pack-badge")) {
+      var badge = document.createElement("span");
+      badge.id = "sv-pack-badge";
+      badge.textContent = "PACK";
+      badge.style.cssText =
+        "margin-left:6px;font-size:10px;background:#5865f2;color:#fff;border-radius:4px;padding:1px 5px;vertical-align:middle";
+      wrap.appendChild(badge);
+    }
+    return true;
   }
 
   async function manageChannel(body) {
     var gid = guildId();
+    if (!gid) throw new Error("No server selected");
     var res = await fetch("/api/channel-manage?guildId=" + encodeURIComponent(gid), {
       method: "POST",
       credentials: "include",
@@ -129,6 +150,7 @@
 
   async function manageRole(body) {
     var gid = guildId();
+    if (!gid) throw new Error("No server selected");
     var res = await fetch("/api/role-manage?guildId=" + encodeURIComponent(gid), {
       method: "POST",
       credentials: "include",
@@ -157,10 +179,8 @@
         alert("Category created");
         if (window.openServerView) window.openServerView();
       } else if (act === "delete-channel") {
-        var active = window.__svActiveChannelId;
-        // try from highlighted button
         var activeBtn = document.querySelector("#sv-channel-list .sv-ch.active");
-        if (activeBtn) active = activeBtn.getAttribute("data-channel-id");
+        var active = activeBtn && activeBtn.getAttribute("data-channel-id");
         if (!active) {
           alert("Select a channel first");
           return;
@@ -177,10 +197,10 @@
         alert("Role created");
       } else if (act === "delete-role") {
         if (!guildRoles.length) await loadGuildMeta();
-        var list = guildRoles
-          .filter(function (r) {
-            return r.name !== "@everyone" && !r.managed;
-          })
+        var roles = guildRoles.filter(function (r) {
+          return r.name !== "@everyone" && !r.managed;
+        });
+        var list = roles
           .map(function (r, i) {
             return i + 1 + ". " + r.name;
           })
@@ -188,9 +208,6 @@
         var pick = prompt("Delete which role?\n" + list);
         if (!pick) return;
         var idx = parseInt(pick, 10) - 1;
-        var roles = guildRoles.filter(function (r) {
-          return r.name !== "@everyone" && !r.managed;
-        });
         if (!roles[idx]) return alert("Invalid");
         if (!confirm("Delete role " + roles[idx].name + "?")) return;
         await manageRole({ action: "delete", roleId: roles[idx].id });
@@ -204,14 +221,12 @@
     }
   }
 
-  /* ——— Role colors on message authors ——— */
   function applyRoleColors() {
     var members = window.membersCache || [];
     var byId = {};
     members.forEach(function (m) {
       if (m && m.id) byId[m.id] = m;
     });
-
     document.querySelectorAll("#sv-messages .sv-msg").forEach(function (art) {
       var authorId = art.getAttribute("data-author-id");
       if (!authorId) return;
@@ -236,96 +251,21 @@
     });
   }
 
-  /* ——— Highlight messages that mention the bot / @everyone-style ——— */
   function highlightMentions() {
-    var me = window.currentUser && window.currentUser.id;
     document.querySelectorAll("#sv-messages .sv-msg").forEach(function (art) {
       var content = art.querySelector(".sv-msg-content");
       if (!content) return;
-      var html = content.innerHTML || "";
-      var isPing = false;
-      if (me && html.indexOf(String(me)) >= 0) isPing = true;
-      if (content.querySelector(".sv-mention-user, .sv-mention-role")) isPing = true;
+      var isPing = !!content.querySelector(".sv-mention-user, .sv-mention-role");
       art.classList.toggle("mention-me", isPing);
     });
   }
 
-  /* ——— Reactions under messages ——— */
-  function paintReactions() {
-    document.querySelectorAll("#sv-messages .sv-msg").forEach(function (art) {
-      if (art.querySelector(".sv-reactions")) return;
-      var raw = art.getAttribute("data-reactions");
-      if (!raw) return;
-      try {
-        var reactions = JSON.parse(raw);
-        if (!Array.isArray(reactions) || !reactions.length) return;
-        var div = document.createElement("div");
-        div.className = "sv-reactions";
-        reactions.forEach(function (r) {
-          var span = document.createElement("span");
-          span.className = "sv-reaction";
-          if (r.emoji && r.emoji.id) {
-            span.innerHTML =
-              '<img src="https://cdn.discordapp.com/emojis/' +
-              esc(r.emoji.id) +
-              '.' +
-              (r.emoji.animated ? "gif" : "png") +
-              '?size=16" alt="">' +
-              " " +
-              esc(String(r.count || 1));
-          } else {
-            span.textContent = (r.emoji && r.emoji.name ? r.emoji.name : "?") + " " + (r.count || 1);
-          }
-          div.appendChild(span);
-        });
-        var body = art.querySelector(".sv-msg-body");
-        if (body) body.appendChild(div);
-      } catch (_) {}
-    });
-  }
-
-  /* ——— Unread channel dots ——— */
-  function markChannelRead(channelId) {
-    if (!channelId) return;
-    lastSeenByChannel[channelId] = Date.now();
-    delete unreadChannels[channelId];
-    try {
-      localStorage.setItem("svLastSeen", JSON.stringify(lastSeenByChannel));
-    } catch (_) {}
-    updateUnreadUi();
-  }
-
-  function updateUnreadUi() {
-    document.querySelectorAll("#sv-channel-list [data-channel-id]").forEach(function (btn) {
-      var id = btn.getAttribute("data-channel-id");
-      var on = !!unreadChannels[id];
-      btn.classList.toggle("unread", on);
-      var dot = btn.querySelector(".sv-unread-dot");
-      if (on && !dot) {
-        dot = document.createElement("span");
-        dot.className = "sv-unread-dot";
-        btn.appendChild(dot);
-      } else if (!on && dot) dot.remove();
-    });
-  }
-
-  function watchMessagesForUnread() {
-    // When polling loads messages for a non-active channel is hard;
-    // mark unread when message list gains new ids while channel not focused — simplified:
-    // on each successful load for active channel, mark read.
-    var activeBtn = document.querySelector("#sv-channel-list .sv-ch.active");
-    if (activeBtn) markChannelRead(activeBtn.getAttribute("data-channel-id"));
-  }
-
-  /* ——— Member list: group by hoist role + online/offline ——— */
   function enhanceMemberList() {
     var list = document.getElementById("sv-member-list");
     if (!list) return;
     var members = window.membersCache;
     if (!Array.isArray(members) || !members.length) return;
-    if (list.dataset.svPackRendered === String(members.length) + ":" + guildRoles.length) return;
 
-    // Build role map
     var roleById = {};
     guildRoles.forEach(function (r) {
       roleById[r.id] = r;
@@ -352,7 +292,6 @@
       if (st && st !== "offline" && st !== "invisible") online.push(m);
       else offline.push(m);
     });
-
     function sortMem(a, b) {
       return String(a.displayName || "").localeCompare(String(b.displayName || ""), undefined, {
         sensitivity: "base",
@@ -361,7 +300,6 @@
     online.sort(sortMem);
     offline.sort(sortMem);
 
-    // Group online by hoist role
     var groups = {};
     var groupOrder = [];
     online.forEach(function (m) {
@@ -384,50 +322,29 @@
       var g = groups[key];
       var title = g.role ? g.role.name : "Online";
       html +=
-        '<div class="sv-ml-group">' +
-        esc(title) +
-        " — " +
-        g.members.length +
-        "</div>";
+        '<div class="sv-ml-group">' + esc(title) + " — " + g.members.length + "</div>";
       g.members.forEach(function (m) {
         html += memberRow(m, statusOf(m), roleById);
       });
     });
-
     if (offline.length) {
       html += '<div class="sv-ml-group">Offline — ' + offline.length + "</div>";
       offline.forEach(function (m) {
         html += memberRow(m, "offline", roleById);
       });
     }
-
     list.innerHTML = html;
-    list.dataset.svPackRendered = String(members.length) + ":" + guildRoles.length;
   }
 
   function memberRow(m, status, roleById) {
     var name = m.displayName || m.username || "User";
-    var hex = null;
-    (m.roleIds || []).forEach(function (rid) {
-      var r = roleById[rid];
-      if (!r || !r.color) return;
-      var h = colorToHex(r.color);
-      if (!h || h === "#000000") return;
-      if (!hex) hex = h;
-      // prefer highest position color
-      if (r.position && roleById) {
-        /* already unsorted; ok */
-      }
-    });
-    // highest position color
     var best = null;
     (m.roleIds || []).forEach(function (rid) {
       var r = roleById[rid];
       if (!r || !r.color) return;
       if (!best || r.position > best.position) best = r;
     });
-    if (best) hex = colorToHex(best.color);
-
+    var hex = best ? colorToHex(best.color) : null;
     var av = m.avatar || "https://cdn.discordapp.com/embed/avatars/0.png";
     var st = status || "offline";
     return (
@@ -452,193 +369,21 @@
     );
   }
 
-  /* ——— Autocomplete: members, roles, bots ——— */
-  var acBox = null;
-  function ensureAc() {
-    if (acBox) return acBox;
-    acBox = document.createElement("div");
-    acBox.id = "sv-mention-box";
-    acBox.className = "sv-mention-box";
-    acBox.hidden = true;
-    document.body.appendChild(acBox);
-    return acBox;
-  }
-
-  function hideAc() {
-    var b = ensureAc();
-    b.hidden = true;
-    b.innerHTML = "";
-  }
-
-  function onComposerInput(e) {
-    var input = e.target;
-    if (!input || input.id !== "sv-input") return;
-    var val = input.value || "";
-    var pos = input.selectionStart != null ? input.selectionStart : val.length;
-    var before = val.slice(0, pos);
-
-    // slash commands hint
-    var slash = before.match(/(?:^|\s)\/([a-z0-9\-_]*)$/i);
-    if (slash) {
-      showSlashHints(input, slash[1] || "");
-      return;
-    }
-
-    var m = before.match(/@([A-Za-z0-9_.]*)$/);
-    if (!m) {
-      hideAc();
-      return;
-    }
-    showMentionAc(input, m[1] || "");
-  }
-
-  function showMentionAc(input, q) {
-    var box = ensureAc();
-    q = String(q).toLowerCase();
-    var items = [];
-
-    (window.membersCache || []).forEach(function (mem) {
-      if (!mem || !mem.id) return;
-      var name = mem.displayName || mem.username || "";
-      if (q && name.toLowerCase().indexOf(q) < 0 && String(mem.username || "").toLowerCase().indexOf(q) < 0)
-        return;
-      items.push({
-        kind: "user",
-        id: mem.id,
-        label: name + (mem.bot ? " (bot)" : ""),
-        insert: "<@" + mem.id + "> ",
-      });
-    });
-
-    guildRoles.forEach(function (r) {
-      if (!r.mentionable && r.name !== "@everyone") return;
-      if (q && String(r.name).toLowerCase().indexOf(q) < 0) return;
-      items.push({
-        kind: "role",
-        id: r.id,
-        label: "@" + r.name,
-        insert: "<@&" + r.id + "> ",
-      });
-    });
-
-    items = items.slice(0, 12);
-    if (!items.length) {
-      hideAc();
-      return;
-    }
-
-    box.innerHTML = items
-      .map(function (it) {
-        return (
-          '<button type="button" class="sv-mention-item" data-insert="' +
-          esc(it.insert) +
-          '">' +
-          esc(it.label) +
-          "</button>"
-        );
-      })
-      .join("");
-
-    placeBox(box, input);
-    box.querySelectorAll("[data-insert]").forEach(function (btn) {
-      btn.addEventListener("click", function () {
-        insertToken(input, btn.getAttribute("data-insert"), /@([A-Za-z0-9_.]*)$/);
-        hideAc();
-      });
-    });
-  }
-
-  function showSlashHints(input, q) {
-    var box = ensureAc();
-    var cmds = [
-      "/ai status",
-      "/ai test",
-      "/ai enable",
-      "/daily",
-      "/balance",
-      "/rank",
-      "/warn",
-      "/help",
-    ];
-    q = String(q).toLowerCase();
-    var items = cmds.filter(function (c) {
-      return !q || c.indexOf("/" + q) === 0 || c.indexOf(q) >= 0;
-    });
-    if (!items.length) {
-      hideAc();
-      return;
-    }
-    box.innerHTML = items
-      .map(function (c) {
-        return (
-          '<button type="button" class="sv-mention-item" data-insert="' +
-          esc(c) +
-          ' ">' +
-          esc(c) +
-          "</button>"
-        );
-      })
-      .join("");
-    placeBox(box, input);
-    box.querySelectorAll("[data-insert]").forEach(function (btn) {
-      btn.addEventListener("click", function () {
-        // replace current /partial
-        var val = input.value || "";
-        var pos = input.selectionStart != null ? input.selectionStart : val.length;
-        var before = val.slice(0, pos);
-        var after = val.slice(pos);
-        var m = before.match(/(?:^|\s)\/([a-z0-9\-_]*)$/i);
-        if (!m) return;
-        var start = before.lastIndexOf("/");
-        input.value = before.slice(0, start) + btn.getAttribute("data-insert") + after;
-        input.focus();
-        hideAc();
-      });
-    });
-  }
-
-  function placeBox(box, input) {
-    var rect = input.getBoundingClientRect();
-    box.style.left = Math.max(8, rect.left) + "px";
-    box.style.bottom = window.innerHeight - rect.top + 6 + "px";
-    box.style.width = Math.min(340, Math.max(240, rect.width)) + "px";
-    box.hidden = false;
-  }
-
-  function insertToken(input, token, re) {
-    var val = input.value || "";
-    var pos = input.selectionStart != null ? input.selectionStart : val.length;
-    var before = val.slice(0, pos);
-    var after = val.slice(pos);
-    var m = before.match(re);
-    if (!m) return;
-    var at = before.lastIndexOf(m[0].charAt(0) === " " ? m[0].trim().charAt(0) : m[0].charAt(0));
-    // safer: find @
-    at = before.lastIndexOf("@");
-    if (at < 0) return;
-    input.value = before.slice(0, at) + token + after;
-    input.focus();
-  }
-
-  /* ——— Emoji bar ——— */
   function injectEmojiBar() {
     if (document.getElementById("sv-emoji-bar")) return;
     var composer = document.getElementById("sv-composer");
     if (!composer) return;
-
     var tools = document.createElement("div");
     tools.className = "sv-composer-tools";
     tools.innerHTML =
       '<button type="button" id="sv-toggle-emoji" title="Emoji">😀</button>' +
       '<button type="button" id="sv-toggle-slash" title="Commands">/</button>';
     composer.insertBefore(tools, composer.firstChild);
-
     var bar = document.createElement("div");
     bar.id = "sv-emoji-bar";
     bar.className = "sv-emoji-bar";
     bar.hidden = true;
     composer.insertBefore(bar, tools.nextSibling);
-
     document.getElementById("sv-toggle-emoji").addEventListener("click", function () {
       bar.hidden = !bar.hidden;
       if (!bar.hidden) renderEmojiBar(bar);
@@ -648,12 +393,11 @@
       if (!input) return;
       input.value = (input.value || "") + "/";
       input.focus();
-      showSlashHints(input, "");
     });
   }
 
   function renderEmojiBar(bar) {
-    var common = ["😀","😂","❤️","🔥","☕","👍","✨","🎉","😎","🥺","💀","✅","❌","👀"];
+    var common = ["😀", "😂", "❤️", "🔥", "☕", "👍", "✨", "🎉", "😎", "🥺", "💀", "✅"];
     var html = common
       .map(function (e) {
         return '<button type="button" data-emoji="' + e + '">' + e + "</button>";
@@ -667,13 +411,9 @@
         esc(e.name) +
         ":" +
         esc(e.id) +
-        '>" title=":' +
-        esc(e.name) +
-        ':">' +
-        '<img src="' +
+        '>"><img src="' +
         esc(e.url) +
-        '" alt="">' +
-        "</button>";
+        '" alt=""></button>';
     });
     bar.innerHTML = html;
     bar.querySelectorAll("[data-emoji]").forEach(function (btn) {
@@ -686,95 +426,70 @@
     });
   }
 
-  /* ——— Tighten embed buttons: allow URL buttons, label custom ones ——— */
-  function enhanceEmbedButtons() {
-    document.querySelectorAll("#sv-messages .sv-component-btn.disabled").forEach(function (btn) {
-      btn.title = "Interactive bot buttons require Discord client";
-    });
-  }
-
-  /* ——— Pipeline after messages render ——— */
-  function afterMessagesPaint() {
-    applyRoleColors();
-    highlightMentions();
-    paintReactions();
-    enhanceEmbedButtons();
-    watchMessagesForUnread();
-  }
-
-  // Observe message container mutations
-  function observeMessages() {
-    var box = document.getElementById("sv-messages");
-    if (!box || box.__svPackObs) return;
-    box.__svPackObs = 1;
-    var obs = new MutationObserver(function () {
-      afterMessagesPaint();
-    });
-    obs.observe(box, { childList: true, subtree: true });
-  }
-
-  function observeMembers() {
-    var list = document.getElementById("sv-member-list");
-    if (!list || list.__svPackObs) return;
-    list.__svPackObs = 1;
-    var obs = new MutationObserver(function () {
-      // Re-enhance shortly after native paint
-      setTimeout(enhanceMemberList, 50);
-    });
-    obs.observe(list, { childList: true });
-  }
-
-  function patchOpen() {
-    if (typeof window.openServerView !== "function" || window.__svPackOpen) return;
-    window.__svPackOpen = 1;
-    var orig = window.openServerView;
-    window.openServerView = function () {
-      orig.apply(this, arguments);
-      setTimeout(function () {
-        injectServerMenu();
-        injectEmojiBar();
-        loadGuildMeta().then(function () {
-          enhanceMemberList();
-        });
-        observeMessages();
-        observeMembers();
-        afterMessagesPaint();
-      }, 200);
-    };
-  }
-
-  // Remove old manage bar from channel list if present
   function stripOldManageBar() {
     var bar = document.getElementById("sv-manage-bar");
     if (bar) bar.remove();
-    document.querySelectorAll(".sv-ch-action").forEach(function (el) {
-      el.remove();
-    });
   }
 
-  function boot() {
-    var link = document.createElement("link");
-    link.rel = "stylesheet";
-    link.href = "/sv-discord-pack.css?v=1";
-    document.head.appendChild(link);
-
-    patchOpen();
-    document.addEventListener("keyup", onComposerInput, true);
-    document.addEventListener("click", function (e) {
-      if (!e.target.closest("#sv-mention-box") && !e.target.closest("#sv-input")) hideAc();
-    });
-
-    setInterval(function () {
-      patchOpen();
+  function tick() {
+    ensureCss();
+    stripOldManageBar();
+    var view = document.getElementById("server-view");
+    if (view && !view.hidden) {
       injectServerMenu();
       injectEmojiBar();
-      stripOldManageBar();
+      applyRoleColors();
+      highlightMentions();
       enhanceMemberList();
-      updateUnreadUi();
-    }, 2000);
+    }
   }
 
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
-  else boot();
-  console.log("[sv-discord-pack] loaded");
+  // Patch openServerView whenever it appears
+  function patchOpen() {
+    if (typeof window.openServerView !== "function") return;
+    if (window.openServerView.__svPackWrapped) return;
+    var orig = window.openServerView;
+    function wrapped() {
+      var r = orig.apply(this, arguments);
+      setTimeout(function () {
+        loadGuildMeta().then(tick);
+        tick();
+      }, 100);
+      setTimeout(tick, 400);
+      return r;
+    }
+    wrapped.__svPackWrapped = true;
+    window.openServerView = wrapped;
+  }
+
+  // Also react to Server / Chat nav clicks
+  document.addEventListener(
+    "click",
+    function (e) {
+      var t = e.target;
+      if (!t) return;
+      if (
+        t.id === "open-server-view" ||
+        t.id === "nav-server-view" ||
+        (t.closest && (t.closest("#open-server-view") || t.closest("#nav-server-view")))
+      ) {
+        setTimeout(function () {
+          patchOpen();
+          loadGuildMeta().then(tick);
+          tick();
+        }, 150);
+      }
+    },
+    true
+  );
+
+  setInterval(function () {
+    patchOpen();
+    tick();
+  }, 1500);
+
+  ensureCss();
+  patchOpen();
+  tick();
+  console.log("[sv-discord-pack] v2 ready");
 })();
