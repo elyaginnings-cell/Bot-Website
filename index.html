@@ -35,6 +35,8 @@
     await loadScript("/features-config-patch.js?v=28");
     await loadScript("/app-config-fix.js?v=1");
     await loadScript("/sr-panels.js?v=2");
+    await loadScript("/sv-members-load.js?v=3");
+    await loadScript("/sv-manage.js?v=1");
   } catch (e) {
     document.body.innerHTML =
       "<div style=\"font-family:system-ui;padding:2rem;max-width:32rem\">" +
