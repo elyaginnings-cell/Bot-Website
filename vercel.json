@@ -1,6 +1,4 @@
 {
-  "version": 2,
-  "buildCommand": "npm run build",
   "rewrites": [
     { "source": "/api/signup", "destination": "/api/auth-login?action=signup" },
     { "source": "/api/logout", "destination": "/api/login?action=logout" },
