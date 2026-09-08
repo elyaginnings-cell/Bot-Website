@@ -21,8 +21,12 @@ function mapDiscordMember(raw) {
     const ext = String(user.avatar).startsWith("a_") ? "gif" : "png";
     avatar = `https://cdn.discordapp.com/avatars/${id}/${user.avatar}.${ext}?size=64`;
   } else if (id) {
-    const idx = Number(BigInt(id) % 6n);
-    avatar = `https://cdn.discordapp.com/embed/avatars/${idx}.png`;
+    try {
+      const idx = Number(BigInt(id) % 6n);
+      avatar = `https://cdn.discordapp.com/embed/avatars/${idx}.png`;
+    } catch {
+      avatar = "https://cdn.discordapp.com/embed/avatars/0.png";
+    }
   }
   return {
     id,
@@ -31,6 +35,8 @@ function mapDiscordMember(raw) {
     displayName: raw.nick || user.global_name || user.username || "Unknown",
     bot: !!user.bot,
     avatar,
+    roleIds: Array.isArray(raw.roles) ? raw.roles.map(String) : [],
+    // REST members endpoint does not include presence; filled later if available
     status: null,
   };
 }
@@ -45,7 +51,6 @@ async function fetchWithTimeout(url, options, ms) {
   }
 }
 
-/** Discord max per page is 1000; paginate with `after` until limit reached. */
 async function fromDiscordApi(guildId, limit, q) {
   const token = botToken();
   if (!token) return null;
@@ -63,19 +68,13 @@ async function fromDiscordApi(guildId, limit, q) {
 
     const res = await fetchWithTimeout(
       url.toString(),
-      {
-        headers: { Authorization: `Bot ${token}` },
-        cache: "no-store",
-      },
+      { headers: { Authorization: `Bot ${token}` }, cache: "no-store" },
       12000
     );
 
     if (!res.ok) {
       const errText = await res.text().catch(() => "");
-      // Privileged intent missing is the usual cause of 403
-      throw new Error(
-        `Discord members API ${res.status}: ${errText.slice(0, 180) || res.statusText}`
-      );
+      throw new Error(`Discord members API ${res.status}: ${errText.slice(0, 180)}`);
     }
 
     const data = await res.json();
@@ -86,14 +85,12 @@ async function fromDiscordApi(guildId, limit, q) {
       if (m.id) all.push(m);
     }
 
-    const last = data[data.length - 1];
-    const lastId = last?.user?.id;
+    const lastId = data[data.length - 1]?.user?.id;
     if (!lastId || data.length < pageSize) break;
     after = String(lastId);
   }
 
   let members = all;
-
   if (q) {
     const needle = q.toLowerCase();
     members = members.filter((m) => {
@@ -128,20 +125,13 @@ async function fromRailway(guildId, limit, q, dashboardSecret) {
   const params = new URLSearchParams();
   params.set("limit", String(limit));
   if (q) params.set("q", q);
-
   const res = await fetchWithTimeout(
     `${RAILWAY_API}/api/guild/${guildId}/members?${params}`,
-    {
-      headers: { Authorization: `Bearer ${dashboardSecret}` },
-      cache: "no-store",
-    },
+    { headers: { Authorization: `Bearer ${dashboardSecret}` }, cache: "no-store" },
     12000
   );
-
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    throw new Error(data.error || `Bot returned ${res.status}`);
-  }
+  if (!res.ok) throw new Error(data.error || `Bot returned ${res.status}`);
   return data;
 }
 
@@ -173,9 +163,7 @@ export default async function handler(req, res) {
 
     try {
       const direct = await fromDiscordApi(guildId, limit, q);
-      if (direct) {
-        return res.status(200).json(direct);
-      }
+      if (direct) return res.status(200).json(direct);
       errors.push("discord: no bot token on website");
     } catch (err) {
       errors.push("discord: " + (err.message || String(err)));
@@ -186,7 +174,7 @@ export default async function handler(req, res) {
     if (!dashboardSecret) {
       return res.status(500).json({
         error:
-          "Set DISCORD_BOT_TOKEN on Vercel (same token as Railway). Also enable Server Members Intent in the Discord Developer Portal.",
+          "Set DISCORD_BOT_TOKEN on Vercel. Enable Server Members Intent in the Discord Developer Portal.",
         errors,
       });
     }
@@ -196,18 +184,13 @@ export default async function handler(req, res) {
       return res.status(200).json(data);
     } catch (err) {
       errors.push("railway: " + (err.message || String(err)));
-      const timedOut = err.name === "AbortError";
       return res.status(504).json({
-        error: timedOut
-          ? "Timed out. Set DISCORD_BOT_TOKEN on Vercel and enable Server Members Intent."
-          : err.message || "Failed to load members",
+        error: err.message || "Failed to load members",
         errors,
       });
     }
   } catch (error) {
     console.error("Members API error:", error);
-    return res.status(500).json({
-      error: error.message || "Failed to load members",
-    });
+    return res.status(500).json({ error: error.message || "Failed to load members" });
   }
 }

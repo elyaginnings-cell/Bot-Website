@@ -1,0 +1,89 @@
+/* Discord-like server view polish */
+#server-view .sv-reply-preview{
+  display:flex;align-items:center;gap:6px;margin:0 0 4px 0;padding:0;
+  font-size:12px;color:#b5bac1;max-width:100%;
+}
+#server-view .sv-reply-line{
+  width:2px;align-self:stretch;min-height:14px;background:#4e5058;border-radius:1px;margin-left:18px;
+}
+#server-view .sv-reply-text{opacity:.9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#server-view .sv-reply-text strong{color:#c4c9ce;font-weight:500}
+
+#server-view .sv-msg.mention-me{
+  background:rgba(240,178,50,.08);
+  box-shadow:inset 2px 0 0 #f0b232;
+}
+#server-view .sv-msg.unread-flash{animation:svUnread .8s ease}
+@keyframes svUnread{from{background:rgba(88,101,242,.12)}to{background:transparent}}
+
+#server-view .sv-mention-user,
+#server-view .sv-mention-role{
+  background:rgba(88,101,242,.3);color:#c9cdfb;border-radius:3px;padding:0 2px;font-weight:500
+}
+#server-view .sv-mention-role{background:rgba(88,101,242,.25)}
+#server-view .sv-mention-channel{color:#00a8fc}
+
+#server-view .sv-author.has-role-color{font-weight:500}
+
+#server-view .sv-reactions{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+#server-view .sv-reaction{
+  display:inline-flex;align-items:center;gap:4px;background:#2b2d31;border:1px solid #1e1f22;
+  border-radius:8px;padding:2px 6px;font-size:12px;color:#dbdee1
+}
+#server-view .sv-reaction img{width:16px;height:16px}
+
+#server-view .sv-ch.unread .sv-ch-label{color:#f2f3f5;font-weight:600}
+#server-view .sv-ch.unread .sv-hash{color:#f2f3f5}
+#server-view .sv-unread-dot{
+  width:8px;height:8px;border-radius:50%;background:#f2f3f5;margin-left:auto;flex-shrink:0
+}
+
+/* Member list Discord-style */
+#sv-member-list .sv-ml-group{margin:8px 8px 4px;font-size:11px;font-weight:700;letter-spacing:.02em;color:#949ba4;text-transform:uppercase}
+#sv-member-list .sv-member-row{display:flex;align-items:center;gap:8px;padding:4px 8px;border-radius:4px;margin:0 4px}
+#sv-member-list .sv-member-row:hover{background:rgba(79,84,92,.32)}
+#sv-member-list .sv-member-av-wrap{position:relative;width:32px;height:32px;flex-shrink:0}
+#sv-member-list .sv-member-av{width:32px;height:32px;border-radius:50%}
+#sv-member-list .sv-status{
+  position:absolute;right:-1px;bottom:-1px;width:10px;height:10px;border-radius:50%;
+  border:2px solid #2b2d31;background:#80848e
+}
+#sv-member-list .sv-status.online{background:#23a559}
+#sv-member-list .sv-status.idle{background:#f0b232}
+#sv-member-list .sv-status.dnd{background:#f23f43}
+#sv-member-list .sv-status.offline{background:#80848e}
+#sv-member-list .sv-member-name{font-size:14px;color:#f2f3f5}
+#sv-member-list .sv-member-row.offline .sv-member-name{color:#949ba4}
+#sv-member-list .sv-member-row.offline .sv-member-av{opacity:.6}
+
+/* Server menu */
+.sv-server-menu-wrap{position:relative;display:inline-flex;align-items:center}
+.sv-server-menu-btn{
+  background:transparent;border:0;color:#b5bac1;cursor:pointer;padding:4px 6px;border-radius:4px;font-size:14px
+}
+.sv-server-menu-btn:hover{background:rgba(79,84,92,.4);color:#fff}
+.sv-server-menu{
+  position:absolute;top:100%;left:0;min-width:220px;background:#111214;border:1px solid #1e1f22;
+  border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.45);padding:6px;z-index:50
+}
+.sv-server-menu button{
+  display:block;width:100%;text-align:left;background:transparent;border:0;color:#dbdee1;
+  padding:8px 10px;border-radius:4px;cursor:pointer;font-size:13px
+}
+.sv-server-menu button:hover{background:#5865f2;color:#fff}
+.sv-server-menu hr{border:0;border-top:1px solid #1e1f22;margin:4px 0}
+
+/* Emoji picker */
+.sv-emoji-bar{display:flex;flex-wrap:wrap;gap:4px;padding:6px 8px;max-height:120px;overflow:auto;background:#2b2d31;border-top:1px solid #1e1f22}
+.sv-emoji-bar button{background:transparent;border:0;cursor:pointer;padding:4px;border-radius:4px;font-size:18px;line-height:1}
+.sv-emoji-bar button:hover{background:#404249}
+.sv-emoji-bar img{width:22px;height:22px;vertical-align:middle}
+
+/* Composer tools */
+.sv-composer-tools{display:flex;gap:4px;align-items:center;padding:0 8px 6px}
+.sv-composer-tools button{
+  background:#2b2d31;border:1px solid #1e1f22;color:#b5bac1;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:12px
+}
+.sv-composer-tools button:hover{color:#fff;border-color:#5865f2}
+
+.sv-component-btn:not(.disabled){cursor:pointer}
