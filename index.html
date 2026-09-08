@@ -1,60 +1,176 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Loading dashboard…</title>
-<link rel="icon" href="/amazon-favicon.svg?v=2" type="image/svg+xml">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1">
+    <title>Coffee Shop Dashboard</title>
+    <link rel="icon" href="/amazon-favicon.svg?v=2" type="image/svg+xml" sizes="any">
+    <link rel="stylesheet" href="style.css?v=7">
+    <link rel="stylesheet" href="mobile-fix.css?v=1">
+    <link rel="stylesheet" href="toggle-fix.css?v=1">
+    <link rel="stylesheet" href="server-view.css">
+    <link rel="stylesheet" href="sv-layout-fix.css?v=1">
+    <link rel="stylesheet" href="server-view-components.css">
+    <link rel="stylesheet" href="server-view-theme-garden.css">
+    <link rel="stylesheet" href="server-view-reply.css">
+    <link rel="stylesheet" href="sv-rich.css">
+    <link rel="stylesheet" href="sv-mentions.css?v=1">
+    <link rel="stylesheet" href="sv-readability.css">
+    <link rel="stylesheet" href="server-view-members.css?v=5">
+    <link rel="stylesheet" href="/sv-discord-pack.css?v=3">
 </head>
-<body>
-<script>
-(async function () {
-  try {
-    var shellUrl =
-      "https://raw.githubusercontent.com/elyaginnings-cell/Bot-Website/147232bd5d52eb2ba98a5e5277445508e2c8e705/index.html";
-    var res = await fetch(shellUrl + "?t=" + Date.now());
-    if (!res.ok) throw new Error("Shell HTTP " + res.status);
-    var html = await res.text();
-    if (html.length < 5000 || html.indexOf("server-view") === -1) {
-      throw new Error("Bad shell content");
-    }
-    document.open();
-    document.write(html);
-    document.close();
+<body class="mode-auto">
+    <div id="login-screen" class="login-screen">
+        <div class="login-card">
+            <div class="login-icon">☕</div>
+            <h1>Coffee Shop</h1>
+            <p>Bot Control Dashboard</p>
+            <button class="button login-btn" id="login-button" type="button">Login with Discord</button>
+        </div>
+    </div>
 
-    function loadScript(src) {
-      return new Promise(function (resolve) {
-        var s = document.createElement("script");
-        s.src = src;
-        s.async = false;
-        s.onload = function () { resolve(true); };
-        s.onerror = function () {
-          console.error("Failed:", src);
-          resolve(false);
-        };
-        document.body.appendChild(s);
+    <div id="app" hidden>
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-icon">☕</div>
+                <div>
+                    <strong>Coffee Shop</strong>
+                    <span>Bot Control</span>
+                </div>
+            </div>
+            <nav class="navigation" aria-label="Dashboard tabs">
+                <button class="nav-item active" data-tab="overview" type="button" title="Overview"><span>🏠</span><em>Home</em></button>
+                <button class="nav-item" data-tab="moderation" type="button" title="Moderation"><span>⚖️</span><em>Mod</em></button>
+                <button class="nav-item" data-tab="invites" type="button" title="Invites"><span>📨</span><em>Invites</em></button>
+                <button class="nav-item" data-tab="leveling" type="button" title="Leveling"><span>📈</span><em>Levels</em></button>
+                <button class="nav-item" data-tab="currency" type="button" title="Currency"><span>☕</span><em>Beans</em></button>
+                <button class="nav-item" data-tab="shop" type="button" title="Shop"><span>🛒</span><em>Shop</em></button>
+                <button class="nav-item" data-tab="logs" type="button" title="Logs"><span>📋</span><em>Logs</em></button>
+                <button class="nav-item" id="nav-server-view" type="button" title="Server View"><span>💬</span><em>Chat</em></button>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="topbar">
+                <div>
+                    <h1 id="page-title">Overview</h1>
+                    <p id="page-subtitle">Coffee Shop bot dashboard</p>
+                </div>
+                <div class="topbar-actions">
+                    <button class="button secondary" id="open-server-view" type="button">💬 Server</button>
+                    <button class="button secondary" id="logout-button" type="button">Logout</button>
+                </div>
+            </header>
+
+            <section id="overview" class="page-section active">
+                <div class="stats-grid">
+                    <div class="stat-card card"><span class="stat-icon">🤖</span><div><span class="label">Bot</span><strong id="bot-status">…</strong></div></div>
+                    <div class="stat-card card"><span class="stat-icon">🏠</span><div><span class="label">Server</span><strong id="server-name">…</strong></div></div>
+                    <div class="stat-card card"><span class="stat-icon">👑</span><div><span class="label">Role</span><strong id="server-owner-status">-</strong></div></div>
+                    <div class="stat-card card"><span class="stat-icon">💾</span><div><span class="label">Memory</span><strong id="storage-status">…</strong></div></div>
+                </div>
+                <div class="card form-card wide" style="margin-top:1rem">
+                    <p>Use the sidebar to configure the bot. Open <strong>Server</strong> to chat and manage channels.</p>
+                </div>
+            </section>
+
+            <section id="moderation" class="page-section"></section>
+            <section id="invites" class="page-section"></section>
+            <section id="leveling" class="page-section"></section>
+            <section id="currency" class="page-section"></section>
+            <section id="shop" class="page-section"></section>
+            <section id="logs" class="page-section"></section>
+        </main>
+    </div>
+
+    <div id="server-view" class="server-view" hidden>
+        <div class="sv-drawer-backdrop" id="sv-drawer-backdrop"></div>
+        <div class="sv-shell">
+            <header class="sv-top">
+                <button type="button" class="sv-icon-btn" id="sv-menu-btn" title="Channels">☰</button>
+                <button type="button" class="sv-icon-btn" id="sv-back" title="Back">←</button>
+                <div class="sv-title-wrap">
+                    <strong id="sv-server-name">Server</strong>
+                    <span id="sv-channel-name">#channel</span>
+                </div>
+                <button type="button" class="sv-icon-btn" id="sv-settings-btn" title="Settings">⚙</button>
+                <button type="button" class="sv-icon-btn" id="sv-refresh" title="Refresh">↻</button>
+                <button type="button" class="sv-icon-btn" id="close-server-view" title="Close">×</button>
+            </header>
+
+            <div class="sv-body">
+                <aside class="sv-channels" id="sv-channels">
+                    <div class="sv-channels-head">
+                        <strong>Channels</strong>
+                        <button type="button" class="sv-icon-btn" id="sv-channels-close" title="Close">×</button>
+                    </div>
+                    <div class="sv-tab-row">
+                        <button type="button" data-sv-tab="channels" class="active" onclick="return window.svSwitchTab && window.svSwitchTab('channels')">Channels</button>
+                        <button type="button" data-sv-tab="members" onclick="return window.svSwitchTab && window.svSwitchTab('members')">Members</button>
+                    </div>
+                    <div id="sv-channel-list" class="sv-channel-list"></div>
+                    <div id="sv-member-panel" class="sv-member-panel" hidden>
+                        <div id="sv-member-list" class="sv-member-list"></div>
+                    </div>
+                </aside>
+
+                <section class="sv-chat">
+                    <div id="sv-messages" class="sv-messages"></div>
+                    <div id="sv-reply-bar" class="sv-reply-bar" hidden>
+                        <span id="sv-reply-preview"></span>
+                        <button type="button" id="sv-reply-cancel">×</button>
+                    </div>
+                    <form id="sv-composer" class="sv-composer">
+                        <input id="sv-display-name" class="sv-display-name" placeholder="Display name (optional)" autocomplete="nickname">
+                        <div class="sv-composer-row">
+                            <textarea id="sv-input" rows="1" placeholder="Message…" disabled></textarea>
+                            <button type="submit" id="sv-send" disabled>Send</button>
+                        </div>
+                    </form>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js?v=14"></script>
+    <script src="server-view.js?v=15"></script>
+    <script src="server-view-layout.js?v=1"></script>
+    <script src="sv-mentions-fix.js?v=3"></script>
+    <script src="server-view-punish.js?v=4"></script>
+    <script>
+    window.svSwitchTab = function (tab) {
+      var active = tab === "members" ? "members" : "channels";
+      var view = document.getElementById("server-view");
+      if (view) view.classList.add("drawer-open");
+      document.querySelectorAll("[data-sv-tab]").forEach(function (b) {
+        b.classList.toggle("active", b.getAttribute("data-sv-tab") === active);
       });
-    }
-
-    // Core feature patches (existing)
-    await loadScript("/features-ui.js?v=7");
-    await loadScript("/features-config.js?v=18");
-    await loadScript("/features-ui-patch.js?v=12");
-    await loadScript("/features-config-patch.js?v=28");
-    await loadScript("/app-config-fix.js?v=1");
-    await loadScript("/sr-panels.js?v=2");
-    await loadScript("/sv-members-load.js?v=5");
-
-    // Lightweight server-view extras (stable)
-    await loadScript("/sv-stable.js?v=1");
-  } catch (e) {
-    document.body.innerHTML =
-      '<div style="font-family:system-ui;padding:2rem">' +
-      "<h1>Dashboard failed to load</h1><p>" +
-      (e && e.message ? e.message : e) +
-      "</p></div>";
-  }
-})();
-</script>
+      var ch = document.getElementById("sv-channel-list");
+      var mp = document.getElementById("sv-member-panel");
+      var list = document.getElementById("sv-member-list");
+      if (ch) {
+        ch.hidden = active !== "channels";
+        ch.style.display = active === "channels" ? "" : "none";
+      }
+      if (mp) {
+        mp.hidden = active !== "members";
+        mp.style.display = active === "members" ? "flex" : "none";
+      }
+      if (active === "members") {
+        if (list) list.innerHTML = '<p class="sv-empty">Loading members…</p>';
+        if (typeof window.__svLoadMembers === "function") window.__svLoadMembers();
+      }
+      return false;
+    };
+    </script>
+    <script src="sv-members-load.js?v=5"></script>
+    <script src="sv-punish-attr-fix.js?v=1"></script>
+    <script src="/features-ui.js?v=7"></script>
+    <script src="/features-config.js?v=18"></script>
+    <script src="/features-ui-patch.js?v=12"></script>
+    <script src="/features-config-patch.js?v=28"></script>
+    <script src="/app-config-fix.js?v=1"></script>
+    <script src="/sr-panels.js?v=2"></script>
+    <script src="/sv-stable.js?v=2"></script>
 </body>
 </html>
