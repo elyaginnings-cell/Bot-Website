@@ -44,11 +44,18 @@ export default async function handler(req, res) {
     const guildId = String(req.query?.guildId || "").trim();
     if (!guildId) return res.status(400).json({ error: "Missing guildId" });
 
-    const [roles, emojis, guild] = await Promise.all([
-      discord(`/guilds/${guildId}/roles`).catch(() => []),
-      discord(`/guilds/${guildId}/emojis`).catch(() => []),
-      discord(`/guilds/${guildId}?with_counts=true`).catch(() => null),
-    ]);
+    let roles = [];
+    let emojis = [];
+    try {
+      roles = await discord(`/guilds/${guildId}/roles`);
+    } catch (_) {
+      roles = [];
+    }
+    try {
+      emojis = await discord(`/guilds/${guildId}/emojis`);
+    } catch (_) {
+      emojis = [];
+    }
 
     const roleList = (Array.isArray(roles) ? roles : [])
       .map((r) => ({
@@ -59,7 +66,6 @@ export default async function handler(req, res) {
         hoist: !!r.hoist,
         mentionable: !!r.mentionable,
         managed: !!r.managed,
-        permissions: r.permissions,
       }))
       .sort((a, b) => b.position - a.position);
 
@@ -67,22 +73,10 @@ export default async function handler(req, res) {
       id: String(e.id),
       name: e.name,
       animated: !!e.animated,
-      url: `https://cdn.discordapp.com/emojis/${e.id}.${e.animated ? "gif" : "png"}?size=48&quality=lossless`,
+      url: `https://cdn.discordapp.com/emojis/${e.id}.${e.animated ? "gif" : "png"}?size=48`,
     }));
 
-    return res.status(200).json({
-      roles: roleList,
-      emojis: emojiList,
-      guild: guild
-        ? {
-            id: String(guild.id),
-            name: guild.name,
-            icon: guild.icon,
-            approximateMemberCount: guild.approximate_member_count,
-            approximatePresenceCount: guild.approximate_presence_count,
-          }
-        : null,
-    });
+    return res.status(200).json({ roles: roleList, emojis: emojiList });
   } catch (error) {
     console.error("[guild-meta]", error.message || error);
     return res.status(error.status || 500).json({ error: error.message || "Failed" });

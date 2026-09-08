@@ -24,20 +24,15 @@ async function discord(path, { method = "GET", body } = {}) {
     },
     body: body ? JSON.stringify(body) : undefined,
   });
-  const text = await res.text();
+  const text = await res.text().catch(() => "");
   let data = {};
   try {
     data = text ? JSON.parse(text) : {};
   } catch {
-    data = { raw: text.slice(0, 200) };
+    data = { raw: String(text).slice(0, 200) };
   }
   if (!res.ok) {
-    const msg =
-      data.message ||
-      data.error ||
-      `Discord API ${res.status}` +
-        (Array.isArray(data.errors) ? "" : "");
-    const err = new Error(typeof msg === "string" ? msg : JSON.stringify(data).slice(0, 200));
+    const err = new Error(data.message || `Discord API ${res.status}`);
     err.status = res.status;
     err.data = data;
     throw err;
@@ -66,13 +61,9 @@ export default async function handler(req, res) {
 
     const body =
       typeof req.body === "string" ? JSON.parse(req.body || "{}") : req.body || {};
-
     const guildId = String(req.query?.guildId || body.guildId || "").trim();
-    if (!guildId) {
-      return res.status(400).json({ error: "Missing guildId" });
-    }
+    if (!guildId) return res.status(400).json({ error: "Missing guildId" });
 
-    // LIST channels (fresh from Discord)
     if (req.method === "GET") {
       const channels = await discord(`/guilds/${guildId}/channels`);
       const list = (Array.isArray(channels) ? channels : [])
@@ -82,100 +73,67 @@ export default async function handler(req, res) {
       return res.status(200).json({ channels: list });
     }
 
-    if (req.method === "POST") {
-      const action = String(body.action || "create").toLowerCase();
+    if (req.method !== "POST") {
+      return res.status(405).json({ error: "Method not allowed" });
+    }
 
-      // CREATE channel or category
-      if (action === "create") {
-        const name = String(body.name || "")
-          .trim()
+    const action = String(body.action || "create").toLowerCase();
+
+    if (action === "create") {
+      let name = String(body.name || "").trim();
+      if (!name) return res.status(400).json({ error: "Channel name is required" });
+
+      let type = Number(body.type);
+      if (body.kind === "category") type = 4;
+      else if (body.kind === "voice") type = 2;
+      else if (body.kind === "text" || body.kind === "channel") type = 0;
+      if (![0, 2, 4, 5].includes(type)) type = 0;
+
+      if (type !== 4) {
+        name = name
           .toLowerCase()
           .replace(/\s+/g, "-")
           .replace(/[^a-z0-9\-_]/g, "")
           .slice(0, 100);
-        if (!name) {
-          return res.status(400).json({ error: "Channel name is required" });
-        }
-
-        // type: 0 = text, 4 = category, 2 = voice (optional)
-        let type = Number(body.type);
-        if (body.kind === "category") type = 4;
-        if (body.kind === "text" || body.kind === "channel") type = 0;
-        if (body.kind === "voice") type = 2;
-        if (![0, 2, 4, 5].includes(type)) type = 0;
-
-        const payload = { name, type };
-        if (type !== 4 && body.parentId) {
-          payload.parent_id = String(body.parentId);
-        }
-        if (body.topic && type === 0) {
-          payload.topic = String(body.topic).slice(0, 1024);
-        }
-
-        const created = await discord(`/guilds/${guildId}/channels`, {
-          method: "POST",
-          body: payload,
-        });
-        return res.status(200).json({ ok: true, channel: mapChannel(created) });
+      } else {
+        name = name.slice(0, 100);
       }
+      if (!name) return res.status(400).json({ error: "Invalid channel name" });
 
-      // DELETE channel / category
-      if (action === "delete") {
-        const channelId = String(body.channelId || "").trim();
-        if (!channelId) {
-          return res.status(400).json({ error: "Missing channelId" });
-        }
-        await discord(`/channels/${channelId}`, { method: "DELETE" });
-        return res.status(200).json({ ok: true, deleted: channelId });
-      }
+      const payload = { name, type };
+      if (type !== 4 && body.parentId) payload.parent_id = String(body.parentId);
 
-      // RENAME
-      if (action === "rename") {
-        const channelId = String(body.channelId || "").trim();
-        let name = String(body.name || "").trim();
-        if (!channelId || !name) {
-          return res.status(400).json({ error: "Missing channelId or name" });
-        }
-        // Categories keep spaces; channels Discord-normalize
-        if (body.kind !== "category" && Number(body.type) !== 4) {
-          name = name
-            .toLowerCase()
-            .replace(/\s+/g, "-")
-            .replace(/[^a-z0-9\-_]/g, "")
-            .slice(0, 100);
-        } else {
-          name = name.slice(0, 100);
-        }
-        const updated = await discord(`/channels/${channelId}`, {
-          method: "PATCH",
-          body: { name },
-        });
-        return res.status(200).json({ ok: true, channel: mapChannel(updated) });
-      }
-
-      // MOVE under category (or clear parent)
-      if (action === "move") {
-        const channelId = String(body.channelId || "").trim();
-        if (!channelId) {
-          return res.status(400).json({ error: "Missing channelId" });
-        }
-        const parent_id = body.parentId ? String(body.parentId) : null;
-        const updated = await discord(`/channels/${channelId}`, {
-          method: "PATCH",
-          body: { parent_id },
-        });
-        return res.status(200).json({ ok: true, channel: mapChannel(updated) });
-      }
-
-      return res.status(400).json({ error: "Unknown action. Use create, delete, rename, or move." });
+      const created = await discord(`/guilds/${guildId}/channels`, {
+        method: "POST",
+        body: payload,
+      });
+      return res.status(200).json({ ok: true, channel: mapChannel(created) });
     }
 
-    return res.status(405).json({ error: "Method not allowed" });
+    if (action === "delete") {
+      const channelId = String(body.channelId || "").trim();
+      if (!channelId) return res.status(400).json({ error: "Missing channelId" });
+      await discord(`/channels/${channelId}`, { method: "DELETE" });
+      return res.status(200).json({ ok: true, deleted: channelId });
+    }
+
+    if (action === "rename") {
+      const channelId = String(body.channelId || "").trim();
+      let name = String(body.name || "").trim();
+      if (!channelId || !name) return res.status(400).json({ error: "Missing channelId or name" });
+      name = name.slice(0, 100);
+      const updated = await discord(`/channels/${channelId}`, {
+        method: "PATCH",
+        body: { name },
+      });
+      return res.status(200).json({ ok: true, channel: mapChannel(updated) });
+    }
+
+    return res.status(400).json({ error: "Unknown action" });
   } catch (error) {
     console.error("[channel-manage]", error.message || error);
     return res.status(error.status || 500).json({
       error: error.message || "Channel action failed",
-      detail: error.data || null,
     });
   }
 }

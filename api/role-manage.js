@@ -24,17 +24,16 @@ async function discord(path, { method = "GET", body } = {}) {
     },
     body: body ? JSON.stringify(body) : undefined,
   });
-  const text = await res.text();
+  const text = await res.text().catch(() => "");
   let data = {};
   try {
     data = text ? JSON.parse(text) : {};
   } catch {
-    data = { raw: text.slice(0, 200) };
+    data = {};
   }
   if (!res.ok) {
     const err = new Error(data.message || `Discord API ${res.status}`);
     err.status = res.status;
-    err.data = data;
     throw err;
   }
   return data;
@@ -66,7 +65,7 @@ export default async function handler(req, res) {
         method: "POST",
         body: {
           name,
-          color: body.color != null ? Number(body.color) : 0,
+          color: body.color != null ? Number(body.color) || 0 : 0,
           hoist: !!body.hoist,
           mentionable: body.mentionable !== false,
         },
@@ -86,7 +85,6 @@ export default async function handler(req, res) {
     console.error("[role-manage]", error.message || error);
     return res.status(error.status || 500).json({
       error: error.message || "Role action failed",
-      detail: error.data || null,
     });
   }
 }
