@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1">
     <title>Coffee Shop Dashboard</title>
     <link rel="icon" href="/amazon-favicon.svg?v=2" type="image/svg+xml" sizes="any">
-    <link rel="stylesheet" href="style.css?v=7">
+    <link rel="stylesheet" href="style.css?v=8">
     <link rel="stylesheet" href="mobile-fix.css?v=1">
     <link rel="stylesheet" href="toggle-fix.css?v=1">
-    <link rel="stylesheet" href="server-view.css">
+    <link rel="stylesheet" href="server-view.css?v=2">
     <link rel="stylesheet" href="sv-layout-fix.css?v=1">
     <link rel="stylesheet" href="server-view-components.css">
     <link rel="stylesheet" href="server-view-theme-garden.css">
@@ -17,7 +17,6 @@
     <link rel="stylesheet" href="sv-mentions.css?v=1">
     <link rel="stylesheet" href="sv-readability.css">
     <link rel="stylesheet" href="server-view-members.css?v=5">
-    <link rel="stylesheet" href="/sv-discord-pack.css?v=3">
 </head>
 <body class="mode-auto">
     <div id="login-screen" class="login-screen">
@@ -26,6 +25,7 @@
             <h1>Coffee Shop</h1>
             <p>Bot Control Dashboard</p>
             <button class="button login-btn" id="login-button" type="button">Login with Discord</button>
+            <p id="login-error" style="color:#f23f43;margin-top:12px;display:none"></p>
         </div>
     </div>
 
@@ -71,6 +71,7 @@
                 </div>
                 <div class="card form-card wide" style="margin-top:1rem">
                     <p>Use the sidebar to configure the bot. Open <strong>Server</strong> to chat and manage channels.</p>
+                    <p id="deploy-marker" style="opacity:.5;font-size:12px;margin-top:8px">deploy: boot-v3</p>
                 </div>
             </section>
 
@@ -132,8 +133,9 @@
         </div>
     </div>
 
-    <script src="script.js?v=14"></script>
-    <script src="server-view.js?v=15"></script>
+    <script src="server-view-globals.js?v=1"></script>
+    <script src="script.js?v=15"></script>
+    <script src="server-view.js?v=16"></script>
     <script src="server-view-layout.js?v=1"></script>
     <script src="sv-mentions-fix.js?v=3"></script>
     <script src="server-view-punish.js?v=4"></script>
@@ -165,12 +167,12 @@
     </script>
     <script src="sv-members-load.js?v=5"></script>
     <script src="sv-punish-attr-fix.js?v=1"></script>
-    <script src="/features-ui.js?v=7"></script>
-    <script src="/features-config.js?v=18"></script>
-    <script src="/features-ui-patch.js?v=12"></script>
-    <script src="/features-config-patch.js?v=28"></script>
-    <script src="/app-config-fix.js?v=1"></script>
-    <script src="/sr-panels.js?v=2"></script>
-    <script src="/sv-stable.js?v=2"></script>
+    <script src="features-ui.js?v=7"></script>
+    <script src="features-config.js?v=18"></script>
+    <script src="features-ui-patch.js?v=12"></script>
+    <script src="features-config-patch.js?v=28"></script>
+    <script src="app-config-fix.js?v=1"></script>
+    <script src="sr-panels.js?v=2"></script>
+    <script src="sv-stable.js?v=3"></script>
 </body>
 </html>
