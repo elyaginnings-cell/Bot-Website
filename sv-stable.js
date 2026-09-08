@@ -1,13 +1,11 @@
 /**
- * Stable server-view extras:
- * - settings menu (create/delete channel, category, role)
- * - does NOT break message sending
- * - light @mention helper for members
+ * Stable server-view extras (v3)
+ * settings menu + @mentions — does not break sending
  */
 (function () {
   "use strict";
-  if (window.__svStableV1) return;
-  window.__svStableV1 = true;
+  if (window.__svStableV3) return;
+  window.__svStableV3 = true;
 
   function guildId() {
     if (window.selectedServer && window.selectedServer.id) return String(window.selectedServer.id);
@@ -32,7 +30,9 @@
       headers: { "Content-Type": "application/json", Accept: "application/json" },
       body: JSON.stringify(Object.assign({ guildId: gid }, body)),
     });
-    var data = await res.json().catch(function () { return {}; });
+    var data = await res.json().catch(function () {
+      return {};
+    });
     if (!res.ok) throw new Error(data.error || "HTTP " + res.status);
     return data;
   }
@@ -67,7 +67,7 @@
       item("create-channel", "Create channel") +
       item("create-category", "Create category") +
       item("delete-channel", "Delete selected channel") +
-      "<hr style=\"border:0;border-top:1px solid #1e1f22;margin:4px 0\">" +
+      '<hr style="border:0;border-top:1px solid #1e1f22;margin:4px 0">' +
       item("create-role", "Create role") +
       item("delete-role", "Delete role…");
     wrap.appendChild(menu);
@@ -105,7 +105,7 @@
         var n = prompt("New text channel name:");
         if (!n) return;
         await postManage("/api/channel-manage", { action: "create", kind: "text", name: n });
-        alert("Channel created. Re-open Server View if it doesn’t show yet.");
+        alert("Channel created");
         if (window.openServerView) window.openServerView();
       } else if (act === "create-category") {
         var c = prompt("New category name:");
@@ -138,7 +138,6 @@
     }
   }
 
-  // Simple @ autocomplete — members only, does not touch send
   var box = null;
   function ensureBox() {
     if (box) return box;
@@ -190,7 +189,7 @@
     var rect = input.getBoundingClientRect();
     b.style.left = Math.max(8, rect.left) + "px";
     b.style.bottom = window.innerHeight - rect.top + 6 + "px";
-    b.style.width = Math.min(300, rect.width) + "px";
+    b.style.width = Math.min(300, Math.max(200, rect.width)) + "px";
     b.style.display = "block";
     b.querySelectorAll("[data-id]").forEach(function (btn) {
       btn.onclick = function () {
@@ -211,5 +210,5 @@
   document.addEventListener("keyup", onKeyup, true);
   setInterval(tick, 2000);
   tick();
-  console.log("[sv-stable] ready");
+  console.log("[sv-stable] v3 ready");
 })();
