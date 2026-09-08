@@ -18,9 +18,10 @@ function mapDiscordMember(raw) {
   const id = String(user.id || "");
   let avatar = null;
   if (user.avatar && id) {
-    avatar = `https://cdn.discordapp.com/avatars/${id}/${user.avatar}.png?size=64`;
+    const ext = String(user.avatar).startsWith("a_") ? "gif" : "png";
+    avatar = `https://cdn.discordapp.com/avatars/${id}/${user.avatar}.${ext}?size=64`;
   } else if (id) {
-    const idx = Number(String(id).replace(/\D/g, "").slice(-2) || "0") % 6;
+    const idx = Number(BigInt(id) % 6n);
     avatar = `https://cdn.discordapp.com/embed/avatars/${idx}.png`;
   }
   return {
@@ -44,34 +45,54 @@ async function fetchWithTimeout(url, options, ms) {
   }
 }
 
+/** Discord max per page is 1000; paginate with `after` until limit reached. */
 async function fromDiscordApi(guildId, limit, q) {
   const token = botToken();
   if (!token) return null;
 
-  const res = await fetchWithTimeout(
-    `https://discord.com/api/v10/guilds/${guildId}/members?limit=${limit}`,
-    {
-      headers: {
-        Authorization: `Bot ${token}`,
+  const pageSize = Math.min(1000, Math.max(1, limit));
+  let after = "0";
+  const all = [];
+  let pages = 0;
+
+  while (all.length < limit && pages < 10) {
+    pages += 1;
+    const url = new URL(`https://discord.com/api/v10/guilds/${guildId}/members`);
+    url.searchParams.set("limit", String(pageSize));
+    if (after && after !== "0") url.searchParams.set("after", after);
+
+    const res = await fetchWithTimeout(
+      url.toString(),
+      {
+        headers: { Authorization: `Bot ${token}` },
+        cache: "no-store",
       },
-      cache: "no-store",
-    },
-    10000
-  );
-
-  if (!res.ok) {
-    const errText = await res.text().catch(() => "");
-    throw new Error(
-      `Discord members API ${res.status}: ${errText.slice(0, 160) || res.statusText}`
+      12000
     );
+
+    if (!res.ok) {
+      const errText = await res.text().catch(() => "");
+      // Privileged intent missing is the usual cause of 403
+      throw new Error(
+        `Discord members API ${res.status}: ${errText.slice(0, 180) || res.statusText}`
+      );
+    }
+
+    const data = await res.json();
+    if (!Array.isArray(data) || !data.length) break;
+
+    for (const raw of data) {
+      const m = mapDiscordMember(raw);
+      if (m.id) all.push(m);
+    }
+
+    const last = data[data.length - 1];
+    const lastId = last?.user?.id;
+    if (!lastId || data.length < pageSize) break;
+    after = String(lastId);
   }
 
-  const data = await res.json();
-  if (!Array.isArray(data)) {
-    throw new Error("Discord returned unexpected members payload");
-  }
-
-  let members = data.map(mapDiscordMember).filter((m) => m.id);
+  let members = all;
 
   if (q) {
     const needle = q.toLowerCase();
@@ -91,12 +112,15 @@ async function fromDiscordApi(guildId, limit, q) {
     })
   );
 
+  if (members.length > limit) members = members.slice(0, limit);
+
   return {
     members,
     total: members.length,
     source: "discord-api",
     fetchError: null,
-    truncated: data.length >= limit,
+    truncated: all.length >= limit,
+    pages,
   };
 }
 
@@ -111,7 +135,7 @@ async function fromRailway(guildId, limit, q, dashboardSecret) {
       headers: { Authorization: `Bearer ${dashboardSecret}` },
       cache: "no-store",
     },
-    10000
+    12000
   );
 
   const data = await res.json().catch(() => ({}));
@@ -152,6 +176,7 @@ export default async function handler(req, res) {
       if (direct) {
         return res.status(200).json(direct);
       }
+      errors.push("discord: no bot token on website");
     } catch (err) {
       errors.push("discord: " + (err.message || String(err)));
       console.warn("[members] Discord API:", err.message || err);
@@ -161,7 +186,7 @@ export default async function handler(req, res) {
     if (!dashboardSecret) {
       return res.status(500).json({
         error:
-          "Set DISCORD_BOT_TOKEN (or BOT_TOKEN) on Vercel to the same token as the Discord bot.",
+          "Set DISCORD_BOT_TOKEN on Vercel (same token as Railway). Also enable Server Members Intent in the Discord Developer Portal.",
         errors,
       });
     }
@@ -174,7 +199,7 @@ export default async function handler(req, res) {
       const timedOut = err.name === "AbortError";
       return res.status(504).json({
         error: timedOut
-          ? "Timed out talking to the bot. Add DISCORD_BOT_TOKEN on Vercel (same as Railway bot token) to load members directly from Discord."
+          ? "Timed out. Set DISCORD_BOT_TOKEN on Vercel and enable Server Members Intent."
           : err.message || "Failed to load members",
         errors,
       });
