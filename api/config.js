@@ -119,12 +119,25 @@ export default async function handler(req, res) {
       let mirrored = null;
       try {
         mirrored = await mergeGuildConfig(guildId, body);
-        // Persist systems that older mergeGuildConfig may not yet map (analytics, etc.)
-        const extraKeys = ["analytics", "qotd", "suggestions", "tickets", "verification", "bump"];
+        // Persist systems that may need a second merge pass
+        const extraKeys = [
+          "analytics",
+          "qotd",
+          "suggestions",
+          "tickets",
+          "verification",
+          "bump",
+          "ai",
+        ];
         let needsResave = false;
         for (const k of extraKeys) {
           if (body[k] && typeof body[k] === "object") {
-            mirrored[k] = { ...(mirrored[k] || {}), ...body[k] };
+            if (k === "ai") {
+              // Prefer explicit normalize from merge; still ensure body.ai fields win
+              mirrored.ai = { ...(mirrored.ai || {}), ...body.ai };
+            } else {
+              mirrored[k] = { ...(mirrored[k] || {}), ...body[k] };
+            }
             needsResave = true;
           }
         }
@@ -147,6 +160,8 @@ export default async function handler(req, res) {
           body.shopEnabled !== undefined
             ? body.shopEnabled
             : mirrored?.shop?.enabled,
+        // Always push full merged AI block so the bot gets replyChance
+        ai: mirrored?.ai || body.ai,
       };
 
       let botOk = false;

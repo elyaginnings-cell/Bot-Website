@@ -1,10 +1,10 @@
 /**
- * features-config-patch v24 — AI panel + all feature saves
+ * features-config-patch v25 — AI replyChance fix + feature saves
  */
 (function () {
   "use strict";
-  if (window.__featuresConfigPatchV24) return;
-  window.__featuresConfigPatchV24 = true;
+  if (window.__featuresConfigPatchV25) return;
+  window.__featuresConfigPatchV25 = true;
 
   function $(id) { return document.getElementById(id); }
   function setVal(id, v) { var el = $(id); if (el) el.value = v == null ? "" : String(v); }
@@ -162,6 +162,20 @@
     });
   }
 
+  function resolveAiConfig(c) {
+    var raw = (c && c.ai) || {};
+    // Bot may nest under settings; website stores flat
+    var nested = raw.settings && typeof raw.settings === "object" ? raw.settings : {};
+    return Object.assign({}, nested, raw);
+  }
+
+  function chanceToPercent(v) {
+    var x = Number(v);
+    if (Number.isNaN(x) || v == null) return 3;
+    if (x > 1) return Math.max(0, Math.min(100, x)); // already percent
+    return Math.max(0, Math.min(100, x * 100)); // fraction → percent
+  }
+
   function apply() {
     var c = window.currentConfig || {};
     var S = c.suggestions || {};
@@ -170,7 +184,7 @@
     var Q = c.qotd || {};
     var B = c.bump || {};
     var V = c.verification || {};
-    var AI = c.ai || {};
+    var AI = resolveAiConfig(c);
 
     setCheck("bump-enabled", B.enabled !== false);
     setVal("bump-reward-min", B.rewardMin != null ? B.rewardMin : 50);
@@ -205,12 +219,8 @@
     setVal("qotd-channel", Q.channelId || "");
     setVal("qotd-manager-role", Q.managerRoleId || "");
 
-    // AI
-    var chance = AI.replyChance;
-    if (chance == null) chance = 0.03;
-    if (Number(chance) <= 1) chance = Number(chance) * 100;
     setCheck("ai-enabled", !!AI.enabled);
-    setVal("ai-chance", chance);
+    setVal("ai-chance", chanceToPercent(AI.replyChance));
     setVal("ai-cooldown", AI.cooldownSeconds != null ? AI.cooldownSeconds : 45);
     setVal("ai-max-hour", AI.maxResponsesPerHour != null ? AI.maxResponsesPerHour : 20);
     setVal("ai-max-day", AI.maxResponsesPerDay != null ? AI.maxResponsesPerDay : 200);
@@ -373,6 +383,7 @@
       var pct = Number($("ai-chance") && $("ai-chance").value);
       if (Number.isNaN(pct)) pct = 3;
       pct = Math.max(0, Math.min(100, pct));
+      var fraction = pct / 100;
       var channelsRaw = ($("ai-channels") && $("ai-channels").value) || "";
       var enabledChannels = String(channelsRaw)
         .split(/[,\s]+/)
@@ -383,7 +394,7 @@
       var d = await window.saveConfig({
         ai: {
           enabled: $("ai-enabled") ? $("ai-enabled").checked : false,
-          replyChance: pct / 100,
+          replyChance: fraction,
           cooldownSeconds: Math.max(0, Math.min(3600, Number($("ai-cooldown") && $("ai-cooldown").value) || 0)),
           maxResponsesPerHour: Math.max(0, Math.min(500, Number($("ai-max-hour") && $("ai-max-hour").value) || 0)),
           maxResponsesPerDay: Math.max(0, Math.min(5000, Number($("ai-max-day") && $("ai-max-day").value) || 0)),
@@ -393,9 +404,18 @@
           enabledChannels: enabledChannels
         }
       });
+
+      var savedPct = chanceToPercent(d && d.config && d.config.ai && d.config.ai.replyChance != null
+        ? d.config.ai.replyChance
+        : fraction);
+
       setStatus(
         "ai-status",
-        statusText(d, "✅ AI settings saved. Changes apply on the bot shortly.", "Saved on website. Bot offline — redeploy Railway."),
+        statusText(
+          d,
+          "✅ AI saved — reply chance " + savedPct + "%",
+          "Saved on website (" + savedPct + "%). Bot offline — redeploy Railway."
+        ),
         true
       );
       if (window.loadGuildData) await window.loadGuildData(); else apply();
@@ -425,8 +445,8 @@
   function wire() {
     function bind(id, fn) {
       var el = $(id);
-      if (el && !el.__p24) {
-        el.__p24 = 1;
+      if (el && !el.__p25) {
+        el.__p25 = 1;
         el.addEventListener("click", function (e) {
           e.preventDefault();
           e.stopImmediatePropagation();
@@ -475,5 +495,5 @@
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
   else boot();
-  console.log("[features-config-patch] v24 AI panel + feature saves");
+  console.log("[features-config-patch] v25 AI replyChance fix");
 })();
