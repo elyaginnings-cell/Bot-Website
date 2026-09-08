@@ -1,10 +1,10 @@
 /**
- * features-config-patch v23 — ALL save buttons show status; bump + verification saves
+ * features-config-patch v24 — AI panel + all feature saves
  */
 (function () {
   "use strict";
-  if (window.__featuresConfigPatchV23) return;
-  window.__featuresConfigPatchV23 = true;
+  if (window.__featuresConfigPatchV24) return;
+  window.__featuresConfigPatchV24 = true;
 
   function $(id) { return document.getElementById(id); }
   function setVal(id, v) { var el = $(id); if (el) el.value = v == null ? "" : String(v); }
@@ -170,6 +170,7 @@
     var Q = c.qotd || {};
     var B = c.bump || {};
     var V = c.verification || {};
+    var AI = c.ai || {};
 
     setCheck("bump-enabled", B.enabled !== false);
     setVal("bump-reward-min", B.rewardMin != null ? B.rewardMin : 50);
@@ -203,6 +204,21 @@
     setCheck("qotd-enabled", Q.enabled !== false);
     setVal("qotd-channel", Q.channelId || "");
     setVal("qotd-manager-role", Q.managerRoleId || "");
+
+    // AI
+    var chance = AI.replyChance;
+    if (chance == null) chance = 0.03;
+    if (Number(chance) <= 1) chance = Number(chance) * 100;
+    setCheck("ai-enabled", !!AI.enabled);
+    setVal("ai-chance", chance);
+    setVal("ai-cooldown", AI.cooldownSeconds != null ? AI.cooldownSeconds : 45);
+    setVal("ai-max-hour", AI.maxResponsesPerHour != null ? AI.maxResponsesPerHour : 20);
+    setVal("ai-max-day", AI.maxResponsesPerDay != null ? AI.maxResponsesPerDay : 200);
+    setVal("ai-context", AI.contextMessages != null ? AI.contextMessages : 10);
+    setCheck("ai-mentions", AI.mentionAlwaysRespond !== false);
+    setCheck("ai-replies", AI.replyAlwaysRespond !== false);
+    var chList = Array.isArray(AI.enabledChannels) ? AI.enabledChannels.join(", ") : (AI.enabledChannels || "");
+    setVal("ai-channels", chList);
 
     fillSelects();
     setVal("verify-channel", V.channelId || "");
@@ -351,6 +367,43 @@
     }
   }
 
+  async function saveAi() {
+    try {
+      setStatus("ai-status", "Saving…", true);
+      var pct = Number($("ai-chance") && $("ai-chance").value);
+      if (Number.isNaN(pct)) pct = 3;
+      pct = Math.max(0, Math.min(100, pct));
+      var channelsRaw = ($("ai-channels") && $("ai-channels").value) || "";
+      var enabledChannels = String(channelsRaw)
+        .split(/[,\s]+/)
+        .map(function (s) { return s.trim(); })
+        .filter(Boolean)
+        .slice(0, 50);
+
+      var d = await window.saveConfig({
+        ai: {
+          enabled: $("ai-enabled") ? $("ai-enabled").checked : false,
+          replyChance: pct / 100,
+          cooldownSeconds: Math.max(0, Math.min(3600, Number($("ai-cooldown") && $("ai-cooldown").value) || 0)),
+          maxResponsesPerHour: Math.max(0, Math.min(500, Number($("ai-max-hour") && $("ai-max-hour").value) || 0)),
+          maxResponsesPerDay: Math.max(0, Math.min(5000, Number($("ai-max-day") && $("ai-max-day").value) || 0)),
+          contextMessages: Math.max(0, Math.min(25, Number($("ai-context") && $("ai-context").value) || 10)),
+          mentionAlwaysRespond: $("ai-mentions") ? $("ai-mentions").checked : true,
+          replyAlwaysRespond: $("ai-replies") ? $("ai-replies").checked : true,
+          enabledChannels: enabledChannels
+        }
+      });
+      setStatus(
+        "ai-status",
+        statusText(d, "✅ AI settings saved. Changes apply on the bot shortly.", "Saved on website. Bot offline — redeploy Railway."),
+        true
+      );
+      if (window.loadGuildData) await window.loadGuildData(); else apply();
+    } catch (e) {
+      setStatus("ai-status", "❌ " + (e.message || "Failed"), false);
+    }
+  }
+
   async function addStaff() {
     var rid = $("ticket-staff-role") ? $("ticket-staff-role").value : "";
     if (!rid) return alert("Pick a staff role");
@@ -372,8 +425,8 @@
   function wire() {
     function bind(id, fn) {
       var el = $(id);
-      if (el && !el.__p23) {
-        el.__p23 = 1;
+      if (el && !el.__p24) {
+        el.__p24 = 1;
         el.addEventListener("click", function (e) {
           e.preventDefault();
           e.stopImmediatePropagation();
@@ -389,6 +442,7 @@
     bind("save-tickets", saveT);
     bind("add-ticket-staff", addStaff);
     bind("refresh-analytics", apply);
+    bind("save-ai", saveAi);
   }
 
   var n = 0;
@@ -421,5 +475,5 @@
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
   else boot();
-  console.log("[features-config-patch] v23 all saves + bump + verification status");
+  console.log("[features-config-patch] v24 AI panel + feature saves");
 })();
