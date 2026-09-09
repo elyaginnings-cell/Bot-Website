@@ -42,6 +42,15 @@ function mapDiscordMember(raw) {
   };
 }
 
+function normalizeStatus(s) {
+  if (s == null || s === "") return null;
+  const v = String(s).toLowerCase();
+  if (["online", "idle", "dnd", "offline", "invisible"].includes(v)) {
+    return v === "invisible" ? "offline" : v;
+  }
+  return null;
+}
+
 async function fetchWithTimeout(url, options, ms) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), ms);
@@ -52,7 +61,6 @@ async function fetchWithTimeout(url, options, ms) {
   }
 }
 
-/** Discord max per page is 1000; paginate with `after` until limit reached. */
 async function fromDiscordApi(guildId, limit, q) {
   const token = botToken();
   if (!token) return null;
@@ -79,7 +87,6 @@ async function fromDiscordApi(guildId, limit, q) {
 
     if (!res.ok) {
       const errText = await res.text().catch(() => "");
-      // Privileged intent missing is the usual cause of 403
       throw new Error(
         `Discord members API ${res.status}: ${errText.slice(0, 180) || res.statusText}`
       );
@@ -152,6 +159,77 @@ async function fromRailway(guildId, limit, q, dashboardSecret) {
   return data;
 }
 
+async function presenceMapFromRailway(guildId, dashboardSecret) {
+  if (!dashboardSecret) return {};
+  const paths = [
+    `${RAILWAY_API}/api/guild/${guildId}/presence`,
+    `${RAILWAY_API}/api/guild/${guildId}/members/presence`,
+    `${RAILWAY_API}/api/presence?guildId=${encodeURIComponent(guildId)}`,
+  ];
+  const map = {};
+  for (const url of paths) {
+    try {
+      const res = await fetchWithTimeout(
+        url,
+        { headers: { Authorization: `Bearer ${dashboardSecret}` }, cache: "no-store" },
+        8000
+      );
+      if (!res.ok) continue;
+      const data = await res.json().catch(() => null);
+      if (!data) continue;
+      if (data.presence && typeof data.presence === "object" && !Array.isArray(data.presence)) {
+        for (const [id, st] of Object.entries(data.presence)) {
+          const n = normalizeStatus(typeof st === "object" ? st.status : st);
+          if (n) map[String(id)] = n;
+        }
+        if (Object.keys(map).length) return map;
+      }
+      const list = data.statuses || data.members || data.users || (Array.isArray(data) ? data : null);
+      if (Array.isArray(list)) {
+        for (const row of list) {
+          if (!row) continue;
+          const id = String(row.id || row.userId || row.user_id || (row.user && row.user.id) || "");
+          const n = normalizeStatus(row.status || row.presence || row.state);
+          if (id && n) map[id] = n;
+        }
+        if (Object.keys(map).length) return map;
+      }
+    } catch (_) {}
+  }
+  return map;
+}
+
+function mergeStatusIntoMembers(payload, statusMap) {
+  if (!payload || !Array.isArray(payload.members) || !statusMap) return payload;
+  let hits = 0;
+  for (const m of payload.members) {
+    if (!m || !m.id) continue;
+    const st = statusMap[String(m.id)];
+    if (st) {
+      m.status = st;
+      hits += 1;
+    } else if (!m.status) {
+      m.status = "offline";
+    }
+  }
+  payload.presenceHits = hits;
+  payload.presenceTotal = Object.keys(statusMap).length;
+  return payload;
+}
+
+function mergeRailwayMemberStatuses(discordPayload, railwayPayload) {
+  if (!discordPayload || !Array.isArray(discordPayload.members)) return discordPayload;
+  if (!railwayPayload || !Array.isArray(railwayPayload.members)) return discordPayload;
+  const byId = {};
+  for (const m of railwayPayload.members) {
+    if (!m || !m.id) continue;
+    const st = normalizeStatus(m.status || m.presence);
+    if (st) byId[String(m.id)] = st;
+  }
+  if (!Object.keys(byId).length) return discordPayload;
+  return mergeStatusIntoMembers(discordPayload, byId);
+}
+
 export default async function handler(req, res) {
   try {
     try {
@@ -177,40 +255,57 @@ export default async function handler(req, res) {
     const q = String(req.query.q || "").trim();
 
     const errors = [];
+    const dashboardSecret = process.env.DASHBOARD_API_SECRET || "";
+
+    let payload = null;
 
     try {
       const direct = await fromDiscordApi(guildId, limit, q);
-      if (direct) {
-        return res.status(200).json(direct);
-      }
-      errors.push("discord: no bot token on website");
+      if (direct) payload = direct;
+      else errors.push("discord: no bot token on website");
     } catch (err) {
       errors.push("discord: " + (err.message || String(err)));
       console.warn("[members] Discord API:", err.message || err);
     }
 
-    const dashboardSecret = process.env.DASHBOARD_API_SECRET;
-    if (!dashboardSecret) {
-      return res.status(500).json({
+    if (!payload && dashboardSecret) {
+      try {
+        payload = await fromRailway(guildId, limit, q, dashboardSecret);
+      } catch (err) {
+        errors.push("railway: " + (err.message || String(err)));
+      }
+    }
+
+    if (!payload) {
+      return res.status(504).json({
         error:
-          "Set DISCORD_BOT_TOKEN on Vercel (same token as Railway). Also enable Server Members Intent in the Discord Developer Portal.",
+          "Could not load members. Set DISCORD_BOT_TOKEN on Vercel + Server Members Intent.",
         errors,
       });
     }
 
-    try {
-      const data = await fromRailway(guildId, limit, q, dashboardSecret);
-      return res.status(200).json(data);
-    } catch (err) {
-      errors.push("railway: " + (err.message || String(err)));
-      const timedOut = err.name === "AbortError";
-      return res.status(504).json({
-        error: timedOut
-          ? "Timed out. Set DISCORD_BOT_TOKEN on Vercel and enable Server Members Intent."
-          : err.message || "Failed to load members",
-        errors,
-      });
+    if (dashboardSecret) {
+      try {
+        const railwayMembers = await fromRailway(guildId, limit, q, dashboardSecret).catch(
+          () => null
+        );
+        if (railwayMembers) {
+          payload = mergeRailwayMemberStatuses(payload, railwayMembers);
+          if (payload.source === "discord-api") payload.source = "discord+railway-status";
+        }
+      } catch (_) {}
+
+      try {
+        const pmap = await presenceMapFromRailway(guildId, dashboardSecret);
+        if (Object.keys(pmap).length) {
+          payload = mergeStatusIntoMembers(payload, pmap);
+          payload.source = (payload.source || "discord") + "+presence";
+        }
+      } catch (_) {}
     }
+
+    if (errors.length) payload.errors = errors;
+    return res.status(200).json(payload);
   } catch (error) {
     console.error("Members API error:", error);
     return res.status(500).json({
