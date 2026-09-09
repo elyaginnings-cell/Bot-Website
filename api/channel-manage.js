@@ -51,6 +51,12 @@ function mapChannel(c) {
   };
 }
 
+function isRoleManageRequest(req) {
+  const url = String(req.url || "");
+  const resource = String(req.query?.resource || "");
+  return resource === "roles" || url.includes("/role-manage") || url.includes("resource=roles");
+}
+
 export default async function handler(req, res) {
   try {
     try {
@@ -64,6 +70,40 @@ export default async function handler(req, res) {
     const guildId = String(req.query?.guildId || body.guildId || "").trim();
     if (!guildId) return res.status(400).json({ error: "Missing guildId" });
 
+    // ---- Role manage (merged from api/role-manage.js) ----
+    if (isRoleManageRequest(req)) {
+      if (req.method !== "POST") {
+        return res.status(405).json({ error: "Method not allowed" });
+      }
+
+      const action = String(body.action || "").toLowerCase();
+
+      if (action === "create") {
+        const name = String(body.name || "").trim().slice(0, 100);
+        if (!name) return res.status(400).json({ error: "Role name required" });
+        const created = await discord(`/guilds/${guildId}/roles`, {
+          method: "POST",
+          body: {
+            name,
+            color: body.color != null ? Number(body.color) || 0 : 0,
+            hoist: !!body.hoist,
+            mentionable: body.mentionable !== false,
+          },
+        });
+        return res.status(200).json({ ok: true, role: created });
+      }
+
+      if (action === "delete") {
+        const roleId = String(body.roleId || "").trim();
+        if (!roleId) return res.status(400).json({ error: "Missing roleId" });
+        await discord(`/guilds/${guildId}/roles/${roleId}`, { method: "DELETE" });
+        return res.status(200).json({ ok: true, deleted: roleId });
+      }
+
+      return res.status(400).json({ error: "Unknown action" });
+    }
+
+    // ---- Original channel-manage ----
     if (req.method === "GET") {
       const channels = await discord(`/guilds/${guildId}/channels`);
       const list = (Array.isArray(channels) ? channels : [])
@@ -133,7 +173,7 @@ export default async function handler(req, res) {
   } catch (error) {
     console.error("[channel-manage]", error.message || error);
     return res.status(error.status || 500).json({
-      error: error.message || "Channel action failed",
+      error: error.message || "Channel/role action failed",
     });
   }
 }
