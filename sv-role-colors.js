@@ -1,10 +1,10 @@
 /**
- * Role colors on chat author names (additive; does not change layout).
+ * Role colors on names — must use !important to beat readability CSS.
  */
 (function () {
   "use strict";
-  if (window.__svRoleColorsV1) return;
-  window.__svRoleColorsV1 = true;
+  if (window.__svRoleColorsV2) return;
+  window.__svRoleColorsV2 = true;
 
   function roleMap() {
     var map = {};
@@ -32,6 +32,22 @@
     return "";
   }
 
+  function applyMemberColors() {
+    var map = roleMap();
+    var members = Array.isArray(window.membersCache) ? window.membersCache : [];
+    var byId = {};
+    for (var i = 0; i < members.length; i++) {
+      if (members[i] && members[i].id) byId[String(members[i].id)] = members[i];
+    }
+    document.querySelectorAll(".sv-member-row[data-member-id] .sv-member-name").forEach(function (el) {
+      var row = el.closest(".sv-member-row");
+      var id = row && row.getAttribute("data-member-id");
+      if (!id) return;
+      var c = colorForMember(byId[id], map);
+      if (c) el.style.setProperty("color", c, "important");
+    });
+  }
+
   function applyAuthorColors() {
     var map = roleMap();
     var members = Array.isArray(window.membersCache) ? window.membersCache : [];
@@ -44,19 +60,28 @@
       var id = art && art.getAttribute("data-author-id");
       if (!id) return;
       var c = colorForMember(byId[id], map);
-      if (c) el.style.color = c;
+      if (c) el.style.setProperty("color", c, "important");
     });
   }
 
-  var obs = new MutationObserver(function () {
+  function applyAll() {
     applyAuthorColors();
+    applyMemberColors();
+  }
+
+  var obs = new MutationObserver(function () {
+    applyAll();
   });
+
   function start() {
     var box = document.getElementById("sv-messages");
     if (box) obs.observe(box, { childList: true, subtree: true });
-    applyAuthorColors();
+    var ml = document.getElementById("sv-member-list");
+    if (ml) obs.observe(ml, { childList: true, subtree: true });
+    applyAll();
   }
+
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start);
   else start();
-  setInterval(applyAuthorColors, 3000);
+  setInterval(applyAll, 2000);
 })();
