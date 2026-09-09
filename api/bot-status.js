@@ -14,6 +14,12 @@ function websiteDbConfigured() {
   return Boolean(url && url.includes("://"));
 }
 
+function isPresenceRequest(req) {
+  const url = String(req.url || "");
+  const resource = String(req.query?.resource || "");
+  return resource === "presence" || url.includes("/presence") || url.includes("resource=presence");
+}
+
 export default async function handler(req, res) {
   try {
     try {
@@ -22,13 +28,52 @@ export default async function handler(req, res) {
       return res.status(err.status || 401).json({ error: err.message || "Not authenticated" });
     }
 
-    if (req.method !== "GET") {
-      return res.status(405).json({ error: "Method not allowed" });
-    }
-
     const dashboardSecret = process.env.DASHBOARD_API_SECRET;
     if (!dashboardSecret) {
       return res.status(500).json({ error: "Missing DASHBOARD_API_SECRET" });
+    }
+
+    // ---- Presence (merged from api/presence.js) ----
+    if (isPresenceRequest(req)) {
+      if (req.method === "GET") {
+        const response = await fetch(`${RAILWAY_API}/api/presence`, {
+          headers: { Authorization: `Bearer ${dashboardSecret}` },
+          cache: "no-store",
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          return res.status(response.status).json({ error: data.error || "Failed to load presence" });
+        }
+        return res.status(200).json(data);
+      }
+
+      if (req.method === "POST") {
+        const body = typeof req.body === "string" ? JSON.parse(req.body || "{}") : req.body || {};
+        const response = await fetch(`${RAILWAY_API}/api/presence`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${dashboardSecret}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            status: body.status,
+            activityType: body.activityType,
+            activityName: body.activityName,
+          }),
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          return res.status(response.status).json({ error: data.error || "Failed to update presence" });
+        }
+        return res.status(200).json(data);
+      }
+
+      return res.status(405).json({ error: "Method not allowed" });
+    }
+
+    // ---- Original bot-status ----
+    if (req.method !== "GET") {
+      return res.status(405).json({ error: "Method not allowed" });
     }
 
     const websiteHasDb = websiteDbConfigured();
@@ -96,7 +141,7 @@ export default async function handler(req, res) {
       botError,
     });
   } catch (error) {
-    console.error("Bot status error:", error);
+    console.error("Bot status / presence error:", error);
     return res.status(500).json({ error: error.message || "Failed" });
   }
 }
