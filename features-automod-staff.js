@@ -1,10 +1,11 @@
 /**
- * Automod (AI) + AI Staff panels — channel/role dropdowns, no raw ID fields.
+ * AI Automod + AI Staff — same layout as Applications / Analytics panels.
+ * Nav tabs, card form-card, input-group, toggle, button. Dropdowns use channelsCache/rolesCache.
  */
 (function () {
   "use strict";
-  if (window.__featuresAutomodStaffV2) return;
-  window.__featuresAutomodStaffV2 = true;
+  if (window.__featuresAutomodStaffV3) return;
+  window.__featuresAutomodStaffV3 = true;
 
   function $(id) {
     return document.getElementById(id);
@@ -12,15 +13,19 @@
 
   function channels() {
     try {
-      if (window.channelsCache && window.channelsCache.length) return window.channelsCache;
+      if (typeof channelsCache !== "undefined" && channelsCache && channelsCache.length) return channelsCache;
     } catch (_) {}
-    return [];
+    try {
+      if (window.syncGlobals) window.syncGlobals();
+    } catch (_) {}
+    return window.channelsCache || [];
   }
+
   function roles() {
     try {
-      if (window.rolesCache && window.rolesCache.length) return window.rolesCache;
+      if (typeof rolesCache !== "undefined" && rolesCache && rolesCache.length) return rolesCache;
     } catch (_) {}
-    return [];
+    return window.rolesCache || [];
   }
 
   function textChannels() {
@@ -29,10 +34,10 @@
     });
   }
 
-  function fillChannelSelect(sel, includeNone) {
-    if (!sel) return;
+  function fillChannelSelect(sel, noneLabel) {
+    if (!sel || sel.tagName !== "SELECT") return;
     var cur = sel.value;
-    sel.innerHTML = includeNone !== false ? '<option value="">None</option>' : "";
+    sel.innerHTML = '<option value="">' + (noneLabel || "None") + "</option>";
     textChannels().forEach(function (c) {
       var o = document.createElement("option");
       o.value = c.id;
@@ -42,10 +47,10 @@
     if (cur) sel.value = cur;
   }
 
-  function fillRoleSelect(sel, includeNone) {
-    if (!sel) return;
+  function fillRoleSelect(sel, noneLabel) {
+    if (!sel || sel.tagName !== "SELECT") return;
     var cur = sel.value;
-    sel.innerHTML = includeNone !== false ? '<option value="">Select a role…</option>' : "";
+    sel.innerHTML = '<option value="">' + (noneLabel || "Select…") + "</option>";
     roles().forEach(function (r) {
       if (!r || r.name === "@everyone") return;
       var o = document.createElement("option");
@@ -56,84 +61,54 @@
     if (cur) sel.value = cur;
   }
 
-  function panelHtml() {
-    return [
-      '<section class="feature-card" id="panel-automod" style="margin-top:1rem">',
-      "  <h2>🛡️ AI Automod</h2>",
-      '  <p class="form-hint">CoffeeBot reads messages and decides what’s not okay (hate, scams, threats, invite spam…). Uses your normal <code>/warn</code> system. No keyword lists to babysit.</p>',
-      '  <label class="check-row"><input type="checkbox" id="automod-enabled"> Enable AI Automod</label>',
-      '  <label class="check-row"><input type="checkbox" id="automod-ignore-staff" checked> Ignore staff (Manage Messages+)</label>',
-      "  <label>When AI flags a message</label>",
-      '  <select id="automod-action">',
-      '    <option value="warn">Delete + warn (recommended)</option>',
-      '    <option value="delete">Delete only</option>',
-      '    <option value="mute">Delete + mute 10m</option>',
-      "  </select>",
-      "  <label>Log channel</label>",
-      '  <select id="automod-log"><option value="">None</option></select>',
-      "  <label>Also ignore this role</label>",
-      '  <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap">',
-      '    <select id="automod-ignore-role-pick" style="flex:1"><option value="">Select…</option></select>',
-      '    <button type="button" id="automod-ignore-role-add">Add</button>',
-      "  </div>",
-      '  <div id="automod-ignore-roles-list" class="form-hint"></div>',
-      "  <label>Also ignore this channel</label>",
-      '  <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap">',
-      '    <select id="automod-ignore-ch-pick" style="flex:1"><option value="">Select…</option></select>',
-      '    <button type="button" id="automod-ignore-ch-add">Add</button>',
-      "  </div>",
-      '  <div id="automod-ignore-ch-list" class="form-hint"></div>',
-      '  <button type="button" id="automod-save" class="primary-btn" style="margin-top:0.75rem">Save Automod</button>',
-      '  <p id="automod-status" class="form-hint"></p>',
-      "</section>",
-      '<section class="feature-card" id="panel-ai-staff" style="margin-top:1rem">',
-      "  <h2>🤖 AI Staff</h2>",
-      '  <p class="form-hint">People with these roles can ask CoffeeBot to do staff tasks (announce, channels, roles…). Everyone else is refused.</p>',
-      '  <label class="check-row"><input type="checkbox" id="aistaff-enabled"> Enable AI Staff</label>',
-      "  <label>Staff role</label>",
-      '  <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap">',
-      '    <select id="aistaff-role-pick" style="flex:1"><option value="">Select…</option></select>',
-      '    <button type="button" id="aistaff-role-add">Add</button>',
-      "  </div>",
-      '  <div id="aistaff-roles-list" class="form-hint"></div>',
-      "  <label>Default announce channel</label>",
-      '  <select id="aistaff-announce"><option value="">Current channel / #mention</option></select>',
-      "  <label>Staff action log channel</label>",
-      '  <select id="aistaff-log"><option value="">None</option></select>',
-      "  <h3 style=\"margin-top:0.75rem;font-size:0.95rem\">Allowed actions</h3>",
-      '  <label class="check-row"><input type="checkbox" id="as-announce" checked> Announce</label>',
-      '  <label class="check-row"><input type="checkbox" id="as-send" checked> Send message to a channel</label>',
-      '  <label class="check-row"><input type="checkbox" id="as-create-ch" checked> Create channel</label>',
-      '  <label class="check-row"><input type="checkbox" id="as-rename" checked> Rename channel</label>',
-      '  <label class="check-row"><input type="checkbox" id="as-create-role" checked> Create role</label>',
-      '  <label class="check-row"><input type="checkbox" id="as-assign" checked> Assign role</label>',
-      '  <label class="check-row"><input type="checkbox" id="as-remove"> Remove role</label>',
-      '  <label class="check-row"><input type="checkbox" id="as-pin" checked> Pin message</label>',
-      '  <button type="button" id="aistaff-save" class="primary-btn" style="margin-top:0.75rem">Save AI Staff</button>',
-      '  <p id="aistaff-status" class="form-hint"></p>',
-      '  <p class="form-hint">Examples: <code>announce: server online</code> · <code>create channel events</code> · <code>give @User @Role</code></p>',
-      "</section>",
-    ].join("\n");
+  function ensureNavItem(tab, icon, label, title) {
+    var nav = document.querySelector(".navigation");
+    if (!nav) return false;
+    if (nav.querySelector('[data-tab="' + tab + '"]')) return true;
+    var settingsBtn = nav.querySelector('[data-tab="settings"]');
+    var btn = document.createElement("button");
+    btn.className = "nav-item";
+    btn.type = "button";
+    btn.setAttribute("data-tab", tab);
+    btn.title = title || label;
+    btn.innerHTML = "<span>" + icon + "</span><em>" + label + "</em>";
+    btn.addEventListener("click", function () {
+      if (typeof window.showSection === "function") window.showSection(tab);
+      else {
+        document.querySelectorAll(".page-section").forEach(function (el) {
+          el.classList.remove("active");
+        });
+        var sec = document.getElementById(tab);
+        if (sec) sec.classList.add("active");
+        document.querySelectorAll(".nav-item").forEach(function (b) {
+          b.classList.toggle("active", b.getAttribute("data-tab") === tab);
+        });
+      }
+      try {
+        fillAllSelects();
+        apply();
+      } catch (_) {}
+    });
+    if (settingsBtn) nav.insertBefore(btn, settingsBtn);
+    else nav.appendChild(btn);
+    return true;
+  }
+
+  function ensureSection(id, html) {
+    var content = document.querySelector(".content");
+    if (!content) return false;
+    if ($(id)) return true;
+    var wrap = document.createElement("div");
+    wrap.innerHTML = html;
+    while (wrap.firstChild) content.appendChild(wrap.firstChild);
+    return true;
   }
 
   var state = {
     ignoreRoles: [],
     ignoreChannels: [],
     staffRoles: [],
-    staffUsers: [],
   };
-
-  function findMount() {
-    return (
-      document.getElementById("panel-ai") ||
-      document.getElementById("ai-panel") ||
-      document.querySelector("[data-feature=ai]") ||
-      document.getElementById("features-root") ||
-      document.querySelector(".features-grid") ||
-      document.querySelector("main") ||
-      document.body
-    );
-  }
 
   function roleName(id) {
     var r = roles().find(function (x) {
@@ -148,75 +123,65 @@
     return c ? "#" + c.name : id;
   }
 
-  function renderChipList(elId, ids, kind) {
+  function renderList(elId, ids, kind) {
     var el = $(elId);
     if (!el) return;
     if (!ids.length) {
-      el.innerHTML = '<span class="form-hint">None</span>';
+      el.innerHTML = '<p class="form-hint">None added.</p>';
       return;
     }
     el.innerHTML = ids
       .map(function (id) {
         var label = kind === "role" ? roleName(id) : chName(id);
         return (
-          '<span style="display:inline-flex;align-items:center;gap:6px;margin:2px 6px 2px 0;padding:2px 8px;border-radius:999px;background:rgba(79,84,92,.4)">' +
+          '<div class="level-role-row">' +
           label +
           ' <button type="button" data-rm="' +
           id +
           '" data-kind="' +
           kind +
-          '" style="border:0;background:transparent;color:#f87171;cursor:pointer">×</button></span>'
+          '" data-list="' +
+          elId +
+          '">Remove</button></div>'
         );
       })
       .join("");
     el.querySelectorAll("[data-rm]").forEach(function (btn) {
       btn.addEventListener("click", function () {
         var id = btn.getAttribute("data-rm");
+        var list = btn.getAttribute("data-list");
         var k = btn.getAttribute("data-kind");
-        if (k === "role" && elId.indexOf("aistaff") >= 0) {
+        if (list === "aistaff-roles-list") {
           state.staffRoles = state.staffRoles.filter(function (x) {
             return String(x) !== String(id);
           });
-          renderChipList("aistaff-roles-list", state.staffRoles, "role");
+          renderList("aistaff-roles-list", state.staffRoles, "role");
         } else if (k === "role") {
           state.ignoreRoles = state.ignoreRoles.filter(function (x) {
             return String(x) !== String(id);
           });
-          renderChipList("automod-ignore-roles-list", state.ignoreRoles, "role");
+          renderList("automod-ignore-roles-list", state.ignoreRoles, "role");
         } else {
           state.ignoreChannels = state.ignoreChannels.filter(function (x) {
             return String(x) !== String(id);
           });
-          renderChipList("automod-ignore-ch-list", state.ignoreChannels, "channel");
+          renderList("automod-ignore-ch-list", state.ignoreChannels, "channel");
         }
       });
     });
   }
 
-  function fillSelects() {
-    fillChannelSelect($("automod-log"), true);
-    fillChannelSelect($("automod-ignore-ch-pick"), true);
-    fillChannelSelect($("aistaff-announce"), true);
-    fillChannelSelect($("aistaff-log"), true);
-    fillRoleSelect($("automod-ignore-role-pick"), true);
-    fillRoleSelect($("aistaff-role-pick"), true);
+  function fillAllSelects() {
+    fillChannelSelect($("automod-log"), "None");
+    fillChannelSelect($("automod-ignore-ch-pick"), "Select a channel…");
+    fillChannelSelect($("aistaff-announce"), "Current channel / mention");
+    fillChannelSelect($("aistaff-log"), "None");
+    fillRoleSelect($("automod-ignore-role-pick"), "Select a role…");
+    fillRoleSelect($("aistaff-role-pick"), "Select a role…");
   }
 
-  function ensurePanels() {
-    if ($("panel-automod")) {
-      fillSelects();
-      return;
-    }
-    var mount = findMount();
-    if (!mount) return;
-    var wrap = document.createElement("div");
-    wrap.id = "automod-staff-wrap";
-    wrap.innerHTML = panelHtml();
-    mount.appendChild(wrap);
-    wire();
-    fillSelects();
-    apply();
-  }
+  // Expose for features-config-patch / other refill hooks
+  window.fillAutomodStaffSelects = fillAllSelects;
 
   function setStatus(id, t, ok) {
     var el = $(id);
@@ -231,12 +196,12 @@
     if ($("automod-enabled")) $("automod-enabled").checked = !!am.enabled;
     if ($("automod-ignore-staff")) $("automod-ignore-staff").checked = am.ignoreStaff !== false;
     if ($("automod-action")) $("automod-action").value = am.action || "warn";
-    fillSelects();
+    fillAllSelects();
     if ($("automod-log")) $("automod-log").value = am.logChannelId || "";
     state.ignoreRoles = (am.ignoredRoleIds || []).map(String);
     state.ignoreChannels = (am.ignoredChannelIds || []).map(String);
-    renderChipList("automod-ignore-roles-list", state.ignoreRoles, "role");
-    renderChipList("automod-ignore-ch-list", state.ignoreChannels, "channel");
+    renderList("automod-ignore-roles-list", state.ignoreRoles, "role");
+    renderList("automod-ignore-ch-list", state.ignoreChannels, "channel");
 
     var st = (c.ai && c.ai.staff) || {};
     var acts = st.allowedActions || {};
@@ -244,8 +209,7 @@
     if ($("aistaff-announce")) $("aistaff-announce").value = st.announceChannelId || "";
     if ($("aistaff-log")) $("aistaff-log").value = st.logChannelId || "";
     state.staffRoles = (st.allowedRoleIds || []).map(String);
-    state.staffUsers = (st.allowedUserIds || []).map(String);
-    renderChipList("aistaff-roles-list", state.staffRoles, "role");
+    renderList("aistaff-roles-list", state.staffRoles, "role");
     if ($("as-announce")) $("as-announce").checked = acts.announce !== false;
     if ($("as-send")) $("as-send").checked = acts.sendMessage !== false;
     if ($("as-create-ch")) $("as-create-ch").checked = acts.createChannel !== false;
@@ -290,7 +254,7 @@
           staff: {
             enabled: $("aistaff-enabled") ? $("aistaff-enabled").checked : false,
             allowedRoleIds: state.staffRoles.slice(),
-            allowedUserIds: state.staffUsers.slice(),
+            allowedUserIds: [],
             announceChannelId: $("aistaff-announce") && $("aistaff-announce").value ? $("aistaff-announce").value : null,
             logChannelId: $("aistaff-log") && $("aistaff-log").value ? $("aistaff-log").value : null,
             allowedActions: {
@@ -319,51 +283,144 @@
   }
 
   function wire() {
-    function addOnce(id, fn) {
+    function once(id, fn) {
       var el = $(id);
       if (el && !el.__bound) {
         el.__bound = 1;
         el.addEventListener("click", fn);
       }
     }
-    addOnce("automod-save", saveAutomod);
-    addOnce("aistaff-save", saveAiStaff);
-    addOnce("automod-ignore-role-add", function () {
+    once("save-automod", saveAutomod);
+    once("save-aistaff", saveAiStaff);
+    once("automod-ignore-role-add", function () {
       var v = $("automod-ignore-role-pick") && $("automod-ignore-role-pick").value;
       if (!v) return;
       if (state.ignoreRoles.indexOf(v) < 0) state.ignoreRoles.push(v);
-      renderChipList("automod-ignore-roles-list", state.ignoreRoles, "role");
+      renderList("automod-ignore-roles-list", state.ignoreRoles, "role");
     });
-    addOnce("automod-ignore-ch-add", function () {
+    once("automod-ignore-ch-add", function () {
       var v = $("automod-ignore-ch-pick") && $("automod-ignore-ch-pick").value;
       if (!v) return;
       if (state.ignoreChannels.indexOf(v) < 0) state.ignoreChannels.push(v);
-      renderChipList("automod-ignore-ch-list", state.ignoreChannels, "channel");
+      renderList("automod-ignore-ch-list", state.ignoreChannels, "channel");
     });
-    addOnce("aistaff-role-add", function () {
+    once("aistaff-role-add", function () {
       var v = $("aistaff-role-pick") && $("aistaff-role-pick").value;
       if (!v) return;
       if (state.staffRoles.indexOf(v) < 0) state.staffRoles.push(v);
-      renderChipList("aistaff-roles-list", state.staffRoles, "role");
+      renderList("aistaff-roles-list", state.staffRoles, "role");
     });
   }
 
+  function ensurePanels() {
+    ensureNavItem("automod", "🛡️", "Automod", "AI Automod");
+    ensureNavItem("aistaff", "🤖", "AI Staff", "AI Staff actions");
+
+    ensureSection(
+      "automod",
+      '<section id="automod" class="page-section"><div class="card form-card wide">' +
+        '<span class="eyebrow">AUTOMOD</span>' +
+        "<h2>AI Automod</h2>" +
+        '<p class="form-hint">CoffeeBot reads messages and decides what’s not okay (hate, scams, threats, invite spam…). Uses your normal <code>/warn</code> system — no keyword lists.</p>' +
+        '<label class="toggle"><input type="checkbox" id="automod-enabled"> <span>Enabled</span></label>' +
+        '<label class="toggle"><input type="checkbox" id="automod-ignore-staff" checked> <span>Ignore staff (Manage Messages+)</span></label>' +
+        '<div class="input-group"><label>When AI flags a message</label>' +
+        '<select id="automod-action">' +
+        '<option value="warn">Delete + warn (recommended)</option>' +
+        '<option value="delete">Delete only</option>' +
+        '<option value="mute">Delete + mute 10m</option>' +
+        "</select></div>" +
+        '<div class="input-group"><label>Log channel</label>' +
+        '<select id="automod-log"><option value="">None</option></select></div>' +
+        '<h3 class="subhead">Ignore extras (optional)</h3>' +
+        '<div class="config-grid">' +
+        '<div class="input-group"><label>Ignore role</label>' +
+        '<select id="automod-ignore-role-pick"><option value="">Select a role…</option></select></div>' +
+        '<div class="input-group"><label>&nbsp;</label><button class="button secondary" type="button" id="automod-ignore-role-add">Add role</button></div>' +
+        "</div>" +
+        '<div id="automod-ignore-roles-list" class="level-roles-list"></div>' +
+        '<div class="config-grid">' +
+        '<div class="input-group"><label>Ignore channel</label>' +
+        '<select id="automod-ignore-ch-pick"><option value="">Select a channel…</option></select></div>' +
+        '<div class="input-group"><label>&nbsp;</label><button class="button secondary" type="button" id="automod-ignore-ch-add">Add channel</button></div>' +
+        "</div>" +
+        '<div id="automod-ignore-ch-list" class="level-roles-list"></div>' +
+        '<button class="button" id="save-automod" type="button" style="margin-top:1rem">Save Automod Settings</button>' +
+        '<p class="form-hint" id="automod-status"></p>' +
+        "</div></section>"
+    );
+
+    ensureSection(
+      "aistaff",
+      '<section id="aistaff" class="page-section"><div class="card form-card wide">' +
+        '<span class="eyebrow">AI STAFF</span>' +
+        "<h2>AI Staff actions</h2>" +
+        '<p class="form-hint">Roles you add can ask CoffeeBot to do staff tasks (announce, create channels/roles, assign roles, pin…). Everyone else is refused.</p>' +
+        '<label class="toggle"><input type="checkbox" id="aistaff-enabled"> <span>Enabled</span></label>' +
+        '<h3 class="subhead">Who can use it</h3>' +
+        '<div class="config-grid">' +
+        '<div class="input-group"><label>Staff role</label>' +
+        '<select id="aistaff-role-pick"><option value="">Select a role…</option></select></div>' +
+        '<div class="input-group"><label>&nbsp;</label><button class="button secondary" type="button" id="aistaff-role-add">Add role</button></div>' +
+        "</div>" +
+        '<div id="aistaff-roles-list" class="level-roles-list"></div>' +
+        '<div class="input-group"><label>Default announce channel</label>' +
+        '<select id="aistaff-announce"><option value="">Current channel / mention</option></select></div>' +
+        '<div class="input-group"><label>Action log channel</label>' +
+        '<select id="aistaff-log"><option value="">None</option></select></div>' +
+        '<h3 class="subhead">Allowed actions</h3>' +
+        '<label class="toggle"><input type="checkbox" id="as-announce" checked> <span>Announce</span></label>' +
+        '<label class="toggle"><input type="checkbox" id="as-send" checked> <span>Send message to a channel</span></label>' +
+        '<label class="toggle"><input type="checkbox" id="as-create-ch" checked> <span>Create channel</span></label>' +
+        '<label class="toggle"><input type="checkbox" id="as-rename" checked> <span>Rename channel</span></label>' +
+        '<label class="toggle"><input type="checkbox" id="as-create-role" checked> <span>Create role</span></label>' +
+        '<label class="toggle"><input type="checkbox" id="as-assign" checked> <span>Assign role</span></label>' +
+        '<label class="toggle"><input type="checkbox" id="as-remove"> <span>Remove role</span></label>' +
+        '<label class="toggle"><input type="checkbox" id="as-pin" checked> <span>Pin message</span></label>' +
+        '<button class="button" id="save-aistaff" type="button" style="margin-top:1rem">Save AI Staff Settings</button>' +
+        '<p class="form-hint" id="aistaff-status"></p>' +
+        '<p class="form-hint">Examples: <code>announce: server online</code> · <code>create channel events</code> · <code>give @User @Role</code></p>' +
+        "</div></section>"
+    );
+
+    wire();
+  }
+
+  var n = 0;
   function boot() {
+    n++;
     ensurePanels();
-    setInterval(ensurePanels, 2500);
-    var prev = window.loadGuildData;
-    if (typeof prev === "function" && !window.__amStaffLoadWrap) {
+    fillAllSelects();
+    apply();
+    // Hook existing refill if present
+    var prevFill = window.fillExtraSelects;
+    if (typeof prevFill === "function" && !window.__amStaffFillHook) {
+      window.__amStaffFillHook = true;
+      window.fillExtraSelects = function () {
+        try {
+          prevFill();
+        } catch (_) {}
+        try {
+          fillAllSelects();
+        } catch (_) {}
+      };
+    }
+    var prevLoad = window.loadGuildData;
+    if (typeof prevLoad === "function" && !window.__amStaffLoadWrap) {
       window.__amStaffLoadWrap = true;
       window.loadGuildData = async function () {
-        var r = await prev.apply(this, arguments);
+        var r = await prevLoad.apply(this, arguments);
         try {
+          fillAllSelects();
           apply();
         } catch (_) {}
         return r;
       };
     }
+    if (n < 100) setTimeout(boot, 250);
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
   else boot();
+  console.log("[features-automod-staff] v3 matched layout + selects");
 })();
