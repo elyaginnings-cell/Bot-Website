@@ -2,6 +2,9 @@
   "rewrites": [
     { "source": "/api/signup", "destination": "/api/auth-login?action=signup" },
     { "source": "/api/logout", "destination": "/api/login?action=logout" },
-    { "source": "/api/roles", "destination": "/api/channels?resource=roles" }
+    { "source": "/api/roles", "destination": "/api/channels?resource=roles" },
+    { "source": "/api/presence", "destination": "/api/bot-status?resource=presence" },
+    { "source": "/api/guild-meta", "destination": "/api/guilds?resource=meta" },
+    { "source": "/api/role-manage", "destination": "/api/channel-manage?resource=roles" }
   ]
 }
