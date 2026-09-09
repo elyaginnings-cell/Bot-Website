@@ -78,6 +78,48 @@
     return "https://cdn.discordapp.com/embed/avatars/" + n + ".png";
   }
 
+  function roleMap() {
+    var map = {};
+    var list = Array.isArray(window.rolesCache) ? window.rolesCache : [];
+    for (var i = 0; i < list.length; i++) {
+      if (list[i] && list[i].id) map[String(list[i].id)] = list[i];
+    }
+    return map;
+  }
+
+  function topRoleColor(member, map) {
+    var ids = Array.isArray(member.roleIds) ? member.roleIds : [];
+    var best = null;
+    for (var i = 0; i < ids.length; i++) {
+      var r = map[String(ids[i])];
+      if (!r || r.name === "@everyone") continue;
+      if (!best || (Number(r.position) || 0) > (Number(best.position) || 0)) best = r;
+    }
+    if (!best || best.color == null || best.color === 0 || best.color === "#000000") return "";
+    if (typeof best.color === "number") {
+      return "#" + ("000000" + (best.color >>> 0).toString(16)).slice(-6);
+    }
+    if (typeof best.color === "string" && best.color.charAt(0) === "#") return best.color;
+    return "";
+  }
+
+  function ensureRolesThen(cb) {
+    var gid = guildId();
+    if (!gid) { cb(); return; }
+    if (Array.isArray(window.rolesCache) && window.rolesCache.length) { cb(); return; }
+    fetch("/api/guilds?resource=meta&guildId=" + encodeURIComponent(gid) + "&_=" + Date.now(), {
+      credentials: "include",
+      cache: "no-store",
+      headers: { Accept: "application/json" },
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d && Array.isArray(d.roles)) window.rolesCache = d.roles;
+      })
+      .catch(function () {})
+      .finally(function () { cb(); });
+  }
+
   function render(members, meta) {
     members = members || [];
     meta = meta || {};
@@ -102,6 +144,7 @@
       (meta.source ? " \u00b7 " + esc(meta.source) : "") +
       "</p>";
 
+    var map = roleMap();
     for (var i = 0; i < members.length; i++) {
       var m = members[i];
       if (!m || !m.id) continue;
@@ -113,8 +156,11 @@
         '<div class="sv-member-av-wrap"><img class="sv-member-av" src="' +
         esc(av) +
         '" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.src=\'https://cdn.discordapp.com/embed/avatars/0.png\'"></div>';
+      var color = topRoleColor(m, map);
       html +=
-        '<div class="sv-member-info"><span class="sv-member-name">' +
+        '<div class="sv-member-info"><span class="sv-member-name"' +
+        (color ? ' style="color:' + color + '"' : "") +
+        ">" +
         esc(name) +
         "</span>";
       if (m.bot) html += '<span class="sv-bot-badge">BOT</span>';
@@ -200,7 +246,9 @@
           ? data
           : [];
       window.membersCache = members;
-      render(members, data);
+      ensureRolesThen(function () {
+        render(members, data);
+      });
     };
 
     xhr.ontimeout = function () {
