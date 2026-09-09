@@ -9,11 +9,11 @@
 
   function esc(v) {
     return String(v == null ? "" : v)
-      .replace(/&/g, "&")
-      .replace(/</g, "<")
-      .replace(/>/g, ">")
-      .replace(/"/g, """)
-      .replace(/'/g, "&#39;");
+      .replace(/&/g, "\u0026amp;")
+      .replace(/</g, "\u0026lt;")
+      .replace(/>/g, "\u0026gt;")
+      .replace(/"/g, "\u0026quot;")
+      .replace(/'/g, "\u0026#39;");
   }
 
   function listEl() {
@@ -78,60 +78,19 @@
     return "https://cdn.discordapp.com/embed/avatars/" + n + ".png";
   }
 
-  function formatMemberError(data, status) {
-    var msg = (data && data.error) || "";
-    var errors = (data && data.errors) || [];
-    var joined = Array.isArray(errors) ? errors.join(" ") : String(errors || "");
-    var lower = (msg + " " + joined).toLowerCase();
-
-    if (
-      lower.indexOf("no bot token") >= 0 ||
-      lower.indexOf("discord_bot_token") >= 0 ||
-      lower.indexOf("missing token") >= 0
-    ) {
-      return (
-        "<strong>Missing bot token</strong><br>" +
-        "Add <code>DISCORD_BOT_TOKEN</code> in Vercel → Project → Settings → Environment Variables " +
-        "(same token the Railway bot uses), then Redeploy."
-      );
-    }
-
-    if (
-      lower.indexOf("403") >= 0 ||
-      lower.indexOf("missing access") >= 0 ||
-      lower.indexOf("privileged") >= 0 ||
-      lower.indexOf("intent") >= 0 ||
-      lower.indexOf("disallowed intent") >= 0
-    ) {
-      return (
-        "<strong>Server Members Intent is off</strong><br>" +
-        "In the Discord Developer Portal → your bot application → Bot → " +
-        "enable <strong>Server Members Intent</strong>, save, then hard-refresh this page."
-      );
-    }
-
-    if (status) {
-      return (
-        "<strong>HTTP " +
-        esc(String(status)) +
-        "</strong><br>" +
-        esc(msg || "Failed to load members") +
-        (errors.length ? "<br>" + esc(errors.join(" · ")) : "")
-      );
-    }
-
-    return esc(msg || "Failed to load members");
-  }
-
   function render(members, meta) {
     members = members || [];
     meta = meta || {};
     if (!members.length) {
       paint(
         '<p class="sv-empty"><strong>No members returned</strong><br>' +
-          formatMemberError(meta, meta.status) +
-          (meta.source ? "<br>Source: " + esc(meta.source) : "") +
-          "</p>"
+          (meta.error ? esc(meta.error) + "<br>" : "") +
+          (meta.fetchError ? esc(meta.fetchError) + "<br>" : "") +
+          (meta.source ? "Source: " + esc(meta.source) + "<br>" : "") +
+          (Array.isArray(meta.errors) && meta.errors.length
+            ? esc(meta.errors.join(" \u00b7 ")) + "<br>"
+            : "") +
+          "Check: Vercel has <code>DISCORD_BOT_TOKEN</code> and Discord portal has <strong>Server Members Intent</strong> enabled.</p>"
       );
       return;
     }
@@ -140,8 +99,7 @@
       '<p class="sv-empty" style="padding:6px 10px;font-size:12px">' +
       members.length +
       " members" +
-      (meta.truncated ? " (truncated)" : "") +
-      (meta.source ? " · " + esc(meta.source) : "") +
+      (meta.source ? " \u00b7 " + esc(meta.source) : "") +
       "</p>";
 
     for (var i = 0; i < members.length; i++) {
@@ -186,7 +144,7 @@
     loading = true;
 
     if (hardTimer) clearTimeout(hardTimer);
-    paint('<p class="sv-empty">Loading members…</p>');
+    paint('<p class="sv-empty">Loading members\u2026</p>');
 
     hardTimer = setTimeout(function () {
       loading = false;
@@ -194,18 +152,18 @@
         '<p class="sv-empty sv-error"><strong>Timed out</strong><br>' +
           "Add <code>DISCORD_BOT_TOKEN</code> on Vercel (same as Railway), enable <strong>Server Members Intent</strong>, redeploy, hard-refresh.</p>"
       );
-    }, 20000);
+    }, 15000);
 
     var url =
       "/api/members?guildId=" +
       encodeURIComponent(gid) +
-      "&limit=1000&_=" +
+      "&limit=200&_=" +
       Date.now();
     if (query) url += "&q=" + encodeURIComponent(query);
 
     var xhr = new XMLHttpRequest();
     xhr.open("GET", url, true);
-    xhr.timeout = 18000;
+    xhr.timeout = 14000;
     xhr.withCredentials = true;
     xhr.setRequestHeader("Accept", "application/json");
 
@@ -224,8 +182,16 @@
         return;
       }
       if (xhr.status < 200 || xhr.status >= 300) {
-        data.status = xhr.status;
-        paint('<p class="sv-empty sv-error">' + formatMemberError(data, xhr.status) + "</p>");
+        paint(
+          '<p class="sv-empty sv-error"><strong>HTTP ' +
+            xhr.status +
+            "</strong><br>" +
+            esc(data.error || xhr.statusText || "Failed") +
+            (data.errors && data.errors.length
+              ? "<br>" + esc(data.errors.join(" \u00b7 "))
+              : "") +
+            "</p>"
+        );
         return;
       }
       var members = Array.isArray(data.members)
@@ -242,7 +208,7 @@
       loading = false;
       paint(
         '<p class="sv-empty sv-error"><strong>Request timed out</strong><br>' +
-          "Set <code>DISCORD_BOT_TOKEN</code> on Vercel and enable Server Members Intent.</p>"
+          "Set DISCORD_BOT_TOKEN on Vercel + Server Members Intent.</p>"
       );
     };
 
