@@ -1,10 +1,10 @@
 /**
  * Lightweight server-view helpers — channel/role menu + @mentions.
- * Safe: does not touch message send path.
+ * Safe: does not touch message send path or overall dashboard look.
  */
 (function () {
-  if (window.__svStableV4) return;
-  window.__svStableV4 = true;
+  if (window.__svStableV5) return;
+  window.__svStableV5 = true;
 
   function guildId() {
     if (window.selectedServer && window.selectedServer.id) return String(window.selectedServer.id);
@@ -14,16 +14,16 @@
 
   function esc(v) {
     return String(v == null ? "" : v)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;");
+      .replace(/&/g, "&")
+      .replace(/</g, "<")
+      .replace(/>/g, ">")
+      .replace(/"/g, """);
   }
 
   async function postManage(path, body) {
     var gid = guildId();
     if (!gid) throw new Error("No server selected");
-    var res = await fetch(path + "?guildId=" + encodeURIComponent(gid), {
+    var res = await fetch(path + (path.indexOf("?") >= 0 ? "&" : "?") + "guildId=" + encodeURIComponent(gid), {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json", Accept: "application/json" },
@@ -32,6 +32,23 @@
     var data = await res.json().catch(function () { return {}; });
     if (!res.ok) throw new Error(data.error || "HTTP " + res.status);
     return data;
+  }
+
+  async function loadRolesMeta() {
+    var gid = guildId();
+    if (!gid) return;
+    try {
+      var res = await fetch("/api/guilds?resource=meta&guildId=" + encodeURIComponent(gid) + "&_=" + Date.now(), {
+        credentials: "include",
+        cache: "no-store",
+        headers: { Accept: "application/json" },
+      });
+      var data = await res.json().catch(function () { return {}; });
+      if (res.ok) {
+        if (Array.isArray(data.roles)) window.rolesCache = data.roles;
+        if (Array.isArray(data.emojis)) window.emojisCache = data.emojis;
+      }
+    } catch (_) {}
   }
 
   function injectMenu() {
@@ -109,14 +126,16 @@
       } else if (act === "create-role") {
         var r = prompt("New role name:");
         if (!r) return;
-        await postManage("/api/role-manage", { action: "create", name: r });
+        await postManage("/api/channel-manage?resource=roles", { action: "create", name: r });
         alert("Role created");
+        loadRolesMeta();
       } else if (act === "delete-role") {
         var rid = prompt("Paste the role ID to delete:");
         if (!rid) return;
         if (!confirm("Delete role " + rid + "?")) return;
-        await postManage("/api/role-manage", { action: "delete", roleId: rid.trim() });
+        await postManage("/api/channel-manage?resource=roles", { action: "delete", roleId: rid.trim() });
         alert("Role deleted");
+        loadRolesMeta();
       }
     } catch (err) {
       alert(err.message || "Failed");
@@ -146,19 +165,51 @@
     }
     var q = (m[1] || "").toLowerCase();
     var members = Array.isArray(window.membersCache) ? window.membersCache : [];
-    var hits = members.filter(function (mem) {
+    var roles = Array.isArray(window.rolesCache) ? window.rolesCache : [];
+
+    var memberHits = members.filter(function (mem) {
       if (!mem || !mem.id) return false;
       var name = String(mem.displayName || mem.username || "");
       return !q || name.toLowerCase().indexOf(q) >= 0;
-    }).slice(0, 8);
-    if (!hits.length) {
+    }).slice(0, 6);
+
+    var roleHits = roles.filter(function (role) {
+      if (!role || !role.id || role.name === "@everyone") return false;
+      return !q || String(role.name || "").toLowerCase().indexOf(q) >= 0;
+    }).slice(0, 4);
+
+    if (!memberHits.length && !roleHits.length) {
       b.style.display = "none";
       return;
     }
-    b.innerHTML = hits.map(function (mem) {
+
+    var html = "";
+    memberHits.forEach(function (mem) {
       var name = mem.displayName || mem.username || mem.id;
-      return '<button type="button" data-id="' + esc(mem.id) + '" style="display:block;width:100%;text-align:left;background:transparent;border:0;color:#dbdee1;padding:8px;cursor:pointer">@' + esc(name) + (mem.bot ? " (bot)" : "") + "</button>";
-    }).join("");
+      html +=
+        '<button type="button" data-kind="user" data-id="' +
+        esc(mem.id) +
+        '" style="display:block;width:100%;text-align:left;background:transparent;border:0;color:#dbdee1;padding:8px;cursor:pointer">@' +
+        esc(name) +
+        (mem.bot ? " <span style=\"opacity:.6;font-size:11px">BOT</span>" : "") +
+        "</button>";
+    });
+    roleHits.forEach(function (role) {
+      var color =
+        role.color && Number(role.color)
+          ? "#" + ("000000" + (Number(role.color) >>> 0).toString(16)).slice(-6)
+          : "#dbdee1";
+      html +=
+        '<button type="button" data-kind="role" data-id="' +
+        esc(role.id) +
+        '" style="display:block;width:100%;text-align:left;background:transparent;border:0;color:' +
+        color +
+        ';padding:8px;cursor:pointer">@' +
+        esc(role.name) +
+        "</button>";
+    });
+    b.innerHTML = html;
+
     var rect = input.getBoundingClientRect();
     b.style.left = Math.max(8, rect.left) + "px";
     b.style.bottom = window.innerHeight - rect.top + 6 + "px";
@@ -167,8 +218,10 @@
     b.querySelectorAll("[data-id]").forEach(function (btn) {
       btn.onclick = function () {
         var id = btn.getAttribute("data-id");
+        var kind = btn.getAttribute("data-kind") || "user";
         var at = before.lastIndexOf("@");
-        input.value = before.slice(0, at) + "<@" + id + "> " + val.slice(pos);
+        var token = kind === "role" ? "<@&" + id + "> " : "<@" + id + "> ";
+        input.value = before.slice(0, at) + token + val.slice(pos);
         b.style.display = "none";
         input.focus();
       };
@@ -177,11 +230,14 @@
 
   function tick() {
     var view = document.getElementById("server-view");
-    if (view && !view.hidden) injectMenu();
+    if (view && !view.hidden) {
+      injectMenu();
+      if (!window.rolesCache || !window.rolesCache.length) loadRolesMeta();
+    }
   }
 
   document.addEventListener("keyup", onKeyup, true);
   setInterval(tick, 2000);
   tick();
-  console.log("[sv-stable] v4 ready");
+  console.log("[sv-stable] v5 ready — settings menu + role/bot mentions");
 })();
