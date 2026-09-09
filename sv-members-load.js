@@ -1,5 +1,5 @@
 /**
- * Members tab loader
+ * Members tab loader — Discord-style: hoisted roles only + rest in one group
  */
 (function () {
   "use strict";
@@ -44,11 +44,9 @@
   function setTab(tab) {
     var active = tab === "members" ? "members" : "channels";
     openDrawer();
-
     document.querySelectorAll("[data-sv-tab]").forEach(function (b) {
       b.classList.toggle("active", b.getAttribute("data-sv-tab") === active);
     });
-
     var ch = document.getElementById("sv-channel-list");
     var mp = document.getElementById("sv-member-panel");
     if (ch) {
@@ -59,7 +57,6 @@
       mp.hidden = active !== "members";
       mp.style.display = active === "members" ? "flex" : "none";
     }
-
     if (active === "members") {
       loading = false;
       loadMembers("");
@@ -89,19 +86,97 @@
 
   function ensureRolesThen(cb) {
     var gid = guildId();
-    if (!gid) { cb(); return; }
-    if (Array.isArray(window.rolesCache) && window.rolesCache.length) { cb(); return; }
+    if (!gid) {
+      cb();
+      return;
+    }
+    if (Array.isArray(window.rolesCache) && window.rolesCache.length) {
+      cb();
+      return;
+    }
     fetch("/api/guilds?resource=meta&guildId=" + encodeURIComponent(gid) + "&_=" + Date.now(), {
       credentials: "include",
       cache: "no-store",
       headers: { Accept: "application/json" },
     })
-      .then(function (r) { return r.json(); })
+      .then(function (r) {
+        return r.json();
+      })
       .then(function (d) {
         if (d && Array.isArray(d.roles)) window.rolesCache = d.roles;
       })
       .catch(function () {})
-      .finally(function () { cb(); });
+      .finally(function () {
+        cb();
+      });
+  }
+
+  /** Highest *hoisted* role (Discord member list only uses hoist:true roles). */
+  function topHoistedRole(member, map) {
+    var ids = Array.isArray(member.roleIds) ? member.roleIds : [];
+    var best = null;
+    for (var i = 0; i < ids.length; i++) {
+      var r = map[String(ids[i])];
+      if (!r || r.name === "@everyone") continue;
+      if (!r.hoist) continue;
+      if (!best || (Number(r.position) || 0) > (Number(best.position) || 0)) best = r;
+    }
+    return best;
+  }
+
+  function roleColor(role) {
+    if (!role || role.color == null || role.color === 0 || role.color === "#000000") return "";
+    if (typeof role.color === "number")
+      return "#" + ("000000" + (role.color >>> 0).toString(16)).slice(-6);
+    if (typeof role.color === "string" && role.color.charAt(0) === "#") return role.color;
+    return "";
+  }
+
+  function nameOf(m) {
+    return m.displayName || m.globalName || m.username || "User";
+  }
+
+  function renderMemberRow(m, map) {
+    var name = nameOf(m);
+    var sub = m.username && m.username !== name ? "@" + m.username : "";
+    var av = m.avatar || defaultAvatar(m.id);
+    var top = topHoistedRole(m, map);
+    var color = roleColor(top);
+    if (!color) {
+      var ids = Array.isArray(m.roleIds) ? m.roleIds : [];
+      var best = null;
+      for (var i = 0; i < ids.length; i++) {
+        var r = map[String(ids[i])];
+        if (!r || r.name === "@everyone") continue;
+        if (!best || (Number(r.position) || 0) > (Number(best.position) || 0)) best = r;
+      }
+      color = roleColor(best);
+    }
+    var html = "";
+    html += '<div class="sv-member-row" data-member-id="' + esc(m.id) + '">';
+    html +=
+      '<div class="sv-member-av-wrap"><img class="sv-member-av" src="' +
+      esc(av) +
+      '" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.src=\'https://cdn.discordapp.com/embed/avatars/0.png\'"></div>';
+    html +=
+      '<div class="sv-member-info"><span class="sv-member-name"' +
+      (color ? ' style="color:' + color + ' !important"' : "") +
+      ">" +
+      esc(name) +
+      "</span>";
+    if (m.bot) html += '<span class="sv-bot-badge">BOT</span>';
+    if (sub) html += '<span class="sv-member-sub">' + esc(sub) + "</span>";
+    html += "</div>";
+    if (!m.bot) {
+      html +=
+        '<button type="button" class="sv-member-punish sv-punish-btn" data-punish-user="' +
+        esc(m.id) +
+        '" data-punish-name="' +
+        esc(name) +
+        '" data-punish-msg="">Punish</button>';
+    }
+    html += "</div>";
+    return html;
   }
 
   function render(members, meta) {
@@ -113,38 +188,19 @@
           (meta.error ? esc(meta.error) + "<br>" : "") +
           (meta.fetchError ? esc(meta.fetchError) + "<br>" : "") +
           (meta.source ? "Source: " + esc(meta.source) + "<br>" : "") +
-          (Array.isArray(meta.errors) && meta.errors.length
-            ? esc(meta.errors.join(" \u00b7 ")) + "<br>"
-            : "") +
-          "Check: Vercel has <code>DISCORD_BOT_TOKEN</code> and Discord portal has <strong>Server Members Intent</strong> enabled.</p>"
+          "Check Server Members Intent + DISCORD_BOT_TOKEN on Vercel.</p>"
       );
       return;
     }
 
     var map = roleMap();
-    function topRole(member) {
-      var ids = Array.isArray(member.roleIds) ? member.roleIds : [];
-      var best = null;
-      for (var i = 0; i < ids.length; i++) {
-        var r = map[String(ids[i])];
-        if (!r || r.name === "@everyone") continue;
-        if (!best || (Number(r.position) || 0) > (Number(best.position) || 0)) best = r;
-      }
-      return best;
-    }
-    function roleColor(role) {
-      if (!role || role.color == null || role.color === 0 || role.color === "#000000") return "";
-      if (typeof role.color === "number") return "#" + ("000000" + (role.color >>> 0).toString(16)).slice(-6);
-      if (typeof role.color === "string" && role.color.charAt(0) === "#") return role.color;
-      return "";
-    }
     var groups = {};
     var order = [];
     for (var mi = 0; mi < members.length; mi++) {
       var mem = members[mi];
       if (!mem || !mem.id) continue;
-      var top = topRole(mem);
-      var key = top ? String(top.id) : "_members";
+      var top = topHoistedRole(mem, map);
+      var key = top ? String(top.id) : "_online";
       if (!groups[key]) {
         groups[key] = { role: top, members: [] };
         order.push(key);
@@ -152,38 +208,29 @@
       groups[key].members.push(mem);
     }
     order.sort(function (a, b) {
-      if (a === "_members") return 1;
-      if (b === "_members") return -1;
-      return (Number(groups[b].role && groups[b].role.position) || 0) - (Number(groups[a].role && groups[a].role.position) || 0);
+      if (a === "_online") return 1;
+      if (b === "_online") return -1;
+      return (
+        (Number(groups[b].role && groups[b].role.position) || 0) -
+        (Number(groups[a].role && groups[a].role.position) || 0)
+      );
     });
+
     var html = "";
     for (var oi = 0; oi < order.length; oi++) {
       var g = groups[order[oi]];
-      var title = order[oi] === "_members"
-        ? "MEMBERS \u2014 " + g.members.length
-        : ((g.role && g.role.name) || "ROLE") + " \u2014 " + g.members.length;
+      var title =
+        order[oi] === "_online"
+          ? "ONLINE \u2014 " + g.members.length
+          : ((g.role && g.role.name) || "ROLE") + " \u2014 " + g.members.length;
       html += '<div class="sv-ml-group">' + esc(title) + "</div>";
       g.members.sort(function (a, b) {
-        var an = (a.displayName || a.username || "").toLowerCase();
-        var bn = (b.displayName || b.username || "").toLowerCase();
+        var an = nameOf(a).toLowerCase();
+        var bn = nameOf(b).toLowerCase();
         return an < bn ? -1 : an > bn ? 1 : 0;
       });
       for (var gi = 0; gi < g.members.length; gi++) {
-        var m = g.members[gi];
-        var name = m.displayName || m.globalName || m.username || "User";
-        var sub = m.username && m.username !== name ? "@" + m.username : "";
-        var av = m.avatar || defaultAvatar(m.id);
-        var color = roleColor(topRole(m));
-        html += '<div class="sv-member-row" data-member-id="' + esc(m.id) + '">';
-        html += '<div class="sv-member-av-wrap"><img class="sv-member-av" src="' + esc(av) + '" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.src=\'https://cdn.discordapp.com/embed/avatars/0.png\'"></div>';
-        html += '<div class="sv-member-info"><span class="sv-member-name"' + (color ? ' style="color:' + color + ' !important"' : "") + ">" + esc(name) + "</span>";
-        if (m.bot) html += '<span class="sv-bot-badge">BOT</span>';
-        if (sub) html += '<span class="sv-member-sub">' + esc(sub) + "</span>";
-        html += "</div>";
-        if (!m.bot) {
-          html += '<button type="button" class="sv-member-punish sv-punish-btn" data-punish-user="' + esc(m.id) + '" data-punish-name="' + esc(name) + '" data-punish-msg="">Punish</button>';
-        }
-        html += "</div>";
+        html += renderMemberRow(g.members[gi], map);
       }
     }
     paint(html);
@@ -195,18 +242,14 @@
       paint('<p class="sv-empty">No server selected.</p>');
       return;
     }
-
     if (loading) return;
     loading = true;
-
     if (hardTimer) clearTimeout(hardTimer);
     paint('<p class="sv-empty">Loading members\u2026</p>');
-
     hardTimer = setTimeout(function () {
       loading = false;
       paint(
-        '<p class="sv-empty sv-error"><strong>Timed out</strong><br>' +
-          "Add <code>DISCORD_BOT_TOKEN</code> on Vercel (same as Railway), enable <strong>Server Members Intent</strong>, redeploy, hard-refresh.</p>"
+        '<p class="sv-empty sv-error"><strong>Timed out</strong><br>DISCORD_BOT_TOKEN + Server Members Intent.</p>'
       );
     }, 15000);
 
@@ -222,7 +265,6 @@
     xhr.timeout = 14000;
     xhr.withCredentials = true;
     xhr.setRequestHeader("Accept", "application/json");
-
     xhr.onload = function () {
       clearTimeout(hardTimer);
       loading = false;
@@ -230,11 +272,7 @@
       try {
         data = JSON.parse(xhr.responseText || "{}");
       } catch (e) {
-        paint(
-          '<p class="sv-empty sv-error">Bad JSON from /api/members<br>' +
-            esc(String(xhr.responseText).slice(0, 200)) +
-            "</p>"
-        );
+        paint('<p class="sv-empty sv-error">Bad JSON from /api/members</p>');
         return;
       }
       if (xhr.status < 200 || xhr.status >= 300) {
@@ -243,39 +281,30 @@
             xhr.status +
             "</strong><br>" +
             esc(data.error || xhr.statusText || "Failed") +
-            (data.errors && data.errors.length
-              ? "<br>" + esc(data.errors.join(" \u00b7 "))
-              : "") +
             "</p>"
         );
         return;
       }
-      var members = Array.isArray(data.members)
+      var list = Array.isArray(data.members)
         ? data.members
         : Array.isArray(data)
           ? data
           : [];
-      window.membersCache = members;
+      window.membersCache = list;
       ensureRolesThen(function () {
-        render(members, data);
+        render(list, data);
       });
     };
-
     xhr.ontimeout = function () {
       clearTimeout(hardTimer);
       loading = false;
-      paint(
-        '<p class="sv-empty sv-error"><strong>Request timed out</strong><br>' +
-          "Set DISCORD_BOT_TOKEN on Vercel + Server Members Intent.</p>"
-      );
+      paint('<p class="sv-empty sv-error">Request timed out</p>');
     };
-
     xhr.onerror = function () {
       clearTimeout(hardTimer);
       loading = false;
-      paint('<p class="sv-empty sv-error">Network error calling /api/members</p>');
+      paint('<p class="sv-empty sv-error">Network error</p>');
     };
-
     try {
       xhr.send();
     } catch (e) {
@@ -312,7 +341,6 @@
       },
       true
     );
-
     var search = document.getElementById("sv-member-search");
     if (search && !search.dataset.bound) {
       search.dataset.bound = "1";
