@@ -24,7 +24,9 @@
       { tab: "tickets", icon: "🎫", label: "Tickets", title: "Tickets" },
       { tab: "qotd", icon: "❓", label: "QOTD", title: "QOTD" },
       { tab: "selfroles", icon: "🎭", label: "Roles", title: "Self Roles" },
-      { tab: "ai", icon: "☕", label: "AI", title: "CoffeeBot AI chat" }
+      { tab: "ai", icon: "☕", label: "AI", title: "CoffeeBot AI chat" },
+      { tab: "automod", icon: "🛡️", label: "Automod", title: "AI Automod" },
+      { tab: "aistaff", icon: "🤖", label: "Staff", title: "AI Staff actions" }
     ];
 
     tabs.forEach(function (t) {
@@ -45,6 +47,10 @@
             b.classList.toggle("active", b.getAttribute("data-tab") === t.tab);
           });
         }
+        // Refill selects when opening these tabs (channels may load late)
+        try {
+          if (typeof window.fillAutomodStaffSelects === "function") window.fillAutomodStaffSelects();
+        } catch (_) {}
       });
       if (insertBefore) nav.insertBefore(btn, insertBefore);
       else nav.appendChild(btn);
@@ -199,7 +205,7 @@
     }
 
     window.__featuresUIInjected = true;
-    console.log("[features-ui] injected");
+    console.log("[features-ui] injected (incl. automod + aistaff nav)");
     return true;
   }
 
