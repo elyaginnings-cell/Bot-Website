@@ -17,7 +17,6 @@
     if (html.length < 5000 || html.indexOf("server-view") === -1) {
       throw new Error("Unexpected content length " + html.length);
     }
-    // Force latest Server View assets (cache bust) without touching main dashboard UI
     html = html
       .replace(/server-view\.js\?v=\d+/g, "server-view.js?v=16")
       .replace(/sv-members-load\.js\?v=\d+/g, "sv-members-load.js?v=12")
@@ -47,7 +46,7 @@
     await loadScript("/sv-manage.js?v=3");
     await loadScript("/sv-stable.js?v=7");
     await loadScript("/sv-role-colors.js?v=2");
-    await loadScript("/sv-discord-exact.js?v=2");
+    await loadScript("/sv-discord-exact.js?v=3");
   } catch (e) {
     document.body.innerHTML =
       "<div style=\"font-family:system-ui;padding:2rem;max-width:32rem\">" +
