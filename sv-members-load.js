@@ -159,7 +159,7 @@
       var color = topRoleColor(m, map);
       html +=
         '<div class="sv-member-info"><span class="sv-member-name"' +
-        (color ? ' style="color:' + color + '"' : "") +
+        (color ? ' style="color:' + color + ' !important"' : "") +
         ">" +
         esc(name) +
         "</span>";
