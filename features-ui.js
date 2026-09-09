@@ -1,6 +1,7 @@
 /**
  * Injects config panel UI (nav + sections + currency extras).
  * Does not replace features-config.js save/load logic.
+ * AI / Automod / AI Staff removed.
  */
 (function () {
   "use strict";
@@ -23,10 +24,7 @@
       { tab: "suggestions", icon: "💡", label: "Ideas", title: "Suggestions" },
       { tab: "tickets", icon: "🎫", label: "Tickets", title: "Tickets" },
       { tab: "qotd", icon: "❓", label: "QOTD", title: "QOTD" },
-      { tab: "selfroles", icon: "🎭", label: "Roles", title: "Self Roles" },
-      { tab: "ai", icon: "☕", label: "AI", title: "CoffeeBot AI chat" },
-      { tab: "automod", icon: "🛡️", label: "Automod", title: "AI Automod" },
-      { tab: "aistaff", icon: "🤖", label: "Staff", title: "AI Staff actions" }
+      { tab: "selfroles", icon: "🎭", label: "Roles", title: "Self Roles" }
     ];
 
     tabs.forEach(function (t) {
@@ -47,10 +45,6 @@
             b.classList.toggle("active", b.getAttribute("data-tab") === t.tab);
           });
         }
-        // Refill selects when opening these tabs (channels may load late)
-        try {
-          if (typeof window.fillAutomodStaffSelects === "function") window.fillAutomodStaffSelects();
-        } catch (_) {}
       });
       if (insertBefore) nav.insertBefore(btn, insertBefore);
       else nav.appendChild(btn);
@@ -173,39 +167,8 @@
       while (wrap.firstChild) content.appendChild(wrap.firstChild);
     }
 
-    // AI panel (can inject even if other sections already exist)
-    if (!$("ai")) {
-      var ai = document.createElement("section");
-      ai.id = "ai";
-      ai.className = "page-section";
-      ai.innerHTML =
-        '<div class="card form-card wide">' +
-        '<span class="eyebrow">AI CHAT</span><h2>☕ CoffeeBot AI</h2>' +
-        '<p class="form-hint">Controls when CoffeeBot joins chat. API key stays on Railway (AI_API_KEY) — not stored here.</p>' +
-        '<label class="toggle"><input type="checkbox" id="ai-enabled"> <span>AI chat enabled</span></label>' +
-        '<div class="config-grid">' +
-        '<div class="input-group"><label>Reply chance (%)</label><input id="ai-chance" type="number" min="0" max="100" step="0.1" value="3"></div>' +
-        '<div class="input-group"><label>Cooldown (seconds)</label><input id="ai-cooldown" type="number" min="0" max="3600" value="45"></div>' +
-        '<div class="input-group"><label>Max replies / hour</label><input id="ai-max-hour" type="number" min="0" max="500" value="20"></div>' +
-        '<div class="input-group"><label>Max replies / day</label><input id="ai-max-day" type="number" min="0" max="5000" value="200"></div>' +
-        '<div class="input-group"><label>Context messages</label><input id="ai-context" type="number" min="0" max="25" value="10"></div>' +
-        '</div>' +
-        '<label class="toggle"><input type="checkbox" id="ai-mentions" checked> <span>Always reply to @mentions</span></label>' +
-        '<label class="toggle"><input type="checkbox" id="ai-replies" checked> <span>Always reply when someone replies to CoffeeBot</span></label>' +
-        '<div class="input-group" style="margin-top:0.75rem">' +
-        '<label>Allowed channels (optional)</label>' +
-        '<input id="ai-channels" type="text" placeholder="Leave empty = all channels. Or comma-separated channel IDs">' +
-        '<p class="form-hint">Example: 123456789,987654321 — empty means every text channel.</p>' +
-        '</div>' +
-        '<button class="button" id="save-ai" type="button">Save AI Settings</button>' +
-        '<p class="form-hint" id="ai-status"></p>' +
-        '<p class="form-hint">Also available in Discord: <code>/ai status</code>, <code>/ai enable</code>, <code>/ai test</code>.</p>' +
-        '</div>';
-      content.appendChild(ai);
-    }
-
     window.__featuresUIInjected = true;
-    console.log("[features-ui] injected (incl. automod + aistaff nav)");
+    console.log("[features-ui] injected (AI/automod/staff removed)");
     return true;
   }
 
