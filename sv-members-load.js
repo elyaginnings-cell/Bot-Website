@@ -87,22 +87,6 @@
     return map;
   }
 
-  function topRoleColor(member, map) {
-    var ids = Array.isArray(member.roleIds) ? member.roleIds : [];
-    var best = null;
-    for (var i = 0; i < ids.length; i++) {
-      var r = map[String(ids[i])];
-      if (!r || r.name === "@everyone") continue;
-      if (!best || (Number(r.position) || 0) > (Number(best.position) || 0)) best = r;
-    }
-    if (!best || best.color == null || best.color === 0 || best.color === "#000000") return "";
-    if (typeof best.color === "number") {
-      return "#" + ("000000" + (best.color >>> 0).toString(16)).slice(-6);
-    }
-    if (typeof best.color === "string" && best.color.charAt(0) === "#") return best.color;
-    return "";
-  }
-
   function ensureRolesThen(cb) {
     var gid = guildId();
     if (!gid) { cb(); return; }
@@ -137,53 +121,70 @@
       return;
     }
 
-    if (typeof window.__svRenderMembersDiscord === "function") {
-      try {
-        window.__svRenderMembersDiscord(members, meta);
-        return;
-      } catch (e) {
-        console.warn("discord member render failed", e);
-      }
-    }
-
-    var html =
-      '<p class="sv-empty" style="padding:6px 10px;font-size:12px">' +
-      members.length +
-      " members" +
-      (meta.source ? " \u00b7 " + esc(meta.source) : "") +
-      "</p>";
-
     var map = roleMap();
-    for (var i = 0; i < members.length; i++) {
-      var m = members[i];
-      if (!m || !m.id) continue;
-      var name = m.displayName || m.globalName || m.username || "User";
-      var sub = m.username && m.username !== name ? "@" + m.username : "";
-      var av = m.avatar || defaultAvatar(m.id);
-      html += '<div class="sv-member-row" data-member-id="' + esc(m.id) + '">';
-      html +=
-        '<div class="sv-member-av-wrap"><img class="sv-member-av" src="' +
-        esc(av) +
-        '" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.src=\'https://cdn.discordapp.com/embed/avatars/0.png\'"></div>';
-      var color = topRoleColor(m, map);
-      html +=
-        '<div class="sv-member-info"><span class="sv-member-name"' +
-        (color ? ' style="color:' + color + ' !important"' : "") +
-        ">" +
-        esc(name) +
-        "</span>";
-      if (m.bot) html += '<span class="sv-bot-badge">BOT</span>';
-      if (sub) html += '<span class="sv-member-sub">' + esc(sub) + "</span>";
-      html += "</div>";
-      if (!m.bot) {
-        html +=
-          '<button type="button" class="sv-member-punish sv-punish-btn" data-punish-user="' +
-          esc(m.id) +
-          '" data-punish-name="' +
-          esc(name) +
-          '" data-punish-msg="">Punish</button>';
+    function topRole(member) {
+      var ids = Array.isArray(member.roleIds) ? member.roleIds : [];
+      var best = null;
+      for (var i = 0; i < ids.length; i++) {
+        var r = map[String(ids[i])];
+        if (!r || r.name === "@everyone") continue;
+        if (!best || (Number(r.position) || 0) > (Number(best.position) || 0)) best = r;
       }
-      html += "</div>";
+      return best;
+    }
+    function roleColor(role) {
+      if (!role || role.color == null || role.color === 0 || role.color === "#000000") return "";
+      if (typeof role.color === "number") return "#" + ("000000" + (role.color >>> 0).toString(16)).slice(-6);
+      if (typeof role.color === "string" && role.color.charAt(0) === "#") return role.color;
+      return "";
+    }
+    var groups = {};
+    var order = [];
+    for (var mi = 0; mi < members.length; mi++) {
+      var mem = members[mi];
+      if (!mem || !mem.id) continue;
+      var top = topRole(mem);
+      var key = top ? String(top.id) : "_members";
+      if (!groups[key]) {
+        groups[key] = { role: top, members: [] };
+        order.push(key);
+      }
+      groups[key].members.push(mem);
+    }
+    order.sort(function (a, b) {
+      if (a === "_members") return 1;
+      if (b === "_members") return -1;
+      return (Number(groups[b].role && groups[b].role.position) || 0) - (Number(groups[a].role && groups[a].role.position) || 0);
+    });
+    var html = "";
+    for (var oi = 0; oi < order.length; oi++) {
+      var g = groups[order[oi]];
+      var title = order[oi] === "_members"
+        ? "MEMBERS \u2014 " + g.members.length
+        : ((g.role && g.role.name) || "ROLE") + " \u2014 " + g.members.length;
+      html += '<div class="sv-ml-group">' + esc(title) + "</div>";
+      g.members.sort(function (a, b) {
+        var an = (a.displayName || a.username || "").toLowerCase();
+        var bn = (b.displayName || b.username || "").toLowerCase();
+        return an < bn ? -1 : an > bn ? 1 : 0;
+      });
+      for (var gi = 0; gi < g.members.length; gi++) {
+        var m = g.members[gi];
+        var name = m.displayName || m.globalName || m.username || "User";
+        var sub = m.username && m.username !== name ? "@" + m.username : "";
+        var av = m.avatar || defaultAvatar(m.id);
+        var color = roleColor(topRole(m));
+        html += '<div class="sv-member-row" data-member-id="' + esc(m.id) + '">';
+        html += '<div class="sv-member-av-wrap"><img class="sv-member-av" src="' + esc(av) + '" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.src=\'https://cdn.discordapp.com/embed/avatars/0.png\'"></div>';
+        html += '<div class="sv-member-info"><span class="sv-member-name"' + (color ? ' style="color:' + color + ' !important"' : "") + ">" + esc(name) + "</span>";
+        if (m.bot) html += '<span class="sv-bot-badge">BOT</span>';
+        if (sub) html += '<span class="sv-member-sub">' + esc(sub) + "</span>";
+        html += "</div>";
+        if (!m.bot) {
+          html += '<button type="button" class="sv-member-punish sv-punish-btn" data-punish-user="' + esc(m.id) + '" data-punish-name="' + esc(name) + '" data-punish-msg="">Punish</button>';
+        }
+        html += "</div>";
+      }
     }
     paint(html);
   }
@@ -256,14 +257,6 @@
           : [];
       window.membersCache = members;
       ensureRolesThen(function () {
-        if (typeof window.__svRenderMembersDiscord === "function") {
-          try {
-            window.__svRenderMembersDiscord(members, data);
-            return;
-          } catch (e) {
-            console.warn("discord member render failed", e);
-          }
-        }
         render(members, data);
       });
     };
