@@ -37,6 +37,7 @@ function mapDiscordMember(raw) {
     displayName: raw.nick || user.global_name || user.username || "Unknown",
     bot: !!user.bot,
     avatar,
+    roleIds: Array.isArray(raw.roles) ? raw.roles.map(String) : [],
     status: null,
   };
 }
