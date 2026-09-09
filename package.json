@@ -1,13 +1,13 @@
 {
   "name": "discord-bot-dashboard",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "private": true,
   "type": "module",
   "engines": {
     "node": "20.x"
   },
   "scripts": {
-    "build": "mkdir -p public && find . -maxdepth 1 -type f \\( -name '*.html' -o -name '*.css' -o -name '*.js' -o -name '*.svg' -o -name '*.txt' \\) -exec cp {} public/ \\\;"
+    "build": "mkdir -p public && cp -f *.html *.css *.js *.svg *.txt public/ 2>/dev/null || true"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
