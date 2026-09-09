@@ -3,8 +3,8 @@
  * Safe: does not touch message send path.
  */
 (function () {
-  if (window.__svStableV4) return;
-  window.__svStableV4 = true;
+  if (window.__svStableV41) return;
+  window.__svStableV41 = true;
 
   function guildId() {
     if (window.selectedServer && window.selectedServer.id) return String(window.selectedServer.id);
@@ -14,10 +14,10 @@
 
   function esc(v) {
     return String(v == null ? "" : v)
-      .replace(/&/g, "&")
-      .replace(/</g, "<")
-      .replace(/>/g, ">")
-      .replace(/"/g, """);
+      .replace(/&/g, "\u0026amp;")
+      .replace(/</g, "\u0026lt;")
+      .replace(/>/g, "\u0026gt;")
+      .replace(/"/g, "\u0026quot;");
   }
 
   async function postManage(path, body) {
@@ -133,6 +133,33 @@
     return box;
   }
 
+  function loadRolesIfNeeded() {
+    var gid = guildId();
+    if (!gid) return;
+    if (Array.isArray(window.rolesCache) && window.rolesCache.length) return;
+    if (window.__svRolesLoading) return;
+    window.__svRolesLoading = true;
+    fetch("/api/guilds?resource=meta&guildId=" + encodeURIComponent(gid) + "&_=" + Date.now(), {
+      credentials: "include",
+      cache: "no-store",
+      headers: { Accept: "application/json" },
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d && Array.isArray(d.roles)) window.rolesCache = d.roles;
+        if (d && Array.isArray(d.emojis)) window.emojisCache = d.emojis;
+      })
+      .catch(function () {})
+      .finally(function () { window.__svRolesLoading = false; });
+  }
+
+  function loadMembersIfNeeded() {
+    if (Array.isArray(window.membersCache) && window.membersCache.length) return;
+    if (typeof window.__svLoadMembers === "function") {
+      try { window.__svLoadMembers(""); } catch (_) {}
+    }
+  }
+
   function onKeyup(e) {
     var input = e.target;
     if (!input || input.id !== "sv-input") return;
@@ -145,21 +172,62 @@
       b.style.display = "none";
       return;
     }
+
+    loadRolesIfNeeded();
+    loadMembersIfNeeded();
+
     var q = (m[1] || "").toLowerCase();
     var members = Array.isArray(window.membersCache) ? window.membersCache : [];
-    var hits = members.filter(function (mem) {
+    var roles = Array.isArray(window.rolesCache) ? window.rolesCache : [];
+
+    // Users + bots (no filter excluding bots)
+    var memberHits = members.filter(function (mem) {
       if (!mem || !mem.id) return false;
-      var name = String(mem.displayName || mem.username || "");
+      var name = String(mem.displayName || mem.username || mem.globalName || "");
+      var uname = String(mem.username || "");
+      if (!q) return true;
+      return name.toLowerCase().indexOf(q) >= 0 || uname.toLowerCase().indexOf(q) >= 0;
+    }).slice(0, 6);
+
+    var roleHits = roles.filter(function (role) {
+      if (!role || !role.id) return false;
+      var name = String(role.name || "");
+      if (name === "@everyone") return false;
       return !q || name.toLowerCase().indexOf(q) >= 0;
-    }).slice(0, 8);
-    if (!hits.length) {
+    }).slice(0, 4);
+
+    if (!memberHits.length && !roleHits.length) {
       b.style.display = "none";
       return;
     }
-    b.innerHTML = hits.map(function (mem) {
-      var name = mem.displayName || mem.username || mem.id;
-      return '<button type="button" data-id="' + esc(mem.id) + '" style="display:block;width:100%;text-align:left;background:transparent;border:0;color:#dbdee1;padding:8px;cursor:pointer">@' + esc(name) + (mem.bot ? " (bot)" : "") + "</button>";
-    }).join("");
+
+    var html = "";
+    memberHits.forEach(function (mem) {
+      var name = mem.displayName || mem.globalName || mem.username || mem.id;
+      html +=
+        '<button type="button" data-kind="user" data-id="' +
+        esc(mem.id) +
+        '" style="display:block;width:100%;text-align:left;background:transparent;border:0;color:#dbdee1;padding:8px;cursor:pointer">@' +
+        esc(name) +
+        (mem.bot ? ' <span style="opacity:.55;font-size:11px">BOT</span>' : "") +
+        "</button>";
+    });
+    roleHits.forEach(function (role) {
+      var color = "";
+      if (role.color && Number(role.color)) {
+        color = "#" + ("000000" + (Number(role.color) >>> 0).toString(16)).slice(-6);
+      }
+      html +=
+        '<button type="button" data-kind="role" data-id="' +
+        esc(role.id) +
+        '" style="display:block;width:100%;text-align:left;background:transparent;border:0;color:' +
+        (color || "#dbdee1") +
+        ';padding:8px;cursor:pointer">@' +
+        esc(role.name) +
+        "</button>";
+    });
+    b.innerHTML = html;
+
     var rect = input.getBoundingClientRect();
     b.style.left = Math.max(8, rect.left) + "px";
     b.style.bottom = window.innerHeight - rect.top + 6 + "px";
@@ -168,8 +236,10 @@
     b.querySelectorAll("[data-id]").forEach(function (btn) {
       btn.onclick = function () {
         var id = btn.getAttribute("data-id");
+        var kind = btn.getAttribute("data-kind") || "user";
         var at = before.lastIndexOf("@");
-        input.value = before.slice(0, at) + "<@" + id + "> " + val.slice(pos);
+        var token = kind === "role" ? "<@&" + id + "> " : "<@" + id + "> ";
+        input.value = before.slice(0, at) + token + val.slice(pos);
         b.style.display = "none";
         input.focus();
       };
@@ -184,5 +254,5 @@
   document.addEventListener("keyup", onKeyup, true);
   setInterval(tick, 2000);
   tick();
-  console.log("[sv-stable] v4 ready");
+  console.log("[sv-stable] v4.1 ready — @users @bots @roles");
 })();
