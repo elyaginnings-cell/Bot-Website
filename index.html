@@ -1,1 +1,52 @@
-PLACEHOLDER
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Loading dashboard…</title>
+<link rel="icon" href="/amazon-favicon.svg?v=2" type="image/svg+xml">
+</head>
+<body>
+<script>
+(async function () {
+  try {
+    var url = "https://raw.githubusercontent.com/elyaginnings-cell/Bot-Website/147232bd5d52eb2ba98a5e5277445508e2c8e705/index.html";
+    var res = await fetch(url + "?t=" + Date.now());
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    var html = await res.text();
+    if (html.length < 5000 || html.indexOf("server-view") === -1) {
+      throw new Error("Unexpected content length " + html.length);
+    }
+    document.open();
+    document.write(html);
+    document.close();
+    function loadScript(src) {
+      return new Promise(function (resolve, reject) {
+        var s = document.createElement("script");
+        s.src = src;
+        s.onload = resolve;
+        s.onerror = reject;
+        document.body.appendChild(s);
+      });
+    }
+    await loadScript("/features-ui.js?v=7");
+    await loadScript("/features-config.js?v=18");
+    await loadScript("/features-ui-patch.js?v=12");
+    await loadScript("/features-config-patch.js?v=28");
+    await loadScript("/app-config-fix.js?v=1");
+    await loadScript("/sr-panels.js?v=2");
+    await loadScript("/sv-members-load.js?v=11");
+    await loadScript("/sv-manage.js?v=3");
+    await loadScript("/sv-stable.js?v=7");
+    await loadScript("/sv-role-colors.js?v=2");
+    await loadScript("/sv-discord-exact.js?v=1");
+  } catch (e) {
+    document.body.innerHTML =
+      "<div style=\"font-family:system-ui;padding:2rem;max-width:32rem\">" +
+      "<h1>Could not load dashboard</h1>" +
+      "<p>" + (e && e.message ? e.message : e) + "</p></div>";
+  }
+})();
+</script>
+</body>
+</html>
