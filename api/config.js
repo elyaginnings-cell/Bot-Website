@@ -126,37 +126,11 @@ export default async function handler(req, res) {
           "tickets",
           "verification",
           "bump",
-          "ai",
-          "automod",
         ];
         let needsResave = false;
         for (const k of extraKeys) {
           if (body[k] && typeof body[k] === "object") {
-            if (k === "ai") {
-              mirrored.ai = { ...(mirrored.ai || {}), ...body.ai };
-              // deep-merge staff block
-              if (body.ai.staff && typeof body.ai.staff === "object") {
-                mirrored.ai.staff = {
-                  ...(mirrored.ai.staff || {}),
-                  ...body.ai.staff,
-                  allowedActions: {
-                    ...((mirrored.ai.staff && mirrored.ai.staff.allowedActions) || {}),
-                    ...(body.ai.staff.allowedActions || {}),
-                  },
-                };
-              }
-            } else if (k === "automod") {
-              mirrored.automod = {
-                ...(mirrored.automod || {}),
-                ...body.automod,
-                filters: {
-                  ...((mirrored.automod && mirrored.automod.filters) || {}),
-                  ...(body.automod.filters || {}),
-                },
-              };
-            } else {
-              mirrored[k] = { ...(mirrored[k] || {}), ...body[k] };
-            }
+            mirrored[k] = { ...(mirrored[k] || {}), ...body[k] };
             needsResave = true;
           }
         }
@@ -179,8 +153,6 @@ export default async function handler(req, res) {
           body.shopEnabled !== undefined
             ? body.shopEnabled
             : mirrored?.shop?.enabled,
-        ai: mirrored?.ai || body.ai,
-        automod: mirrored?.automod || body.automod,
       };
 
       let botOk = false;
