@@ -137,6 +137,15 @@
       return;
     }
 
+    if (typeof window.__svRenderMembersDiscord === "function") {
+      try {
+        window.__svRenderMembersDiscord(members, meta);
+        return;
+      } catch (e) {
+        console.warn("discord member render failed", e);
+      }
+    }
+
     var html =
       '<p class="sv-empty" style="padding:6px 10px;font-size:12px">' +
       members.length +
@@ -247,6 +256,14 @@
           : [];
       window.membersCache = members;
       ensureRolesThen(function () {
+        if (typeof window.__svRenderMembersDiscord === "function") {
+          try {
+            window.__svRenderMembersDiscord(members, data);
+            return;
+          } catch (e) {
+            console.warn("discord member render failed", e);
+          }
+        }
         render(members, data);
       });
     };
