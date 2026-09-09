@@ -1,5 +1,5 @@
 /**
- * Members tab loader — hoisted roles + OFFLINE first + ONLINE rest
+ * Members tab — OFFLINE first; online sorted by hoisted roles; rest ONLINE
  */
 (function () {
   "use strict";
@@ -84,13 +84,15 @@
     return map;
   }
 
+  function isHoistedRole(r) {
+    if (!r) return false;
+    if (r.name === "@everyone") return false;
+    return r.hoist === true || r.hoist === 1 || r.hoisted === true || r.hoisted === 1;
+  }
+
   function ensureRolesThen(cb) {
     var gid = guildId();
     if (!gid) {
-      cb();
-      return;
-    }
-    if (Array.isArray(window.rolesCache) && window.rolesCache.length) {
       cb();
       return;
     }
@@ -103,7 +105,17 @@
         return r.json();
       })
       .then(function (d) {
-        if (d && Array.isArray(d.roles)) window.rolesCache = d.roles;
+        if (d && Array.isArray(d.roles) && d.roles.length) {
+          window.rolesCache = d.roles;
+          console.log(
+            "[sv-members] roles",
+            d.roles.length,
+            "hoisted",
+            d.roles.filter(isHoistedRole).map(function (r) {
+              return r.name;
+            })
+          );
+        }
       })
       .catch(function () {})
       .finally(function () {
@@ -112,12 +124,34 @@
   }
 
   function topHoistedRole(member, map) {
-    var ids = Array.isArray(member.roleIds) ? member.roleIds : [];
+    var ids = Array.isArray(member.roleIds)
+      ? member.roleIds
+      : Array.isArray(member.roles)
+        ? member.roles
+        : [];
     var best = null;
     for (var i = 0; i < ids.length; i++) {
-      var r = map[String(ids[i])];
+      var rid = ids[i];
+      if (rid && typeof rid === "object") rid = rid.id;
+      var r = map[String(rid)];
+      if (!isHoistedRole(r)) continue;
+      if (!best || (Number(r.position) || 0) > (Number(best.position) || 0)) best = r;
+    }
+    return best;
+  }
+
+  function topAnyRole(member, map) {
+    var ids = Array.isArray(member.roleIds)
+      ? member.roleIds
+      : Array.isArray(member.roles)
+        ? member.roles
+        : [];
+    var best = null;
+    for (var i = 0; i < ids.length; i++) {
+      var rid = ids[i];
+      if (rid && typeof rid === "object") rid = rid.id;
+      var r = map[String(rid)];
       if (!r || r.name === "@everyone") continue;
-      if (!r.hoist) continue;
       if (!best || (Number(r.position) || 0) > (Number(best.position) || 0)) best = r;
     }
     return best;
@@ -135,30 +169,23 @@
     return m.displayName || m.globalName || m.username || "User";
   }
 
-  function isOffline(mem) {
+  function statusOf(mem) {
     var st = String(mem.status || mem.presence || "").toLowerCase();
-    return st === "offline" || st === "invisible";
+    if (st === "invisible") return "offline";
+    if (["online", "idle", "dnd", "offline"].indexOf(st) !== -1) return st;
+    return "";
+  }
+
+  function isOffline(mem) {
+    return statusOf(mem) === "offline";
   }
 
   function renderMemberRow(m, map) {
     var name = nameOf(m);
     var sub = m.username && m.username !== name ? "@" + m.username : "";
     var av = m.avatar || defaultAvatar(m.id);
-    var top = topHoistedRole(m, map);
-    var color = roleColor(top);
-    if (!color) {
-      var ids = Array.isArray(m.roleIds) ? m.roleIds : [];
-      var best = null;
-      for (var i = 0; i < ids.length; i++) {
-        var r = map[String(ids[i])];
-        if (!r || r.name === "@everyone") continue;
-        if (!best || (Number(r.position) || 0) > (Number(best.position) || 0)) best = r;
-      }
-      color = roleColor(best);
-    }
-    var st = String(m.status || m.presence || "offline").toLowerCase();
-    if (st === "invisible") st = "offline";
-    if (["online", "idle", "dnd", "offline"].indexOf(st) === -1) st = "offline";
+    var color = roleColor(topAnyRole(m, map));
+    var st = statusOf(m) || "offline";
     var off = st === "offline";
     var html = "";
     html +=
@@ -201,9 +228,7 @@
       paint(
         '<p class="sv-empty"><strong>No members returned</strong><br>' +
           (meta.error ? esc(meta.error) + "<br>" : "") +
-          (meta.fetchError ? esc(meta.fetchError) + "<br>" : "") +
-          (meta.source ? "Source: " + esc(meta.source) + "<br>" : "") +
-          "Check Server Members Intent + DISCORD_BOT_TOKEN on Vercel.</p>"
+          "Check Server Members Intent + DISCORD_BOT_TOKEN.</p>"
       );
       return;
     }
@@ -211,9 +236,11 @@
     var map = roleMap();
     var groups = {};
     var order = [];
+
     for (var mi = 0; mi < members.length; mi++) {
       var mem = members[mi];
       if (!mem || !mem.id) continue;
+
       if (isOffline(mem)) {
         if (!groups._offline) {
           groups._offline = { role: null, members: [] };
@@ -222,14 +249,16 @@
         groups._offline.members.push(mem);
         continue;
       }
+
       var top = topHoistedRole(mem, map);
-      var key = top ? String(top.id) : "_online";
+      var key = top ? "role:" + String(top.id) : "_online";
       if (!groups[key]) {
         groups[key] = { role: top, members: [] };
         order.push(key);
       }
       groups[key].members.push(mem);
     }
+
     order.sort(function (a, b) {
       if (a === "_offline") return -1;
       if (b === "_offline") return 1;
@@ -242,6 +271,14 @@
     });
 
     var html = "";
+    var hoistedCount = order.filter(function (k) {
+      return k.indexOf("role:") === 0;
+    }).length;
+    if (!hoistedCount) {
+      html +=
+        '<p class="sv-empty" style="padding:6px 10px;font-size:11px;opacity:.8">No hoisted roles found. In Discord: Role settings → enable “Display role members separately from online members”.</p>';
+    }
+
     for (var oi = 0; oi < order.length; oi++) {
       var g = groups[order[oi]];
       var title =
@@ -275,9 +312,7 @@
     paint('<p class="sv-empty">Loading members\u2026</p>');
     hardTimer = setTimeout(function () {
       loading = false;
-      paint(
-        '<p class="sv-empty sv-error"><strong>Timed out</strong><br>DISCORD_BOT_TOKEN + Server Members Intent.</p>'
-      );
+      paint('<p class="sv-empty sv-error"><strong>Timed out</strong></p>');
     }, 15000);
 
     var url =
@@ -318,6 +353,14 @@
           ? data
           : [];
       window.membersCache = list;
+      console.log(
+        "[sv-members] loaded",
+        list.length,
+        "presenceHits",
+        data.presenceHits,
+        "source",
+        data.source
+      );
       ensureRolesThen(function () {
         render(list, data);
       });
