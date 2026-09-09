@@ -1,5 +1,5 @@
 /**
- * Members tab loader — Discord-style: hoisted roles only + rest in one group
+ * Members tab loader — hoisted roles + OFFLINE first + ONLINE rest
  */
 (function () {
   "use strict";
@@ -111,7 +111,6 @@
       });
   }
 
-  /** Highest *hoisted* role (Discord member list only uses hoist:true roles). */
   function topHoistedRole(member, map) {
     var ids = Array.isArray(member.roleIds) ? member.roleIds : [];
     var best = null;
@@ -136,6 +135,11 @@
     return m.displayName || m.globalName || m.username || "User";
   }
 
+  function isOffline(mem) {
+    var st = String(mem.status || mem.presence || "").toLowerCase();
+    return st === "offline" || st === "invisible";
+  }
+
   function renderMemberRow(m, map) {
     var name = nameOf(m);
     var sub = m.username && m.username !== name ? "@" + m.username : "";
@@ -152,12 +156,23 @@
       }
       color = roleColor(best);
     }
+    var st = String(m.status || m.presence || "offline").toLowerCase();
+    if (st === "invisible") st = "offline";
+    if (["online", "idle", "dnd", "offline"].indexOf(st) === -1) st = "offline";
+    var off = st === "offline";
     var html = "";
-    html += '<div class="sv-member-row" data-member-id="' + esc(m.id) + '">';
+    html +=
+      '<div class="sv-member-row" data-member-id="' +
+      esc(m.id) +
+      '" data-offline="' +
+      (off ? "1" : "0") +
+      '">';
     html +=
       '<div class="sv-member-av-wrap"><img class="sv-member-av" src="' +
       esc(av) +
-      '" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.src=\'https://cdn.discordapp.com/embed/avatars/0.png\'"></div>';
+      '" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.src=\'https://cdn.discordapp.com/embed/avatars/0.png\'"><span class="sv-status ' +
+      st +
+      '"></span></div>';
     html +=
       '<div class="sv-member-info"><span class="sv-member-name"' +
       (color ? ' style="color:' + color + ' !important"' : "") +
@@ -199,6 +214,14 @@
     for (var mi = 0; mi < members.length; mi++) {
       var mem = members[mi];
       if (!mem || !mem.id) continue;
+      if (isOffline(mem)) {
+        if (!groups._offline) {
+          groups._offline = { role: null, members: [] };
+          order.push("_offline");
+        }
+        groups._offline.members.push(mem);
+        continue;
+      }
       var top = topHoistedRole(mem, map);
       var key = top ? String(top.id) : "_online";
       if (!groups[key]) {
@@ -208,6 +231,8 @@
       groups[key].members.push(mem);
     }
     order.sort(function (a, b) {
+      if (a === "_offline") return -1;
+      if (b === "_offline") return 1;
       if (a === "_online") return 1;
       if (b === "_online") return -1;
       return (
@@ -220,9 +245,11 @@
     for (var oi = 0; oi < order.length; oi++) {
       var g = groups[order[oi]];
       var title =
-        order[oi] === "_online"
-          ? "ONLINE \u2014 " + g.members.length
-          : ((g.role && g.role.name) || "ROLE") + " \u2014 " + g.members.length;
+        order[oi] === "_offline"
+          ? "OFFLINE \u2014 " + g.members.length
+          : order[oi] === "_online"
+            ? "ONLINE \u2014 " + g.members.length
+            : ((g.role && g.role.name) || "ROLE") + " \u2014 " + g.members.length;
       html += '<div class="sv-ml-group">' + esc(title) + "</div>";
       g.members.sort(function (a, b) {
         var an = nameOf(a).toLowerCase();
