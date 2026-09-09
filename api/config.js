@@ -119,7 +119,6 @@ export default async function handler(req, res) {
       let mirrored = null;
       try {
         mirrored = await mergeGuildConfig(guildId, body);
-        // Persist systems that may need a second merge pass
         const extraKeys = [
           "analytics",
           "qotd",
@@ -128,13 +127,33 @@ export default async function handler(req, res) {
           "verification",
           "bump",
           "ai",
+          "automod",
         ];
         let needsResave = false;
         for (const k of extraKeys) {
           if (body[k] && typeof body[k] === "object") {
             if (k === "ai") {
-              // Prefer explicit normalize from merge; still ensure body.ai fields win
               mirrored.ai = { ...(mirrored.ai || {}), ...body.ai };
+              // deep-merge staff block
+              if (body.ai.staff && typeof body.ai.staff === "object") {
+                mirrored.ai.staff = {
+                  ...(mirrored.ai.staff || {}),
+                  ...body.ai.staff,
+                  allowedActions: {
+                    ...((mirrored.ai.staff && mirrored.ai.staff.allowedActions) || {}),
+                    ...(body.ai.staff.allowedActions || {}),
+                  },
+                };
+              }
+            } else if (k === "automod") {
+              mirrored.automod = {
+                ...(mirrored.automod || {}),
+                ...body.automod,
+                filters: {
+                  ...((mirrored.automod && mirrored.automod.filters) || {}),
+                  ...(body.automod.filters || {}),
+                },
+              };
             } else {
               mirrored[k] = { ...(mirrored[k] || {}), ...body[k] };
             }
@@ -160,8 +179,8 @@ export default async function handler(req, res) {
           body.shopEnabled !== undefined
             ? body.shopEnabled
             : mirrored?.shop?.enabled,
-        // Always push full merged AI block so the bot gets replyChance
         ai: mirrored?.ai || body.ai,
+        automod: mirrored?.automod || body.automod,
       };
 
       let botOk = false;
