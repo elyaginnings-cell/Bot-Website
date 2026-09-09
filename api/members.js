@@ -209,7 +209,13 @@ function mergeStatusIntoMembers(payload, statusMap) {
       m.status = st;
       hits += 1;
     }
-    // unknown stays null — UI groups by hoisted role
+  }
+  // Gateway cache: anyone not in the presence map is offline
+  if (hits > 0) {
+    for (const m of payload.members) {
+      if (!m || !m.id) continue;
+      if (!m.status) m.status = "offline";
+    }
   }
   payload.presenceHits = hits;
   payload.presenceTotal = Object.keys(statusMap).length;
