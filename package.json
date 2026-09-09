@@ -1,10 +1,10 @@
 {
   "name": "discord-bot-dashboard",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "private": true,
   "type": "module",
   "engines": {
-    "node": "20.x"
+    "node": "24.x"
   },
   "scripts": {
     "build": "mkdir -p public && cp -f *.html *.css *.js *.svg *.txt public/ 2>/dev/null || true"
