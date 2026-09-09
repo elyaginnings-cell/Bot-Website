@@ -19,7 +19,7 @@
     }
     html = html
       .replace(/server-view\.js\?v=\d+/g, "server-view.js?v=17")
-      .replace(/sv-members-load\.js\?v=\d+/g, "sv-members-load.js?v=15")
+      .replace(/sv-members-load\.js\?v=\d+/g, "sv-members-load.js?v=16")
       .replace(/server-view\.css(?![?\w])/g, "server-view.css?v=3")
       .replace(/server-view-reply\.css(?![?\w])/g, "server-view-reply.css?v=3")
       .replace(/sv-rich\.css(?![?\w])/g, "sv-rich.css?v=3")
@@ -42,11 +42,11 @@
     await loadScript("/features-config-patch.js?v=28");
     await loadScript("/app-config-fix.js?v=1");
     await loadScript("/sr-panels.js?v=2");
-    await loadScript("/sv-members-load.js?v=15");
+    await loadScript("/sv-members-load.js?v=16");
     await loadScript("/sv-manage.js?v=3");
     await loadScript("/sv-stable.js?v=7");
     await loadScript("/sv-role-colors.js?v=2");
-    await loadScript("/sv-core-fix.js?v=2");
+    await loadScript("/sv-core-fix.js?v=3");
     await loadScript("/sv-slash.js?v=1");
     await loadScript("/sv-discord-exact.js?v=3");
   } catch (e) {
