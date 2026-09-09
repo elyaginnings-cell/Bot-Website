@@ -208,9 +208,8 @@ function mergeStatusIntoMembers(payload, statusMap) {
     if (st) {
       m.status = st;
       hits += 1;
-    } else if (!m.status) {
-      m.status = "offline";
     }
+    // unknown stays null — UI groups by hoisted role
   }
   payload.presenceHits = hits;
   payload.presenceTotal = Object.keys(statusMap).length;
