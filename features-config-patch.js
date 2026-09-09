@@ -1,10 +1,10 @@
 /**
- * features-config-patch v25 — AI replyChance fix + feature saves
+ * features-config-patch — feature saves (AI / automod / AI Staff removed)
  */
 (function () {
   "use strict";
-  if (window.__featuresConfigPatchV25) return;
-  window.__featuresConfigPatchV25 = true;
+  if (window.__featuresConfigPatchV26) return;
+  window.__featuresConfigPatchV26 = true;
 
   function $(id) { return document.getElementById(id); }
   function setVal(id, v) { var el = $(id); if (el) el.value = v == null ? "" : String(v); }
@@ -162,20 +162,6 @@
     });
   }
 
-  function resolveAiConfig(c) {
-    var raw = (c && c.ai) || {};
-    // Bot may nest under settings; website stores flat
-    var nested = raw.settings && typeof raw.settings === "object" ? raw.settings : {};
-    return Object.assign({}, nested, raw);
-  }
-
-  function chanceToPercent(v) {
-    var x = Number(v);
-    if (Number.isNaN(x) || v == null) return 3;
-    if (x > 1) return Math.max(0, Math.min(100, x)); // already percent
-    return Math.max(0, Math.min(100, x * 100)); // fraction → percent
-  }
-
   function apply() {
     var c = window.currentConfig || {};
     var S = c.suggestions || {};
@@ -184,7 +170,6 @@
     var Q = c.qotd || {};
     var B = c.bump || {};
     var V = c.verification || {};
-    var AI = resolveAiConfig(c);
 
     setCheck("bump-enabled", B.enabled !== false);
     setVal("bump-reward-min", B.rewardMin != null ? B.rewardMin : 50);
@@ -218,17 +203,6 @@
     setCheck("qotd-enabled", Q.enabled !== false);
     setVal("qotd-channel", Q.channelId || "");
     setVal("qotd-manager-role", Q.managerRoleId || "");
-
-    setCheck("ai-enabled", !!AI.enabled);
-    setVal("ai-chance", chanceToPercent(AI.replyChance));
-    setVal("ai-cooldown", AI.cooldownSeconds != null ? AI.cooldownSeconds : 45);
-    setVal("ai-max-hour", AI.maxResponsesPerHour != null ? AI.maxResponsesPerHour : 20);
-    setVal("ai-max-day", AI.maxResponsesPerDay != null ? AI.maxResponsesPerDay : 200);
-    setVal("ai-context", AI.contextMessages != null ? AI.contextMessages : 10);
-    setCheck("ai-mentions", AI.mentionAlwaysRespond !== false);
-    setCheck("ai-replies", AI.replyAlwaysRespond !== false);
-    var chList = Array.isArray(AI.enabledChannels) ? AI.enabledChannels.join(", ") : (AI.enabledChannels || "");
-    setVal("ai-channels", chList);
 
     fillSelects();
     setVal("verify-channel", V.channelId || "");
@@ -377,53 +351,6 @@
     }
   }
 
-  async function saveAi() {
-    try {
-      setStatus("ai-status", "Saving…", true);
-      var pct = Number($("ai-chance") && $("ai-chance").value);
-      if (Number.isNaN(pct)) pct = 3;
-      pct = Math.max(0, Math.min(100, pct));
-      var fraction = pct / 100;
-      var channelsRaw = ($("ai-channels") && $("ai-channels").value) || "";
-      var enabledChannels = String(channelsRaw)
-        .split(/[,\s]+/)
-        .map(function (s) { return s.trim(); })
-        .filter(Boolean)
-        .slice(0, 50);
-
-      var d = await window.saveConfig({
-        ai: {
-          enabled: $("ai-enabled") ? $("ai-enabled").checked : false,
-          replyChance: fraction,
-          cooldownSeconds: Math.max(0, Math.min(3600, Number($("ai-cooldown") && $("ai-cooldown").value) || 0)),
-          maxResponsesPerHour: Math.max(0, Math.min(500, Number($("ai-max-hour") && $("ai-max-hour").value) || 0)),
-          maxResponsesPerDay: Math.max(0, Math.min(5000, Number($("ai-max-day") && $("ai-max-day").value) || 0)),
-          contextMessages: Math.max(0, Math.min(25, Number($("ai-context") && $("ai-context").value) || 10)),
-          mentionAlwaysRespond: $("ai-mentions") ? $("ai-mentions").checked : true,
-          replyAlwaysRespond: $("ai-replies") ? $("ai-replies").checked : true,
-          enabledChannels: enabledChannels
-        }
-      });
-
-      var savedPct = chanceToPercent(d && d.config && d.config.ai && d.config.ai.replyChance != null
-        ? d.config.ai.replyChance
-        : fraction);
-
-      setStatus(
-        "ai-status",
-        statusText(
-          d,
-          "✅ AI saved — reply chance " + savedPct + "%",
-          "Saved on website (" + savedPct + "%). Bot offline — redeploy Railway."
-        ),
-        true
-      );
-      if (window.loadGuildData) await window.loadGuildData(); else apply();
-    } catch (e) {
-      setStatus("ai-status", "❌ " + (e.message || "Failed"), false);
-    }
-  }
-
   async function addStaff() {
     var rid = $("ticket-staff-role") ? $("ticket-staff-role").value : "";
     if (!rid) return alert("Pick a staff role");
@@ -445,8 +372,8 @@
   function wire() {
     function bind(id, fn) {
       var el = $(id);
-      if (el && !el.__p25) {
-        el.__p25 = 1;
+      if (el && !el.__p26) {
+        el.__p26 = 1;
         el.addEventListener("click", function (e) {
           e.preventDefault();
           e.stopImmediatePropagation();
@@ -462,7 +389,6 @@
     bind("save-tickets", saveT);
     bind("add-ticket-staff", addStaff);
     bind("refresh-analytics", apply);
-    bind("save-ai", saveAi);
   }
 
   var n = 0;
@@ -495,5 +421,5 @@
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
   else boot();
-  console.log("[features-config-patch] v25 AI replyChance fix");
+  console.log("[features-config-patch] v26 — AI/automod/staff removed");
 })();
