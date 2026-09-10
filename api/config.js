@@ -73,7 +73,8 @@ export default async function handler(req, res) {
       if (stored) {
         if (bot.ok && bot.config) {
           const merged = preferWebsiteShop(stored, bot.config);
-          if (JSON.stringify(merged.shop) !== JSON.stringify(stored.shop)) {
+          if (JSON.stringify(merged.shop) !== JSON.stringify(stored.shop) ||
+              JSON.stringify(merged.applications) !== JSON.stringify(stored.applications)) {
             try {
               await saveGuildConfig(guildId, merged);
               stored = merged;
@@ -128,6 +129,7 @@ export default async function handler(req, res) {
           "bump",
           "ai",
           "automod",
+          "applications",
         ];
         let needsResave = false;
         for (const k of extraKeys) {
@@ -148,10 +150,17 @@ export default async function handler(req, res) {
               mirrored.automod = {
                 ...(mirrored.automod || {}),
                 ...body.automod,
-                filters: {
-                  ...((mirrored.automod && mirrored.automod.filters) || {}),
-                  ...(body.automod.filters || {}),
-                },
+              };
+            } else if (k === "applications") {
+              mirrored.applications = {
+                ...(mirrored.applications || {}),
+                ...body.applications,
+                positions: Array.isArray(body.applications.positions)
+                  ? body.applications.positions
+                  : (mirrored.applications && mirrored.applications.positions) || [],
+                questions: Array.isArray(body.applications.questions)
+                  ? body.applications.questions
+                  : (mirrored.applications && mirrored.applications.questions) || [],
               };
             } else {
               mirrored[k] = { ...(mirrored[k] || {}), ...body[k] };
@@ -180,6 +189,7 @@ export default async function handler(req, res) {
             : mirrored?.shop?.enabled,
         ai: mirrored?.ai || body.ai,
         automod: mirrored?.automod || body.automod,
+        applications: mirrored?.applications || body.applications,
       };
 
       let botOk = false;
