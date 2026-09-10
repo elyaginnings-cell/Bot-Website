@@ -1,10 +1,10 @@
 /**
- * AI Automod + AI Staff — per-category automod rules.
+ * AI Automod + AI Staff — media channels + sexual/dating + per-category rules.
  */
 (function () {
   "use strict";
-  if (window.__featuresAutomodStaffV5) return;
-  window.__featuresAutomodStaffV5 = true;
+  if (window.__featuresAutomodStaffV6) return;
+  window.__featuresAutomodStaffV6 = true;
 
   var CAT_KEYS = [
     { id: "invite_spam", label: "Discord invites" },
@@ -12,6 +12,8 @@
     { id: "ads", label: "Ads / self-promo" },
     { id: "mass_mentions", label: "Mass mentions" },
     { id: "hate", label: "Hate / severe harassment" },
+    { id: "sexual", label: "Sexual / dating talk" },
+    { id: "media_restrict", label: "Photos/videos outside media channel" },
     { id: "caps", label: "Caps spam" },
     { id: "char_spam", label: "Character spam" },
     { id: "ai", label: "AI borderline" },
@@ -23,38 +25,29 @@
     ads: { enabled: true, strikes: 2, action: "warn", muteDuration: "10m", deleteMessage: true, windowMinutes: 60 },
     mass_mentions: { enabled: true, strikes: 1, action: "warn", muteDuration: "10m", deleteMessage: true, windowMinutes: 30, maxMentions: 4 },
     hate: { enabled: true, strikes: 1, action: "mute", muteDuration: "1h", deleteMessage: true, windowMinutes: 120 },
+    sexual: { enabled: true, strikes: 2, action: "warn", muteDuration: "30m", deleteMessage: true, windowMinutes: 60 },
+    media_restrict: { enabled: true, strikes: 1, action: "delete", muteDuration: "10m", deleteMessage: true, windowMinutes: 30 },
     caps: { enabled: true, strikes: 3, action: "delete", muteDuration: "5m", deleteMessage: true, windowMinutes: 15 },
     char_spam: { enabled: true, strikes: 2, action: "warn", muteDuration: "10m", deleteMessage: true, windowMinutes: 30 },
     ai: { enabled: true, strikes: 1, action: "warn", muteDuration: "10m", deleteMessage: true, windowMinutes: 60 },
   };
 
-  function $(id) {
-    return document.getElementById(id);
-  }
+  function $(id) { return document.getElementById(id); }
 
   function channels() {
-    try {
-      if (typeof channelsCache !== "undefined" && channelsCache && channelsCache.length) return channelsCache;
-    } catch (_) {}
-    try {
-      if (window.syncGlobals) window.syncGlobals();
-    } catch (_) {}
+    try { if (typeof channelsCache !== "undefined" && channelsCache && channelsCache.length) return channelsCache; } catch (_) {}
+    try { if (window.syncGlobals) window.syncGlobals(); } catch (_) {}
     return window.channelsCache || [];
   }
-
   function roles() {
-    try {
-      if (typeof rolesCache !== "undefined" && rolesCache && rolesCache.length) return rolesCache;
-    } catch (_) {}
+    try { if (typeof rolesCache !== "undefined" && rolesCache && rolesCache.length) return rolesCache; } catch (_) {}
     return window.rolesCache || [];
   }
-
   function textChannels() {
     return channels().filter(function (c) {
       return c && (c.type === 0 || c.type === 5 || c.type == null || c.type === "GUILD_TEXT");
     });
   }
-
   function fillChannelSelect(sel, noneLabel) {
     if (!sel || sel.tagName !== "SELECT") return;
     var cur = sel.value;
@@ -67,7 +60,6 @@
     });
     if (cur) sel.value = cur;
   }
-
   function fillRoleSelect(sel, noneLabel) {
     if (!sel || sel.tagName !== "SELECT") return;
     var cur = sel.value;
@@ -96,19 +88,14 @@
     btn.addEventListener("click", function () {
       if (typeof window.showSection === "function") window.showSection(tab);
       else {
-        document.querySelectorAll(".page-section").forEach(function (el) {
-          el.classList.remove("active");
-        });
+        document.querySelectorAll(".page-section").forEach(function (el) { el.classList.remove("active"); });
         var sec = document.getElementById(tab);
         if (sec) sec.classList.add("active");
         document.querySelectorAll(".nav-item").forEach(function (b) {
           b.classList.toggle("active", b.getAttribute("data-tab") === tab);
         });
       }
-      try {
-        fillAllSelects();
-        apply();
-      } catch (_) {}
+      try { fillAllSelects(); apply(); } catch (_) {}
     });
     if (settingsBtn) nav.insertBefore(btn, settingsBtn);
     else nav.appendChild(btn);
@@ -129,19 +116,16 @@
     ignoreRoles: [],
     ignoreChannels: [],
     staffRoles: [],
+    mediaChannels: [],
     categories: JSON.parse(JSON.stringify(CAT_DEFAULTS)),
   };
 
   function roleName(id) {
-    var r = roles().find(function (x) {
-      return String(x.id) === String(id);
-    });
+    var r = roles().find(function (x) { return String(x.id) === String(id); });
     return r ? r.name : id;
   }
   function chName(id) {
-    var c = channels().find(function (x) {
-      return String(x.id) === String(id);
-    });
+    var c = channels().find(function (x) { return String(x.id) === String(id); });
     return c ? "#" + c.name : id;
   }
 
@@ -152,41 +136,27 @@
       el.innerHTML = '<p class="form-hint">None added.</p>';
       return;
     }
-    el.innerHTML = ids
-      .map(function (id) {
-        var label = kind === "role" ? roleName(id) : chName(id);
-        return (
-          '<div class="level-role-row">' +
-          label +
-          ' <button type="button" data-rm="' +
-          id +
-          '" data-kind="' +
-          kind +
-          '" data-list="' +
-          elId +
-          '">Remove</button></div>'
-        );
-      })
-      .join("");
+    el.innerHTML = ids.map(function (id) {
+      var label = kind === "role" ? roleName(id) : chName(id);
+      return '<div class="level-role-row">' + label +
+        ' <button type="button" data-rm="' + id + '" data-kind="' + kind + '" data-list="' + elId + '">Remove</button></div>';
+    }).join("");
     el.querySelectorAll("[data-rm]").forEach(function (btn) {
       btn.addEventListener("click", function () {
         var id = btn.getAttribute("data-rm");
         var list = btn.getAttribute("data-list");
         var k = btn.getAttribute("data-kind");
         if (list === "aistaff-roles-list") {
-          state.staffRoles = state.staffRoles.filter(function (x) {
-            return String(x) !== String(id);
-          });
+          state.staffRoles = state.staffRoles.filter(function (x) { return String(x) !== String(id); });
           renderList("aistaff-roles-list", state.staffRoles, "role");
+        } else if (list === "automod-media-ch-list") {
+          state.mediaChannels = state.mediaChannels.filter(function (x) { return String(x) !== String(id); });
+          renderList("automod-media-ch-list", state.mediaChannels, "channel");
         } else if (k === "role") {
-          state.ignoreRoles = state.ignoreRoles.filter(function (x) {
-            return String(x) !== String(id);
-          });
+          state.ignoreRoles = state.ignoreRoles.filter(function (x) { return String(x) !== String(id); });
           renderList("automod-ignore-roles-list", state.ignoreRoles, "role");
         } else {
-          state.ignoreChannels = state.ignoreChannels.filter(function (x) {
-            return String(x) !== String(id);
-          });
+          state.ignoreChannels = state.ignoreChannels.filter(function (x) { return String(x) !== String(id); });
           renderList("automod-ignore-ch-list", state.ignoreChannels, "channel");
         }
       });
@@ -194,11 +164,9 @@
   }
 
   function actionOptions(selected) {
-    return ["none", "delete", "warn", "mute", "kick", "ban"]
-      .map(function (a) {
-        return '<option value="' + a + '"' + (selected === a ? " selected" : "") + ">" + a + "</option>";
-      })
-      .join("");
+    return ["none", "delete", "warn", "mute", "kick", "ban"].map(function (a) {
+      return '<option value="' + a + '"' + (selected === a ? " selected" : "") + ">" + a + "</option>";
+    }).join("");
   }
 
   function renderCategoryRows() {
@@ -209,51 +177,23 @@
       var id = meta.id;
       return (
         '<div class="level-role-row" style="flex-direction:column;align-items:stretch;gap:0.4rem;margin-bottom:0.75rem;padding:0.75rem;border:1px solid rgba(255,255,255,0.08);border-radius:8px">' +
-        "<div><strong>" +
-        meta.label +
-        "</strong> <code style=\"opacity:.6\">" +
-        id +
-        "</code></div>" +
-        '<label class="toggle"><input type="checkbox" data-cat="' +
-        id +
-        '" data-field="enabled"' +
-        (r.enabled !== false ? " checked" : "") +
-        "> <span>Enabled</span></label>" +
+        "<div><strong>" + meta.label + "</strong> <code style=\"opacity:.6\">" + id + "</code></div>" +
+        '<label class="toggle"><input type="checkbox" data-cat="' + id + '" data-field="enabled"' +
+        (r.enabled !== false ? " checked" : "") + "> <span>Enabled</span></label>" +
         '<div class="config-grid">' +
         '<div class="input-group"><label>Strikes before action</label>' +
-        '<input type="number" min="1" max="20" data-cat="' +
-        id +
-        '" data-field="strikes" value="' +
-        (r.strikes || 1) +
-        '"></div>' +
+        '<input type="number" min="1" max="20" data-cat="' + id + '" data-field="strikes" value="' + (r.strikes || 1) + '"></div>' +
         '<div class="input-group"><label>Window (minutes)</label>' +
-        '<input type="number" min="1" max="10080" data-cat="' +
-        id +
-        '" data-field="windowMinutes" value="' +
-        (r.windowMinutes || 60) +
-        '"></div>' +
+        '<input type="number" min="1" max="10080" data-cat="' + id + '" data-field="windowMinutes" value="' + (r.windowMinutes || 60) + '"></div>' +
         '<div class="input-group"><label>Action when threshold hit</label>' +
-        '<select data-cat="' +
-        id +
-        '" data-field="action">' +
-        actionOptions(r.action || "warn") +
-        "</select></div>" +
+        '<select data-cat="' + id + '" data-field="action">' + actionOptions(r.action || "warn") + "</select></div>" +
         '<div class="input-group"><label>Mute duration (if mute)</label>' +
-        '<input type="text" data-cat="' +
-        id +
-        '" data-field="muteDuration" value="' +
-        (r.muteDuration || "10m") +
-        '" placeholder="10m, 1h"></div>' +
+        '<input type="text" data-cat="' + id + '" data-field="muteDuration" value="' + (r.muteDuration || "10m") + '" placeholder="10m, 1h"></div>' +
         "</div>" +
-        '<label class="toggle"><input type="checkbox" data-cat="' +
-        id +
-        '" data-field="deleteMessage"' +
-        (r.deleteMessage !== false ? " checked" : "") +
-        "> <span>Delete the message</span></label>" +
+        '<label class="toggle"><input type="checkbox" data-cat="' + id + '" data-field="deleteMessage"' +
+        (r.deleteMessage !== false ? " checked" : "") + "> <span>Delete the message</span></label>" +
         (id === "mass_mentions"
-          ? '<div class="input-group"><label>Max mentions</label><input type="number" min="1" max="20" data-cat="mass_mentions" data-field="maxMentions" value="' +
-            (r.maxMentions || 4) +
-            '"></div>'
+          ? '<div class="input-group"><label>Max mentions</label><input type="number" min="1" max="20" data-cat="mass_mentions" data-field="maxMentions" value="' + (r.maxMentions || 4) + '"></div>'
           : "") +
         "</div>"
       );
@@ -274,6 +214,7 @@
   function fillAllSelects() {
     fillChannelSelect($("automod-log"), "None");
     fillChannelSelect($("automod-ignore-ch-pick"), "Select a channel…");
+    fillChannelSelect($("automod-media-ch-pick"), "Select media channel…");
     fillChannelSelect($("aistaff-announce"), "Current channel / mention");
     fillChannelSelect($("aistaff-log"), "None");
     fillRoleSelect($("automod-ignore-role-pick"), "Select a role…");
@@ -298,8 +239,11 @@
     if ($("automod-log")) $("automod-log").value = am.logChannelId || "";
     state.ignoreRoles = (am.ignoredRoleIds || []).map(String);
     state.ignoreChannels = (am.ignoredChannelIds || []).map(String);
+    state.mediaChannels = (am.mediaChannelIds || []).map(String);
+    if ($("automod-allow-gifs")) $("automod-allow-gifs").checked = am.allowGifsEverywhere !== false;
     renderList("automod-ignore-roles-list", state.ignoreRoles, "role");
     renderList("automod-ignore-ch-list", state.ignoreChannels, "channel");
+    renderList("automod-media-ch-list", state.mediaChannels, "channel");
 
     state.categories = JSON.parse(JSON.stringify(CAT_DEFAULTS));
     if (am.categories && typeof am.categories === "object") {
@@ -329,7 +273,6 @@
   async function saveAutomod() {
     try {
       setStatus("automod-status", "Saving…", true);
-      // read live values from DOM in case change events missed
       document.querySelectorAll("#automod-cat-rows [data-cat]").forEach(function (el) {
         var cat = el.getAttribute("data-cat");
         var field = el.getAttribute("data-field");
@@ -345,19 +288,20 @@
           logChannelId: $("automod-log") && $("automod-log").value ? $("automod-log").value : null,
           ignoredRoleIds: state.ignoreRoles.slice(),
           ignoredChannelIds: state.ignoreChannels.slice(),
+          mediaChannelIds: state.mediaChannels.slice(),
+          allowGifsEverywhere: $("automod-allow-gifs") ? $("automod-allow-gifs").checked : true,
           categories: state.categories,
           blockInvites: state.categories.invite_spam && state.categories.invite_spam.enabled !== false,
           blockAds: state.categories.ads && state.categories.ads.enabled !== false,
           blockScamLinks: state.categories.scam && state.categories.scam.enabled !== false,
-          maxMentions:
-            (state.categories.mass_mentions && state.categories.mass_mentions.maxMentions) || 4,
+          maxMentions: (state.categories.mass_mentions && state.categories.mass_mentions.maxMentions) || 4,
         },
       });
       setStatus(
         "automod-status",
         d && d.savedToBot === false
           ? "Saved on website. Bot offline — redeploy Railway."
-          : "✅ Automod rules saved (strikes + actions).",
+          : "✅ Automod rules saved (media + sexual + strikes).",
         true
       );
       if (window.loadGuildData) await window.loadGuildData();
@@ -425,6 +369,12 @@
       if (state.ignoreChannels.indexOf(v) < 0) state.ignoreChannels.push(v);
       renderList("automod-ignore-ch-list", state.ignoreChannels, "channel");
     });
+    once("automod-media-ch-add", function () {
+      var v = $("automod-media-ch-pick") && $("automod-media-ch-pick").value;
+      if (!v) return;
+      if (state.mediaChannels.indexOf(v) < 0) state.mediaChannels.push(v);
+      renderList("automod-media-ch-list", state.mediaChannels, "channel");
+    });
     once("aistaff-role-add", function () {
       var v = $("aistaff-role-pick") && $("aistaff-role-pick").value;
       if (!v) return;
@@ -442,13 +392,22 @@
       '<section id="automod" class="page-section"><div class="card form-card wide">' +
         '<span class="eyebrow">AUTOMOD</span>' +
         "<h2>Automod</h2>" +
-        '<p class="form-hint">Set how many times each offense can happen in a time window before the bot acts — and what it does.</p>' +
+        '<p class="form-hint">Strikes, windows, actions — plus media channel rules and sexual/dating filters.</p>' +
         '<label class="toggle"><input type="checkbox" id="automod-enabled"> <span>Enabled</span></label>' +
         '<label class="toggle"><input type="checkbox" id="automod-ignore-staff" checked> <span>Ignore staff (Manage Messages+)</span></label>' +
         '<div class="input-group"><label>Log channel</label>' +
         '<select id="automod-log"><option value="">None</option></select></div>' +
+        '<h3 class="subhead">Media channels</h3>' +
+        '<p class="form-hint">Photos &amp; videos only in these channels. <strong>GIFs stay allowed</strong> everywhere (Tenor/Giphy + .gif).</p>' +
+        '<label class="toggle"><input type="checkbox" id="automod-allow-gifs" checked> <span>Allow GIFs everywhere</span></label>' +
+        '<div class="config-grid">' +
+        '<div class="input-group"><label>Media channel (photos/videos OK)</label>' +
+        '<select id="automod-media-ch-pick"><option value="">Select media channel…</option></select></div>' +
+        '<div class="input-group"><label>&nbsp;</label><button class="button secondary" type="button" id="automod-media-ch-add">Add channel</button></div>' +
+        "</div>" +
+        '<div id="automod-media-ch-list" class="level-roles-list"></div>' +
         '<h3 class="subhead">Per-type rules</h3>' +
-        '<p class="form-hint">Strikes = how many hits in the window before the action runs. Message is deleted each time (if enabled).</p>' +
+        '<p class="form-hint">Strikes = hits in the window before the action runs.</p>' +
         '<div id="automod-cat-rows"></div>' +
         '<h3 class="subhead">Ignore extras (optional)</h3>' +
         '<div class="config-grid">' +
@@ -473,7 +432,7 @@
       '<section id="aistaff" class="page-section"><div class="card form-card wide">' +
         '<span class="eyebrow">AI STAFF</span>' +
         "<h2>AI Staff actions</h2>" +
-        '<p class="form-hint">Roles you add can ask CoffeeBot to do staff tasks (announce, create channels/roles, assign roles, pin…).</p>' +
+        '<p class="form-hint">Roles you add can ask CoffeeBot to do staff tasks.</p>' +
         '<label class="toggle"><input type="checkbox" id="aistaff-enabled"> <span>Enabled</span></label>' +
         '<h3 class="subhead">Who can use it</h3>' +
         '<div class="config-grid">' +
@@ -513,12 +472,8 @@
     if (typeof prevFill === "function" && !window.__amStaffFillHook) {
       window.__amStaffFillHook = true;
       window.fillExtraSelects = function () {
-        try {
-          prevFill();
-        } catch (_) {}
-        try {
-          fillAllSelects();
-        } catch (_) {}
+        try { prevFill(); } catch (_) {}
+        try { fillAllSelects(); } catch (_) {}
       };
     }
     var prevLoad = window.loadGuildData;
@@ -526,10 +481,7 @@
       window.__amStaffLoadWrap = true;
       window.loadGuildData = async function () {
         var r = await prevLoad.apply(this, arguments);
-        try {
-          fillAllSelects();
-          apply();
-        } catch (_) {}
+        try { fillAllSelects(); apply(); } catch (_) {}
         return r;
       };
     }
@@ -538,5 +490,5 @@
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
   else boot();
-  console.log("[features-automod-staff] v5 per-category rules");
+  console.log("[features-automod-staff] v6 media + sexual");
 })();
