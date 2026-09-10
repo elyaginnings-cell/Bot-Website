@@ -1,10 +1,10 @@
 /**
- * AI Automod + AI Staff — media channels + sexual/dating + per-category rules.
+ * AI Automod + AI Staff — DM on flag, English-only, media, sexual, per-category rules.
  */
 (function () {
   "use strict";
-  if (window.__featuresAutomodStaffV6) return;
-  window.__featuresAutomodStaffV6 = true;
+  if (window.__featuresAutomodStaffV7) return;
+  window.__featuresAutomodStaffV7 = true;
 
   var CAT_KEYS = [
     { id: "invite_spam", label: "Discord invites" },
@@ -14,6 +14,7 @@
     { id: "hate", label: "Hate / severe harassment" },
     { id: "sexual", label: "Sexual / dating talk" },
     { id: "media_restrict", label: "Photos/videos outside media channel" },
+    { id: "english_only", label: "English-only (non-English text)" },
     { id: "caps", label: "Caps spam" },
     { id: "char_spam", label: "Character spam" },
     { id: "ai", label: "AI borderline" },
@@ -27,6 +28,7 @@
     hate: { enabled: true, strikes: 1, action: "mute", muteDuration: "1h", deleteMessage: true, windowMinutes: 120 },
     sexual: { enabled: true, strikes: 2, action: "warn", muteDuration: "30m", deleteMessage: true, windowMinutes: 60 },
     media_restrict: { enabled: true, strikes: 1, action: "delete", muteDuration: "10m", deleteMessage: true, windowMinutes: 30 },
+    english_only: { enabled: true, strikes: 2, action: "warn", muteDuration: "10m", deleteMessage: true, windowMinutes: 60 },
     caps: { enabled: true, strikes: 3, action: "delete", muteDuration: "5m", deleteMessage: true, windowMinutes: 15 },
     char_spam: { enabled: true, strikes: 2, action: "warn", muteDuration: "10m", deleteMessage: true, windowMinutes: 30 },
     ai: { enabled: true, strikes: 1, action: "warn", muteDuration: "10m", deleteMessage: true, windowMinutes: 60 },
@@ -241,6 +243,9 @@
     state.ignoreChannels = (am.ignoredChannelIds || []).map(String);
     state.mediaChannels = (am.mediaChannelIds || []).map(String);
     if ($("automod-allow-gifs")) $("automod-allow-gifs").checked = am.allowGifsEverywhere !== false;
+    if ($("automod-dm-flag")) $("automod-dm-flag").checked = am.dmOnFlag !== false;
+    if ($("automod-english-only")) $("automod-english-only").checked = am.englishOnly !== false;
+    if ($("automod-translate")) $("automod-translate").checked = am.translateNonEnglish !== false;
     renderList("automod-ignore-roles-list", state.ignoreRoles, "role");
     renderList("automod-ignore-ch-list", state.ignoreChannels, "channel");
     renderList("automod-media-ch-list", state.mediaChannels, "channel");
@@ -290,6 +295,9 @@
           ignoredChannelIds: state.ignoreChannels.slice(),
           mediaChannelIds: state.mediaChannels.slice(),
           allowGifsEverywhere: $("automod-allow-gifs") ? $("automod-allow-gifs").checked : true,
+          dmOnFlag: $("automod-dm-flag") ? $("automod-dm-flag").checked : true,
+          englishOnly: $("automod-english-only") ? $("automod-english-only").checked : true,
+          translateNonEnglish: $("automod-translate") ? $("automod-translate").checked : true,
           categories: state.categories,
           blockInvites: state.categories.invite_spam && state.categories.invite_spam.enabled !== false,
           blockAds: state.categories.ads && state.categories.ads.enabled !== false,
@@ -301,7 +309,7 @@
         "automod-status",
         d && d.savedToBot === false
           ? "Saved on website. Bot offline — redeploy Railway."
-          : "✅ Automod rules saved (media + sexual + strikes).",
+          : "✅ Automod saved (DM + English + media + strikes).",
         true
       );
       if (window.loadGuildData) await window.loadGuildData();
@@ -392,14 +400,19 @@
       '<section id="automod" class="page-section"><div class="card form-card wide">' +
         '<span class="eyebrow">AUTOMOD</span>' +
         "<h2>Automod</h2>" +
-        '<p class="form-hint">Strikes, windows, actions — plus media channel rules and sexual/dating filters.</p>' +
+        '<p class="form-hint">DM on every flag, English-only, media channels, and per-type strike rules.</p>' +
         '<label class="toggle"><input type="checkbox" id="automod-enabled"> <span>Enabled</span></label>' +
         '<label class="toggle"><input type="checkbox" id="automod-ignore-staff" checked> <span>Ignore staff (Manage Messages+)</span></label>' +
         '<div class="input-group"><label>Log channel</label>' +
         '<select id="automod-log"><option value="">None</option></select></div>' +
         '<h3 class="subhead">Media channels</h3>' +
-        '<p class="form-hint">Photos &amp; videos only in these channels. <strong>GIFs stay allowed</strong> everywhere (Tenor/Giphy + .gif).</p>' +
+        '<p class="form-hint">Photos &amp; videos only in these channels. <strong>GIFs stay allowed</strong> everywhere.</p>' +
         '<label class="toggle"><input type="checkbox" id="automod-allow-gifs" checked> <span>Allow GIFs everywhere</span></label>' +
+        '<h3 class="subhead">Notifications &amp; language</h3>' +
+        '<label class="toggle"><input type="checkbox" id="automod-dm-flag" checked> <span>DM the user every time automod flags them</span></label>' +
+        '<label class="toggle"><input type="checkbox" id="automod-english-only" checked> <span>English-only (flag mostly non-English text)</span></label>' +
+        '<label class="toggle"><input type="checkbox" id="automod-translate" checked> <span>Post an English translation when non-English is flagged</span></label>' +
+        '<p class="form-hint">English-only uses script detection (Cyrillic, CJK, Arabic, etc.). Short messages, emojis, and links are ignored.</p>' +
         '<div class="config-grid">' +
         '<div class="input-group"><label>Media channel (photos/videos OK)</label>' +
         '<select id="automod-media-ch-pick"><option value="">Select media channel…</option></select></div>' +
@@ -407,7 +420,6 @@
         "</div>" +
         '<div id="automod-media-ch-list" class="level-roles-list"></div>' +
         '<h3 class="subhead">Per-type rules</h3>' +
-        '<p class="form-hint">Strikes = hits in the window before the action runs.</p>' +
         '<div id="automod-cat-rows"></div>' +
         '<h3 class="subhead">Ignore extras (optional)</h3>' +
         '<div class="config-grid">' +
@@ -432,7 +444,6 @@
       '<section id="aistaff" class="page-section"><div class="card form-card wide">' +
         '<span class="eyebrow">AI STAFF</span>' +
         "<h2>AI Staff actions</h2>" +
-        '<p class="form-hint">Roles you add can ask CoffeeBot to do staff tasks.</p>' +
         '<label class="toggle"><input type="checkbox" id="aistaff-enabled"> <span>Enabled</span></label>' +
         '<h3 class="subhead">Who can use it</h3>' +
         '<div class="config-grid">' +
@@ -447,7 +458,7 @@
         '<select id="aistaff-log"><option value="">None</option></select></div>' +
         '<h3 class="subhead">Allowed actions</h3>' +
         '<label class="toggle"><input type="checkbox" id="as-announce" checked> <span>Announce</span></label>' +
-        '<label class="toggle"><input type="checkbox" id="as-send" checked> <span>Send message to a channel</span></label>' +
+        '<label class="toggle"><input type="checkbox" id="as-send" checked> <span>Send message</span></label>' +
         '<label class="toggle"><input type="checkbox" id="as-create-ch" checked> <span>Create channel</span></label>' +
         '<label class="toggle"><input type="checkbox" id="as-rename" checked> <span>Rename channel</span></label>' +
         '<label class="toggle"><input type="checkbox" id="as-create-role" checked> <span>Create role</span></label>' +
@@ -490,5 +501,5 @@
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
   else boot();
-  console.log("[features-automod-staff] v6 media + sexual");
+  console.log("[features-automod-staff] v7 DM + English-only");
 })();
