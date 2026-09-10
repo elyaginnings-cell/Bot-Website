@@ -1,10 +1,32 @@
 /**
- * AI Automod + AI Staff — same layout as Applications / Analytics panels.
+ * AI Automod + AI Staff — per-category automod rules.
  */
 (function () {
   "use strict";
-  if (window.__featuresAutomodStaffV4) return;
-  window.__featuresAutomodStaffV4 = true;
+  if (window.__featuresAutomodStaffV5) return;
+  window.__featuresAutomodStaffV5 = true;
+
+  var CAT_KEYS = [
+    { id: "invite_spam", label: "Discord invites" },
+    { id: "scam", label: "Scam / phishing links" },
+    { id: "ads", label: "Ads / self-promo" },
+    { id: "mass_mentions", label: "Mass mentions" },
+    { id: "hate", label: "Hate / severe harassment" },
+    { id: "caps", label: "Caps spam" },
+    { id: "char_spam", label: "Character spam" },
+    { id: "ai", label: "AI borderline" },
+  ];
+
+  var CAT_DEFAULTS = {
+    invite_spam: { enabled: true, strikes: 1, action: "warn", muteDuration: "10m", deleteMessage: true, windowMinutes: 60 },
+    scam: { enabled: true, strikes: 1, action: "mute", muteDuration: "1h", deleteMessage: true, windowMinutes: 120 },
+    ads: { enabled: true, strikes: 2, action: "warn", muteDuration: "10m", deleteMessage: true, windowMinutes: 60 },
+    mass_mentions: { enabled: true, strikes: 1, action: "warn", muteDuration: "10m", deleteMessage: true, windowMinutes: 30, maxMentions: 4 },
+    hate: { enabled: true, strikes: 1, action: "mute", muteDuration: "1h", deleteMessage: true, windowMinutes: 120 },
+    caps: { enabled: true, strikes: 3, action: "delete", muteDuration: "5m", deleteMessage: true, windowMinutes: 15 },
+    char_spam: { enabled: true, strikes: 2, action: "warn", muteDuration: "10m", deleteMessage: true, windowMinutes: 30 },
+    ai: { enabled: true, strikes: 1, action: "warn", muteDuration: "10m", deleteMessage: true, windowMinutes: 60 },
+  };
 
   function $(id) {
     return document.getElementById(id);
@@ -107,6 +129,7 @@
     ignoreRoles: [],
     ignoreChannels: [],
     staffRoles: [],
+    categories: JSON.parse(JSON.stringify(CAT_DEFAULTS)),
   };
 
   function roleName(id) {
@@ -170,6 +193,84 @@
     });
   }
 
+  function actionOptions(selected) {
+    return ["none", "delete", "warn", "mute", "kick", "ban"]
+      .map(function (a) {
+        return '<option value="' + a + '"' + (selected === a ? " selected" : "") + ">" + a + "</option>";
+      })
+      .join("");
+  }
+
+  function renderCategoryRows() {
+    var host = $("automod-cat-rows");
+    if (!host) return;
+    host.innerHTML = CAT_KEYS.map(function (meta) {
+      var r = state.categories[meta.id] || CAT_DEFAULTS[meta.id] || {};
+      var id = meta.id;
+      return (
+        '<div class="level-role-row" style="flex-direction:column;align-items:stretch;gap:0.4rem;margin-bottom:0.75rem;padding:0.75rem;border:1px solid rgba(255,255,255,0.08);border-radius:8px">' +
+        "<div><strong>" +
+        meta.label +
+        "</strong> <code style=\"opacity:.6\">" +
+        id +
+        "</code></div>" +
+        '<label class="toggle"><input type="checkbox" data-cat="' +
+        id +
+        '" data-field="enabled"' +
+        (r.enabled !== false ? " checked" : "") +
+        "> <span>Enabled</span></label>" +
+        '<div class="config-grid">' +
+        '<div class="input-group"><label>Strikes before action</label>' +
+        '<input type="number" min="1" max="20" data-cat="' +
+        id +
+        '" data-field="strikes" value="' +
+        (r.strikes || 1) +
+        '"></div>' +
+        '<div class="input-group"><label>Window (minutes)</label>' +
+        '<input type="number" min="1" max="10080" data-cat="' +
+        id +
+        '" data-field="windowMinutes" value="' +
+        (r.windowMinutes || 60) +
+        '"></div>' +
+        '<div class="input-group"><label>Action when threshold hit</label>' +
+        '<select data-cat="' +
+        id +
+        '" data-field="action">' +
+        actionOptions(r.action || "warn") +
+        "</select></div>" +
+        '<div class="input-group"><label>Mute duration (if mute)</label>' +
+        '<input type="text" data-cat="' +
+        id +
+        '" data-field="muteDuration" value="' +
+        (r.muteDuration || "10m") +
+        '" placeholder="10m, 1h"></div>' +
+        "</div>" +
+        '<label class="toggle"><input type="checkbox" data-cat="' +
+        id +
+        '" data-field="deleteMessage"' +
+        (r.deleteMessage !== false ? " checked" : "") +
+        "> <span>Delete the message</span></label>" +
+        (id === "mass_mentions"
+          ? '<div class="input-group"><label>Max mentions</label><input type="number" min="1" max="20" data-cat="mass_mentions" data-field="maxMentions" value="' +
+            (r.maxMentions || 4) +
+            '"></div>'
+          : "") +
+        "</div>"
+      );
+    }).join("");
+
+    host.querySelectorAll("[data-cat]").forEach(function (el) {
+      el.addEventListener("change", function () {
+        var cat = el.getAttribute("data-cat");
+        var field = el.getAttribute("data-field");
+        if (!state.categories[cat]) state.categories[cat] = Object.assign({}, CAT_DEFAULTS[cat] || {});
+        if (el.type === "checkbox") state.categories[cat][field] = el.checked;
+        else if (el.type === "number") state.categories[cat][field] = Number(el.value) || 1;
+        else state.categories[cat][field] = el.value;
+      });
+    });
+  }
+
   function fillAllSelects() {
     fillChannelSelect($("automod-log"), "None");
     fillChannelSelect($("automod-ignore-ch-pick"), "Select a channel…");
@@ -193,13 +294,20 @@
     var am = c.automod || {};
     if ($("automod-enabled")) $("automod-enabled").checked = !!am.enabled;
     if ($("automod-ignore-staff")) $("automod-ignore-staff").checked = am.ignoreStaff !== false;
-    if ($("automod-action")) $("automod-action").value = am.action || "warn";
     fillAllSelects();
     if ($("automod-log")) $("automod-log").value = am.logChannelId || "";
     state.ignoreRoles = (am.ignoredRoleIds || []).map(String);
     state.ignoreChannels = (am.ignoredChannelIds || []).map(String);
     renderList("automod-ignore-roles-list", state.ignoreRoles, "role");
     renderList("automod-ignore-ch-list", state.ignoreChannels, "channel");
+
+    state.categories = JSON.parse(JSON.stringify(CAT_DEFAULTS));
+    if (am.categories && typeof am.categories === "object") {
+      Object.keys(am.categories).forEach(function (k) {
+        state.categories[k] = Object.assign({}, CAT_DEFAULTS[k] || {}, am.categories[k]);
+      });
+    }
+    renderCategoryRows();
 
     var st = (c.ai && c.ai.staff) || {};
     var acts = st.allowedActions || {};
@@ -221,20 +329,35 @@
   async function saveAutomod() {
     try {
       setStatus("automod-status", "Saving…", true);
+      // read live values from DOM in case change events missed
+      document.querySelectorAll("#automod-cat-rows [data-cat]").forEach(function (el) {
+        var cat = el.getAttribute("data-cat");
+        var field = el.getAttribute("data-field");
+        if (!state.categories[cat]) state.categories[cat] = Object.assign({}, CAT_DEFAULTS[cat] || {});
+        if (el.type === "checkbox") state.categories[cat][field] = el.checked;
+        else if (el.type === "number") state.categories[cat][field] = Number(el.value) || 1;
+        else state.categories[cat][field] = el.value;
+      });
       var d = await window.saveConfig({
         automod: {
           enabled: $("automod-enabled") ? $("automod-enabled").checked : false,
           ignoreStaff: $("automod-ignore-staff") ? $("automod-ignore-staff").checked : true,
-          action: $("automod-action") ? $("automod-action").value || "warn" : "warn",
-          muteDuration: "10m",
           logChannelId: $("automod-log") && $("automod-log").value ? $("automod-log").value : null,
           ignoredRoleIds: state.ignoreRoles.slice(),
           ignoredChannelIds: state.ignoreChannels.slice(),
+          categories: state.categories,
+          blockInvites: state.categories.invite_spam && state.categories.invite_spam.enabled !== false,
+          blockAds: state.categories.ads && state.categories.ads.enabled !== false,
+          blockScamLinks: state.categories.scam && state.categories.scam.enabled !== false,
+          maxMentions:
+            (state.categories.mass_mentions && state.categories.mass_mentions.maxMentions) || 4,
         },
       });
       setStatus(
         "automod-status",
-        d && d.savedToBot === false ? "Saved on website. Bot offline — redeploy Railway." : "✅ AI Automod saved.",
+        d && d.savedToBot === false
+          ? "Saved on website. Bot offline — redeploy Railway."
+          : "✅ Automod rules saved (strikes + actions).",
         true
       );
       if (window.loadGuildData) await window.loadGuildData();
@@ -311,25 +434,22 @@
   }
 
   function ensurePanels() {
-    ensureNavItem("automod", "🛡️", "Automod", "AI Automod");
+    ensureNavItem("automod", "🛡️", "Automod", "Automod");
     ensureNavItem("aistaff", "🤖", "AI Staff", "AI Staff actions");
 
     ensureSection(
       "automod",
       '<section id="automod" class="page-section"><div class="card form-card wide">' +
         '<span class="eyebrow">AUTOMOD</span>' +
-        "<h2>AI Automod</h2>" +
-        '<p class="form-hint">CoffeeBot reads messages and decides what’s not okay (hate, scams, threats, invite spam…). Uses your normal <code>/warn</code> system — no keyword lists.</p>' +
+        "<h2>Automod</h2>" +
+        '<p class="form-hint">Set how many times each offense can happen in a time window before the bot acts — and what it does.</p>' +
         '<label class="toggle"><input type="checkbox" id="automod-enabled"> <span>Enabled</span></label>' +
         '<label class="toggle"><input type="checkbox" id="automod-ignore-staff" checked> <span>Ignore staff (Manage Messages+)</span></label>' +
-        '<div class="input-group"><label>When AI flags a message</label>' +
-        '<select id="automod-action">' +
-        '<option value="warn">Delete + warn (recommended)</option>' +
-        '<option value="delete">Delete only</option>' +
-        '<option value="mute">Delete + mute 10m</option>' +
-        "</select></div>" +
         '<div class="input-group"><label>Log channel</label>' +
         '<select id="automod-log"><option value="">None</option></select></div>' +
+        '<h3 class="subhead">Per-type rules</h3>' +
+        '<p class="form-hint">Strikes = how many hits in the window before the action runs. Message is deleted each time (if enabled).</p>' +
+        '<div id="automod-cat-rows"></div>' +
         '<h3 class="subhead">Ignore extras (optional)</h3>' +
         '<div class="config-grid">' +
         '<div class="input-group"><label>Ignore role</label>' +
@@ -353,7 +473,7 @@
       '<section id="aistaff" class="page-section"><div class="card form-card wide">' +
         '<span class="eyebrow">AI STAFF</span>' +
         "<h2>AI Staff actions</h2>" +
-        '<p class="form-hint">Roles you add can ask CoffeeBot to do staff tasks (announce, create channels/roles, assign roles, pin…). Everyone else is refused.</p>' +
+        '<p class="form-hint">Roles you add can ask CoffeeBot to do staff tasks (announce, create channels/roles, assign roles, pin…).</p>' +
         '<label class="toggle"><input type="checkbox" id="aistaff-enabled"> <span>Enabled</span></label>' +
         '<h3 class="subhead">Who can use it</h3>' +
         '<div class="config-grid">' +
@@ -377,7 +497,6 @@
         '<label class="toggle"><input type="checkbox" id="as-pin" checked> <span>Pin message</span></label>' +
         '<button class="button" id="save-aistaff" type="button" style="margin-top:1rem">Save AI Staff Settings</button>' +
         '<p class="form-hint" id="aistaff-status"></p>' +
-        '<p class="form-hint">Examples: <code>announce: server online</code> · <code>create channel events</code> · <code>give @User @Role</code></p>' +
         "</div></section>"
     );
 
@@ -419,5 +538,5 @@
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
   else boot();
-  console.log("[features-automod-staff] v4 restored");
+  console.log("[features-automod-staff] v5 per-category rules");
 })();
