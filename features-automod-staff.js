@@ -1,10 +1,10 @@
 /**
- * AI Automod + AI Staff — DM on flag, English-only, media, sexual, per-category rules.
+ * Automod UI v8 — English proficiency roles + DM + media + per-category rules
  */
 (function () {
   "use strict";
-  if (window.__featuresAutomodStaffV7) return;
-  window.__featuresAutomodStaffV7 = true;
+  if (window.__featuresAutomodStaffV8) return;
+  window.__featuresAutomodStaffV8 = true;
 
   var CAT_KEYS = [
     { id: "invite_spam", label: "Discord invites" },
@@ -35,7 +35,6 @@
   };
 
   function $(id) { return document.getElementById(id); }
-
   function channels() {
     try { if (typeof channelsCache !== "undefined" && channelsCache && channelsCache.length) return channelsCache; } catch (_) {}
     try { if (window.syncGlobals) window.syncGlobals(); } catch (_) {}
@@ -179,7 +178,7 @@
       var id = meta.id;
       return (
         '<div class="level-role-row" style="flex-direction:column;align-items:stretch;gap:0.4rem;margin-bottom:0.75rem;padding:0.75rem;border:1px solid rgba(255,255,255,0.08);border-radius:8px">' +
-        "<div><strong>" + meta.label + "</strong> <code style=\"opacity:.6\">" + id + "</code></div>" +
+        "<div><strong>" + meta.label + "</strong></div>" +
         '<label class="toggle"><input type="checkbox" data-cat="' + id + '" data-field="enabled"' +
         (r.enabled !== false ? " checked" : "") + "> <span>Enabled</span></label>" +
         '<div class="config-grid">' +
@@ -187,20 +186,16 @@
         '<input type="number" min="1" max="20" data-cat="' + id + '" data-field="strikes" value="' + (r.strikes || 1) + '"></div>' +
         '<div class="input-group"><label>Window (minutes)</label>' +
         '<input type="number" min="1" max="10080" data-cat="' + id + '" data-field="windowMinutes" value="' + (r.windowMinutes || 60) + '"></div>' +
-        '<div class="input-group"><label>Action when threshold hit</label>' +
+        '<div class="input-group"><label>Action</label>' +
         '<select data-cat="' + id + '" data-field="action">' + actionOptions(r.action || "warn") + "</select></div>" +
-        '<div class="input-group"><label>Mute duration (if mute)</label>' +
-        '<input type="text" data-cat="' + id + '" data-field="muteDuration" value="' + (r.muteDuration || "10m") + '" placeholder="10m, 1h"></div>' +
+        '<div class="input-group"><label>Mute duration</label>' +
+        '<input type="text" data-cat="' + id + '" data-field="muteDuration" value="' + (r.muteDuration || "10m") + '"></div>' +
         "</div>" +
         '<label class="toggle"><input type="checkbox" data-cat="' + id + '" data-field="deleteMessage"' +
         (r.deleteMessage !== false ? " checked" : "") + "> <span>Delete the message</span></label>" +
-        (id === "mass_mentions"
-          ? '<div class="input-group"><label>Max mentions</label><input type="number" min="1" max="20" data-cat="mass_mentions" data-field="maxMentions" value="' + (r.maxMentions || 4) + '"></div>'
-          : "") +
         "</div>"
       );
     }).join("");
-
     host.querySelectorAll("[data-cat]").forEach(function (el) {
       el.addEventListener("change", function () {
         var cat = el.getAttribute("data-cat");
@@ -221,8 +216,11 @@
     fillChannelSelect($("aistaff-log"), "None");
     fillRoleSelect($("automod-ignore-role-pick"), "Select a role…");
     fillRoleSelect($("aistaff-role-pick"), "Select a role…");
+    fillRoleSelect($("automod-eng-fluent"), "None");
+    fillRoleSelect($("automod-eng-moderate"), "None");
+    fillRoleSelect($("automod-eng-little"), "None");
+    fillRoleSelect($("automod-eng-none"), "None");
   }
-
   window.fillAutomodStaffSelects = fillAllSelects;
 
   function setStatus(id, t, ok) {
@@ -246,10 +244,14 @@
     if ($("automod-dm-flag")) $("automod-dm-flag").checked = am.dmOnFlag !== false;
     if ($("automod-english-only")) $("automod-english-only").checked = am.englishOnly !== false;
     if ($("automod-translate")) $("automod-translate").checked = am.translateNonEnglish !== false;
+    var er = am.englishRoles || {};
+    if ($("automod-eng-fluent")) $("automod-eng-fluent").value = er.fluent || "";
+    if ($("automod-eng-moderate")) $("automod-eng-moderate").value = er.moderate || "";
+    if ($("automod-eng-little")) $("automod-eng-little").value = er.little || "";
+    if ($("automod-eng-none")) $("automod-eng-none").value = er.none || "";
     renderList("automod-ignore-roles-list", state.ignoreRoles, "role");
     renderList("automod-ignore-ch-list", state.ignoreChannels, "channel");
     renderList("automod-media-ch-list", state.mediaChannels, "channel");
-
     state.categories = JSON.parse(JSON.stringify(CAT_DEFAULTS));
     if (am.categories && typeof am.categories === "object") {
       Object.keys(am.categories).forEach(function (k) {
@@ -257,7 +259,6 @@
       });
     }
     renderCategoryRows();
-
     var st = (c.ai && c.ai.staff) || {};
     var acts = st.allowedActions || {};
     if ($("aistaff-enabled")) $("aistaff-enabled").checked = !!st.enabled;
@@ -298,6 +299,12 @@
           dmOnFlag: $("automod-dm-flag") ? $("automod-dm-flag").checked : true,
           englishOnly: $("automod-english-only") ? $("automod-english-only").checked : true,
           translateNonEnglish: $("automod-translate") ? $("automod-translate").checked : true,
+          englishRoles: {
+            fluent: $("automod-eng-fluent") && $("automod-eng-fluent").value ? $("automod-eng-fluent").value : null,
+            moderate: $("automod-eng-moderate") && $("automod-eng-moderate").value ? $("automod-eng-moderate").value : null,
+            little: $("automod-eng-little") && $("automod-eng-little").value ? $("automod-eng-little").value : null,
+            none: $("automod-eng-none") && $("automod-eng-none").value ? $("automod-eng-none").value : null,
+          },
           categories: state.categories,
           blockInvites: state.categories.invite_spam && state.categories.invite_spam.enabled !== false,
           blockAds: state.categories.ads && state.categories.ads.enabled !== false,
@@ -305,13 +312,7 @@
           maxMentions: (state.categories.mass_mentions && state.categories.mass_mentions.maxMentions) || 4,
         },
       });
-      setStatus(
-        "automod-status",
-        d && d.savedToBot === false
-          ? "Saved on website. Bot offline — redeploy Railway."
-          : "✅ Automod saved (DM + English + media + strikes).",
-        true
-      );
+      setStatus("automod-status", d && d.savedToBot === false ? "Saved on website. Bot offline — redeploy Railway." : "✅ Automod saved (English roles + rules).", true);
       if (window.loadGuildData) await window.loadGuildData();
       else apply();
     } catch (e) {
@@ -343,11 +344,7 @@
           },
         },
       });
-      setStatus(
-        "aistaff-status",
-        d && d.savedToBot === false ? "Saved on website. Bot offline — redeploy Railway." : "✅ AI Staff saved.",
-        true
-      );
+      setStatus("aistaff-status", d && d.savedToBot === false ? "Saved on website. Bot offline." : "✅ AI Staff saved.", true);
       if (window.loadGuildData) await window.loadGuildData();
       else apply();
     } catch (e) {
@@ -358,10 +355,7 @@
   function wire() {
     function once(id, fn) {
       var el = $(id);
-      if (el && !el.__bound) {
-        el.__bound = 1;
-        el.addEventListener("click", fn);
-      }
+      if (el && !el.__bound) { el.__bound = 1; el.addEventListener("click", fn); }
     }
     once("save-automod", saveAutomod);
     once("save-aistaff", saveAiStaff);
@@ -393,70 +387,56 @@
 
   function ensurePanels() {
     ensureNavItem("automod", "🛡️", "Automod", "Automod");
-    ensureNavItem("aistaff", "🤖", "AI Staff", "AI Staff actions");
-
+    ensureNavItem("aistaff", "🤖", "AI Staff", "AI Staff");
     ensureSection(
       "automod",
       '<section id="automod" class="page-section"><div class="card form-card wide">' +
-        '<span class="eyebrow">AUTOMOD</span>' +
-        "<h2>Automod</h2>" +
-        '<p class="form-hint">DM on every flag, English-only, media channels, and per-type strike rules.</p>' +
+        '<span class="eyebrow">AUTOMOD</span><h2>Automod</h2>' +
         '<label class="toggle"><input type="checkbox" id="automod-enabled"> <span>Enabled</span></label>' +
-        '<label class="toggle"><input type="checkbox" id="automod-ignore-staff" checked> <span>Ignore staff (Manage Messages+)</span></label>' +
-        '<div class="input-group"><label>Log channel</label>' +
-        '<select id="automod-log"><option value="">None</option></select></div>' +
-        '<h3 class="subhead">Media channels</h3>' +
-        '<p class="form-hint">Photos &amp; videos only in these channels. <strong>GIFs stay allowed</strong> everywhere.</p>' +
+        '<label class="toggle"><input type="checkbox" id="automod-ignore-staff" checked> <span>Ignore staff</span></label>' +
+        '<div class="input-group"><label>Log channel</label><select id="automod-log"><option value="">None</option></select></div>' +
+        '<h3 class="subhead">Media</h3>' +
         '<label class="toggle"><input type="checkbox" id="automod-allow-gifs" checked> <span>Allow GIFs everywhere</span></label>' +
-        '<h3 class="subhead">Notifications &amp; language</h3>' +
-        '<label class="toggle"><input type="checkbox" id="automod-dm-flag" checked> <span>DM the user every time automod flags them</span></label>' +
-        '<label class="toggle"><input type="checkbox" id="automod-english-only" checked> <span>English-only (flag mostly non-English text)</span></label>' +
-        '<label class="toggle"><input type="checkbox" id="automod-translate" checked> <span>Post an English translation when non-English is flagged</span></label>' +
-        '<p class="form-hint">English-only uses script detection (Cyrillic, CJK, Arabic, etc.). Short messages, emojis, and links are ignored.</p>' +
         '<div class="config-grid">' +
-        '<div class="input-group"><label>Media channel (photos/videos OK)</label>' +
-        '<select id="automod-media-ch-pick"><option value="">Select media channel…</option></select></div>' +
-        '<div class="input-group"><label>&nbsp;</label><button class="button secondary" type="button" id="automod-media-ch-add">Add channel</button></div>' +
-        "</div>" +
+        '<div class="input-group"><label>Media channel</label><select id="automod-media-ch-pick"><option value="">Select…</option></select></div>' +
+        '<div class="input-group"><label>&nbsp;</label><button class="button secondary" type="button" id="automod-media-ch-add">Add</button></div></div>' +
         '<div id="automod-media-ch-list" class="level-roles-list"></div>' +
-        '<h3 class="subhead">Per-type rules</h3>' +
-        '<div id="automod-cat-rows"></div>' +
-        '<h3 class="subhead">Ignore extras (optional)</h3>' +
+        '<h3 class="subhead">Notifications &amp; language</h3>' +
+        '<label class="toggle"><input type="checkbox" id="automod-dm-flag" checked> <span>DM on every flag</span></label>' +
+        '<label class="toggle"><input type="checkbox" id="automod-english-only" checked> <span>English-only detection</span></label>' +
+        '<label class="toggle"><input type="checkbox" id="automod-translate" checked> <span>Post AI translation when non-English flagged</span></label>' +
+        '<h3 class="subhead">English proficiency roles</h3>' +
+        '<p class="form-hint">Create roles in Discord, then map them here. Scam/hate/ads still apply to everyone.</p>' +
         '<div class="config-grid">' +
-        '<div class="input-group"><label>Ignore role</label>' +
-        '<select id="automod-ignore-role-pick"><option value="">Select a role…</option></select></div>' +
-        '<div class="input-group"><label>&nbsp;</label><button class="button secondary" type="button" id="automod-ignore-role-add">Add role</button></div>' +
-        "</div>" +
+        '<div class="input-group"><label>Fluent English</label><select id="automod-eng-fluent"><option value="">None</option></select></div>' +
+        '<div class="input-group"><label>Moderate English</label><select id="automod-eng-moderate"><option value="">None</option></select></div>' +
+        '<div class="input-group"><label>Little English</label><select id="automod-eng-little"><option value="">None</option></select></div>' +
+        '<div class="input-group"><label>No English</label><select id="automod-eng-none"><option value="">None</option></select></div></div>' +
+        '<p class="form-hint"><strong>Fluent</strong> = full language rules · <strong>Moderate</strong> = softer · <strong>Little / No English</strong> = translation only (no warns)</p>' +
+        '<h3 class="subhead">Per-type rules</h3><div id="automod-cat-rows"></div>' +
+        '<h3 class="subhead">Ignore extras</h3>' +
+        '<div class="config-grid">' +
+        '<div class="input-group"><label>Ignore role</label><select id="automod-ignore-role-pick"><option value="">Select…</option></select></div>' +
+        '<div class="input-group"><label>&nbsp;</label><button class="button secondary" type="button" id="automod-ignore-role-add">Add</button></div></div>' +
         '<div id="automod-ignore-roles-list" class="level-roles-list"></div>' +
         '<div class="config-grid">' +
-        '<div class="input-group"><label>Ignore channel</label>' +
-        '<select id="automod-ignore-ch-pick"><option value="">Select a channel…</option></select></div>' +
-        '<div class="input-group"><label>&nbsp;</label><button class="button secondary" type="button" id="automod-ignore-ch-add">Add channel</button></div>' +
-        "</div>" +
+        '<div class="input-group"><label>Ignore channel</label><select id="automod-ignore-ch-pick"><option value="">Select…</option></select></div>' +
+        '<div class="input-group"><label>&nbsp;</label><button class="button secondary" type="button" id="automod-ignore-ch-add">Add</button></div></div>' +
         '<div id="automod-ignore-ch-list" class="level-roles-list"></div>' +
         '<button class="button" id="save-automod" type="button" style="margin-top:1rem">Save Automod Settings</button>' +
-        '<p class="form-hint" id="automod-status"></p>' +
-        "</div></section>"
+        '<p class="form-hint" id="automod-status"></p></div></section>'
     );
-
     ensureSection(
       "aistaff",
       '<section id="aistaff" class="page-section"><div class="card form-card wide">' +
-        '<span class="eyebrow">AI STAFF</span>' +
-        "<h2>AI Staff actions</h2>" +
+        '<span class="eyebrow">AI STAFF</span><h2>AI Staff</h2>' +
         '<label class="toggle"><input type="checkbox" id="aistaff-enabled"> <span>Enabled</span></label>' +
-        '<h3 class="subhead">Who can use it</h3>' +
         '<div class="config-grid">' +
-        '<div class="input-group"><label>Staff role</label>' +
-        '<select id="aistaff-role-pick"><option value="">Select a role…</option></select></div>' +
-        '<div class="input-group"><label>&nbsp;</label><button class="button secondary" type="button" id="aistaff-role-add">Add role</button></div>' +
-        "</div>" +
+        '<div class="input-group"><label>Staff role</label><select id="aistaff-role-pick"><option value="">Select…</option></select></div>' +
+        '<div class="input-group"><label>&nbsp;</label><button class="button secondary" type="button" id="aistaff-role-add">Add</button></div></div>' +
         '<div id="aistaff-roles-list" class="level-roles-list"></div>' +
-        '<div class="input-group"><label>Default announce channel</label>' +
-        '<select id="aistaff-announce"><option value="">Current channel / mention</option></select></div>' +
-        '<div class="input-group"><label>Action log channel</label>' +
-        '<select id="aistaff-log"><option value="">None</option></select></div>' +
-        '<h3 class="subhead">Allowed actions</h3>' +
+        '<div class="input-group"><label>Announce channel</label><select id="aistaff-announce"><option value="">None</option></select></div>' +
+        '<div class="input-group"><label>Log channel</label><select id="aistaff-log"><option value="">None</option></select></div>' +
         '<label class="toggle"><input type="checkbox" id="as-announce" checked> <span>Announce</span></label>' +
         '<label class="toggle"><input type="checkbox" id="as-send" checked> <span>Send message</span></label>' +
         '<label class="toggle"><input type="checkbox" id="as-create-ch" checked> <span>Create channel</span></label>' +
@@ -464,12 +444,10 @@
         '<label class="toggle"><input type="checkbox" id="as-create-role" checked> <span>Create role</span></label>' +
         '<label class="toggle"><input type="checkbox" id="as-assign" checked> <span>Assign role</span></label>' +
         '<label class="toggle"><input type="checkbox" id="as-remove"> <span>Remove role</span></label>' +
-        '<label class="toggle"><input type="checkbox" id="as-pin" checked> <span>Pin message</span></label>' +
-        '<button class="button" id="save-aistaff" type="button" style="margin-top:1rem">Save AI Staff Settings</button>' +
-        '<p class="form-hint" id="aistaff-status"></p>' +
-        "</div></section>"
+        '<label class="toggle"><input type="checkbox" id="as-pin" checked> <span>Pin</span></label>' +
+        '<button class="button" id="save-aistaff" type="button">Save AI Staff</button>' +
+        '<p class="form-hint" id="aistaff-status"></p></div></section>'
     );
-
     wire();
   }
 
@@ -479,27 +457,9 @@
     ensurePanels();
     fillAllSelects();
     apply();
-    var prevFill = window.fillExtraSelects;
-    if (typeof prevFill === "function" && !window.__amStaffFillHook) {
-      window.__amStaffFillHook = true;
-      window.fillExtraSelects = function () {
-        try { prevFill(); } catch (_) {}
-        try { fillAllSelects(); } catch (_) {}
-      };
-    }
-    var prevLoad = window.loadGuildData;
-    if (typeof prevLoad === "function" && !window.__amStaffLoadWrap) {
-      window.__amStaffLoadWrap = true;
-      window.loadGuildData = async function () {
-        var r = await prevLoad.apply(this, arguments);
-        try { fillAllSelects(); apply(); } catch (_) {}
-        return r;
-      };
-    }
     if (n < 100) setTimeout(boot, 250);
   }
-
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
   else boot();
-  console.log("[features-automod-staff] v7 DM + English-only");
+  console.log("[features-automod-staff] v8 English roles");
 })();
