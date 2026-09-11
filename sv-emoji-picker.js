@@ -1,10 +1,11 @@
 /**
  * Emoji + GIF picker (GIF is a tab inside the emoji panel)
+ * GIF previews load via /api/messages?resource=media (school-filter bypass)
  */
 (function () {
   "use strict";
-  if (window.__svEmojiPickerV2) return;
-  window.__svEmojiPickerV2 = true;
+  if (window.__svEmojiPickerV3) return;
+  window.__svEmojiPickerV3 = true;
 
   var CATEGORIES = [
     {
@@ -55,10 +56,21 @@
 
   function esc(v) {
     return String(v == null ? "" : v)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;");
+      .replace(/&/g, "&")
+      .replace(/</g, "<")
+      .replace(/>/g, ">")
+      .replace(/"/g, """);
+  }
+
+  function previewSrc(g) {
+    if (g.proxyPreview) return g.proxyPreview;
+    if (g.proxyUrl) return g.proxyUrl;
+    var raw = g.preview || g.url || "";
+    if (window.__svProxyMedia) return window.__svProxyMedia(raw);
+    if (raw && raw.indexOf("/api/messages?resource=media") === -1) {
+      return "/api/messages?resource=media&url=" + encodeURIComponent(raw);
+    }
+    return raw;
   }
 
   function getInput() {
@@ -102,24 +114,20 @@
       "#server-view .sv-emoji-panel{position:absolute;bottom:calc(100% + 8px);right:0;z-index:90;width:min(380px,94vw);max-height:min(420px,60vh);background:#2b2d31;border:1px solid #1e1f22;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.45);display:flex;flex-direction:column;overflow:hidden}",
       "#server-view .sv-emoji-panel[hidden]{display:none!important}",
       "#server-view .sv-emoji-tabs{display:flex;gap:2px;padding:8px 8px 6px;border-bottom:1px solid #1e1f22;overflow-x:auto;flex-shrink:0;scrollbar-width:none}",
-      "#server-view .sv-emoji-tabs::-webkit-scrollbar{display:none}",
       "#server-view .sv-emoji-tab{flex:0 0 auto;min-width:32px;height:32px;padding:0 6px;border:none;border-radius:6px;background:transparent;font-size:14px;font-weight:700;cursor:pointer;line-height:1;color:#dbdee1}",
-      "#server-view .sv-emoji-tab:hover{background:rgba(255,255,255,.08)}",
       "#server-view .sv-emoji-tab.active{background:rgba(88,101,242,.35);color:#fff}",
       "#server-view .sv-emoji-search-wrap{padding:6px 10px;flex-shrink:0}",
       "#server-view .sv-emoji-search{width:100%;box-sizing:border-box;border:none;border-radius:6px;padding:8px 10px;font-size:13px;background:#1e1f22;color:#dbdee1;outline:none}",
-      "#server-view .sv-emoji-grid{flex:1 1 auto;overflow-y:auto;padding:6px 8px 12px;display:grid;grid-template-columns:repeat(8,1fr);gap:2px;-webkit-overflow-scrolling:touch}",
+      "#server-view .sv-emoji-grid{flex:1 1 auto;overflow-y:auto;padding:6px 8px 12px;display:grid;grid-template-columns:repeat(8,1fr);gap:2px}",
       "#server-view .sv-emoji-grid.gif-mode{grid-template-columns:repeat(2,1fr);gap:6px}",
-      "#server-view .sv-emoji-cell{border:none;background:transparent;border-radius:6px;padding:4px;font-size:24px;line-height:1.2;cursor:pointer;aspect-ratio:1;display:flex;align-items:center;justify-content:center}",
+      "#server-view .sv-emoji-cell{border:none;background:transparent;border-radius:6px;padding:4px;font-size:24px;cursor:pointer;aspect-ratio:1;display:flex;align-items:center;justify-content:center}",
       "#server-view .sv-emoji-cell:hover{background:rgba(255,255,255,.1)}",
-      "#server-view .sv-emoji-label{grid-column:1/-1;font-size:11px;font-weight:700;color:#949ba4;text-transform:uppercase;letter-spacing:.03em;padding:8px 4px 4px}",
+      "#server-view .sv-emoji-label{grid-column:1/-1;font-size:11px;font-weight:700;color:#949ba4;text-transform:uppercase;padding:8px 4px 4px}",
       "#server-view .sv-gif-cell{position:relative;border:0;padding:0;background:#1e1f22;border-radius:8px;overflow:hidden;cursor:pointer;aspect-ratio:1.2}",
       "#server-view .sv-gif-cell img{width:100%;height:100%;object-fit:cover;display:block}",
       "#server-view .sv-gif-star{position:absolute;top:4px;right:4px;border:0;background:rgba(0,0,0,.5);color:#f0b232;border-radius:4px;cursor:pointer;font-size:14px;padding:2px 5px}",
       "#server-view .sv-composer-wrap{position:relative}",
-      /* hide legacy standalone GIF button if present */
-      "#server-view #sv-gif-btn,#server-view .sv-gif-btn{display:none!important}",
-      "#server-view #sv-gif-panel{display:none!important}",
+      "#server-view #sv-gif-btn,#server-view .sv-gif-btn,#server-view #sv-gif-panel{display:none!important}",
     ].join("\n");
     document.head.appendChild(s);
   }
@@ -153,7 +161,6 @@
     var search = document.getElementById("sv-emoji-search");
     if (search) {
       search.value = "";
-      search.placeholder = "Search emoji or GIFs…";
       setTimeout(function () {
         search.focus();
       }, 40);
@@ -168,8 +175,7 @@
   }
 
   function setActiveTab(id) {
-    var tabs = document.querySelectorAll("#sv-emoji-panel .sv-emoji-tab");
-    tabs.forEach(function (t) {
+    document.querySelectorAll("#sv-emoji-panel .sv-emoji-tab").forEach(function (t) {
       t.classList.toggle("active", t.getAttribute("data-cat") === id);
     });
   }
@@ -179,26 +185,17 @@
     if (!grid) return;
     setActiveTab(catId);
     grid.dataset.mode = catId;
-
     if (catId === "gifs" || catId === "gif-favs") {
       grid.classList.add("gif-mode");
-      if (catId === "gif-favs") {
-        renderGifCells(loadFavGifs());
-      } else {
-        loadGifs(query || "hello");
-      }
+      if (catId === "gif-favs") renderGifCells(loadFavGifs());
+      else loadGifs(query || "hello");
       return;
     }
-
     grid.classList.remove("gif-mode");
-    var cat = null;
+    var cat = CATEGORIES[0];
     for (var i = 0; i < CATEGORIES.length; i++) {
-      if (CATEGORIES[i].id === catId) {
-        cat = CATEGORIES[i];
-        break;
-      }
+      if (CATEGORIES[i].id === catId) cat = CATEGORIES[i];
     }
-    if (!cat) cat = CATEGORIES[0];
     var html = '<div class="sv-emoji-label">' + esc(cat.label) + "</div>";
     cat.emojis.forEach(function (e) {
       html +=
@@ -241,12 +238,13 @@
         var starred = favs.some(function (f) {
           return f && f.url === g.url;
         });
+        var src = previewSrc(g);
         return (
           '<div class="sv-gif-cell" data-gif-url="' +
           esc(g.url) +
           '">' +
           '<img src="' +
-          esc(g.preview || g.url) +
+          esc(src) +
           '" alt="' +
           esc(g.title || "gif") +
           '" loading="lazy">' +
@@ -322,7 +320,6 @@
       t.textContent = c.icon;
       tabs.appendChild(t);
     });
-    // GIF tabs
     var gifTab = document.createElement("button");
     gifTab.type = "button";
     gifTab.className = "sv-emoji-tab";
@@ -330,7 +327,6 @@
     gifTab.title = "GIFs";
     gifTab.textContent = "GIF";
     tabs.appendChild(gifTab);
-
     var favTab = document.createElement("button");
     favTab.type = "button";
     favTab.className = "sv-emoji-tab";
@@ -343,11 +339,9 @@
     searchWrap.className = "sv-emoji-search-wrap";
     searchWrap.innerHTML =
       '<input type="search" id="sv-emoji-search" class="sv-emoji-search" placeholder="Search emoji or GIFs…" autocomplete="off">';
-
     var grid = document.createElement("div");
     grid.id = "sv-emoji-grid";
     grid.className = "sv-emoji-grid";
-
     panel.appendChild(tabs);
     panel.appendChild(searchWrap);
     panel.appendChild(grid);
@@ -358,15 +352,12 @@
       e.stopPropagation();
       togglePanel();
     });
-
     tabs.addEventListener("click", function (e) {
       var t = e.target.closest ? e.target.closest("[data-cat]") : null;
       if (!t) return;
-      var id = t.getAttribute("data-cat");
       var search = document.getElementById("sv-emoji-search");
-      renderGrid(id, search ? search.value : "");
+      renderGrid(t.getAttribute("data-cat"), search ? search.value : "");
     });
-
     var searchTimer = null;
     document.getElementById("sv-emoji-search").addEventListener("input", function (e) {
       var q = e.target.value || "";
@@ -379,7 +370,6 @@
         }
       }, 300);
     });
-
     grid.addEventListener("click", function (e) {
       var star = e.target.closest ? e.target.closest("[data-star]") : null;
       if (star) {
@@ -388,18 +378,12 @@
         var cell = star.closest("[data-gif-url]");
         if (!cell) return;
         var url = cell.getAttribute("data-gif-url");
-        var img = cell.querySelector("img");
         var list = loadFavGifs();
         var idx = list.findIndex(function (g) {
           return g && g.url === url;
         });
         if (idx >= 0) list.splice(idx, 1);
-        else
-          list.unshift({
-            url: url,
-            preview: img && img.src,
-            title: (img && img.alt) || "gif",
-          });
+        else list.unshift({ url: url, preview: url, title: "gif" });
         saveFavGifs(list);
         star.textContent = idx >= 0 ? "☆" : "★";
         return;
@@ -413,7 +397,6 @@
       if (!cellE) return;
       insertAtCursor(getInput(), cellE.getAttribute("data-emoji"));
     });
-
     document.addEventListener(
       "click",
       function (e) {
@@ -425,13 +408,11 @@
       },
       true
     );
-
     document.addEventListener("keydown", function (e) {
       if (e.key === "Escape") closePanel();
     });
-
     renderGrid(CATEGORIES[0].id, "");
-    console.log("[sv-emoji-picker] v2 emoji + GIF tabs ready");
+    console.log("[sv-emoji-picker] v3 proxied GIFs");
     return true;
   }
 
