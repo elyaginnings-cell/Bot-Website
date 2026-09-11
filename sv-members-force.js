@@ -32,7 +32,6 @@
     return "";
   }
 
-  /** Truly online for role grouping */
   function isOnline(m) {
     var s = statusOf(m);
     return s === "online" || s === "idle" || s === "dnd";
@@ -95,27 +94,21 @@
 
   function buildHtml(members) {
     var map = roleMap();
-
-    // Presence available if anyone has a real live status
     var hasPresence = members.some(function (m) {
       return isOnline(m) || statusOf(m) === "offline";
     });
 
-    var roleGroups = {}; // key -> { role, members }
+    var roleGroups = {};
     var roleOrder = [];
     var onlineNoRole = [];
     var offline = [];
 
     members.forEach(function (m) {
       if (!m || !m.id) return;
-
-      // Rule: only online/idle/dnd go into role groups
       if (hasPresence && !isOnline(m)) {
         offline.push(m);
         return;
       }
-
-      // No presence data at all → treat as online (can't sort offline without status)
       var top = topHoisted(m, map);
       if (top) {
         var key = "role:" + String(top.id);
@@ -129,7 +122,6 @@
       }
     });
 
-    // Highest position first
     roleOrder.sort(function (a, b) {
       return (
         (Number(roleGroups[b].role && roleGroups[b].role.position) || 0) -
@@ -150,8 +142,6 @@
     sortByName(offline);
 
     var html = "";
-
-    // Role groups (online members only)
     roleOrder.forEach(function (key) {
       var g = roleGroups[key];
       html +=
@@ -165,7 +155,6 @@
       });
     });
 
-    // ONLINE (no hoisted role)
     if (onlineNoRole.length) {
       html +=
         '<div class="sv-ml-group">ONLINE \u2014 ' + onlineNoRole.length + "</div>";
@@ -174,7 +163,6 @@
       });
     }
 
-    // OFFLINE always last — never under roles
     if (offline.length) {
       html +=
         '<div class="sv-ml-group">OFFLINE \u2014 ' + offline.length + "</div>";
@@ -183,11 +171,7 @@
       });
     }
 
-    if (!html) {
-      html =
-        '<p class="sv-empty">No members to show.</p>';
-    }
-
+    if (!html) html = '<p class="sv-empty">No members to show.</p>';
     return html;
   }
 
@@ -221,20 +205,11 @@
   }
 
   function orderLooksWrong(listEl) {
-    // If OFFLINE group appears before any role/ONLINE group, wrong
     var groups = listEl.querySelectorAll(".sv-ml-group");
     if (!groups.length) return true;
-    var sawOnlineish = false;
     for (var i = 0; i < groups.length; i++) {
       var t = (groups[i].textContent || "").toUpperCase();
-      if (t.indexOf("OFFLINE") === 0) {
-        // offline before any online section → wrong if we already expected online first
-        // only wrong if something after is not offline... actually offline should be last
-        // if we see offline and there are groups after it, wrong
-        if (i < groups.length - 1) return true;
-      } else {
-        sawOnlineish = true;
-      }
+      if (t.indexOf("OFFLINE") === 0 && i < groups.length - 1) return true;
     }
     return false;
   }
@@ -244,7 +219,6 @@
     var members = window.membersCache;
     if (!listEl || !Array.isArray(members) || !members.length) return;
 
-    // Always rebuild if DOM was overwritten by another script
     var needs =
       listEl.dataset.forceV !== "2" ||
       listEl.dataset.forceCount !== String(members.length) ||
@@ -260,7 +234,9 @@
   }
 
   function boot() {
-    setInterval(forceRender, 1200);
+    // Slow interval — only fix order when wrong, not every second
+    setInterval(forceRender, 8000);
+    setTimeout(forceRender, 1500);
     console.log("[sv-members-force] v2 — online→hoisted role, offline→bottom only");
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
