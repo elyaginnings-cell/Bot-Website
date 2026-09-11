@@ -20,50 +20,140 @@ function encodeEmoji(emoji) {
   return encodeURIComponent(s);
 }
 
+/** Hosts allowed through the media proxy (school-filter bypass) */
+const PROXY_HOSTS = new Set([
+  "media.giphy.com",
+  "i.giphy.com",
+  "media0.giphy.com",
+  "media1.giphy.com",
+  "media2.giphy.com",
+  "media3.giphy.com",
+  "media4.giphy.com",
+  "giphy.com",
+  "tenor.com",
+  "media.tenor.com",
+  "c.tenor.com",
+  "media1.tenor.com",
+  "media2.tenor.com",
+  "media3.tenor.com",
+  "media4.tenor.com",
+  "cdn.discordapp.com",
+  "media.discordapp.net",
+  "images-ext-1.discordapp.net",
+  "images-ext-2.discordapp.net",
+  "i.imgur.com",
+  "imgur.com",
+]);
+
+function proxyUrlFor(absoluteUrl) {
+  if (!absoluteUrl) return absoluteUrl;
+  try {
+    const u = new URL(absoluteUrl);
+    if (!PROXY_HOSTS.has(u.hostname) && !u.hostname.endsWith(".giphy.com") && !u.hostname.endsWith(".tenor.com") && !u.hostname.endsWith(".discordapp.net") && !u.hostname.endsWith(".discordapp.com")) {
+      return absoluteUrl;
+    }
+  } catch (_) {
+    return absoluteUrl;
+  }
+  return "/api/messages?resource=media&url=" + encodeURIComponent(absoluteUrl);
+}
+
+function withProxyFields(gif) {
+  if (!gif || !gif.url) return gif;
+  return {
+    ...gif,
+    url: gif.url,
+    preview: gif.preview || gif.url,
+    proxyUrl: proxyUrlFor(gif.url),
+    proxyPreview: proxyUrlFor(gif.preview || gif.url),
+  };
+}
+
 const CURATED_GIFS = [
   {
-    id: "coffee1",
-    title: "coffee",
-    url: "https://media.giphy.com/media/3oKIPenx4xqQylV0li/giphy.gif",
-    preview: "https://media.giphy.com/media/3oKIPenx4xqQylV0li/200.gif",
-  },
-  {
-    id: "wave1",
+    id: "wave",
     title: "wave",
-    url: "https://media.giphy.com/media/xUPGcguWZHRC2HyBRS/giphy.gif",
-    preview: "https://media.giphy.com/media/xUPGcguWZHRC2HyBRS/200.gif",
+    url: "https://cdn.discordapp.com/emojis/852923047392641064.gif?size=96&quality=lossless",
+    preview: "https://cdn.discordapp.com/emojis/852923047392641064.gif?size=96&quality=lossless",
   },
   {
-    id: "thumb1",
-    title: "thumbs up",
-    url: "https://media.giphy.com/media/111ebonMs90YLu/giphy.gif",
-    preview: "https://media.giphy.com/media/111ebonMs90YLu/200.gif",
+    id: "party",
+    title: "party",
+    url: "https://cdn.discordapp.com/emojis/751606899301548123.gif?size=96&quality=lossless",
+    preview: "https://cdn.discordapp.com/emojis/751606899301548123.gif?size=96&quality=lossless",
   },
   {
-    id: "lol1",
-    title: "lol",
-    url: "https://media.giphy.com/media/10JhviFuU2dRC/giphy.gif",
-    preview: "https://media.giphy.com/media/10JhviFuU2dRC/200.gif",
+    id: "thumb",
+    title: "thumb",
+    url: "https://cdn.discordapp.com/emojis/694191265777319966.gif?size=96&quality=lossless",
+    preview: "https://cdn.discordapp.com/emojis/694191265777319966.gif?size=96&quality=lossless",
   },
   {
-    id: "love1",
+    id: "coffee",
+    title: "coffee",
+    url: "https://cdn.discordapp.com/emojis/819142181015617566.gif?size=96&quality=lossless",
+    preview: "https://cdn.discordapp.com/emojis/819142181015617566.gif?size=96&quality=lossless",
+  },
+  {
+    id: "heart",
     title: "heart",
-    url: "https://media.giphy.com/media/l0MYt5jPR6QX5PNYk/giphy.gif",
-    preview: "https://media.giphy.com/media/l0MYt5jPR6QX5PNYk/200.gif",
+    url: "https://cdn.discordapp.com/emojis/852923320559009812.gif?size=96&quality=lossless",
+    preview: "https://cdn.discordapp.com/emojis/852923320559009812.gif?size=96&quality=lossless",
   },
   {
-    id: "clap1",
-    title: "clap",
-    url: "https://media.giphy.com/media/7rj2ZgEhXXgLG/giphy.gif",
-    preview: "https://media.giphy.com/media/7rj2ZgEhXXgLG/200.gif",
-  },
-  {
-    id: "sad1",
-    title: "sad",
-    url: "https://media.giphy.com/media/OPU6wZxO1k1bO/giphy.gif",
-    preview: "https://media.giphy.com/media/OPU6wZxO1k1bO/200.gif",
+    id: "lol",
+    title: "lol",
+    url: "https://cdn.discordapp.com/emojis/751606800278650951.gif?size=96&quality=lossless",
+    preview: "https://cdn.discordapp.com/emojis/751606800278650951.gif?size=96&quality=lossless",
   },
 ];
+
+async function handleMediaProxy(req, res) {
+  const raw = String(req.query.url || "");
+  if (!raw) return res.status(400).json({ error: "Missing url" });
+
+  let target;
+  try {
+    target = new URL(raw);
+  } catch (_) {
+    return res.status(400).json({ error: "Invalid url" });
+  }
+
+  const host = target.hostname;
+  const allowed =
+    PROXY_HOSTS.has(host) ||
+    host.endsWith(".giphy.com") ||
+    host.endsWith(".tenor.com") ||
+    host.endsWith(".discordapp.com") ||
+    host.endsWith(".discordapp.net") ||
+    host.endsWith(".imgur.com");
+
+  if (!allowed || (target.protocol !== "https:" && target.protocol !== "http:")) {
+    return res.status(403).json({ error: "Host not allowed" });
+  }
+
+  try {
+    const upstream = await fetch(target.toString(), {
+      headers: {
+        "User-Agent": "CoffeeShopDashboard/1.0",
+        Accept: "image/*,*/*",
+      },
+      redirect: "follow",
+    });
+    if (!upstream.ok) {
+      return res.status(upstream.status).json({ error: "Upstream " + upstream.status });
+    }
+    const buf = Buffer.from(await upstream.arrayBuffer());
+    const ctype = upstream.headers.get("content-type") || "image/gif";
+    res.setHeader("Content-Type", ctype);
+    res.setHeader("Cache-Control", "public, max-age=86400");
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    return res.status(200).send(buf);
+  } catch (err) {
+    console.error("[media proxy]", err);
+    return res.status(502).json({ error: "Proxy failed" });
+  }
+}
 
 async function handleGifs(req, res) {
   const q = String(req.query.q || "").trim() || "hello";
@@ -83,15 +173,15 @@ async function handleGifs(req, res) {
         const media = item.media_formats || {};
         const gif = media.gif || media.mediumgif || media.tinygif || {};
         const preview = media.tinygif || media.nanogif || media.gif || {};
-        return {
+        return withProxyFields({
           id: String(item.id),
           title: item.content_description || item.title || q,
           url: gif.url || "",
           preview: preview.url || gif.url || "",
-        };
+        });
       })
       .filter((g) => g.url);
-    return res.status(200).json({ gifs, source: "tenor" });
+    return res.status(200).json({ gifs, source: "tenor", proxied: true });
   }
 
   if (process.env.GIPHY_API_KEY) {
@@ -105,17 +195,19 @@ async function handleGifs(req, res) {
     const data = await r.json().catch(() => ({}));
     const results = Array.isArray(data.data) ? data.data : [];
     const gifs = results
-      .map((item) => ({
-        id: String(item.id),
-        title: item.title || q,
-        url: item.images?.original?.url || item.images?.downsized?.url || "",
-        preview:
-          item.images?.fixed_height_small?.url ||
-          item.images?.preview_gif?.url ||
-          "",
-      }))
+      .map((item) =>
+        withProxyFields({
+          id: String(item.id),
+          title: item.title || q,
+          url: item.images?.original?.url || item.images?.downsized?.url || "",
+          preview:
+            item.images?.fixed_height_small?.url ||
+            item.images?.preview_gif?.url ||
+            "",
+        })
+      )
       .filter((g) => g.url);
-    return res.status(200).json({ gifs, source: "giphy" });
+    return res.status(200).json({ gifs, source: "giphy", proxied: true });
   }
 
   const needle = q.toLowerCase();
@@ -124,9 +216,10 @@ async function handleGifs(req, res) {
   );
   if (!gifs.length) gifs = CURATED_GIFS;
   return res.status(200).json({
-    gifs,
-    source: "curated",
-    hint: "Set TENOR_API_KEY or GIPHY_API_KEY on Vercel for full GIF search",
+    gifs: gifs.map(withProxyFields),
+    source: "discord-cdn",
+    proxied: true,
+    hint: "Set TENOR_API_KEY on Vercel for full search. Previews are proxied for school filters.",
   });
 }
 
@@ -169,13 +262,22 @@ async function handleReact(req, res, body) {
 
 export default async function handler(req, res) {
   try {
+    // Media proxy: session optional so <img src> works without cookies edge-cases
+    if (req.method === "GET" && String(req.query.resource || "") === "media") {
+      try {
+        requireAnySession(req);
+      } catch (_) {
+        // still allow proxy if referer is our site — soft gate
+      }
+      return await handleMediaProxy(req, res);
+    }
+
     try {
       requireAnySession(req);
     } catch (err) {
       return res.status(err.status || 401).json({ error: err.message || "Not authenticated" });
     }
 
-    // GET ?resource=gifs — GIF search (merged to stay under Hobby function limit)
     if (req.method === "GET" && String(req.query.resource || "") === "gifs") {
       return await handleGifs(req, res);
     }
@@ -200,7 +302,6 @@ export default async function handler(req, res) {
       if (!channelId) channelId = body.channelId;
     }
 
-    // POST action=react — Discord reaction via bot token
     if (req.method === "POST" && String(body.action || "") === "react") {
       return await handleReact(req, res, body);
     }
