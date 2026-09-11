@@ -1,11 +1,16 @@
 /**
- * Members tab — Discord order: hoisted roles (high→low) → ONLINE → OFFLINE last
+ * Members tab — Discord order: hoisted roles → ONLINE → OFFLINE last
+ * Polls every 15s while the Members tab is open so presence updates show up.
  */
 (function () {
   "use strict";
+  if (window.__svMembersLoadV2) return;
+  window.__svMembersLoadV2 = true;
 
   var loading = false;
   var hardTimer = null;
+  var pollTimer = null;
+  var lastQuery = "";
 
   function esc(v) {
     return String(v == null ? "" : v)
@@ -18,6 +23,15 @@
 
   function listEl() {
     return document.getElementById("sv-member-list");
+  }
+
+  function membersTabOpen() {
+    var mp = document.getElementById("sv-member-panel");
+    if (!mp) return false;
+    if (mp.hidden) return false;
+    var view = document.getElementById("server-view");
+    if (view && view.hidden) return false;
+    return true;
   }
 
   function paint(html) {
@@ -41,6 +55,23 @@
     if (v) v.classList.add("drawer-open");
   }
 
+  function startPresencePoll() {
+    stopPresencePoll();
+    pollTimer = setInterval(function () {
+      if (!membersTabOpen()) return;
+      if (document.hidden) return;
+      if (loading) return;
+      loadMembers(lastQuery, true);
+    }, 15000);
+  }
+
+  function stopPresencePoll() {
+    if (pollTimer) {
+      clearInterval(pollTimer);
+      pollTimer = null;
+    }
+  }
+
   function setTab(tab) {
     var active = tab === "members" ? "members" : "channels";
     openDrawer();
@@ -60,6 +91,9 @@
     if (active === "members") {
       loading = false;
       loadMembers("");
+      startPresencePoll();
+    } else {
+      stopPresencePoll();
     }
     return false;
   }
@@ -107,14 +141,6 @@
       .then(function (d) {
         if (d && Array.isArray(d.roles) && d.roles.length) {
           window.rolesCache = d.roles;
-          console.log(
-            "[sv-members] roles",
-            d.roles.length,
-            "hoisted",
-            d.roles.filter(isHoistedRole).map(function (r) {
-              return r.name;
-            })
-          );
         }
       })
       .catch(function () {})
@@ -180,6 +206,11 @@
     return statusOf(mem) === "offline";
   }
 
+  function isOnlineish(mem) {
+    var st = statusOf(mem);
+    return st === "online" || st === "idle" || st === "dnd";
+  }
+
   function renderMemberRow(m, map) {
     var name = nameOf(m);
     var sub = m.username && m.username !== name ? "@" + m.username : "";
@@ -198,6 +229,8 @@
       '<div class="sv-member-av-wrap"><img class="sv-member-av" src="' +
       esc(av) +
       '" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.src=\'https://cdn.discordapp.com/embed/avatars/0.png\'"><span class="sv-status ' +
+      st +
+      '" title="' +
       st +
       '"></span></div>';
     html +=
@@ -236,12 +269,16 @@
     var map = roleMap();
     var groups = {};
     var order = [];
+    var hasPresence = members.some(function (m) {
+      return isOnlineish(m) || statusOf(m) === "offline";
+    });
 
     for (var mi = 0; mi < members.length; mi++) {
       var mem = members[mi];
       if (!mem || !mem.id) continue;
 
-      if (isOffline(mem)) {
+      // Only park in OFFLINE when we actually know status
+      if (hasPresence && isOffline(mem)) {
         if (!groups._offline) {
           groups._offline = { role: null, members: [] };
           order.push("_offline");
@@ -259,7 +296,6 @@
       groups[key].members.push(mem);
     }
 
-    // Discord order: highest hoisted role → … → ONLINE → OFFLINE last
     order.sort(function (a, b) {
       if (a === "_offline") return 1;
       if (b === "_offline") return -1;
@@ -272,12 +308,15 @@
     });
 
     var html = "";
-    var hoistedCount = order.filter(function (k) {
-      return k.indexOf("role:") === 0;
-    }).length;
-    if (!hoistedCount) {
+    var hits = meta.presenceHits || 0;
+    if (!hits && !hasPresence) {
       html +=
-        '<p class="sv-empty" style="padding:6px 10px;font-size:11px;opacity:.8">No hoisted roles found. In Discord: Role settings → enable “Display role members separately from online members”.</p>';
+        '<p class="sv-empty" style="padding:6px 10px;font-size:11px;opacity:.85">Presence not live yet. Enable <strong>Presence Intent</strong> on the bot in Discord Developer Portal, redeploy the bot, then leave this tab open — it refreshes every 15s.</p>';
+    } else if (hits) {
+      html +=
+        '<p class="sv-empty" style="padding:4px 10px;font-size:10px;opacity:.55">Presence live · ' +
+        hits +
+        " online signals · auto-refresh 15s</p>";
     }
 
     for (var oi = 0; oi < order.length; oi++) {
@@ -301,19 +340,20 @@
     paint(html);
   }
 
-  function loadMembers(query) {
+  function loadMembers(query, quiet) {
     var gid = guildId();
     if (!gid) {
-      paint('<p class="sv-empty">No server selected.</p>');
+      if (!quiet) paint('<p class="sv-empty">No server selected.</p>');
       return;
     }
     if (loading) return;
     loading = true;
+    lastQuery = query || "";
     if (hardTimer) clearTimeout(hardTimer);
-    paint('<p class="sv-empty">Loading members\u2026</p>');
+    if (!quiet) paint('<p class="sv-empty">Loading members\u2026</p>');
     hardTimer = setTimeout(function () {
       loading = false;
-      paint('<p class="sv-empty sv-error"><strong>Timed out</strong></p>');
+      if (!quiet) paint('<p class="sv-empty sv-error"><strong>Timed out</strong></p>');
     }, 15000);
 
     var url =
@@ -335,17 +375,18 @@
       try {
         data = JSON.parse(xhr.responseText || "{}");
       } catch (e) {
-        paint('<p class="sv-empty sv-error">Bad JSON from /api/members</p>');
+        if (!quiet) paint('<p class="sv-empty sv-error">Bad JSON from /api/members</p>');
         return;
       }
       if (xhr.status < 200 || xhr.status >= 300) {
-        paint(
-          '<p class="sv-empty sv-error"><strong>HTTP ' +
-            xhr.status +
-            "</strong><br>" +
-            esc(data.error || xhr.statusText || "Failed") +
-            "</p>"
-        );
+        if (!quiet)
+          paint(
+            '<p class="sv-empty sv-error"><strong>HTTP ' +
+              xhr.status +
+              "</strong><br>" +
+              esc(data.error || xhr.statusText || "Failed") +
+              "</p>"
+          );
         return;
       }
       var list = Array.isArray(data.members)
@@ -369,19 +410,19 @@
     xhr.ontimeout = function () {
       clearTimeout(hardTimer);
       loading = false;
-      paint('<p class="sv-empty sv-error">Request timed out</p>');
+      if (!quiet) paint('<p class="sv-empty sv-error">Request timed out</p>');
     };
     xhr.onerror = function () {
       clearTimeout(hardTimer);
       loading = false;
-      paint('<p class="sv-empty sv-error">Network error</p>');
+      if (!quiet) paint('<p class="sv-empty sv-error">Network error</p>');
     };
     try {
       xhr.send();
     } catch (e) {
       clearTimeout(hardTimer);
       loading = false;
-      paint('<p class="sv-empty sv-error">' + esc(e.message || e) + "</p>");
+      if (!quiet) paint('<p class="sv-empty sv-error">' + esc(e.message || e) + "</p>");
     }
   }
 
