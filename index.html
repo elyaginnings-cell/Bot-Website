@@ -18,8 +18,8 @@
       throw new Error("Unexpected content length " + html.length);
     }
     html = html
-      .replace(/server-view\.js\?v=\d+/g, "server-view.js?v=29")
-      .replace(/sv-members-load\.js\?v=\d+/g, "sv-members-load.js?v=29")
+      .replace(/server-view\.js\?v=\d+/g, "server-view.js?v=30")
+      .replace(/sv-members-load\.js\?v=\d+/g, "sv-members-load.js?v=30")
       .replace(/server-view\.css(?![?\w])/g, "server-view.css?v=5")
       .replace(/server-view-reply\.css(?![?\w])/g, "server-view-reply.css?v=5")
       .replace(/sv-rich\.css(?![?\w])/g, "sv-rich.css?v=5")
@@ -43,7 +43,7 @@
     await loadScript("/features-automod-staff.js?v=4");
     await loadScript("/app-config-fix.js?v=1");
     await loadScript("/sr-panels.js?v=2");
-    await loadScript("/sv-members-load.js?v=29");
+    await loadScript("/sv-members-load.js?v=30");
     await loadScript("/sv-manage.js?v=3");
     await loadScript("/sv-stable.js?v=7");
     await loadScript("/sv-role-colors.js?v=2");
@@ -51,7 +51,8 @@
     await loadScript("/sv-slash.js?v=1");
     await loadScript("/sv-discord-exact.js?v=5");
     await loadScript("/sv-media-proxy.js?v=3");
-    await loadScript("/sv-emoji-picker.js?v=4");
+    await loadScript("/sv-emoji-picker.js?v=5");
+    await loadScript("/sv-emoji-force.js?v=1");
     await loadScript("/sv-unread.js?v=1");
     await loadScript("/sv-members-force.js?v=3");
     await loadScript("/sv-media-react.js?v=4");
