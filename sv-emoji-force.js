@@ -1,10 +1,10 @@
 /**
- * Guarantees the emoji button exists and opens the picker.
+ * Emoji button guard — single click path only (no double-toggle).
  */
 (function () {
   "use strict";
-  if (window.__svEmojiForceV2) return;
-  window.__svEmojiForceV2 = true;
+  if (window.__svEmojiForceV3) return;
+  window.__svEmojiForceV3 = true;
 
   function injectCss() {
     if (document.getElementById("sv-emoji-force-css")) return;
@@ -13,16 +13,18 @@
     s.textContent = [
       "#sv-emoji-btn, #server-view .sv-emoji-btn{",
       "  display:inline-flex!important;visibility:visible!important;opacity:1!important;",
-      "  flex-shrink:0;width:40px;height:40px;min-width:40px;border:none;border-radius:8px;",
+      "  flex-shrink:0;width:44px;height:44px;min-width:44px;border:none;border-radius:8px;",
       "  background:#2b2d31;color:#fff;font-size:22px;line-height:1;cursor:pointer;",
-      "  align-items:center;justify-content:center;margin:0 4px;z-index:5;",
+      "  align-items:center;justify-content:center;margin:0 4px;z-index:6;",
+      "  -webkit-tap-highlight-color:transparent;touch-action:manipulation;",
       "}",
       "#sv-emoji-btn:hover, #server-view .sv-emoji-btn:hover{background:#5865f2}",
       "#sv-emoji-fallback{",
-      "  position:fixed;right:12px;bottom:72px;z-index:99990;",
-      "  width:48px;height:48px;border-radius:50%;border:none;",
+      "  position:fixed;right:12px;bottom:calc(72px + env(safe-area-inset-bottom,0px));z-index:99990;",
+      "  width:52px;height:52px;border-radius:50%;border:none;",
       "  background:#5865f2;color:#fff;font-size:24px;box-shadow:0 4px 16px rgba(0,0,0,.4);",
       "  display:none;align-items:center;justify-content:center;cursor:pointer;",
+      "  -webkit-tap-highlight-color:transparent;touch-action:manipulation;",
       "}",
       "#sv-emoji-fallback.show{display:inline-flex!important}",
     ].join("\n");
@@ -38,24 +40,30 @@
     );
   }
 
-  function openPicker() {
-    if (typeof window.__svToggleEmojiPanel === "function") {
-      window.__svToggleEmojiPanel();
+  function openPicker(e) {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+    }
+    // Prefer the real toggle from the picker script
+    if (typeof window.__svOpenEmojiPanel === "function") {
+      window.__svOpenEmojiPanel();
       return;
     }
     if (typeof window.__svEnsureEmojiPicker === "function") {
       window.__svEnsureEmojiPicker(true);
+    }
+    if (typeof window.__svOpenEmojiPanel === "function") {
+      window.__svOpenEmojiPanel();
+      return;
     }
     if (typeof window.__svToggleEmojiPanel === "function") {
       window.__svToggleEmojiPanel();
       return;
     }
     var panel = document.getElementById("sv-emoji-panel");
-    var btn = document.getElementById("sv-emoji-btn");
-    if (panel) {
-      panel.hidden = !panel.hidden;
-      if (btn) btn.classList.toggle("active", !panel.hidden);
-    }
+    if (panel) panel.hidden = false;
   }
 
   function mountComposerBtn() {
@@ -66,14 +74,7 @@
     if (existing && existing.isConnected) {
       existing.style.display = "inline-flex";
       existing.style.visibility = "visible";
-      if (existing.dataset.svForceBound !== "1") {
-        existing.dataset.svForceBound = "1";
-        existing.addEventListener("click", function (e) {
-          e.preventDefault();
-          e.stopPropagation();
-          openPicker();
-        });
-      }
+      // Do NOT add another click handler — picker owns it, or we use delegation below
       return true;
     }
     if (existing) existing.remove();
@@ -85,12 +86,6 @@
     btn.title = "Emoji & GIFs";
     btn.setAttribute("aria-label", "Open emoji picker");
     btn.textContent = "\uD83D\uDE00";
-    btn.dataset.svForceBound = "1";
-    btn.addEventListener("click", function (e) {
-      e.preventDefault();
-      e.stopPropagation();
-      openPicker();
-    });
 
     var send = document.getElementById("sv-send");
     var composer = document.getElementById("sv-composer") || input.closest("form") || input.parentElement;
@@ -104,7 +99,7 @@
       composer.classList.add("sv-composer-wrap");
       try {
         if (window.getComputedStyle(composer).position === "static") composer.style.position = "relative";
-      } catch (e) {}
+      } catch (err) {}
     }
     return true;
   }
@@ -118,11 +113,6 @@
       fb.id = "sv-emoji-fallback";
       fb.title = "Emoji & GIFs";
       fb.textContent = "\uD83D\uDE00";
-      fb.addEventListener("click", function (e) {
-        e.preventDefault();
-        mountComposerBtn();
-        openPicker();
-      });
       document.body.appendChild(fb);
     }
     if (view && !view.hidden) {
@@ -132,6 +122,30 @@
     } else {
       fb.classList.remove("show");
     }
+  }
+
+  // ONE delegated handler for emoji open (pointer + click, once)
+  if (!window.__svEmojiDelegated) {
+    window.__svEmojiDelegated = true;
+    var lastOpen = 0;
+    function onEmojiTap(e) {
+      var t = e.target;
+      if (!t) return;
+      var hit =
+        (t.id === "sv-emoji-btn" || t.id === "sv-emoji-fallback") ||
+        (t.closest && (t.closest("#sv-emoji-btn") || t.closest("#sv-emoji-fallback")));
+      if (!hit) return;
+      var now = Date.now();
+      if (now - lastOpen < 350) {
+        e.preventDefault();
+        e.stopPropagation();
+        return;
+      }
+      lastOpen = now;
+      openPicker(e);
+    }
+    document.addEventListener("pointerup", onEmojiTap, true);
+    document.addEventListener("click", onEmojiTap, true);
   }
 
   function tick() {
@@ -148,8 +162,8 @@
   function boot() {
     injectCss();
     tick();
-    setInterval(tick, 1500);
-    console.log("[sv-emoji-force] v2");
+    setInterval(tick, 3000);
+    console.log("[sv-emoji-force] v3 single-path");
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
