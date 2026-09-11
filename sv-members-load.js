@@ -1,5 +1,5 @@
 /**
- * Members tab — OFFLINE first; online sorted by hoisted roles; rest ONLINE
+ * Members tab — Discord order: hoisted roles + ONLINE, then OFFLINE at bottom
  */
 (function () {
   "use strict";
@@ -107,14 +107,6 @@
       .then(function (d) {
         if (d && Array.isArray(d.roles) && d.roles.length) {
           window.rolesCache = d.roles;
-          console.log(
-            "[sv-members] roles",
-            d.roles.length,
-            "hoisted",
-            d.roles.filter(isHoistedRole).map(function (r) {
-              return r.name;
-            })
-          );
         }
       })
       .catch(function () {})
@@ -172,6 +164,7 @@
   function statusOf(mem) {
     var st = String(mem.status || mem.presence || "").toLowerCase();
     if (st === "invisible") return "offline";
+    if (st === "do_not_disturb") return "dnd";
     if (["online", "idle", "dnd", "offline"].indexOf(st) !== -1) return st;
     return "";
   }
@@ -259,9 +252,10 @@
       groups[key].members.push(mem);
     }
 
+    // Discord order: highest hoisted roles first, then ONLINE, OFFLINE last
     order.sort(function (a, b) {
-      if (a === "_offline") return -1;
-      if (b === "_offline") return 1;
+      if (a === "_offline") return 1;
+      if (b === "_offline") return -1;
       if (a === "_online") return 1;
       if (b === "_online") return -1;
       return (
@@ -283,10 +277,10 @@
       var g = groups[order[oi]];
       var title =
         order[oi] === "_offline"
-          ? "OFFLINE \u2014 " + g.members.length
+          ? "OFFLINE — " + g.members.length
           : order[oi] === "_online"
-            ? "ONLINE \u2014 " + g.members.length
-            : ((g.role && g.role.name) || "ROLE") + " \u2014 " + g.members.length;
+            ? "ONLINE — " + g.members.length
+            : ((g.role && g.role.name) || "ROLE") + " — " + g.members.length;
       html += '<div class="sv-ml-group">' + esc(title) + "</div>";
       g.members.sort(function (a, b) {
         var an = nameOf(a).toLowerCase();
@@ -309,7 +303,7 @@
     if (loading) return;
     loading = true;
     if (hardTimer) clearTimeout(hardTimer);
-    paint('<p class="sv-empty">Loading members\u2026</p>');
+    paint('<p class="sv-empty">Loading members…</p>');
     hardTimer = setTimeout(function () {
       loading = false;
       paint('<p class="sv-empty sv-error"><strong>Timed out</strong></p>');
@@ -353,14 +347,6 @@
           ? data
           : [];
       window.membersCache = list;
-      console.log(
-        "[sv-members] loaded",
-        list.length,
-        "presenceHits",
-        data.presenceHits,
-        "source",
-        data.source
-      );
       ensureRolesThen(function () {
         render(list, data);
       });
