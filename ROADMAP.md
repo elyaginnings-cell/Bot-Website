@@ -6,12 +6,25 @@ This repo (Bot-Website) owns the website side of every system. Bot owns commands
 
 **Rule:** finish one system in both places, then move on.
 
-## Current focus — Sprint A (Phase 0)
+## Phase 0 — COMPLETE
 
-Server view Discord fidelity:
-- Replies, reactions, emoji
-- Role-grouped member list + presence
-- Unread vs ping styling
-- Clickable embed buttons + slash from site
+Server view Discord fidelity shipped:
+- Replies, reactions, emoji + GIF picker + favorites
+- Custom **server emoji** in picker + reactions + message render
+- Markdown (`**bold**`, *italic*, `code`, spoilers, quotes)
+- Role-grouped member list + live presence
+- Role colors on authors + members
+- Unread vs mention channel styling
+- Avatar → mini profile popover
+- Date separators (Today / Yesterday)
+- Collapsible channel categories
+- Delete message (bot Manage Messages)
+- Mobile long-press, bottom-sheet emoji, touch targets
+- Media proxy (images / GIFs / PFPs)
 
-Track progress in the open Sprint A issue.
+## Current focus — Phase 1
+
+**Streaks + daily loops**
+- Tracking, `/daily` hook, website current + longest
+- Configurable sources, multipliers, grace days
+- Ship in Discord **and** on the website before Phase 2
