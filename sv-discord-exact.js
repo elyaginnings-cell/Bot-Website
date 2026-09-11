@@ -1,11 +1,11 @@
 /**
- * Discord-exact Server View polish (v4 — offline section)
+ * Discord-exact Server View polish (v5 — online first, offline last)
  * Server View ONLY. Main dashboard UI untouched.
  */
 (function () {
   "use strict";
-  if (window.__svDiscordExactV4) return;
-  window.__svDiscordExactV4 = true;
+  if (window.__svDiscordExactV5) return;
+  window.__svDiscordExactV5 = true;
 
   function esc(v) {
     return String(v == null ? "" : v)
@@ -49,6 +49,27 @@
       }
       if (!msg) return;
       if (messageMentionsMe(msg)) el.classList.add("mention-me");
+
+      // Clickable reply jump
+      var replyEl = el.querySelector(".sv-reply-preview, .sv-reply-ref");
+      if (replyEl && msg.reference && msg.reference.messageId && !replyEl.dataset.jumpBound) {
+        replyEl.dataset.jumpBound = "1";
+        replyEl.style.cursor = "pointer";
+        replyEl.title = "Jump to message";
+        replyEl.addEventListener("click", function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          var targetId = String(msg.reference.messageId || msg.reference.message_id || "");
+          if (!targetId) return;
+          var target = container.querySelector('article.sv-msg[data-message-id="' + targetId + '"]');
+          if (target) {
+            target.scrollIntoView({ behavior: "smooth", block: "center" });
+            target.classList.add("sv-jump-flash");
+            setTimeout(function () { target.classList.remove("sv-jump-flash"); }, 1200);
+          }
+        });
+      }
+
       if (Array.isArray(msg.reactions) && msg.reactions.length && !el.querySelector(".sv-reactions")) {
         var html = '<div class="sv-reactions">';
         msg.reactions.forEach(function (r) {
@@ -146,9 +167,10 @@
       if (!groups[key]) { groups[key] = { role: top, members: [] }; order.push(key); }
       groups[key].members.push(m);
     });
+    // Discord order: highest hoisted → ONLINE → OFFLINE last
     order.sort(function (a, b) {
-      if (a === "_offline") return -1;
-      if (b === "_offline") return 1;
+      if (a === "_offline") return 1;
+      if (b === "_offline") return -1;
       if (a === "_online") return 1;
       if (b === "_online") return -1;
       return (Number(groups[b].role && groups[b].role.position) || 0) - (Number(groups[a].role && groups[a].role.position) || 0);
@@ -195,6 +217,8 @@
       "#server-view .sv-reply-ref-bar::before{content:'';position:absolute;left:0;top:-6px;width:12px;height:8px;border-left:2px solid #4e5058;border-top:2px solid #4e5058;border-top-left-radius:4px}",
       "#server-view .sv-reply-ref-body{font-size:12px;color:#b5bac1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}",
       "#server-view .sv-reply-ref-body strong{color:#c4c9ce;font-weight:500}",
+      "#server-view .sv-reply-preview{cursor:pointer}",
+      "#server-view .sv-msg.sv-jump-flash{background:rgba(88,101,242,.18)!important;transition:background .3s}",
       "#server-view .sv-msg.mention-me{background:rgba(240,178,50,.08)!important;box-shadow:inset 2px 0 0 #f0b232}",
       "#server-view .sv-reactions{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}",
       "#server-view .sv-reaction{display:inline-flex;align-items:center;gap:4px;background:#2b2d31;border:1px solid #1e1f22;border-radius:8px;padding:2px 6px;font-size:12px;color:#dbdee1}",
@@ -316,7 +340,7 @@
         }, 400);
       }
     }, true);
-    console.log("[sv-discord-exact] v4 online (offline section)");
+    console.log("[sv-discord-exact] v5 online (online first, offline last, reply jump)");
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
