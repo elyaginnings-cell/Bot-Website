@@ -1,5 +1,14 @@
 import { requireAnySession } from "../lib/requireAuth.js";
 
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: "4mb",
+    },
+    responseLimit: false,
+  },
+};
+
 const RAILWAY_API =
   process.env.BOT_API_URL ||
   "https://discord-bot-production-1488.up.railway.app";
@@ -20,38 +29,30 @@ function encodeEmoji(emoji) {
   return encodeURIComponent(s);
 }
 
-/** Hosts allowed through the media proxy (school-filter bypass) */
-const PROXY_HOSTS = new Set([
-  "media.giphy.com",
-  "i.giphy.com",
-  "media0.giphy.com",
-  "media1.giphy.com",
-  "media2.giphy.com",
-  "media3.giphy.com",
-  "media4.giphy.com",
-  "giphy.com",
-  "tenor.com",
-  "media.tenor.com",
-  "c.tenor.com",
-  "media1.tenor.com",
-  "media2.tenor.com",
-  "media3.tenor.com",
-  "media4.tenor.com",
-  "cdn.discordapp.com",
-  "media.discordapp.net",
-  "images-ext-1.discordapp.net",
-  "images-ext-2.discordapp.net",
-  "i.imgur.com",
-  "imgur.com",
-]);
+function isAllowedProxyHost(host) {
+  if (!host) return false;
+  const h = host.toLowerCase();
+  const suffixes = [
+    "giphy.com",
+    "tenor.com",
+    "discordapp.com",
+    "discordapp.net",
+    "discord.com",
+    "imgur.com",
+    "gyazo.com",
+    "cdn.discordapp.com",
+  ];
+  for (const s of suffixes) {
+    if (h === s || h.endsWith("." + s)) return true;
+  }
+  return false;
+}
 
 function proxyUrlFor(absoluteUrl) {
   if (!absoluteUrl) return absoluteUrl;
   try {
     const u = new URL(absoluteUrl);
-    if (!PROXY_HOSTS.has(u.hostname) && !u.hostname.endsWith(".giphy.com") && !u.hostname.endsWith(".tenor.com") && !u.hostname.endsWith(".discordapp.net") && !u.hostname.endsWith(".discordapp.com")) {
-      return absoluteUrl;
-    }
+    if (!isAllowedProxyHost(u.hostname)) return absoluteUrl;
   } catch (_) {
     return absoluteUrl;
   }
@@ -89,69 +90,58 @@ const CURATED_GIFS = [
     preview: "https://cdn.discordapp.com/emojis/694191265777319966.gif?size=96&quality=lossless",
   },
   {
-    id: "coffee",
-    title: "coffee",
-    url: "https://cdn.discordapp.com/emojis/819142181015617566.gif?size=96&quality=lossless",
-    preview: "https://cdn.discordapp.com/emojis/819142181015617566.gif?size=96&quality=lossless",
-  },
-  {
     id: "heart",
     title: "heart",
     url: "https://cdn.discordapp.com/emojis/852923320559009812.gif?size=96&quality=lossless",
     preview: "https://cdn.discordapp.com/emojis/852923320559009812.gif?size=96&quality=lossless",
   },
-  {
-    id: "lol",
-    title: "lol",
-    url: "https://cdn.discordapp.com/emojis/751606800278650951.gif?size=96&quality=lossless",
-    preview: "https://cdn.discordapp.com/emojis/751606800278650951.gif?size=96&quality=lossless",
-  },
 ];
 
 async function handleMediaProxy(req, res) {
   const raw = String(req.query.url || "");
-  if (!raw) return res.status(400).json({ error: "Missing url" });
+  if (!raw) return res.status(400).send("Missing url");
 
   let target;
   try {
     target = new URL(raw);
   } catch (_) {
-    return res.status(400).json({ error: "Invalid url" });
+    return res.status(400).send("Invalid url");
   }
 
-  const host = target.hostname;
-  const allowed =
-    PROXY_HOSTS.has(host) ||
-    host.endsWith(".giphy.com") ||
-    host.endsWith(".tenor.com") ||
-    host.endsWith(".discordapp.com") ||
-    host.endsWith(".discordapp.net") ||
-    host.endsWith(".imgur.com");
-
-  if (!allowed || (target.protocol !== "https:" && target.protocol !== "http:")) {
-    return res.status(403).json({ error: "Host not allowed" });
+  if (target.protocol !== "https:" && target.protocol !== "http:") {
+    return res.status(403).send("Bad protocol");
+  }
+  if (!isAllowedProxyHost(target.hostname)) {
+    return res.status(403).send("Host not allowed");
   }
 
   try {
     const upstream = await fetch(target.toString(), {
       headers: {
-        "User-Agent": "CoffeeShopDashboard/1.0",
-        Accept: "image/*,*/*",
+        "User-Agent":
+          "Mozilla/5.0 (compatible; CoffeeShopDashboard/1.0; +https://vercel.app)",
+        Accept: "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+        Referer: target.origin + "/",
       },
       redirect: "follow",
     });
+
     if (!upstream.ok) {
-      return res.status(upstream.status).json({ error: "Upstream " + upstream.status });
+      res.status(upstream.status);
+      return res.send("Upstream " + upstream.status);
     }
+
+    const ctype = upstream.headers.get("content-type") || "application/octet-stream";
     const buf = Buffer.from(await upstream.arrayBuffer());
-    const ctype = upstream.headers.get("content-type") || "image/gif";
+
     res.setHeader("Content-Type", ctype);
-    res.setHeader("Cache-Control", "public, max-age=86400");
+    res.setHeader("Cache-Control", "public, max-age=86400, s-maxage=86400");
     res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("X-Content-Type-Options", "nosniff");
     return res.status(200).send(buf);
   } catch (err) {
     console.error("[media proxy]", err);
-    return res.status(502).json({ error: "Proxy failed" });
+    return res.status(502).send("Proxy failed");
   }
 }
 
@@ -219,7 +209,6 @@ async function handleGifs(req, res) {
     gifs: gifs.map(withProxyFields),
     source: "discord-cdn",
     proxied: true,
-    hint: "Set TENOR_API_KEY on Vercel for full search. Previews are proxied for school filters.",
   });
 }
 
@@ -262,13 +251,8 @@ async function handleReact(req, res, body) {
 
 export default async function handler(req, res) {
   try {
-    // Media proxy: session optional so <img src> works without cookies edge-cases
+    // Public media proxy — no session required (img tags often omit cookies)
     if (req.method === "GET" && String(req.query.resource || "") === "media") {
-      try {
-        requireAnySession(req);
-      } catch (_) {
-        // still allow proxy if referer is our site — soft gate
-      }
       return await handleMediaProxy(req, res);
     }
 

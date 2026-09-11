@@ -1,64 +1,90 @@
 /**
- * School-filter bypass: rewrite external media URLs through /api/messages?resource=media
- * Refresh chat when YOU send a message (not on a timer).
+ * School-filter bypass:
+ * Rewrite EVERY external image (PFPs, attachments, GIFs, custom emoji)
+ * through /api/messages?resource=media so the laptop only hits our domain.
+ * Also: refresh on send, kill timed message poll.
  */
 (function () {
   "use strict";
-  if (window.__svMediaProxyV1) return;
-  window.__svMediaProxyV1 = true;
+  if (window.__svMediaProxyV2) return;
+  window.__svMediaProxyV2 = true;
 
-  function needsProxy(url) {
+  function isExternalMedia(url) {
     if (!url) return false;
+    if (url.indexOf("data:") === 0) return false;
+    if (url.indexOf("blob:") === 0) return false;
     if (url.indexOf("/api/messages?resource=media") !== -1) return false;
+    // already same-origin relative without protocol
+    if (url.charAt(0) === "/" && url.indexOf("//") !== 0) return false;
     try {
       var u = new URL(url, location.origin);
+      if (u.origin === location.origin) return false;
       var h = u.hostname;
-      return (
-        h.indexOf("giphy.com") !== -1 ||
-        h.indexOf("tenor.com") !== -1 ||
-        h.indexOf("discordapp.com") !== -1 ||
-        h.indexOf("discordapp.net") !== -1 ||
-        h.indexOf("imgur.com") !== -1
-      );
+      // proxy anything off-site (school blocks discord + giphy + etc)
+      return true;
     } catch (e) {
       return false;
     }
   }
 
   function proxied(url) {
-    if (!url || !needsProxy(url)) return url;
+    if (!url || !isExternalMedia(url)) return url;
     return "/api/messages?resource=media&url=" + encodeURIComponent(url);
   }
 
   window.__svProxyMedia = proxied;
 
   function rewriteImg(img) {
-    if (!img || !img.src) return;
-    if (img.dataset.proxied === "1") return;
-    var src = img.currentSrc || img.src;
-    if (!needsProxy(src)) return;
-    img.dataset.proxied = "1";
-    img.src = proxied(src);
+    if (!img) return;
+    // prefer attribute to avoid browser already-failed currentSrc
+    var attr = img.getAttribute("src") || "";
+    var src = attr || img.src || "";
+    if (!src || src.indexOf("/api/messages?resource=media") !== -1) {
+      img.dataset.proxied = "1";
+      return;
+    }
+    if (!isExternalMedia(src)) return;
+    if (img.dataset.proxied === src) return;
+    img.dataset.proxied = src;
+    img.setAttribute("src", proxied(src));
   }
 
   function rewriteAll() {
-    document.querySelectorAll(
-      "#server-view img.sv-attachment-image, #server-view .sv-gif-cell img, #server-view .sv-embed-image, #sv-emoji-grid img, #sv-lightbox img"
-    ).forEach(rewriteImg);
+    var root = document.getElementById("server-view");
+    if (!root || root.hidden) return;
+    root.querySelectorAll("img").forEach(rewriteImg);
+    // lightbox lives on body
+    var lb = document.getElementById("sv-lightbox");
+    if (lb) lb.querySelectorAll("img").forEach(rewriteImg);
   }
 
   function observe() {
-    var root = document.getElementById("server-view") || document.body;
-    if (!root || root.dataset.mediaObs) return;
-    root.dataset.mediaObs = "1";
-    var obs = new MutationObserver(function () {
-      rewriteAll();
+    if (window.__svMediaObs) return;
+    window.__svMediaObs = true;
+    var obs = new MutationObserver(function (mutations) {
+      for (var i = 0; i < mutations.length; i++) {
+        var m = mutations[i];
+        if (m.type === "attributes" && m.target && m.target.tagName === "IMG") {
+          rewriteImg(m.target);
+        }
+        if (m.addedNodes) {
+          m.addedNodes.forEach(function (n) {
+            if (n.nodeType !== 1) return;
+            if (n.tagName === "IMG") rewriteImg(n);
+            else if (n.querySelectorAll) n.querySelectorAll("img").forEach(rewriteImg);
+          });
+        }
+      }
     });
-    obs.observe(root, { childList: true, subtree: true });
+    obs.observe(document.documentElement, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["src"],
+    });
     rewriteAll();
   }
 
-  /** Stop timed message polls — only refresh on send / channel switch */
   function killTimedPoll() {
     if (window.__svKillPollHooked) return;
     window.__svKillPollHooked = true;
@@ -67,7 +93,6 @@
       try {
         var src = Function.prototype.toString.call(fn);
         if (src && src.indexOf("loadMessages") !== -1) {
-          // effectively disable: run once far in the future if ever
           return native.call(window, function () {}, 2147483647);
         }
       } catch (e) {}
@@ -76,14 +101,9 @@
   }
 
   function forceReloadMessages() {
-    // click active channel to force reload path, or call load if exposed
     try {
       var btn = document.querySelector("#sv-channel-list .sv-ch.active");
-      if (btn) {
-        // soft: dispatch a custom event server-view might ignore — use fetch+reclick
-        btn.click();
-        return;
-      }
+      if (btn) btn.click();
     } catch (e) {}
   }
 
@@ -92,36 +112,26 @@
     window.__svSendRefreshHooked = true;
     var orig = window.fetch;
     if (typeof orig !== "function") return;
-
     window.fetch = function (input, init) {
       var url = typeof input === "string" ? input : (input && input.url) || "";
       var method = ((init && init.method) || "GET").toUpperCase();
-      var isSend =
-        method === "POST" &&
-        String(url).indexOf("/api/messages") !== -1 &&
-        String(url).indexOf("resource=") === -1;
-
-      // detect body action
+      var isPost = method === "POST" && String(url).indexOf("/api/messages") !== -1;
+      var isMedia = String(url).indexOf("resource=media") !== -1;
+      var isGifs = String(url).indexOf("resource=gifs") !== -1;
       var bodyStr = (init && init.body) || "";
       var isContentSend = false;
-      if (isSend && bodyStr) {
+      if (isPost && !isMedia && !isGifs && bodyStr) {
         try {
           var b = typeof bodyStr === "string" ? JSON.parse(bodyStr) : bodyStr;
           if (b && b.content && !b.action) isContentSend = true;
-          if (b && b.action === "react") isContentSend = false;
         } catch (e) {
           isContentSend = true;
         }
       }
-
       return orig.apply(this, arguments).then(function (res) {
         if (isContentSend && res.ok) {
-          setTimeout(function () {
-            forceReloadMessages();
-          }, 350);
-          setTimeout(function () {
-            forceReloadMessages();
-          }, 1200);
+          setTimeout(forceReloadMessages, 400);
+          setTimeout(forceReloadMessages, 1400);
         }
         return res;
       });
@@ -132,8 +142,8 @@
     killTimedPoll();
     hookSendRefresh();
     observe();
-    setInterval(rewriteAll, 3000);
-    console.log("[sv-media-proxy] school proxy + refresh-on-send");
+    setInterval(rewriteAll, 2000);
+    console.log("[sv-media-proxy] v2 — proxy all images/PFPs");
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
