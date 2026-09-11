@@ -1,11 +1,10 @@
 /**
- * Guarantees the emoji button exists next to the message box.
- * Lightweight force layer — does not replace the full picker, only ensures UI mount.
+ * Guarantees the emoji button exists and opens the picker.
  */
 (function () {
   "use strict";
-  if (window.__svEmojiForceV1) return;
-  window.__svEmojiForceV1 = true;
+  if (window.__svEmojiForceV2) return;
+  window.__svEmojiForceV2 = true;
 
   function injectCss() {
     if (document.getElementById("sv-emoji-force-css")) return;
@@ -33,21 +32,30 @@
   function findInput() {
     return (
       document.getElementById("sv-input") ||
-      document.querySelector("#server-view textarea, #server-view input[type=text], #sv-composer input, #sv-composer textarea")
+      document.querySelector(
+        "#server-view textarea, #server-view input[type=text], #sv-composer input, #sv-composer textarea"
+      )
     );
   }
 
   function openPicker() {
-    // Prefer existing full picker toggle
+    if (typeof window.__svToggleEmojiPanel === "function") {
+      window.__svToggleEmojiPanel();
+      return;
+    }
+    if (typeof window.__svEnsureEmojiPicker === "function") {
+      window.__svEnsureEmojiPicker(true);
+    }
+    if (typeof window.__svToggleEmojiPanel === "function") {
+      window.__svToggleEmojiPanel();
+      return;
+    }
     var panel = document.getElementById("sv-emoji-panel");
     var btn = document.getElementById("sv-emoji-btn");
     if (panel) {
       panel.hidden = !panel.hidden;
       if (btn) btn.classList.toggle("active", !panel.hidden);
-      return;
     }
-    // If full picker script not ready, click the main btn once mounted
-    if (btn) btn.click();
   }
 
   function mountComposerBtn() {
@@ -58,6 +66,14 @@
     if (existing && existing.isConnected) {
       existing.style.display = "inline-flex";
       existing.style.visibility = "visible";
+      if (existing.dataset.svForceBound !== "1") {
+        existing.dataset.svForceBound = "1";
+        existing.addEventListener("click", function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          openPicker();
+        });
+      }
       return true;
     }
     if (existing) existing.remove();
@@ -68,35 +84,27 @@
     btn.className = "sv-emoji-btn";
     btn.title = "Emoji & GIFs";
     btn.setAttribute("aria-label", "Open emoji picker");
-    btn.textContent = "😀";
+    btn.textContent = "\uD83D\uDE00";
+    btn.dataset.svForceBound = "1";
     btn.addEventListener("click", function (e) {
       e.preventDefault();
       e.stopPropagation();
       openPicker();
-      // ensure full picker builds itself
-      if (typeof window.__svEnsureEmojiPicker === "function") {
-        window.__svEnsureEmojiPicker(true);
-        setTimeout(openPicker, 50);
-      }
     });
 
     var send = document.getElementById("sv-send");
     var composer = document.getElementById("sv-composer") || input.closest("form") || input.parentElement;
 
-    if (send && send.parentElement) {
-      send.parentElement.insertBefore(btn, send);
-    } else if (input.parentElement) {
-      input.parentElement.appendChild(btn);
-    } else if (composer) {
-      composer.appendChild(btn);
-    } else {
-      return false;
-    }
+    if (send && send.parentElement) send.parentElement.insertBefore(btn, send);
+    else if (input.parentElement) input.parentElement.appendChild(btn);
+    else if (composer) composer.appendChild(btn);
+    else return false;
 
     if (composer) {
       composer.classList.add("sv-composer-wrap");
-      var pos = window.getComputedStyle(composer).position;
-      if (pos === "static") composer.style.position = "relative";
+      try {
+        if (window.getComputedStyle(composer).position === "static") composer.style.position = "relative";
+      } catch (e) {}
     }
     return true;
   }
@@ -109,20 +117,15 @@
       fb.type = "button";
       fb.id = "sv-emoji-fallback";
       fb.title = "Emoji & GIFs";
-      fb.textContent = "😀";
+      fb.textContent = "\uD83D\uDE00";
       fb.addEventListener("click", function (e) {
         e.preventDefault();
         mountComposerBtn();
         openPicker();
-        if (typeof window.__svEnsureEmojiPicker === "function") {
-          window.__svEnsureEmojiPicker(true);
-          setTimeout(openPicker, 80);
-        }
       });
       document.body.appendChild(fb);
     }
     if (view && !view.hidden) {
-      // show floating only if composer btn missing
       var main = document.getElementById("sv-emoji-btn");
       if (!main || !main.isConnected) fb.classList.add("show");
       else fb.classList.remove("show");
@@ -146,7 +149,7 @@
     injectCss();
     tick();
     setInterval(tick, 1500);
-    console.log("[sv-emoji-force] button guard active");
+    console.log("[sv-emoji-force] v2");
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
