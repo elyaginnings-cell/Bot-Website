@@ -1,5 +1,5 @@
 /**
- * Members tab — OFFLINE first; online sorted by hoisted roles; rest ONLINE
+ * Members tab — Discord order: hoisted roles (high→low) → ONLINE → OFFLINE last
  */
 (function () {
   "use strict";
@@ -259,9 +259,10 @@
       groups[key].members.push(mem);
     }
 
+    // Discord order: highest hoisted role → … → ONLINE → OFFLINE last
     order.sort(function (a, b) {
-      if (a === "_offline") return -1;
-      if (b === "_offline") return 1;
+      if (a === "_offline") return 1;
+      if (b === "_offline") return -1;
       if (a === "_online") return 1;
       if (b === "_online") return -1;
       return (
