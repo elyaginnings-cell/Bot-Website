@@ -1,10 +1,10 @@
 /**
- * Emoji button guard — single click path only (no double-toggle).
+ * Emoji button guard — single open path, no global click capture.
  */
 (function () {
   "use strict";
-  if (window.__svEmojiForceV3) return;
-  window.__svEmojiForceV3 = true;
+  if (window.__svEmojiForceV4) return;
+  window.__svEmojiForceV4 = true;
 
   function injectCss() {
     if (document.getElementById("sv-emoji-force-css")) return;
@@ -18,7 +18,7 @@
       "  align-items:center;justify-content:center;margin:0 4px;z-index:6;",
       "  -webkit-tap-highlight-color:transparent;touch-action:manipulation;",
       "}",
-      "#sv-emoji-btn:hover, #server-view .sv-emoji-btn:hover{background:#5865f2}",
+      "#sv-emoji-btn:hover{background:#5865f2}",
       "#sv-emoji-fallback{",
       "  position:fixed;right:12px;bottom:calc(72px + env(safe-area-inset-bottom,0px));z-index:99990;",
       "  width:52px;height:52px;border-radius:50%;border:none;",
@@ -44,9 +44,7 @@
     if (e) {
       e.preventDefault();
       e.stopPropagation();
-      if (e.stopImmediatePropagation) e.stopImmediatePropagation();
     }
-    // Prefer the real toggle from the picker script
     if (typeof window.__svOpenEmojiPanel === "function") {
       window.__svOpenEmojiPanel();
       return;
@@ -66,6 +64,14 @@
     if (panel) panel.hidden = false;
   }
 
+  function bindBtn(btn) {
+    if (!btn || btn.dataset.svEmojiForceV4 === "1") return;
+    btn.dataset.svEmojiForceV4 = "1";
+    btn.addEventListener("click", function (e) {
+      openPicker(e);
+    });
+  }
+
   function mountComposerBtn() {
     var input = findInput();
     if (!input) return false;
@@ -74,7 +80,7 @@
     if (existing && existing.isConnected) {
       existing.style.display = "inline-flex";
       existing.style.visibility = "visible";
-      // Do NOT add another click handler — picker owns it, or we use delegation below
+      bindBtn(existing);
       return true;
     }
     if (existing) existing.remove();
@@ -86,6 +92,7 @@
     btn.title = "Emoji & GIFs";
     btn.setAttribute("aria-label", "Open emoji picker");
     btn.textContent = "\uD83D\uDE00";
+    bindBtn(btn);
 
     var send = document.getElementById("sv-send");
     var composer = document.getElementById("sv-composer") || input.closest("form") || input.parentElement;
@@ -113,7 +120,10 @@
       fb.id = "sv-emoji-fallback";
       fb.title = "Emoji & GIFs";
       fb.textContent = "\uD83D\uDE00";
+      bindBtn(fb);
       document.body.appendChild(fb);
+    } else {
+      bindBtn(fb);
     }
     if (view && !view.hidden) {
       var main = document.getElementById("sv-emoji-btn");
@@ -122,30 +132,6 @@
     } else {
       fb.classList.remove("show");
     }
-  }
-
-  // ONE delegated handler for emoji open (pointer + click, once)
-  if (!window.__svEmojiDelegated) {
-    window.__svEmojiDelegated = true;
-    var lastOpen = 0;
-    function onEmojiTap(e) {
-      var t = e.target;
-      if (!t) return;
-      var hit =
-        (t.id === "sv-emoji-btn" || t.id === "sv-emoji-fallback") ||
-        (t.closest && (t.closest("#sv-emoji-btn") || t.closest("#sv-emoji-fallback")));
-      if (!hit) return;
-      var now = Date.now();
-      if (now - lastOpen < 350) {
-        e.preventDefault();
-        e.stopPropagation();
-        return;
-      }
-      lastOpen = now;
-      openPicker(e);
-    }
-    document.addEventListener("pointerup", onEmojiTap, true);
-    document.addEventListener("click", onEmojiTap, true);
   }
 
   function tick() {
@@ -162,8 +148,8 @@
   function boot() {
     injectCss();
     tick();
-    setInterval(tick, 3000);
-    console.log("[sv-emoji-force] v3 single-path");
+    setInterval(tick, 4000);
+    console.log("[sv-emoji-force] v4 no-capture");
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
