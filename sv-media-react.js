@@ -1,14 +1,14 @@
 /**
- * Lightbox + message reactions only.
- * GIF UI lives in emoji picker (GIF tab).
+ * Lightbox + message reactions.
+ * Quick reactions include 💜 and 🥹; favorites from emoji picker show first.
  */
 (function () {
   "use strict";
-  if (window.__svMediaReactV4) return;
-  window.__svMediaReactV4 = true;
+  if (window.__svMediaReactV5) return;
+  window.__svMediaReactV5 = true;
 
   var FAV_EMOJI_KEY = "sv_fav_emojis_v1";
-  var QUICK = ["👍", "❤️", "😂", "😮", "😢", "🔥", "🎉", "👀", "✅", "❌", "☕", "💯"];
+  var QUICK = ["👍", "❤️", "💜", "😂", "😮", "😢", "🥹", "🔥", "🎉", "👀", "✅", "❌", "☕", "💯"];
 
   function esc(v) {
     return String(v == null ? "" : v)
@@ -45,7 +45,7 @@
       "#server-view .sv-reactions{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}",
       "#server-view .sv-reaction{display:inline-flex;align-items:center;gap:4px;background:#2b2d31;border:1px solid #1e1f22;border-radius:8px;padding:2px 6px;font-size:13px;color:#dbdee1;cursor:pointer}",
       "#server-view .sv-reaction.me{background:rgba(88,101,242,.25);border-color:rgba(88,101,242,.5)}",
-      "#sv-reaction-picker{position:fixed;z-index:100001;background:#2b2d31;border:1px solid #1e1f22;border-radius:12px;padding:8px;display:grid;grid-template-columns:repeat(6,1fr);gap:4px;box-shadow:0 8px 24px rgba(0,0,0,.4);max-width:260px}",
+      "#sv-reaction-picker{position:fixed;z-index:100001;background:#2b2d31;border:1px solid #1e1f22;border-radius:12px;padding:8px;display:grid;grid-template-columns:repeat(6,1fr);gap:4px;box-shadow:0 8px 24px rgba(0,0,0,.4);max-width:280px}",
       "#sv-reaction-picker button{border:0;background:transparent;font-size:22px;cursor:pointer;border-radius:6px;padding:6px}",
       "#sv-reaction-picker button:hover{background:rgba(255,255,255,.1)}",
     ].join("\n");
@@ -165,8 +165,8 @@
       })
       .join("");
     document.body.appendChild(picker);
-    picker.style.left = Math.min(x || 80, window.innerWidth - 280) + "px";
-    picker.style.top = Math.min(y || 80, window.innerHeight - 160) + "px";
+    picker.style.left = Math.min(x || 80, window.innerWidth - 300) + "px";
+    picker.style.top = Math.min(y || 80, window.innerHeight - 180) + "px";
 
     picker.addEventListener("click", function (e) {
       e.stopPropagation();
@@ -176,7 +176,6 @@
       closeReactPicker();
     });
 
-    // close on outside click (next tick so opening click doesn't kill it)
     setTimeout(function () {
       function outside(ev) {
         if (!document.getElementById("sv-reaction-picker")) {
@@ -199,12 +198,11 @@
     injectCss();
     bindLightbox();
     ensureLightbox();
-    // remove leftover GIF chrome if any
     var gb = document.getElementById("sv-gif-btn");
     if (gb) gb.remove();
     var gp = document.getElementById("sv-gif-panel");
     if (gp) gp.remove();
-    console.log("[sv-media-react] v4 lightbox + reactions");
+    console.log("[sv-media-react] v5 reactions + 💜 🥹");
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
