@@ -24,6 +24,8 @@ function botToken() {
 
 function encodeEmoji(emoji) {
   const s = String(emoji || "").trim();
+  // Custom emoji already as name:id
+  if (/^[\w]+:\d+$/.test(s)) return s;
   const m = s.match(/^<?(a)?:([\w]+):(\d+)>?$/);
   if (m) return `${m[2]}:${m[3]}`;
   return encodeURIComponent(s);
@@ -249,9 +251,34 @@ async function handleReact(req, res, body) {
   });
 }
 
+async function handleDelete(req, res, body) {
+  const token = botToken();
+  if (!token) {
+    return res.status(500).json({
+      error: "DISCORD_BOT_TOKEN not set — cannot delete messages",
+    });
+  }
+  const channelId = body.channelId;
+  const messageId = body.messageId;
+  if (!channelId || !messageId) {
+    return res.status(400).json({ error: "Need channelId, messageId" });
+  }
+  const path = `https://discord.com/api/v10/channels/${channelId}/messages/${messageId}`;
+  const response = await fetch(path, {
+    method: "DELETE",
+    headers: { Authorization: `Bot ${token}` },
+  });
+  if (response.status === 204 || response.ok) {
+    return res.status(200).json({ ok: true });
+  }
+  const text = await response.text().catch(() => "");
+  return res.status(response.status).json({
+    error: text.slice(0, 300) || response.statusText,
+  });
+}
+
 export default async function handler(req, res) {
   try {
-    // Public media proxy — no session required (img tags often omit cookies)
     if (req.method === "GET" && String(req.query.resource || "") === "media") {
       return await handleMediaProxy(req, res);
     }
@@ -288,6 +315,10 @@ export default async function handler(req, res) {
 
     if (req.method === "POST" && String(body.action || "") === "react") {
       return await handleReact(req, res, body);
+    }
+
+    if (req.method === "POST" && String(body.action || "") === "delete") {
+      return await handleDelete(req, res, body);
     }
 
     if (req.method === "POST" && body.action && ["warn", "mute", "ban", "kick"].includes(String(body.action))) {
