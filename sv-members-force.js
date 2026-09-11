@@ -1,21 +1,18 @@
 /**
- * Member list rules (Discord-style):
- * 1. If member is online / idle / dnd → put under highest HOISTED role
- *    (or ONLINE if they have no hoisted role)
- * 2. If member is offline (or no status) → OFFLINE section at the VERY BOTTOM
- * Offline members never appear under role groups.
+ * Member list: online → hoisted role; offline → bottom.
+ * Punish button on each member row.
  */
 (function () {
   "use strict";
-  if (window.__svMembersForceV2) return;
-  window.__svMembersForceV2 = true;
+  if (window.__svMembersForceV3) return;
+  window.__svMembersForceV3 = true;
 
   function esc(v) {
     return String(v == null ? "" : v)
-      .replace(/&/g, "&")
-      .replace(/</g, "<")
-      .replace(/>/g, ">")
-      .replace(/"/g, """);
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
   }
 
   function nameOf(m) {
@@ -92,6 +89,44 @@
     return "https://cdn.discordapp.com/embed/avatars/" + n + ".png";
   }
 
+  function rowHtml(m, map, st) {
+    var name = nameOf(m);
+    var av = m.avatar || defaultAvatar(m.id);
+    var col = colorOf(topAny(m, map));
+    var off = st === "offline";
+    var html = "";
+    html +=
+      '<div class="sv-member-row" data-member-id="' +
+      esc(String(m.id)) +
+      '" data-offline="' +
+      (off ? "1" : "0") +
+      '">';
+    html +=
+      '<div class="sv-member-av-wrap"><img class="sv-member-av" src="' +
+      esc(av) +
+      '" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.src=\'https://cdn.discordapp.com/embed/avatars/0.png\'"><span class="sv-status ' +
+      esc(st) +
+      '"></span></div>';
+    html +=
+      '<div class="sv-member-info"><span class="sv-member-name"' +
+      (col ? ' style="color:' + col + ' !important"' : "") +
+      ">" +
+      esc(name) +
+      "</span>";
+    if (m.bot) html += '<span class="sv-bot-badge">BOT</span>';
+    html += "</div>";
+    if (!m.bot) {
+      html +=
+        '<button type="button" class="sv-member-punish" data-punish-user="' +
+        esc(String(m.id)) +
+        '" data-punish-name="' +
+        esc(name) +
+        '" title="Warn, mute, kick, or ban">Punish</button>';
+    }
+    html += "</div>";
+    return html;
+  }
+
   function buildHtml(members) {
     var map = roleMap();
     var hasPresence = members.some(function (m) {
@@ -134,7 +169,6 @@
         return nameOf(a).toLowerCase().localeCompare(nameOf(b).toLowerCase());
       });
     }
-
     roleOrder.forEach(function (k) {
       sortByName(roleGroups[k].members);
     });
@@ -154,64 +188,38 @@
         html += rowHtml(m, map, statusOf(m) || "online");
       });
     });
-
     if (onlineNoRole.length) {
-      html +=
-        '<div class="sv-ml-group">ONLINE \u2014 ' + onlineNoRole.length + "</div>";
+      html += '<div class="sv-ml-group">ONLINE \u2014 ' + onlineNoRole.length + "</div>";
       onlineNoRole.forEach(function (m) {
         html += rowHtml(m, map, statusOf(m) || "online");
       });
     }
-
     if (offline.length) {
-      html +=
-        '<div class="sv-ml-group">OFFLINE \u2014 ' + offline.length + "</div>";
+      html += '<div class="sv-ml-group">OFFLINE \u2014 ' + offline.length + "</div>";
       offline.forEach(function (m) {
         html += rowHtml(m, map, "offline");
       });
     }
-
     if (!html) html = '<p class="sv-empty">No members to show.</p>';
     return html;
   }
 
-  function rowHtml(m, map, st) {
-    var name = nameOf(m);
-    var av = m.avatar || defaultAvatar(m.id);
-    var col = colorOf(topAny(m, map));
-    var off = st === "offline";
-    var html = "";
-    html +=
-      '<div class="sv-member-row" data-member-id="' +
-      esc(String(m.id)) +
-      '" data-offline="' +
-      (off ? "1" : "0") +
-      '">';
-    html +=
-      '<div class="sv-member-av-wrap"><img class="sv-member-av" src="' +
-      esc(av) +
-      '" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.src=\'https://cdn.discordapp.com/embed/avatars/0.png\'"><span class="sv-status ' +
-      esc(st) +
-      '"></span></div>';
-    html +=
-      '<div class="sv-member-info"><span class="sv-member-name"' +
-      (col ? ' style="color:' + col + ' !important"' : "") +
-      ">" +
-      esc(name) +
-      "</span>";
-    if (m.bot) html += '<span class="sv-bot-badge">BOT</span>';
-    html += "</div></div>";
-    return html;
-  }
-
-  function orderLooksWrong(listEl) {
-    var groups = listEl.querySelectorAll(".sv-ml-group");
-    if (!groups.length) return true;
-    for (var i = 0; i < groups.length; i++) {
-      var t = (groups[i].textContent || "").toUpperCase();
-      if (t.indexOf("OFFLINE") === 0 && i < groups.length - 1) return true;
-    }
-    return false;
+  function bindPunishClicks(listEl) {
+    if (listEl.dataset.punishBound) return;
+    listEl.dataset.punishBound = "1";
+    listEl.addEventListener("click", function (e) {
+      var btn = e.target.closest ? e.target.closest(".sv-member-punish") : null;
+      if (!btn) return;
+      e.preventDefault();
+      e.stopPropagation();
+      var uid = btn.getAttribute("data-punish-user");
+      var uname = btn.getAttribute("data-punish-name") || "user";
+      if (typeof window.__svOpenPunish === "function") {
+        window.__svOpenPunish(uid, uname, "");
+      } else if (typeof window.openPunishModal === "function") {
+        window.openPunishModal({ userId: uid, userName: uname, messageId: "" });
+      }
+    });
   }
 
   function forceRender() {
@@ -220,24 +228,26 @@
     if (!listEl || !Array.isArray(members) || !members.length) return;
 
     var needs =
-      listEl.dataset.forceV !== "2" ||
+      listEl.dataset.forceV !== "3" ||
       listEl.dataset.forceCount !== String(members.length) ||
-      orderLooksWrong(listEl);
+      !listEl.querySelector(".sv-member-punish");
 
-    if (!needs) return;
+    if (!needs) {
+      bindPunishClicks(listEl);
+      return;
+    }
 
     listEl.innerHTML = buildHtml(members);
-    listEl.dataset.forceV = "2";
+    listEl.dataset.forceV = "3";
     listEl.dataset.forceCount = String(members.length);
-    listEl.dataset.forceOrder = "online-first";
-    listEl.dataset.discordGrouped = "1";
+    listEl.dataset.punishBound = "";
+    bindPunishClicks(listEl);
   }
 
   function boot() {
-    // Slow interval — only fix order when wrong, not every second
     setInterval(forceRender, 8000);
     setTimeout(forceRender, 1500);
-    console.log("[sv-members-force] v2 — online→hoisted role, offline→bottom only");
+    console.log("[sv-members-force] v3 + punish buttons");
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
   else boot();
