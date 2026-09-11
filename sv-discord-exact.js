@@ -1,11 +1,11 @@
 /**
- * Discord-exact Server View polish (v4 — offline section)
+ * Discord-exact Server View polish (v5 — offline last)
  * Server View ONLY. Main dashboard UI untouched.
  */
 (function () {
   "use strict";
-  if (window.__svDiscordExactV4) return;
-  window.__svDiscordExactV4 = true;
+  if (window.__svDiscordExactV5) return;
+  window.__svDiscordExactV5 = true;
 
   function esc(v) {
     return String(v == null ? "" : v)
@@ -49,6 +49,27 @@
       }
       if (!msg) return;
       if (messageMentionsMe(msg)) el.classList.add("mention-me");
+      // Upgrade old reply preview to Discord L-bar if present
+      var oldReply = el.querySelector(".sv-reply-preview");
+      if (oldReply && !el.querySelector(".sv-reply-ref")) {
+        var strong = oldReply.querySelector("strong");
+        var textEl = oldReply.querySelector(".sv-reply-text");
+        var name = strong ? strong.textContent : "Reply";
+        var body = "";
+        if (textEl) {
+          var full = textEl.textContent || "";
+          body = full.replace(name, "").trim();
+        }
+        var ref = document.createElement("div");
+        ref.className = "sv-reply-ref";
+        ref.innerHTML =
+          '<span class="sv-reply-ref-bar"></span><span class="sv-reply-ref-body"><strong>' +
+          esc(name) +
+          "</strong> " +
+          esc(body) +
+          "</span>";
+        oldReply.replaceWith(ref);
+      }
       if (Array.isArray(msg.reactions) && msg.reactions.length && !el.querySelector(".sv-reactions")) {
         var html = '<div class="sv-reactions">';
         msg.reactions.forEach(function (r) {
@@ -146,9 +167,10 @@
       if (!groups[key]) { groups[key] = { role: top, members: [] }; order.push(key); }
       groups[key].members.push(m);
     });
+    // Discord: hoisted roles (high→low), then ONLINE, OFFLINE last
     order.sort(function (a, b) {
-      if (a === "_offline") return -1;
-      if (b === "_offline") return 1;
+      if (a === "_offline") return 1;
+      if (b === "_offline") return -1;
       if (a === "_online") return 1;
       if (b === "_online") return -1;
       return (Number(groups[b].role && groups[b].role.position) || 0) - (Number(groups[a].role && groups[a].role.position) || 0);
@@ -210,6 +232,8 @@
       "#server-view #sv-member-list .sv-status.dnd{background:#f23f43}",
       "#server-view #sv-member-list .sv-status.offline{background:#80848e}",
       "#server-view #sv-member-list .sv-member-row[data-offline=\"1\"]{opacity:.55}",
+      "#server-view .sv-msg{padding:4px 16px;}",
+      "#server-view .sv-msg.grouped{padding-top:2px;padding-bottom:2px;}",
       "#server-view .sv-slash-help{display:flex;flex-direction:column;gap:2px;background:#2b2d31;border:1px solid #1e1f22;border-radius:8px;padding:6px;margin-bottom:6px;max-height:180px;overflow:auto}",
       "#server-view .sv-slash-item{display:flex;gap:10px;border:0;background:transparent;color:#dbdee1;text-align:left;padding:6px 8px;border-radius:4px;cursor:pointer;font:inherit}",
       "#server-view .sv-slash-item:hover{background:rgba(79,84,92,.4)}",
@@ -246,6 +270,7 @@
       { name: "profile", desc: "View profile" },
       { name: "balance", desc: "Currency balance" },
       { name: "daily", desc: "Claim daily" },
+      { name: "streak", desc: "Activity streak" },
       { name: "rank", desc: "Level rank" },
       { name: "leaderboard", desc: "Top ranks" }
     ];
@@ -316,7 +341,7 @@
         }, 400);
       }
     }, true);
-    console.log("[sv-discord-exact] v4 online (offline section)");
+    console.log("[sv-discord-exact] v5 online (offline last)");
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
