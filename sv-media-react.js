@@ -1,11 +1,11 @@
 /**
  * Media lightbox + reactions + GIF picker + favorites
- * (Reactions opened from right-click menu via __svOpenReactPicker)
+ * Uses /api/messages?resource=gifs and POST action=react (Hobby function limit)
  */
 (function () {
   "use strict";
-  if (window.__svMediaReactV2) return;
-  window.__svMediaReactV2 = true;
+  if (window.__svMediaReactV3) return;
+  window.__svMediaReactV3 = true;
 
   var FAV_EMOJI_KEY = "sv_fav_emojis_v1";
   var FAV_GIF_KEY = "sv_fav_gifs_v1";
@@ -13,10 +13,10 @@
 
   function esc(v) {
     return String(v == null ? "" : v)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;");
+      .replace(/&/g, "&")
+      .replace(/</g, "<")
+      .replace(/>/g, ">")
+      .replace(/"/g, """);
   }
 
   function loadFav(key) {
@@ -149,11 +149,16 @@
     var cid = channelId();
     if (!cid || !messageId || !emoji) return;
     try {
-      var res = await fetch("/api/react", {
+      var res = await fetch("/api/messages", {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify({ channelId: cid, messageId: messageId, emoji: emoji }),
+        body: JSON.stringify({
+          action: "react",
+          channelId: cid,
+          messageId: messageId,
+          emoji: emoji,
+        }),
       });
       var data = await res.json().catch(function () {
         return {};
@@ -297,10 +302,10 @@
     if (!grid) return;
     grid.innerHTML = '<p style="grid-column:1/-1;color:#b5bac1;padding:8px">Loading…</p>';
     try {
-      var res = await fetch("/api/gifs?q=" + encodeURIComponent(q || "hello"), {
-        credentials: "include",
-        cache: "no-store",
-      });
+      var res = await fetch(
+        "/api/messages?resource=gifs&q=" + encodeURIComponent(q || "hello"),
+        { credentials: "include", cache: "no-store" }
+      );
       var data = await res.json();
       renderGifGrid(data.gifs || []);
     } catch (e) {
@@ -401,12 +406,11 @@
     bindLightbox();
     ensureLightbox();
     ensureGifUi();
-    // only occasionally ensure UI exists — not every 1s thrash
     setInterval(function () {
       ensureGifUi();
       patchEmojiFavorites();
     }, 5000);
-    console.log("[sv-media-react] v2 ready");
+    console.log("[sv-media-react] v3 ready (messages-api)");
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
