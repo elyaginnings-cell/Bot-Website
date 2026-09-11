@@ -1,11 +1,10 @@
 /**
- * Emoji + GIF picker (GIF is a tab inside the emoji panel)
- * GIF previews load via /api/messages?resource=media (school-filter bypass)
+ * Full emoji + GIF picker. Forces rebuild of UI so the 😀 button always shows.
  */
 (function () {
   "use strict";
-  if (window.__svEmojiPickerV3) return;
-  window.__svEmojiPickerV3 = true;
+  // always allow re-init after upgrades
+  window.__svEmojiPickerV4 = true;
 
   var CATEGORIES = [
     {
@@ -29,7 +28,28 @@
       emojis: [
         "👋","🤚","🖐️","✋","🖖","👌","🤌","🤏","✌️","🤞","🤟","🤘","🤙","👈","👉","👆",
         "🖕","👇","☝️","👍","👎","✊","👊","🤛","🤜","👏","🙌","👐","🤲","🤝","🙏","✍️",
-        "💅","💪","👀","👁️","👅","👄","💋",
+        "💅","💪","👀","👁️","👅","👄","💋","🦾","🦵","🦶","👂","👃","🧠",
+      ],
+    },
+    {
+      id: "people",
+      label: "People",
+      icon: "👤",
+      emojis: [
+        "👶","🧒","👦","👧","🧑","👱","👨","🧔","👩","🧓","👴","👵","🙍","🙎","🙅","🙆",
+        "💁","🙋","🙇","🤦","🤷","👮","🕵️","💂","🥷","👷","🤴","👸","🦸","🦹","🧙","🧚",
+        "🧛","🧜","🧝","🧞","🧟","💆","💇","🚶","🏃","💃","🕺","🧘","🛀",
+      ],
+    },
+    {
+      id: "animals",
+      label: "Animals",
+      icon: "🐶",
+      emojis: [
+        "🐶","🐱","🐭","🐹","🐰","🦊","🐻","🐼","🐨","🐯","🦁","🐮","🐷","🐸","🐵",
+        "🙈","🙉","🙊","🐒","🐔","🐧","🐦","🐤","🦆","🦅","🦉","🦇","🐺","🦄","🐝",
+        "🐛","🦋","🐌","🐞","🐜","🐢","🐍","🦎","🐙","🦑","🦐","🦞","🦀","🐡","🐠",
+        "🐟","🐬","🐳","🦈","🐊","🐅","🐆","🦓","🦍","🐘","🦛","🦏","🐪","🦒","🦘",
       ],
     },
     {
@@ -37,8 +57,31 @@
       label: "Food",
       icon: "☕",
       emojis: [
-        "☕","🫖","🍵","🧋","🥤","🍺","🍻","🥂","🍷","🍕","🍔","🍟","🌮","🍣","🍩","🍪",
-        "🎂","🍰","🍦","🍎","🍌","🍇","🍓","🥑","🌮","🌯","🍜","🍝","🍳","🥐",
+        "🍏","🍎","🍐","🍊","🍋","🍌","🍉","🍇","🍓","🫐","🍈","🍒","🍑","🥭","🍍","🥥",
+        "🥝","🍅","🥑","🥦","🥬","🥒","🌶️","🌽","🥕","🧄","🧅","🥔","🥐","🥯","🍞","🧀",
+        "🥚","🍳","🥞","🥓","🥩","🍗","🌭","🍔","🍟","🍕","🌮","🌯","🥗","🍝","🍜","🍣",
+        "🍱","🍤","🍙","🍚","🍧","🍨","🍦","🥧","🧁","🍰","🎂","🍮","🍭","🍬","🍫","🍿",
+        "🍩","🍪","☕","🍵","🧃","🥤","🧋","🍶","🍺","🍻","🥂","🍷","🍸","🍹","🧊",
+      ],
+    },
+    {
+      id: "activities",
+      label: "Activities",
+      icon: "⚽",
+      emojis: [
+        "⚽","🏀","🏈","⚾","🎾","🏐","🏉","🎱","🏓","🏸","🏒","🥅","⛳","🏹","🥊","🥋",
+        "🎿","🏂","🏋️","🤸","🏊","🏄","🚴","🏆","🥇","🥈","🥉","🏅","🎫","🎪",
+        "🎭","🎨","🎬","🎤","🎧","🎼","🎹","🥁","🎷","🎺","🎸","🎻","🎲","🎯","🎮","🎰","🧩",
+      ],
+    },
+    {
+      id: "objects",
+      label: "Objects",
+      icon: "💡",
+      emojis: [
+        "⌚","📱","💻","⌨️","🖥️","🖨️","🖱️","🕹️","📷","📹","🎥","📞","📺","📻","🔋","🔌",
+        "💡","🔦","💵","💰","💳","💎","🔧","🔨","⚙️","🔫","💣","🔮","💊","💉","🔑","🚪",
+        "🛏️","🛋️","🚽","🚿","🛁","🧹","🛒","🎁","🎈","🎀","🎉","🎊","✉️","📦","📁","📅",
       ],
     },
     {
@@ -46,8 +89,19 @@
       label: "Symbols",
       icon: "❤️",
       emojis: [
-        "❤️","🧡","💛","💚","💙","💜","🖤","🤍","🤎","💔","💯","💢","💥","💫","⭐","🌟",
-        "✨","🔥","✅","❌","⭕","❓","❗","💬","🎉","🎊","🏆","🎁","💤","🎵",
+        "❤️","🧡","💛","💚","💙","💜","🖤","🤍","🤎","💔","❣️","💕","💞","💓","💗","💖",
+        "💘","💝","💟","💯","💢","💥","💫","💦","💨","💬","💭",
+        "✅","❌","⭕","❗","❓","❕","❔","‼️","⁉️","🔴","🟠","🟡","🟢","🔵","🟣","⚫",
+        "⚪","🟤","⭐","🌟","✨","⚡","🔥","❄️","🌈","☀️","🌙",
+      ],
+    },
+    {
+      id: "flags",
+      label: "Flags",
+      icon: "🏁",
+      emojis: [
+        "🏁","🚩","🎌","🏴","🏳️","🏳️‍🌈","🏴‍☠️",
+        "🇺🇸","🇬🇧","🇨🇦","🇦🇺","🇩🇪","🇫🇷","🇮🇹","🇪🇸","🇯🇵","🇰🇷","🇨🇳","🇧🇷","🇲🇽","🇮🇳","🇷🇺","🇺🇦",
       ],
     },
   ];
@@ -104,21 +158,22 @@
   }
 
   function injectCss() {
-    if (document.getElementById("sv-emoji-picker-css")) return;
+    var old = document.getElementById("sv-emoji-picker-css");
+    if (old) old.remove();
     var s = document.createElement("style");
     s.id = "sv-emoji-picker-css";
     s.textContent = [
-      "#server-view .sv-emoji-btn{flex-shrink:0;width:36px;height:36px;border:none;border-radius:8px;background:transparent;color:#b5bac1;font-size:22px;line-height:1;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}",
+      "#server-view .sv-emoji-btn{flex-shrink:0;width:36px;height:36px;border:none;border-radius:8px;background:transparent;color:#b5bac1;font-size:22px;line-height:1;cursor:pointer;display:inline-flex!important;align-items:center;justify-content:center;visibility:visible!important;opacity:1!important}",
       "#server-view .sv-emoji-btn:hover{background:rgba(255,255,255,.08);color:#fff}",
       "#server-view .sv-emoji-btn.active{background:rgba(88,101,242,.25);color:#fff}",
       "#server-view .sv-emoji-panel{position:absolute;bottom:calc(100% + 8px);right:0;z-index:90;width:min(380px,94vw);max-height:min(420px,60vh);background:#2b2d31;border:1px solid #1e1f22;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.45);display:flex;flex-direction:column;overflow:hidden}",
       "#server-view .sv-emoji-panel[hidden]{display:none!important}",
-      "#server-view .sv-emoji-tabs{display:flex;gap:2px;padding:8px 8px 6px;border-bottom:1px solid #1e1f22;overflow-x:auto;flex-shrink:0;scrollbar-width:none}",
-      "#server-view .sv-emoji-tab{flex:0 0 auto;min-width:32px;height:32px;padding:0 6px;border:none;border-radius:6px;background:transparent;font-size:14px;font-weight:700;cursor:pointer;line-height:1;color:#dbdee1}",
+      "#server-view .sv-emoji-tabs{display:flex;gap:2px;padding:8px;border-bottom:1px solid #1e1f22;overflow-x:auto;flex-shrink:0}",
+      "#server-view .sv-emoji-tab{flex:0 0 auto;min-width:32px;height:32px;padding:0 6px;border:none;border-radius:6px;background:transparent;font-size:16px;font-weight:700;cursor:pointer;color:#dbdee1}",
       "#server-view .sv-emoji-tab.active{background:rgba(88,101,242,.35);color:#fff}",
-      "#server-view .sv-emoji-search-wrap{padding:6px 10px;flex-shrink:0}",
+      "#server-view .sv-emoji-search-wrap{padding:6px 10px}",
       "#server-view .sv-emoji-search{width:100%;box-sizing:border-box;border:none;border-radius:6px;padding:8px 10px;font-size:13px;background:#1e1f22;color:#dbdee1;outline:none}",
-      "#server-view .sv-emoji-grid{flex:1 1 auto;overflow-y:auto;padding:6px 8px 12px;display:grid;grid-template-columns:repeat(8,1fr);gap:2px}",
+      "#server-view .sv-emoji-grid{flex:1;overflow-y:auto;padding:6px 8px 12px;display:grid;grid-template-columns:repeat(8,1fr);gap:2px}",
       "#server-view .sv-emoji-grid.gif-mode{grid-template-columns:repeat(2,1fr);gap:6px}",
       "#server-view .sv-emoji-cell{border:none;background:transparent;border-radius:6px;padding:4px;font-size:24px;cursor:pointer;aspect-ratio:1;display:flex;align-items:center;justify-content:center}",
       "#server-view .sv-emoji-cell:hover{background:rgba(255,255,255,.1)}",
@@ -158,13 +213,6 @@
     if (!panel) return;
     panel.hidden = false;
     if (btn) btn.classList.add("active");
-    var search = document.getElementById("sv-emoji-search");
-    if (search) {
-      search.value = "";
-      setTimeout(function () {
-        search.focus();
-      }, 40);
-    }
     renderGrid("smileys", "");
   }
 
@@ -280,10 +328,21 @@
     }
   }
 
-  function ensureUi() {
+  function destroyOld() {
+    var b = document.getElementById("sv-emoji-btn");
+    var p = document.getElementById("sv-emoji-panel");
+    if (b) b.remove();
+    if (p) p.remove();
+  }
+
+  function ensureUi(force) {
     var input = getInput();
     if (!input) return false;
-    if (document.getElementById("sv-emoji-btn")) return true;
+
+    if (!force && document.getElementById("sv-emoji-btn") && document.getElementById("sv-emoji-panel")) {
+      return true;
+    }
+    destroyOld();
 
     var composer = document.getElementById("sv-composer") || input.parentElement;
     if (!composer) return false;
@@ -397,32 +456,36 @@
       if (!cellE) return;
       insertAtCursor(getInput(), cellE.getAttribute("data-emoji"));
     });
-    document.addEventListener(
-      "click",
-      function (e) {
-        var panel = document.getElementById("sv-emoji-panel");
-        var btn = document.getElementById("sv-emoji-btn");
-        if (!panel || panel.hidden) return;
-        if (panel.contains(e.target) || (btn && btn.contains(e.target))) return;
-        closePanel();
-      },
-      true
-    );
-    document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape") closePanel();
-    });
+    if (!window.__svEmojiOutsideBound) {
+      window.__svEmojiOutsideBound = true;
+      document.addEventListener(
+        "click",
+        function (e) {
+          var panel = document.getElementById("sv-emoji-panel");
+          var btn = document.getElementById("sv-emoji-btn");
+          if (!panel || panel.hidden) return;
+          if (panel.contains(e.target) || (btn && btn.contains(e.target))) return;
+          closePanel();
+        },
+        true
+      );
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") closePanel();
+      });
+    }
+
     renderGrid(CATEGORIES[0].id, "");
-    console.log("[sv-emoji-picker] v3 proxied GIFs");
+    console.log("[sv-emoji-picker] v4 full emojis restored");
     return true;
   }
 
   function boot() {
     injectCss();
-    ensureUi();
+    ensureUi(true);
     setInterval(function () {
       var view = document.getElementById("server-view");
-      if (view && !view.hidden) ensureUi();
-    }, 2000);
+      if (view && !view.hidden) ensureUi(false);
+    }, 2500);
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
