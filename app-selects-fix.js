@@ -1,10 +1,10 @@
 /**
- * app-selects-fix — fills application channel/role dropdowns (incl. review role)
+ * app-selects-fix — fill application dropdowns once when empty (no thrash)
  */
 (function () {
   "use strict";
-  if (window.__appSelectsFixV2) return;
-  window.__appSelectsFixV2 = true;
+  if (window.__appSelectsFixV3) return;
+  window.__appSelectsFixV3 = true;
 
   function $(id) { return document.getElementById(id); }
 
@@ -25,7 +25,9 @@
   function fillChannel(id) {
     var el = $(id);
     if (!el || el.tagName !== "SELECT") return;
+    if (el.options.length > 1) return; // already has options — do not wipe
     var ch = channels();
+    if (!ch.length) return;
     var cur = el.value;
     el.innerHTML = '<option value="">Select a channel…</option>';
     var list = ch.filter(function (x) {
@@ -33,7 +35,7 @@
       var t = x.type;
       return t === 0 || t === 5 || t == null || t === "GUILD_TEXT" || t === "GUILD_ANNOUNCEMENT" || String(t) === "0" || String(t) === "5";
     });
-    if (!list.length && ch.length) list = ch;
+    if (!list.length) list = ch;
     list.forEach(function (x) {
       var o = document.createElement("option");
       o.value = x.id;
@@ -46,7 +48,9 @@
   function fillRole(id) {
     var el = $(id);
     if (!el || el.tagName !== "SELECT") return;
+    if (el.options.length > 1) return;
     var rl = roles();
+    if (!rl.length) return;
     var cur = el.value;
     el.innerHTML = '<option value="">Select…</option>';
     rl.forEach(function (x) {
@@ -67,39 +71,30 @@
 
   function hook() {
     var orig = window.showSection;
-    if (typeof orig === "function" && !orig.__appSelHookV2) {
+    if (typeof orig === "function" && !orig.__appSelHookV3) {
       window.showSection = function (section) {
         var r = orig.apply(this, arguments);
-        setTimeout(fillAppSelects, 50);
-        setTimeout(fillAppSelects, 250);
+        if (section === "applications") setTimeout(fillAppSelects, 100);
         return r;
       };
-      window.showSection.__appSelHookV2 = true;
+      window.showSection.__appSelHookV3 = true;
     }
   }
 
-  var n = 0;
-  function boot() {
-    n++;
-    hook();
+  function tryWhenReady(attempts) {
+    attempts = attempts || 0;
     fillAppSelects();
-    if (n < 100) setTimeout(boot, 300);
+    var el = $("app-review-channel");
+    if (el && el.options.length > 1) return;
+    if (attempts < 15) setTimeout(function () { tryWhenReady(attempts + 1); }, 600);
   }
 
-  setInterval(function () {
-    try { if (window.syncGlobals) window.syncGlobals(); } catch (_) {}
-    var el = $("app-review-channel");
-    var ch = channels();
-    if (el && el.options.length <= 1 && ch.length > 0) fillAppSelects();
-    else if (el && ch.length > 0 && el.options.length < Math.min(ch.length + 1, 50)) fillAppSelects();
-    var roleEl = $("app-review-role");
-    var rl = roles();
-    if (roleEl && roleEl.options.length <= 1 && rl.length > 0) fillAppSelects();
-    var posRole = $("app-pos-role");
-    if (posRole && posRole.options.length <= 1 && rl.length > 0) fillAppSelects();
-  }, 1000);
+  function boot() {
+    hook();
+    tryWhenReady(0);
+  }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
   else boot();
-  console.log("[app-selects-fix] v2 review role loaded");
+  console.log("[app-selects-fix] v3 calm");
 })();

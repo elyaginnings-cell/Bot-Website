@@ -1,11 +1,11 @@
 /**
  * app-config-fix — applications save + positions/questions + channel/role fill
- * Includes reviewRoleId (all members of role must vote).
+ * Fill selects ONCE when empty; never thrash while the user is choosing.
  */
 (function () {
   "use strict";
-  if (window.__appConfigFixV2) return;
-  window.__appConfigFixV2 = true;
+  if (window.__appConfigFixV3) return;
+  window.__appConfigFixV3 = true;
 
   function $(id) { return document.getElementById(id); }
   function setVal(id, v) { var el = $(id); if (el) el.value = v == null ? "" : String(v); }
@@ -30,17 +30,21 @@
     return window.rolesCache || [];
   }
 
-  function fillChannel(id) {
+  /** Only rebuild options if the select is still empty (or force). Preserve current value. */
+  function fillChannel(id, force) {
     var el = $(id);
     if (!el || el.tagName !== "SELECT") return;
-    var ch = channels(), cur = el.value;
+    if (!force && el.options.length > 1) return; // already filled — leave user alone
+    var ch = channels();
+    if (!ch.length) return;
+    var cur = el.value;
     el.innerHTML = '<option value="">Select a channel…</option>';
     var list = ch.filter(function (x) {
       if (!x) return false;
       var t = x.type;
       return t === 0 || t === 5 || t == null || t === "GUILD_TEXT" || t === "GUILD_ANNOUNCEMENT" || String(t) === "0" || String(t) === "5";
     });
-    if (!list.length && ch.length) list = ch;
+    if (!list.length) list = ch;
     list.forEach(function (x) {
       var o = document.createElement("option");
       o.value = x.id;
@@ -49,10 +53,13 @@
     });
     if (cur) el.value = cur;
   }
-  function fillRole(id) {
+  function fillRole(id, force) {
     var el = $(id);
     if (!el || el.tagName !== "SELECT") return;
-    var rl = roles(), cur = el.value;
+    if (!force && el.options.length > 1) return;
+    var rl = roles();
+    if (!rl.length) return;
+    var cur = el.value;
     el.innerHTML = '<option value="">Select…</option>';
     rl.forEach(function (x) {
       var o = document.createElement("option");
@@ -62,11 +69,11 @@
     });
     if (cur) el.value = cur;
   }
-  function fillAppSelects() {
-    fillChannel("app-review-channel");
-    fillChannel("app-announce-channel");
-    fillRole("app-review-role");
-    fillRole("app-pos-role");
+  function fillAppSelects(force) {
+    fillChannel("app-review-channel", force);
+    fillChannel("app-announce-channel", force);
+    fillRole("app-review-role", force);
+    fillRole("app-pos-role", force);
   }
 
   function renderAppPositions() {
@@ -121,16 +128,13 @@
     var c = window.currentConfig || {};
     var APP = c.applications || {};
     setCheck("app-enabled", APP.enabled !== false);
-    setVal("app-review-channel", APP.reviewChannelId || "");
-    setVal("app-review-role", APP.reviewRoleId || "");
-    setVal("app-announce-channel", APP.announcementsChannelId || "");
     setVal("app-btn-label", APP.buttonLabel || "Apply for Staff");
     setVal("app-embed-title", APP.embedTitle || "Staff Applications");
     setVal("app-embed-desc", APP.embedDescription || "");
     setVal("app-accept-msg", APP.acceptMessage || "");
     window.__appPositions = Array.isArray(APP.positions) ? APP.positions.slice() : [];
     window.__appQuestions = Array.isArray(APP.questions) ? APP.questions.slice() : [];
-    fillAppSelects();
+    fillAppSelects(true); // force once when applying config so saved IDs show
     setVal("app-review-channel", APP.reviewChannelId || "");
     setVal("app-review-role", APP.reviewRoleId || "");
     setVal("app-announce-channel", APP.announcementsChannelId || "");
@@ -204,8 +208,8 @@
 
   function bind(id, fn) {
     var el = $(id);
-    if (el && !el.__appFix) {
-      el.__appFix = 1;
+    if (el && !el.__appFixV3) {
+      el.__appFixV3 = 1;
       el.addEventListener("click", function (e) {
         e.preventDefault();
         e.stopImmediatePropagation();
@@ -220,18 +224,27 @@
     bind("app-add-q", addAppQuestion);
   }
 
+  var lastSection = null;
   function hookShow() {
     var orig = window.showSection;
-    if (typeof orig === "function" && !orig.__appCfgHookV2) {
+    if (typeof orig === "function" && !orig.__appCfgHookV3) {
       window.showSection = function (section) {
         var r = orig.apply(this, arguments);
-        setTimeout(function () { fillAppSelects(); applyApp(); }, 40);
+        // only when opening applications, fill once if still empty
+        if (section === "applications" && lastSection !== "applications") {
+          setTimeout(function () {
+            fillAppSelects(false);
+            applyApp();
+          }, 80);
+        }
+        lastSection = section;
         return r;
       };
-      window.showSection.__appCfgHookV2 = true;
+      window.showSection.__appCfgHookV3 = true;
     }
   }
 
+  var appliedConfigOnce = false;
   try {
     var _v = window.currentConfig;
     Object.defineProperty(window, "currentConfig", {
@@ -240,34 +253,34 @@
       get: function () { return _v; },
       set: function (v) {
         _v = v;
-        setTimeout(function () { applyApp(); fillAppSelects(); }, 40);
+        // Apply form values once when config first arrives (or changes from load)
+        if (!appliedConfigOnce || (v && v.applications)) {
+          appliedConfigOnce = true;
+          setTimeout(function () { applyApp(); }, 60);
+        }
       }
     });
   } catch (_) {}
 
-  var n = 0;
-  function boot() {
-    n++;
-    wire();
-    hookShow();
-    applyApp();
-    fillAppSelects();
-    if (n < 100) setTimeout(boot, 250);
+  // One soft retry if caches load late — not a spam loop
+  function tryFillWhenReady() {
+    var ch = channels();
+    var rl = roles();
+    if (ch.length || rl.length) {
+      fillAppSelects(false);
+      return;
+    }
+    setTimeout(tryFillWhenReady, 800);
   }
 
-  setInterval(function () {
-    try { if (window.syncGlobals) window.syncGlobals(); } catch (_) {}
-    var el = $("app-review-channel");
-    var ch = channels();
-    if (el && ch.length && el.options.length <= 1) fillAppSelects();
-    var roleEl = $("app-review-role");
-    var rl = roles();
-    if (roleEl && rl.length && roleEl.options.length <= 1) fillAppSelects();
-    var posRole = $("app-pos-role");
-    if (posRole && rl.length && posRole.options.length <= 1) fillAppSelects();
-  }, 900);
+  function boot() {
+    wire();
+    hookShow();
+    fillAppSelects(false);
+    tryFillWhenReady();
+  }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
   else boot();
-  console.log("[app-config-fix] v2 review role + applications save ready");
+  console.log("[app-config-fix] v3 calm selects");
 })();
