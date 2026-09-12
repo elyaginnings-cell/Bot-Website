@@ -1,10 +1,11 @@
 /**
  * app-config-fix — applications save + positions/questions + channel/role fill
+ * Includes reviewRoleId (all members of role must vote).
  */
 (function () {
   "use strict";
-  if (window.__appConfigFix) return;
-  window.__appConfigFix = true;
+  if (window.__appConfigFixV2) return;
+  window.__appConfigFixV2 = true;
 
   function $(id) { return document.getElementById(id); }
   function setVal(id, v) { var el = $(id); if (el) el.value = v == null ? "" : String(v); }
@@ -64,6 +65,7 @@
   function fillAppSelects() {
     fillChannel("app-review-channel");
     fillChannel("app-announce-channel");
+    fillRole("app-review-role");
     fillRole("app-pos-role");
   }
 
@@ -120,6 +122,7 @@
     var APP = c.applications || {};
     setCheck("app-enabled", APP.enabled !== false);
     setVal("app-review-channel", APP.reviewChannelId || "");
+    setVal("app-review-role", APP.reviewRoleId || "");
     setVal("app-announce-channel", APP.announcementsChannelId || "");
     setVal("app-btn-label", APP.buttonLabel || "Apply for Staff");
     setVal("app-embed-title", APP.embedTitle || "Staff Applications");
@@ -129,6 +132,7 @@
     window.__appQuestions = Array.isArray(APP.questions) ? APP.questions.slice() : [];
     fillAppSelects();
     setVal("app-review-channel", APP.reviewChannelId || "");
+    setVal("app-review-role", APP.reviewRoleId || "");
     setVal("app-announce-channel", APP.announcementsChannelId || "");
     renderAppPositions();
     renderAppQuestions();
@@ -141,6 +145,7 @@
         applications: {
           enabled: $("app-enabled") ? $("app-enabled").checked : true,
           reviewChannelId: $("app-review-channel") ? $("app-review-channel").value || null : null,
+          reviewRoleId: $("app-review-role") ? $("app-review-role").value || null : null,
           announcementsChannelId: $("app-announce-channel") ? $("app-announce-channel").value || null : null,
           buttonLabel: $("app-btn-label") ? $("app-btn-label").value || "Apply for Staff" : "Apply for Staff",
           embedTitle: $("app-embed-title") ? $("app-embed-title").value || "Staff Applications" : "Staff Applications",
@@ -217,13 +222,13 @@
 
   function hookShow() {
     var orig = window.showSection;
-    if (typeof orig === "function" && !orig.__appCfgHook) {
+    if (typeof orig === "function" && !orig.__appCfgHookV2) {
       window.showSection = function (section) {
         var r = orig.apply(this, arguments);
         setTimeout(function () { fillAppSelects(); applyApp(); }, 40);
         return r;
       };
-      window.showSection.__appCfgHook = true;
+      window.showSection.__appCfgHookV2 = true;
     }
   }
 
@@ -255,12 +260,14 @@
     var el = $("app-review-channel");
     var ch = channels();
     if (el && ch.length && el.options.length <= 1) fillAppSelects();
-    var roleEl = $("app-pos-role");
+    var roleEl = $("app-review-role");
     var rl = roles();
     if (roleEl && rl.length && roleEl.options.length <= 1) fillAppSelects();
+    var posRole = $("app-pos-role");
+    if (posRole && rl.length && posRole.options.length <= 1) fillAppSelects();
   }, 900);
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
   else boot();
-  console.log("[app-config-fix] applications selects + save ready");
+  console.log("[app-config-fix] v2 review role + applications save ready");
 })();

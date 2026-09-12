@@ -1,10 +1,10 @@
 /**
- * app-selects-fix — fills application channel/role dropdowns
+ * app-selects-fix — fills application channel/role dropdowns (incl. review role)
  */
 (function () {
   "use strict";
-  if (window.__appSelectsFix) return;
-  window.__appSelectsFix = true;
+  if (window.__appSelectsFixV2) return;
+  window.__appSelectsFixV2 = true;
 
   function $(id) { return document.getElementById(id); }
 
@@ -61,19 +61,20 @@
   function fillAppSelects() {
     fillChannel("app-review-channel");
     fillChannel("app-announce-channel");
+    fillRole("app-review-role");
     fillRole("app-pos-role");
   }
 
   function hook() {
     var orig = window.showSection;
-    if (typeof orig === "function" && !orig.__appSelHook) {
+    if (typeof orig === "function" && !orig.__appSelHookV2) {
       window.showSection = function (section) {
         var r = orig.apply(this, arguments);
         setTimeout(fillAppSelects, 50);
         setTimeout(fillAppSelects, 250);
         return r;
       };
-      window.showSection.__appSelHook = true;
+      window.showSection.__appSelHookV2 = true;
     }
   }
 
@@ -91,12 +92,14 @@
     var ch = channels();
     if (el && el.options.length <= 1 && ch.length > 0) fillAppSelects();
     else if (el && ch.length > 0 && el.options.length < Math.min(ch.length + 1, 50)) fillAppSelects();
-    var roleEl = $("app-pos-role");
+    var roleEl = $("app-review-role");
     var rl = roles();
     if (roleEl && roleEl.options.length <= 1 && rl.length > 0) fillAppSelects();
+    var posRole = $("app-pos-role");
+    if (posRole && posRole.options.length <= 1 && rl.length > 0) fillAppSelects();
   }, 1000);
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
   else boot();
-  console.log("[app-selects-fix] loaded");
+  console.log("[app-selects-fix] v2 review role loaded");
 })();

@@ -1,10 +1,10 @@
 /**
- * features-ui-patch v12 — applications tab + analytics + suggest ping
+ * features-ui-patch v13 — applications tab + review role + analytics + suggest ping
  */
 (function () {
   "use strict";
-  if (window.__featuresUIPatchV12) return;
-  window.__featuresUIPatchV12 = true;
+  if (window.__featuresUIPatchV13) return;
+  window.__featuresUIPatchV13 = true;
 
   function $(id) { return document.getElementById(id); }
 
@@ -46,13 +46,36 @@
 
   function ensureApps() {
     ensureNavItem("applications", "📋", "Apply", "Staff applications");
+
+    // If section already exists from older patch, inject review role field if missing
+    if ($("applications") && !$("app-review-role")) {
+      var reviewCh = $("app-review-channel");
+      if (reviewCh && reviewCh.parentNode) {
+        var group = document.createElement("div");
+        group.className = "input-group";
+        group.innerHTML =
+          '<label>Review role (pinged on submit — ALL members must vote)</label>' +
+          '<select id="app-review-role"><option value="">Select…</option></select>' +
+          '<p class="form-hint">Everyone with this role votes Accept or Deny. Majority accept = accept. Tie or more deny = deny.</p>';
+        reviewCh.parentNode.parentNode.insertBefore(group, reviewCh.parentNode.nextSibling);
+      }
+      var hint = document.querySelector("#applications .form-hint");
+      if (hint && hint.textContent.indexOf("Accept/Deny") !== -1) {
+        hint.textContent =
+          "Members click Apply → pick a position → answer questions. The review role is pinged; every member of that role must vote. Majority accept wins; tie or more deny = deny.";
+      }
+      return true;
+    }
+
     ensureSection(
       "applications",
       '<section id="applications" class="page-section"><div class="card form-card wide">' +
         '<span class="eyebrow">APPLICATIONS</span><h2>Staff applications</h2>' +
-        '<p class="form-hint">Members click Apply → pick a position → answer questions. Staff Accept/Deny in the review channel. On accept: roles are granted and a welcome is posted.</p>' +
+        '<p class="form-hint">Members click Apply → pick a position → answer questions. The review role is pinged; every member of that role must vote. Majority accept wins; tie or more deny = deny.</p>' +
         '<label class="toggle"><input type="checkbox" id="app-enabled" checked> <span>Enabled</span></label>' +
         '<div class="input-group"><label>Review channel (staff sees applications)</label><select id="app-review-channel"><option value="">Select…</option></select></div>' +
+        '<div class="input-group"><label>Review role (pinged on submit — ALL members must vote)</label><select id="app-review-role"><option value="">Select…</option></select>' +
+        '<p class="form-hint">Everyone with this role votes Accept or Deny. Majority accept = accept. Tie or more deny = deny.</p></div>' +
         '<div class="input-group"><label>Announcements channel (welcome on accept)</label><select id="app-announce-channel"><option value="">Select…</option></select></div>' +
         '<div class="input-group"><label>Button label</label><input id="app-btn-label" type="text" value="Apply for Staff" maxlength="80"></div>' +
         '<div class="input-group"><label>Panel title</label><input id="app-embed-title" type="text" value="Staff Applications" maxlength="256"></div>' +
@@ -128,5 +151,5 @@
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
   else boot();
-  console.log("[features-ui-patch] v12 applications + refill selects");
+  console.log("[features-ui-patch] v13 applications review role");
 })();
