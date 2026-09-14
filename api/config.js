@@ -6,6 +6,7 @@ import {
   preferWebsiteShop,
 } from "../lib/guildConfig.js";
 import { normalizeLoa } from "../lib/loaConfig.js";
+import { normalizeActivityCheck } from "../lib/activityCheckConfig.js";
 
 const RAILWAY_API =
   process.env.BOT_API_URL ||
@@ -132,6 +133,7 @@ export default async function handler(req, res) {
           "automod",
           "applications",
           "loa",
+          "activityCheck",
         ];
         let needsResave = false;
         for (const k of extraKeys) {
@@ -166,6 +168,11 @@ export default async function handler(req, res) {
               };
             } else if (k === "loa") {
               mirrored.loa = normalizeLoa(body.loa, mirrored.loa || {});
+            } else if (k === "activityCheck") {
+              mirrored.activityCheck = normalizeActivityCheck(
+                body.activityCheck,
+                mirrored.activityCheck || {}
+              );
             } else {
               mirrored[k] = { ...(mirrored[k] || {}), ...body[k] };
             }
@@ -195,6 +202,7 @@ export default async function handler(req, res) {
         automod: mirrored?.automod || body.automod,
         applications: mirrored?.applications || body.applications,
         loa: mirrored?.loa || body.loa,
+        activityCheck: mirrored?.activityCheck || body.activityCheck,
       };
 
       let botOk = false;
