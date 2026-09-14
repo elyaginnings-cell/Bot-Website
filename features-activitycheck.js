@@ -1,10 +1,11 @@
 /**
  * Activity Check tab — nav item + page section matching other feature cards.
+ * Duration: 12–48 hours (synced as durationHours + durationMinutes for the bot).
  */
 (function () {
   "use strict";
-  if (window.__acTabV2) return;
-  window.__acTabV2 = true;
+  if (window.__acTabV3) return;
+  window.__acTabV3 = true;
 
   function $(id) {
     return document.getElementById(id);
@@ -59,7 +60,19 @@
     var old = $("ac-panel");
     if (old) old.remove();
 
-    if ($("activitycheck")) return true;
+    var existing = $("activitycheck");
+    if (existing) {
+      var sel = $("ac-duration");
+      if (sel && sel.options.length && Number(sel.options[0].value) <= 60) {
+        sel.innerHTML =
+          '<option value="12">12 hours</option>' +
+          '<option value="18">18 hours</option>' +
+          '<option value="24" selected>24 hours</option>' +
+          '<option value="36">36 hours</option>' +
+          '<option value="48">48 hours</option>';
+      }
+      return true;
+    }
     var content = document.querySelector(".content");
     if (!content) return false;
 
@@ -70,17 +83,17 @@
       '<div class="card form-card wide">' +
       '<span class="eyebrow">ACTIVITY CHECK</span>' +
       "<h2>Staff Activity Check</h2>" +
-      '<p class="form-hint">Ask staff to confirm they are available right now — not message tracking. Staff press <strong>I’m Active</strong>. People on an active LOA are automatically exempt.</p>' +
+      '<p class="form-hint">Ask staff to confirm they are available — not message tracking. Staff press <strong>I’m Active</strong>. People on an active LOA are automatically exempt. Checks stay open for 12–48 hours so quiet servers still get responses.</p>' +
       '<label class="toggle"><input type="checkbox" id="ac-enabled" checked> <span>Activity Check enabled</span></label>' +
       '<label class="toggle"><input type="checkbox" id="ac-show-confirmed" checked> <span>Show confirmed names on the live embed</span></label>' +
       '<div class="config-grid">' +
       '<div class="input-group"><label>Default duration</label>' +
       '<select id="ac-duration">' +
-      '<option value="5">5 minutes</option>' +
-      '<option value="10">10 minutes</option>' +
-      '<option value="15" selected>15 minutes</option>' +
-      '<option value="30">30 minutes</option>' +
-      '<option value="60">1 hour</option>' +
+      '<option value="12">12 hours</option>' +
+      '<option value="18">18 hours</option>' +
+      '<option value="24" selected>24 hours</option>' +
+      '<option value="36">36 hours</option>' +
+      '<option value="48">48 hours</option>' +
       "</select></div>" +
       '<div class="input-group"><label>Channel</label><select id="ac-channel"><option value="">Select a channel…</option></select></div>' +
       '<div class="input-group"><label>Manager role (start / end + completion ping)</label><select id="ac-manager-role"><option value="">None (Admin / Manage Server)</option></select></div>' +
@@ -99,7 +112,7 @@
     return true;
   }
 
-  function fillSelect(el, items, placeholder, isRole, allowNone) {
+  function fillSelect(el, items, placeholder, isRole) {
     if (!el) return;
     var cur = el.value;
     el.innerHTML = '<option value="">' + (placeholder || "Select…") + "</option>";
@@ -163,13 +176,21 @@
     });
   }
 
+  function hoursFromConfig(cfg) {
+    if (cfg.durationHours != null) return Number(cfg.durationHours);
+    if (cfg.durationMinutes != null) {
+      var m = Number(cfg.durationMinutes);
+      if (m > 180) return Math.round(m / 60);
+    }
+    return 24;
+  }
+
   function apply() {
     var cfg = (window.currentConfig && window.currentConfig.activityCheck) || {};
     if ($("ac-enabled")) $("ac-enabled").checked = cfg.enabled !== false;
     if ($("ac-show-confirmed"))
       $("ac-show-confirmed").checked = cfg.showConfirmedInLive !== false;
-    if ($("ac-duration"))
-      $("ac-duration").value = String(cfg.durationMinutes != null ? cfg.durationMinutes : 15);
+    if ($("ac-duration")) $("ac-duration").value = String(hoursFromConfig(cfg));
 
     fillSelects();
     if ($("ac-channel") && cfg.channelId) $("ac-channel").value = cfg.channelId;
@@ -190,11 +211,13 @@
     try {
       setStatus("Saving…", true);
       var cur = (window.currentConfig && window.currentConfig.activityCheck) || {};
+      var hours = Number(($("ac-duration") && $("ac-duration").value) || 24);
       var d = await window.saveConfig({
         activityCheck: {
           enabled: $("ac-enabled") ? $("ac-enabled").checked : true,
           showConfirmedInLive: $("ac-show-confirmed") ? $("ac-show-confirmed").checked : true,
-          durationMinutes: Number(($("ac-duration") && $("ac-duration").value) || 15),
+          durationHours: hours,
+          durationMinutes: hours * 60,
           channelId: ($("ac-channel") && $("ac-channel").value) || null,
           managerRoleId: ($("ac-manager-role") && $("ac-manager-role").value) || null,
           staffRoleIds: Array.isArray(cur.staffRoleIds) ? cur.staffRoleIds : [],
@@ -268,5 +291,5 @@
     window.loadGuildData.__acWrapped = true;
   }
 
-  console.log("[features-activitycheck] v2 tab");
+  console.log("[features-activitycheck] v3 hours 12–48");
 })();
