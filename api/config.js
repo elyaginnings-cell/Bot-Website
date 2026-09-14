@@ -5,6 +5,7 @@ import {
   saveGuildConfig,
   preferWebsiteShop,
 } from "../lib/guildConfig.js";
+import { normalizeLoa } from "../lib/loaConfig.js";
 
 const RAILWAY_API =
   process.env.BOT_API_URL ||
@@ -130,6 +131,7 @@ export default async function handler(req, res) {
           "ai",
           "automod",
           "applications",
+          "loa",
         ];
         let needsResave = false;
         for (const k of extraKeys) {
@@ -162,6 +164,8 @@ export default async function handler(req, res) {
                   ? body.applications.questions
                   : (mirrored.applications && mirrored.applications.questions) || [],
               };
+            } else if (k === "loa") {
+              mirrored.loa = normalizeLoa(body.loa, mirrored.loa || {});
             } else {
               mirrored[k] = { ...(mirrored[k] || {}), ...body[k] };
             }
@@ -190,6 +194,7 @@ export default async function handler(req, res) {
         ai: mirrored?.ai || body.ai,
         automod: mirrored?.automod || body.automod,
         applications: mirrored?.applications || body.applications,
+        loa: mirrored?.loa || body.loa,
       };
 
       let botOk = false;
