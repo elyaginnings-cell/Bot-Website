@@ -1,11 +1,15 @@
 /**
- * Members tab — Discord order: hoisted roles → ONLINE → OFFLINE last
- * Polls every 15s while the Members tab is open so presence updates show up.
+ * Members tab — Discord-like order:
+ * 1) Group by highest HOISTED role (Display role members separately)
+ * 2) If the guild has no hoisted roles in cache, fall back to highest role by position
+ * 3) ONLINE leftovers, then OFFLINE last
+ * Within each group: A–Z by display name
+ * Polls every 15s while the Members tab is open.
  */
 (function () {
   "use strict";
-  if (window.__svMembersLoadV2) return;
-  window.__svMembersLoadV2 = true;
+  if (window.__svMembersLoadV3) return;
+  window.__svMembersLoadV3 = true;
 
   var loading = false;
   var hardTimer = null;
@@ -42,6 +46,9 @@
     el.style.visibility = "visible";
     el.style.minHeight = "180px";
     el.style.color = "#dbdee1";
+    // Allow force-render scripts to re-run after our paint
+    el.dataset.forceV = "";
+    el.dataset.forceCount = "";
   }
 
   function guildId() {
@@ -124,6 +131,14 @@
     return r.hoist === true || r.hoist === 1 || r.hoisted === true || r.hoisted === 1;
   }
 
+  function guildHasAnyHoisted(map) {
+    var keys = Object.keys(map);
+    for (var i = 0; i < keys.length; i++) {
+      if (isHoistedRole(map[keys[i]])) return true;
+    }
+    return false;
+  }
+
   function ensureRolesThen(cb) {
     var gid = guildId();
     if (!gid) {
@@ -149,17 +164,25 @@
       });
   }
 
-  function topHoistedRole(member, map) {
+  function memberRoleIds(member) {
     var ids = Array.isArray(member.roleIds)
       ? member.roleIds
       : Array.isArray(member.roles)
         ? member.roles
         : [];
+    return ids
+      .map(function (rid) {
+        if (rid && typeof rid === "object") return String(rid.id || "");
+        return String(rid || "");
+      })
+      .filter(Boolean);
+  }
+
+  function topHoistedRole(member, map) {
+    var ids = memberRoleIds(member);
     var best = null;
     for (var i = 0; i < ids.length; i++) {
-      var rid = ids[i];
-      if (rid && typeof rid === "object") rid = rid.id;
-      var r = map[String(rid)];
+      var r = map[ids[i]];
       if (!isHoistedRole(r)) continue;
       if (!best || (Number(r.position) || 0) > (Number(best.position) || 0)) best = r;
     }
@@ -167,20 +190,20 @@
   }
 
   function topAnyRole(member, map) {
-    var ids = Array.isArray(member.roleIds)
-      ? member.roleIds
-      : Array.isArray(member.roles)
-        ? member.roles
-        : [];
+    var ids = memberRoleIds(member);
     var best = null;
     for (var i = 0; i < ids.length; i++) {
-      var rid = ids[i];
-      if (rid && typeof rid === "object") rid = rid.id;
-      var r = map[String(rid)];
+      var r = map[ids[i]];
       if (!r || r.name === "@everyone") continue;
       if (!best || (Number(r.position) || 0) > (Number(best.position) || 0)) best = r;
     }
     return best;
+  }
+
+  /** Role used for sidebar grouping: hoisted if available, else highest rank when guild has no hoist. */
+  function groupRole(member, map, useHoistOnly) {
+    if (useHoistOnly) return topHoistedRole(member, map);
+    return topHoistedRole(member, map) || topAnyRole(member, map);
   }
 
   function roleColor(role) {
@@ -267,6 +290,7 @@
     }
 
     var map = roleMap();
+    var useHoistOnly = guildHasAnyHoisted(map);
     var groups = {};
     var order = [];
     var hasPresence = members.some(function (m) {
@@ -277,7 +301,6 @@
       var mem = members[mi];
       if (!mem || !mem.id) continue;
 
-      // Only park in OFFLINE when we actually know status
       if (hasPresence && isOffline(mem)) {
         if (!groups._offline) {
           groups._offline = { role: null, members: [] };
@@ -287,7 +310,7 @@
         continue;
       }
 
-      var top = topHoistedRole(mem, map);
+      var top = groupRole(mem, map, useHoistOnly);
       var key = top ? "role:" + String(top.id) : "_online";
       if (!groups[key]) {
         groups[key] = { role: top, members: [] };
@@ -467,4 +490,6 @@
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", bind);
   else bind();
+
+  console.log("[sv-members-load] v3 rank groups + hoist fallback");
 })();
