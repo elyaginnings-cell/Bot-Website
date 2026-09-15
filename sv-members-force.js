@@ -1,18 +1,19 @@
 /**
- * Member list: online → hoisted role; offline → bottom.
+ * Member list force-render: rank groups (hoisted or highest role), offline last.
  * Punish button on each member row.
+ * Does not fight sv-members-load — only re-applies if list lacks rank groups / punish.
  */
 (function () {
   "use strict";
-  if (window.__svMembersForceV3) return;
-  window.__svMembersForceV3 = true;
+  if (window.__svMembersForceV4) return;
+  window.__svMembersForceV4 = true;
 
   function esc(v) {
     return String(v == null ? "" : v)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;");
+      .replace(/&/g, "&")
+      .replace(/</g, "<")
+      .replace(/>/g, ">")
+      .replace(/"/g, """);
   }
 
   function nameOf(m) {
@@ -47,13 +48,29 @@
     return map;
   }
 
-  function topHoisted(m, map) {
+  function guildHasHoist(map) {
+    var keys = Object.keys(map);
+    for (var i = 0; i < keys.length; i++) {
+      if (isHoisted(map[keys[i]])) return true;
+    }
+    return false;
+  }
+
+  function roleIdsOf(m) {
     var ids = m.roleIds || m.roles || [];
+    return ids
+      .map(function (rid) {
+        if (rid && typeof rid === "object") return String(rid.id || "");
+        return String(rid || "");
+      })
+      .filter(Boolean);
+  }
+
+  function topHoisted(m, map) {
+    var ids = roleIdsOf(m);
     var best = null;
     for (var i = 0; i < ids.length; i++) {
-      var rid = ids[i];
-      if (rid && typeof rid === "object") rid = rid.id;
-      var r = map[String(rid)];
+      var r = map[ids[i]];
       if (!isHoisted(r)) continue;
       if (!best || (Number(r.position) || 0) > (Number(best.position) || 0)) best = r;
     }
@@ -61,16 +78,19 @@
   }
 
   function topAny(m, map) {
-    var ids = m.roleIds || m.roles || [];
+    var ids = roleIdsOf(m);
     var best = null;
     for (var i = 0; i < ids.length; i++) {
-      var rid = ids[i];
-      if (rid && typeof rid === "object") rid = rid.id;
-      var r = map[String(rid)];
+      var r = map[ids[i]];
       if (!r || r.name === "@everyone") continue;
       if (!best || (Number(r.position) || 0) > (Number(best.position) || 0)) best = r;
     }
     return best;
+  }
+
+  function groupRole(m, map, hoistOnly) {
+    if (hoistOnly) return topHoisted(m, map);
+    return topHoisted(m, map) || topAny(m, map);
   }
 
   function colorOf(r) {
@@ -129,6 +149,7 @@
 
   function buildHtml(members) {
     var map = roleMap();
+    var hoistOnly = guildHasHoist(map);
     var hasPresence = members.some(function (m) {
       return isOnline(m) || statusOf(m) === "offline";
     });
@@ -144,7 +165,7 @@
         offline.push(m);
         return;
       }
-      var top = topHoisted(m, map);
+      var top = groupRole(m, map, hoistOnly);
       if (top) {
         var key = "role:" + String(top.id);
         if (!roleGroups[key]) {
@@ -227,10 +248,20 @@
     var members = window.membersCache;
     if (!listEl || !Array.isArray(members) || !members.length) return;
 
+    // If load script already painted role groups, only ensure punish buttons
+    var hasRoleGroup = !!listEl.querySelector(".sv-ml-group");
+    var onlyOnlineOffline =
+      hasRoleGroup &&
+      !Array.prototype.some.call(listEl.querySelectorAll(".sv-ml-group"), function (el) {
+        var t = (el.textContent || "").toUpperCase();
+        return t.indexOf("ONLINE") === -1 && t.indexOf("OFFLINE") === -1;
+      });
+
     var needs =
-      listEl.dataset.forceV !== "3" ||
+      listEl.dataset.forceV !== "4" ||
       listEl.dataset.forceCount !== String(members.length) ||
-      !listEl.querySelector(".sv-member-punish");
+      !listEl.querySelector(".sv-member-punish") ||
+      onlyOnlineOffline;
 
     if (!needs) {
       bindPunishClicks(listEl);
@@ -238,7 +269,7 @@
     }
 
     listEl.innerHTML = buildHtml(members);
-    listEl.dataset.forceV = "3";
+    listEl.dataset.forceV = "4";
     listEl.dataset.forceCount = String(members.length);
     listEl.dataset.punishBound = "";
     bindPunishClicks(listEl);
@@ -247,7 +278,7 @@
   function boot() {
     setInterval(forceRender, 8000);
     setTimeout(forceRender, 1500);
-    console.log("[sv-members-force] v3 + punish buttons");
+    console.log("[sv-members-force] v4 rank groups + punish");
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
   else boot();
