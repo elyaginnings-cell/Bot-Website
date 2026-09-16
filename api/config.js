@@ -37,6 +37,42 @@ async function pushBotConfig(guildId, dashboardSecret, body) {
   return { ok: response.ok, status: response.status, data };
 }
 
+/** Full config snapshot the bot should apply (not just the partial PATCH body). */
+function buildFullPushBody(mirrored) {
+  if (!mirrored || typeof mirrored !== "object") return {};
+  const keys = [
+    "warnChannelId",
+    "inviteLeaderboardChannelId",
+    "dashboardLogChannelId",
+    "levelUpChannelId",
+    "levelingEnabled",
+    "currencyEnabled",
+    "shopEnabled",
+    "leveling",
+    "currency",
+    "shop",
+    "birthday",
+    "selfRoles",
+    "levelRoles",
+    "bump",
+    "verification",
+    "suggestions",
+    "tickets",
+    "qotd",
+    "analytics",
+    "ai",
+    "automod",
+    "applications",
+    "loa",
+    "activityCheck",
+  ];
+  const out = {};
+  for (const k of keys) {
+    if (mirrored[k] !== undefined) out[k] = mirrored[k];
+  }
+  return out;
+}
+
 export default async function handler(req, res) {
   try {
     try {
@@ -75,8 +111,10 @@ export default async function handler(req, res) {
       if (stored) {
         if (bot.ok && bot.config) {
           const merged = preferWebsiteShop(stored, bot.config);
-          if (JSON.stringify(merged.shop) !== JSON.stringify(stored.shop) ||
-              JSON.stringify(merged.applications) !== JSON.stringify(stored.applications)) {
+          if (
+            JSON.stringify(merged.shop) !== JSON.stringify(stored.shop) ||
+            JSON.stringify(merged.applications) !== JSON.stringify(stored.applications)
+          ) {
             try {
               await saveGuildConfig(guildId, merged);
               stored = merged;
@@ -191,25 +229,21 @@ export default async function handler(req, res) {
         });
       }
 
-      const pushBody = {
-        ...body,
-        shop: mirrored?.shop,
-        shopEnabled:
-          body.shopEnabled !== undefined
-            ? body.shopEnabled
-            : mirrored?.shop?.enabled,
-        ai: mirrored?.ai || body.ai,
-        automod: mirrored?.automod || body.automod,
-        applications: mirrored?.applications || body.applications,
-        loa: mirrored?.loa || body.loa,
-        activityCheck: mirrored?.activityCheck || body.activityCheck,
-      };
+      // Push FULL mirrored config so bot never misses nested systems
+      const pushBody = buildFullPushBody(mirrored);
 
       let botOk = false;
       let botData = {};
+      let botStatus = null;
       try {
-        const pushed = await pushBotConfig(guildId, dashboardSecret, pushBody);
+        let pushed = await pushBotConfig(guildId, dashboardSecret, pushBody);
+        // one retry on transient failure
+        if (!pushed.ok && (pushed.status === 502 || pushed.status === 503 || pushed.status === 504)) {
+          await new Promise((r) => setTimeout(r, 800));
+          pushed = await pushBotConfig(guildId, dashboardSecret, pushBody);
+        }
         botOk = pushed.ok;
+        botStatus = pushed.status;
         botData = pushed.data || {};
 
         if (pushed.ok && botData.config) {
@@ -221,18 +255,25 @@ export default async function handler(req, res) {
         }
       } catch (botErr) {
         console.error("Bot config POST failed:", botErr.message);
+        botData = { error: botErr.message };
       }
+
+      const systemsInPush = ["loa", "applications", "automod", "activityCheck", "ai", "tickets", "verification"]
+        .filter((k) => pushBody[k] != null)
+        .join(", ");
 
       return res.status(200).json({
         ok: true,
         config: mirrored,
         savedToPostgres: true,
         savedToBot: botOk,
+        botHttpStatus: botStatus,
+        systemsPushed: systemsInPush || null,
         logResult: botData.logResult || null,
         changes: botData.changes || null,
         warning: botOk
           ? null
-          : "Saved on the website (Postgres). The bot did not accept the update — check Railway is online and DASHBOARD_API_SECRET matches.",
+          : "Saved on the website (Postgres). Live bot push failed — the bot will pick this up within ~90s if both share the same DATABASE_URL. Check DASHBOARD_API_SECRET and BOT_API_URL match Railway.",
       });
     }
 
