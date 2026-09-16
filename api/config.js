@@ -19,7 +19,13 @@ async function fetchBotConfig(guildId, dashboardSecret) {
   });
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
-    return { ok: false, status: response.status, error: data.error || "Bot config failed", data };
+    return {
+      ok: false,
+      status: response.status,
+      error: data.error || "Bot config failed",
+      data,
+      secretMismatch: response.status === 401 || response.status === 403,
+    };
   }
   return { ok: true, config: data.config || null, data };
 }
@@ -34,10 +40,14 @@ async function pushBotConfig(guildId, dashboardSecret, body) {
     body: JSON.stringify(body),
   });
   const data = await response.json().catch(() => ({}));
-  return { ok: response.ok, status: response.status, data };
+  return {
+    ok: response.ok,
+    status: response.status,
+    data,
+    secretMismatch: response.status === 401 || response.status === 403,
+  };
 }
 
-/** Full config snapshot the bot should apply (not just the partial PATCH body). */
 function buildFullPushBody(mirrored) {
   if (!mirrored || typeof mirrored !== "object") return {};
   const keys = [
@@ -83,7 +93,9 @@ export default async function handler(req, res) {
 
     const dashboardSecret = process.env.DASHBOARD_API_SECRET;
     if (!dashboardSecret) {
-      return res.status(500).json({ error: "Missing DASHBOARD_API_SECRET" });
+      return res.status(500).json({
+        error: "Missing DASHBOARD_API_SECRET on Vercel — required to talk to the bot",
+      });
     }
 
     const guildId = req.query?.guildId;
@@ -125,6 +137,7 @@ export default async function handler(req, res) {
           config: stored,
           source: "postgres",
           botOnline: !!bot.ok,
+          secretMismatch: !!bot.secretMismatch,
           pgError: null,
         });
       }
@@ -148,6 +161,10 @@ export default async function handler(req, res) {
         error: "Config not found",
         pgError,
         botError: bot.error || null,
+        secretMismatch: !!bot.secretMismatch,
+        hint: bot.secretMismatch
+          ? "DASHBOARD_API_SECRET on Vercel must match Railway"
+          : null,
       });
     }
 
@@ -229,15 +246,14 @@ export default async function handler(req, res) {
         });
       }
 
-      // Push FULL mirrored config so bot never misses nested systems
       const pushBody = buildFullPushBody(mirrored);
 
       let botOk = false;
       let botData = {};
       let botStatus = null;
+      let secretMismatch = false;
       try {
         let pushed = await pushBotConfig(guildId, dashboardSecret, pushBody);
-        // one retry on transient failure
         if (!pushed.ok && (pushed.status === 502 || pushed.status === 503 || pushed.status === 504)) {
           await new Promise((r) => setTimeout(r, 800));
           pushed = await pushBotConfig(guildId, dashboardSecret, pushBody);
@@ -245,6 +261,7 @@ export default async function handler(req, res) {
         botOk = pushed.ok;
         botStatus = pushed.status;
         botData = pushed.data || {};
+        secretMismatch = !!pushed.secretMismatch;
 
         if (pushed.ok && botData.config) {
           const safe = preferWebsiteShop(mirrored, botData.config);
@@ -258,9 +275,28 @@ export default async function handler(req, res) {
         botData = { error: botErr.message };
       }
 
-      const systemsInPush = ["loa", "applications", "automod", "activityCheck", "ai", "tickets", "verification"]
+      const systemsInPush = [
+        "loa",
+        "applications",
+        "automod",
+        "activityCheck",
+        "ai",
+        "tickets",
+        "verification",
+      ]
         .filter((k) => pushBody[k] != null)
         .join(", ");
+
+      let warning = null;
+      if (!botOk) {
+        if (secretMismatch) {
+          warning =
+            "Saved to website Postgres, but live bot push got 401. Set the SAME DASHBOARD_API_SECRET on Vercel and Railway. If both share DATABASE_URL, the bot will pick up this config within ~90 seconds.";
+        } else {
+          warning =
+            "Saved on the website (Postgres). Live bot push failed — if both share the same DATABASE_URL the bot rehydrates every ~90s. Also check BOT_API_URL points at Railway.";
+        }
+      }
 
       return res.status(200).json({
         ok: true,
@@ -268,12 +304,11 @@ export default async function handler(req, res) {
         savedToPostgres: true,
         savedToBot: botOk,
         botHttpStatus: botStatus,
+        secretMismatch,
         systemsPushed: systemsInPush || null,
         logResult: botData.logResult || null,
         changes: botData.changes || null,
-        warning: botOk
-          ? null
-          : "Saved on the website (Postgres). Live bot push failed — the bot will pick this up within ~90s if both share the same DATABASE_URL. Check DASHBOARD_API_SECRET and BOT_API_URL match Railway.",
+        warning,
       });
     }
 
