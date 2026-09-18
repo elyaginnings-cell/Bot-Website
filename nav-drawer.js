@@ -1,18 +1,17 @@
 /**
- * Nav drawer — 3-line hamburger pulls all tabs from the side
- * Mobile + desktop
+ * Nav drawer v2 — hamburger only; original sidebar hidden
  */
 (function () {
   "use strict";
-  if (window.__navDrawerV1) return;
-  window.__navDrawerV1 = true;
+  if (window.__navDrawerV2) return;
+  window.__navDrawerV2 = true;
 
   function loadCss() {
     if (document.getElementById("nav-drawer-css")) return;
     var link = document.createElement("link");
     link.id = "nav-drawer-css";
     link.rel = "stylesheet";
-    link.href = "/nav-drawer.css?v=1";
+    link.href = "/nav-drawer.css?v=2";
     document.head.appendChild(link);
   }
 
@@ -50,10 +49,7 @@
       e.stopPropagation();
       toggle();
     });
-    backdrop.addEventListener("click", function () {
-      close();
-    });
-
+    backdrop.addEventListener("click", function () { close(); });
     document.addEventListener("keydown", function (e) {
       if (e.key === "Escape") close();
     });
@@ -64,7 +60,6 @@
   function collectTabs() {
     var items = [];
     var seen = {};
-
     var nav = document.querySelector(".navigation");
     if (nav) {
       nav.querySelectorAll(".nav-item").forEach(function (el) {
@@ -90,17 +85,9 @@
         });
       });
     }
-
     if (!seen["themes"] && !seen["Themes"]) {
-      items.push({
-        tab: "themes",
-        label: "Themes",
-        icon: "🎨",
-        el: null,
-        active: false,
-      });
+      items.push({ tab: "themes", label: "Themes", icon: "🎨", el: null, active: false });
     }
-
     return items;
   }
 
@@ -109,18 +96,13 @@
     if (!list) return;
     var items = collectTabs();
     list.innerHTML = "";
-
     items.forEach(function (item) {
       var b = document.createElement("button");
       b.type = "button";
       b.className = "nav-drawer-item" + (item.active ? " active" : "");
       if (item.tab) b.setAttribute("data-tab", item.tab);
       b.innerHTML =
-        '<span class="ndi-icon">' +
-        item.icon +
-        '</span><span class="ndi-label">' +
-        item.label +
-        "</span>";
+        '<span class="ndi-icon">' + item.icon + '</span><span class="ndi-label">' + item.label + "</span>";
       b.addEventListener("click", function (e) {
         e.preventDefault();
         activateTab(item);
@@ -135,22 +117,15 @@
       item.el.click();
       return;
     }
-
     var tab = item.tab;
     if (!tab) return;
-
     if (tab === "themes" && typeof window.__openThemes === "function") {
       window.__openThemes();
       return;
     }
-
     if (typeof window.showSection === "function") {
-      try {
-        window.showSection(tab);
-        return;
-      } catch (_) {}
+      try { window.showSection(tab); return; } catch (_) {}
     }
-
     document.querySelectorAll(".page-section").forEach(function (el) {
       el.classList.remove("active");
     });
@@ -189,6 +164,7 @@
 
   function boot() {
     loadCss();
+    document.body.classList.add("drawer-nav-only");
     ensureUI();
     try {
       var nav = document.querySelector(".navigation");
@@ -217,5 +193,5 @@
 
   window.__openNavDrawer = open;
   window.__closeNavDrawer = close;
-  console.log("[nav-drawer] v1 — hamburger side drawer ready");
+  console.log("[nav-drawer] v2 — sidebar hidden, hamburger only");
 })();
