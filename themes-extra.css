@@ -1,1 +1,33 @@
-PLACEHOLDER
+/* Dashboard themes — originals preserved + new packs with fonts, patterns, layout feel */
+
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fira+Code:wght@400;500;600&family=Fredoka:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Nunito:wght@400;600;700;800&family=Outfit:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@500;600;700&family=Lexend:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&family=Source+Code+Pro:wght@400;500;600&family=Rubik:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&display=swap");
+
+:root {
+  --bg: #07030d;
+  --bg-glow-1: rgba(255, 77, 240, 0.12);
+  --bg-glow-2: rgba(120, 60, 200, 0.1);
+  --card: rgba(22, 10, 36, 0.88);
+  --card-solid: #160a24;
+  --text: #f5e9ff;
+  --muted: #b89cd9;
+  --muted-2: #7a5e99;
+  --accent: #ff4df0;
+  --accent-2: #d63dff;
+  --accent-soft: rgba(255, 77, 240, 0.12);
+  --border: rgba(255, 77, 240, 0.25);
+  --border-strong: rgba(255, 77, 240, 0.45);
+  --danger: #f23f43;
+  --success: #23a55a;
+  --glow: rgba(255, 77, 240, 0.3);
+  --input-bg: rgba(0, 0, 0, 0.4);
+  --sidebar: rgba(22, 10, 36, 0.92);
+  --nav-active: linear-gradient(135deg, #ff4df0, #d63dff);
+  --btn: linear-gradient(135deg, #ff4df0, #e03de0);
+  --radius: 14px;
+  --radius-sm: 10px;
+  --font: system-ui, -apple-system, sans-serif;
+  --font-display: inherit;
+}
+
+/* See full file on disk - truncated push will be fixed */
+body.theme-mocha { --bg: #1a1410; --accent: #c4a484; --nav-active: linear-gradient(135deg, #c4a484, #a88868); --btn: linear-gradient(135deg, #c4a484, #a88868); }
