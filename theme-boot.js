@@ -1,11 +1,10 @@
 /**
- * Dashboard themes — dropdown + Themes tab with visual cards.
- * Keeps all original themes and adds more distinctive packs (fonts, glow, layout).
+ * Dashboard themes v8 — packs + structural force overrides
  */
 (function () {
   "use strict";
-  if (window.__themeBootV6) return;
-  window.__themeBootV6 = true;
+  if (window.__themeBootV8) return;
+  window.__themeBootV8 = true;
 
   var THEMES = [
     { id: "default", name: "Default", emoji: "💜", blurb: "Original neon violet", group: "Original" },
@@ -15,38 +14,38 @@
     { id: "sakura", name: "Sakura", emoji: "🌸", blurb: "Soft cherry blossom", group: "Original" },
     { id: "sunflower", name: "Sunflower", emoji: "🌻", blurb: "Golden yellow", group: "Original" },
     { id: "bloodmoon", name: "Bloodmoon", emoji: "🩸", blurb: "Deep crimson", group: "Original" },
-    { id: "terminal", name: "Terminal", emoji: "💻", blurb: "Matrix green mono", group: "Original" },
+    { id: "terminal", name: "Terminal", emoji: "💻", blurb: "CRT scanlines + mono", group: "Original" },
     { id: "ocean", name: "Ocean", emoji: "🌊", blurb: "Deep sea waves", group: "Nature" },
     { id: "forest", name: "Forest", emoji: "🌲", blurb: "Moss & canopy", group: "Nature" },
     { id: "mint", name: "Mint", emoji: "🍃", blurb: "Fresh soft green", group: "Nature" },
     { id: "bamboo", name: "Bamboo", emoji: "🎋", blurb: "Lime grove", group: "Nature" },
     { id: "arctic", name: "Arctic", emoji: "🧊", blurb: "Ice & frost", group: "Nature" },
-    { id: "aurora", name: "Aurora", emoji: "🌌", blurb: "Northern lights", group: "Nature" },
-    { id: "cyberpunk", name: "Cyberpunk", emoji: "🤖", blurb: "Hard edges & glitch", group: "Neon" },
-    { id: "synthwave", name: "Synthwave", emoji: "🕹️", blurb: "Hot pink / cyan grid", group: "Neon" },
-    { id: "vaporwave", name: "Vaporwave", emoji: "🌴", blurb: "80s retro grid", group: "Neon" },
-    { id: "lava", name: "Lava", emoji: "🌋", blurb: "Molten rock", group: "Neon" },
-    { id: "candy", name: "Candy", emoji: "🍬", blurb: "Playful pastels", group: "Neon" },
-    { id: "nord", name: "Nord", emoji: "❄️", blurb: "Clean arctic slate", group: "Dev" },
-    { id: "dracula", name: "Dracula", emoji: "🧛", blurb: "Purple / pink classic", group: "Dev" },
-    { id: "catppuccin", name: "Catppuccin", emoji: "🐱", blurb: "Soft mocha palette", group: "Dev" },
-    { id: "gruvbox", name: "Gruvbox", emoji: "🐻", blurb: "Warm retro coding", group: "Dev" },
+    { id: "aurora", name: "Aurora", emoji: "🌌", blurb: "Glow blobs", group: "Nature" },
+    { id: "cyberpunk", name: "Cyberpunk", emoji: "🤖", blurb: "Cut corners + grid", group: "Neon" },
+    { id: "synthwave", name: "Synthwave", emoji: "🕹️", blurb: "Retro grid", group: "Neon" },
+    { id: "vaporwave", name: "Vaporwave", emoji: "🌴", blurb: "80s gradient edge", group: "Neon" },
+    { id: "lava", name: "Lava", emoji: "🌋", blurb: "Molten bottom glow", group: "Neon" },
+    { id: "candy", name: "Candy", emoji: "🍬", blurb: "Pill buttons", group: "Neon" },
+    { id: "nord", name: "Nord", emoji: "❄️", blurb: "Flat pro slate", group: "Dev" },
+    { id: "dracula", name: "Dracula", emoji: "🧛", blurb: "Editor purple", group: "Dev" },
+    { id: "catppuccin", name: "Catppuccin", emoji: "🐱", blurb: "Soft mocha", group: "Dev" },
+    { id: "gruvbox", name: "Gruvbox", emoji: "🐻", blurb: "Warm retro code", group: "Dev" },
     { id: "tokyonight", name: "Tokyo Night", emoji: "🌃", blurb: "Soft city blues", group: "Dev" },
-    { id: "solarized", name: "Solarized", emoji: "☀️", blurb: "Classic teal mono", group: "Dev" },
-    { id: "rosegold", name: "Rose Gold", emoji: "✨", blurb: "Elegant metallic", group: "Soft" },
+    { id: "solarized", name: "Solarized", emoji: "☀️", blurb: "Classic terminal", group: "Dev" },
+    { id: "rosegold", name: "Rose Gold", emoji: "✨", blurb: "Pill elegant", group: "Soft" },
     { id: "amethyst", name: "Amethyst", emoji: "🔮", blurb: "Royal purple", group: "Soft" },
-    { id: "coral", name: "Coral", emoji: "🪸", blurb: "Warm rose pink", group: "Soft" },
+    { id: "coral", name: "Coral", emoji: "🪸", blurb: "Pill soft rose", group: "Soft" },
     { id: "honey", name: "Honey", emoji: "🍯", blurb: "Golden amber", group: "Soft" },
-    { id: "icecream", name: "Ice Cream", emoji: "🍦", blurb: "Soft pink / lilac", group: "Soft" },
-    { id: "clay", name: "Clay", emoji: "🧱", blurb: "Chunky soft UI", group: "Soft" },
+    { id: "icecream", name: "Ice Cream", emoji: "🍦", blurb: "Super rounded", group: "Soft" },
+    { id: "clay", name: "Clay", emoji: "🧱", blurb: "Chunky offset shadow", group: "Soft" },
     { id: "emerald", name: "Emerald", emoji: "💎", blurb: "Luxury green", group: "Pro" },
     { id: "coffee", name: "Coffeehouse", emoji: "🫘", blurb: "Espresso & cream", group: "Pro" },
-    { id: "paper", name: "Paper", emoji: "📄", blurb: "Light ink on page", group: "Pro" },
-    { id: "slate", name: "Slate", emoji: "🪨", blurb: "Professional gray", group: "Pro" },
-    { id: "obsidian", name: "Obsidian", emoji: "⬛", blurb: "Near-black minimal", group: "Pro" },
-    { id: "steel", name: "Steel", emoji: "🛡️", blurb: "Cool blue metal", group: "Pro" },
-    { id: "sunset", name: "Sunset", emoji: "🌇", blurb: "Orange dusk sky", group: "Pro" },
-    { id: "mono", name: "Mono", emoji: "⬛", blurb: "Strict monochrome", group: "Pro" },
+    { id: "paper", name: "Paper", emoji: "📄", blurb: "Light ink page", group: "Pro" },
+    { id: "slate", name: "Slate", emoji: "🪨", blurb: "Flat gray pro", group: "Pro" },
+    { id: "obsidian", name: "Obsidian", emoji: "⬛", blurb: "Hard minimal", group: "Pro" },
+    { id: "steel", name: "Steel", emoji: "🛡️", blurb: "Flat metal", group: "Pro" },
+    { id: "sunset", name: "Sunset", emoji: "🌇", blurb: "Orange dusk", group: "Pro" },
+    { id: "mono", name: "Mono", emoji: "⬛", blurb: "Brutalist zero radius", group: "Pro" },
   ];
 
   var ALL_IDS = THEMES.map(function (t) { return t.id; });
@@ -61,32 +60,27 @@
       link.href = href;
       document.head.appendChild(link);
     }
-    ensure("themes-packs-css", "/themes-packs.css?v=6");
-    ensure("themes-force-css", "/themes-force.css?v=6");
+    ensure("themes-packs-css", "/themes-packs.css?v=7");
+    ensure("themes-force-base-css", "/themes-force-base.css?v=8");
+    ensure("themes-force-struct-css", "/themes-force-struct.css?v=8");
   }
 
   function applyTheme(name) {
     name = name || "default";
     if (ALL_IDS.indexOf(name) < 0) name = "default";
-
     var toRemove = [];
     document.body.classList.forEach(function (c) {
       if (c.indexOf("theme-") === 0) toRemove.push(c);
     });
     toRemove.forEach(function (c) { document.body.classList.remove(c); });
-
     if (name !== "default") document.body.classList.add("theme-" + name);
     document.body.setAttribute("data-theme", name);
-
     try { localStorage.setItem("dashboardTheme", name); } catch (_) {}
-
     var select = document.getElementById("dashboard-theme");
     if (select && select.value !== name) select.value = name;
-
     document.querySelectorAll(".theme-card").forEach(function (card) {
       card.classList.toggle("active", card.getAttribute("data-theme") === name);
     });
-
     var cur = document.getElementById("themes-current-label");
     if (cur) {
       var meta = THEMES.find(function (t) { return t.id === name; });
@@ -108,7 +102,6 @@
     }
     var wrap = document.querySelector(".view-mode-wrap");
     if (!wrap || !wrap.parentElement) return;
-
     var box = document.createElement("div");
     box.className = "view-mode-wrap";
     box.innerHTML =
@@ -158,7 +151,6 @@
     var content = document.querySelector(".content");
     if (!content) return false;
     if (document.getElementById("themes")) return true;
-
     var section = document.createElement("section");
     section.id = "themes";
     section.className = "page-section";
@@ -166,7 +158,7 @@
       '<div class="card form-card wide">' +
       '<span class="eyebrow">APPEARANCE</span>' +
       "<h2>Dashboard themes</h2>" +
-      '<p class="form-hint">Pick a look for the whole dashboard. Originals stay — new packs change fonts, glow, radius, and layout feel, not just one accent color.</p>' +
+      '<p class="form-hint">Each pack changes shape, not just color — grids, sharp corners, pill buttons, CRT scanlines, chunky shadows, light paper, etc.</p>' +
       '<p class="form-hint">Current: <strong id="themes-current-label">—</strong></p>' +
       '<div id="themes-grid" class="themes-grid"></div>' +
       "</div>";
@@ -178,44 +170,28 @@
     var grid = document.getElementById("themes-grid");
     if (!grid) return;
     var current = localStorage.getItem("dashboardTheme") || "default";
-
     var groups = {};
     THEMES.forEach(function (t) {
       if (!groups[t.group]) groups[t.group] = [];
       groups[t.group].push(t);
     });
-
     var order = ["Original", "Nature", "Neon", "Dev", "Soft", "Pro"];
     var html = "";
     order.forEach(function (g) {
       if (!groups[g]) return;
-      html += '<h3 class="subhead themes-group-title">' + g + "</h3>";
-      html += '<div class="themes-row">';
+      html += '<h3 class="subhead themes-group-title">' + g + "</h3><div class="themes-row">';
       groups[g].forEach(function (t) {
         html +=
-          '<button type="button" class="theme-card' +
-          (t.id === current ? " active" : "") +
-          '" data-theme="' +
-          t.id +
-          '">' +
-          '<span class="theme-card-swatch theme-swatch-' +
-          t.id +
-          '"></span>' +
-          '<span class="theme-card-emoji">' +
-          t.emoji +
-          "</span>" +
-          '<span class="theme-card-name">' +
-          t.name +
-          "</span>" +
-          '<span class="theme-card-blurb">' +
-          t.blurb +
-          "</span>" +
-          "</button>";
+          '<button type="button" class="theme-card' + (t.id === current ? " active" : "") +
+          '" data-theme="' + t.id + '">' +
+          '<span class="theme-card-swatch theme-swatch-' + t.id + '"></span>' +
+          '<span class="theme-card-emoji">' + t.emoji + "</span>" +
+          '<span class="theme-card-name">' + t.name + "</span>" +
+          '<span class="theme-card-blurb">' + t.blurb + "</span></button>";
       });
       html += "</div>";
     });
     grid.innerHTML = html;
-
     grid.querySelectorAll(".theme-card").forEach(function (card) {
       card.addEventListener("click", function () {
         applyTheme(card.getAttribute("data-theme"));
@@ -246,5 +222,5 @@
 
   window.__applyDashboardTheme = applyTheme;
   window.__dashboardThemes = THEMES;
-  console.log("[theme-boot] v6 — " + THEMES.length + " themes");
+  console.log("[theme-boot] v8 — " + THEMES.length + " structural themes");
 })();
