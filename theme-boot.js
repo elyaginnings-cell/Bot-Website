@@ -1,10 +1,10 @@
 /**
- * Dashboard themes v9 — reliable Themes button + structural packs
+ * Dashboard themes v10 — dramatic structural packs + reliable Themes button
  */
 (function () {
   "use strict";
-  if (window.__themeBootV9) return;
-  window.__themeBootV9 = true;
+  if (window.__themeBootV10) return;
+  window.__themeBootV10 = true;
 
   var THEMES = [
     { id: "default", name: "Default", emoji: "💜", blurb: "Original neon violet", group: "Original" },
@@ -61,8 +61,8 @@
       document.head.appendChild(link);
     }
     ensure("themes-packs-css", "/themes-packs.css?v=7");
-    ensure("themes-force-base-css", "/themes-force-base.css?v=8");
-    ensure("themes-force-struct-css", "/themes-force-struct.css?v=8");
+    ensure("themes-force-base-css", "/themes-force-base.css?v=9");
+    ensure("themes-force-struct-css", "/themes-force-struct.css?v=10");
   }
 
   function applyTheme(name) {
@@ -204,7 +204,12 @@
   }
 
   function ensureSection() {
-    var content = document.querySelector(".content") || document.querySelector("main .content") || document.querySelector("main.main");
+    var content =
+      document.querySelector(".content") ||
+      document.querySelector("main .content") ||
+      document.querySelector("#app .content") ||
+      document.querySelector("main.main > .content") ||
+      document.querySelector("main.main");
     if (!content) return false;
     if (document.getElementById("themes")) return true;
 
@@ -215,7 +220,7 @@
       '<div class="card form-card wide">' +
       '<span class="eyebrow">APPEARANCE</span>' +
       "<h2>Dashboard themes</h2>" +
-      '<p class="form-hint">Each pack changes shape, not just color — grids, sharp corners, pill buttons, CRT scanlines, chunky shadows, light paper, etc.</p>' +
+      '<p class="form-hint">Each pack is a different product — CRT terminal, cyberpunk grid, light paper, chunky clay, pure mono, pill candy, etc. Not just a recolor.</p>' +
       '<p class="form-hint">Current: <strong id="themes-current-label">—</strong></p>' +
       '<div id="themes-grid" class="themes-grid"></div>' +
       "</div>";
@@ -301,5 +306,5 @@
   window.__applyDashboardTheme = applyTheme;
   window.__dashboardThemes = THEMES;
   window.__openThemes = openThemesSection;
-  console.log("[theme-boot] v9 — " + THEMES.length + " themes + FAB fallback");
+  console.log("[theme-boot] v10 — " + THEMES.length + " structural themes + FAB");
 })();
