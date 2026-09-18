@@ -1,10 +1,10 @@
 /**
- * Dashboard themes v12 — radical packs + Server View theming
+ * Dashboard themes v13 — radical packs (Server View has separate themes)
  */
 (function () {
   "use strict";
-  if (window.__themeBootV12) return;
-  window.__themeBootV12 = true;
+  if (window.__themeBootV13) return;
+  window.__themeBootV13 = true;
 
   var THEMES = [
     { id: "default", name: "Default", emoji: "💜", blurb: "Original neon violet", group: "Original" },
@@ -64,7 +64,6 @@
     ensure("themes-force-base-css", "/themes-force-base.css?v=9");
     ensure("themes-force-struct-css", "/themes-force-struct.css?v=10");
     ensure("themes-radical-css", "/themes-radical.css?v=1");
-    ensure("themes-server-view-css", "/themes-server-view.css?v=1");
   }
 
   function applyTheme(name) {
@@ -215,7 +214,7 @@
       '<div class="card form-card wide">' +
       '<span class="eyebrow">APPEARANCE</span>' +
       "<h2>Dashboard themes</h2>" +
-      '<p class="form-hint">Each pack is a different product — CRT terminal, cyberpunk grid, light paper, chunky clay, pure mono, pill candy, etc. Not just a recolor. Also styles Server View.</p>' +
+      '<p class="form-hint">Each pack is a different product — CRT terminal, cyberpunk grid, light paper, chunky clay, pure mono, pill candy, etc. Not just a recolor.</p>' +
       '<p class="form-hint">Current: <strong id="themes-current-label">—</strong></p>' +
       '<div id="themes-grid" class="themes-grid"></div>' +
       "</div>";
@@ -301,5 +300,5 @@
   window.__applyDashboardTheme = applyTheme;
   window.__dashboardThemes = THEMES;
   window.__openThemes = openThemesSection;
-  console.log("[theme-boot] v12 — " + THEMES.length + " themes + Server View");
+  console.log("[theme-boot] v13 — " + THEMES.length + " dashboard themes");
 })();
