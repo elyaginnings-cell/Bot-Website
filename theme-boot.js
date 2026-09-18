@@ -1,10 +1,10 @@
 /**
- * Dashboard themes v10 — dramatic structural packs + reliable Themes button
+ * Dashboard themes v11 — radical distinct website identities
  */
 (function () {
   "use strict";
-  if (window.__themeBootV10) return;
-  window.__themeBootV10 = true;
+  if (window.__themeBootV11) return;
+  window.__themeBootV11 = true;
 
   var THEMES = [
     { id: "default", name: "Default", emoji: "💜", blurb: "Original neon violet", group: "Original" },
@@ -63,6 +63,7 @@
     ensure("themes-packs-css", "/themes-packs.css?v=7");
     ensure("themes-force-base-css", "/themes-force-base.css?v=9");
     ensure("themes-force-struct-css", "/themes-force-struct.css?v=10");
+    ensure("themes-radical-css", "/themes-radical.css?v=1");
   }
 
   function applyTheme(name) {
@@ -119,11 +120,9 @@
       }
       return true;
     }
-
     var options = THEMES.map(function (t) {
       return '<option value="' + t.id + '">' + t.emoji + " " + t.name + "</option>";
     }).join("");
-
     var box = document.createElement("div");
     box.className = "view-mode-wrap";
     box.id = "theme-dropdown-wrap";
@@ -132,7 +131,6 @@
       '<select id="dashboard-theme" class="view-mode-select" title="Dashboard theme">' +
       options +
       "</select>";
-
     var actions = document.querySelector(".header-actions");
     var viewWrap = document.querySelector(".view-mode-wrap");
     if (actions) {
@@ -146,7 +144,6 @@
     } else {
       return false;
     }
-
     var select = document.getElementById("dashboard-theme");
     select.value = localStorage.getItem("dashboardTheme") || "default";
     select.addEventListener("change", function () { applyTheme(select.value); });
@@ -160,10 +157,8 @@
       document.querySelector(".sidebar nav") ||
       document.querySelector("aside.sidebar .navigation");
     if (!nav) return false;
-
     var existing = nav.querySelector('[data-tab="themes"]');
     if (existing) return true;
-
     var settingsBtn = nav.querySelector('[data-tab="settings"]');
     var btn = document.createElement("button");
     btn.className = "nav-item";
@@ -212,7 +207,6 @@
       document.querySelector("main.main");
     if (!content) return false;
     if (document.getElementById("themes")) return true;
-
     var section = document.createElement("section");
     section.id = "themes";
     section.className = "page-section";
@@ -306,5 +300,5 @@
   window.__applyDashboardTheme = applyTheme;
   window.__dashboardThemes = THEMES;
   window.__openThemes = openThemesSection;
-  console.log("[theme-boot] v10 — " + THEMES.length + " structural themes + FAB");
+  console.log("[theme-boot] v11 — " + THEMES.length + " radical themes");
 })();
