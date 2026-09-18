@@ -1,5 +1,5 @@
-/* Server view readability overrides */
-.server-view {
+/* Server view readability — dark themes only (do not break Garden / Light) */
+.server-view:not(.theme-garden):not(.theme-light) {
   color: #ffffff !important;
   --sv-text: #ffffff;
   --sv-text-muted: #c4c8ce;
@@ -9,28 +9,28 @@
   --sv-interactive-active: #ffffff;
 }
 
-.server-view .sv-msg-content,
-.server-view .sv-author,
-.server-view .sv-channel-title,
-.server-view .sv-server-pill,
-.server-view .sv-ch,
-.server-view .sv-embed-desc,
-.server-view .sv-embed-field-value,
-.server-view .sv-embed-title {
+.server-view:not(.theme-garden):not(.theme-light) .sv-msg-content,
+.server-view:not(.theme-garden):not(.theme-light) .sv-author,
+.server-view:not(.theme-garden):not(.theme-light) .sv-channel-title,
+.server-view:not(.theme-garden):not(.theme-light) .sv-server-pill,
+.server-view:not(.theme-garden):not(.theme-light) .sv-ch,
+.server-view:not(.theme-garden):not(.theme-light) .sv-embed-desc,
+.server-view:not(.theme-garden):not(.theme-light) .sv-embed-field-value,
+.server-view:not(.theme-garden):not(.theme-light) .sv-embed-title {
   color: #ffffff !important;
 }
 
-.server-view .sv-text-muted,
-.server-view .sv-time,
-.server-view .sv-cat,
-.server-view .sv-hash {
+.server-view:not(.theme-garden):not(.theme-light) .sv-text-muted,
+.server-view:not(.theme-garden):not(.theme-light) .sv-time,
+.server-view:not(.theme-garden):not(.theme-light) .sv-cat,
+.server-view:not(.theme-garden):not(.theme-light) .sv-hash {
   color: #c4c8ce !important;
 }
 
-.server-view .sv-name-wrap input,
-.server-view #sv-input,
-.server-view textarea,
-.server-view select {
+.server-view:not(.theme-garden):not(.theme-light) .sv-name-wrap input,
+.server-view:not(.theme-garden):not(.theme-light) #sv-input,
+.server-view:not(.theme-garden):not(.theme-light) textarea,
+.server-view:not(.theme-garden):not(.theme-light) select {
   color: #ffffff !important;
 }
 
