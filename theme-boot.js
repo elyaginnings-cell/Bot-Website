@@ -4,11 +4,10 @@
  */
 (function () {
   "use strict";
-  if (window.__themeBootV3) return;
-  window.__themeBootV3 = true;
+  if (window.__themeBootV5) return;
+  window.__themeBootV5 = true;
 
   var THEMES = [
-    // Originals
     { id: "default", name: "Default", emoji: "💜", blurb: "Original neon violet", group: "Original" },
     { id: "mocha", name: "Mocha", emoji: "☕", blurb: "Warm coffee shop", group: "Original" },
     { id: "neon", name: "Neon", emoji: "💖", blurb: "Pink / cyan glow", group: "Original" },
@@ -17,7 +16,6 @@
     { id: "sunflower", name: "Sunflower", emoji: "🌻", blurb: "Golden yellow", group: "Original" },
     { id: "bloodmoon", name: "Bloodmoon", emoji: "🩸", blurb: "Deep crimson", group: "Original" },
     { id: "terminal", name: "Terminal", emoji: "💻", blurb: "Matrix green mono", group: "Original" },
-    // New packs
     { id: "ocean", name: "Ocean", emoji: "🌊", blurb: "Deep sea waves", group: "Nature" },
     { id: "forest", name: "Forest", emoji: "🌲", blurb: "Moss & canopy", group: "Nature" },
     { id: "mint", name: "Mint", emoji: "🍃", blurb: "Fresh soft green", group: "Nature" },
@@ -54,11 +52,15 @@
   var ALL_IDS = THEMES.map(function (t) { return t.id; });
 
   function loadCss() {
-    if (document.getElementById("themes-extra-css")) return;
+    var existing = document.getElementById("themes-extra-css");
+    if (existing) {
+      existing.href = "/themes-extra.css?v=5";
+      return;
+    }
     var link = document.createElement("link");
     link.id = "themes-extra-css";
     link.rel = "stylesheet";
-    link.href = "/themes-extra.css?v=4";
+    link.href = "/themes-extra.css?v=5";
     document.head.appendChild(link);
   }
 
@@ -243,5 +245,5 @@
 
   window.__applyDashboardTheme = applyTheme;
   window.__dashboardThemes = THEMES;
-  console.log("[theme-boot] v3 — " + THEMES.length + " themes");
+  console.log("[theme-boot] v5 — " + THEMES.length + " themes");
 })();
