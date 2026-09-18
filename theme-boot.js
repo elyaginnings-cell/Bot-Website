@@ -1,10 +1,10 @@
 /**
- * Dashboard themes v8 — packs + structural force overrides
+ * Dashboard themes v9 — reliable Themes button + structural packs
  */
 (function () {
   "use strict";
-  if (window.__themeBootV8) return;
-  window.__themeBootV8 = true;
+  if (window.__themeBootV9) return;
+  window.__themeBootV9 = true;
 
   var THEMES = [
     { id: "default", name: "Default", emoji: "💜", blurb: "Original neon violet", group: "Original" },
@@ -88,6 +88,25 @@
     }
   }
 
+  function openThemesSection() {
+    if (typeof window.showSection === "function") {
+      try { window.showSection("themes"); } catch (_) {}
+    }
+    document.querySelectorAll(".page-section").forEach(function (el) {
+      el.classList.remove("active");
+    });
+    var sec = document.getElementById("themes");
+    if (sec) sec.classList.add("active");
+    document.querySelectorAll(".nav-item").forEach(function (b) {
+      b.classList.toggle("active", b.getAttribute("data-tab") === "themes");
+    });
+    var title = document.getElementById("page-title");
+    if (title) title.textContent = "Themes";
+    var desc = document.getElementById("page-description");
+    if (desc) desc.textContent = "Pick a look for the whole dashboard.";
+    renderCards();
+  }
+
   function ensureDropdown() {
     if (document.getElementById("dashboard-theme")) {
       var sel = document.getElementById("dashboard-theme");
@@ -98,59 +117,97 @@
         }).join("");
         sel.value = v || localStorage.getItem("dashboardTheme") || "default";
       }
-      return;
+      return true;
     }
-    var wrap = document.querySelector(".view-mode-wrap");
-    if (!wrap || !wrap.parentElement) return;
+
+    var options = THEMES.map(function (t) {
+      return '<option value="' + t.id + '">' + t.emoji + " " + t.name + "</option>";
+    }).join("");
+
     var box = document.createElement("div");
     box.className = "view-mode-wrap";
+    box.id = "theme-dropdown-wrap";
     box.innerHTML =
       '<label class="view-mode-label" for="dashboard-theme">Theme</label>' +
       '<select id="dashboard-theme" class="view-mode-select" title="Dashboard theme">' +
-      THEMES.map(function (t) {
-        return '<option value="' + t.id + '">' + t.emoji + " " + t.name + "</option>";
-      }).join("") +
+      options +
       "</select>";
-    wrap.parentElement.insertBefore(box, wrap.nextSibling);
+
+    var actions = document.querySelector(".header-actions");
+    var viewWrap = document.querySelector(".view-mode-wrap");
+    if (actions) {
+      if (viewWrap && viewWrap.parentElement === actions) {
+        actions.insertBefore(box, viewWrap.nextSibling);
+      } else {
+        actions.insertBefore(box, actions.firstChild);
+      }
+    } else if (viewWrap && viewWrap.parentElement) {
+      viewWrap.parentElement.insertBefore(box, viewWrap.nextSibling);
+    } else {
+      return false;
+    }
+
     var select = document.getElementById("dashboard-theme");
     select.value = localStorage.getItem("dashboardTheme") || "default";
     select.addEventListener("change", function () { applyTheme(select.value); });
+    return true;
   }
 
   function ensureNav() {
-    var nav = document.querySelector(".navigation");
+    var nav =
+      document.querySelector(".navigation") ||
+      document.querySelector("nav.navigation") ||
+      document.querySelector(".sidebar nav") ||
+      document.querySelector("aside.sidebar .navigation");
     if (!nav) return false;
-    if (nav.querySelector('[data-tab="themes"]')) return true;
+
+    var existing = nav.querySelector('[data-tab="themes"]');
+    if (existing) return true;
+
     var settingsBtn = nav.querySelector('[data-tab="settings"]');
     var btn = document.createElement("button");
     btn.className = "nav-item";
     btn.type = "button";
     btn.setAttribute("data-tab", "themes");
+    btn.id = "nav-themes";
     btn.title = "Dashboard themes";
     btn.innerHTML = "<span>🎨</span><em>Themes</em>";
-    btn.addEventListener("click", function () {
-      if (typeof window.showSection === "function") window.showSection("themes");
-      else {
-        document.querySelectorAll(".page-section").forEach(function (el) {
-          el.classList.remove("active");
-        });
-        var sec = document.getElementById("themes");
-        if (sec) sec.classList.add("active");
-        document.querySelectorAll(".nav-item").forEach(function (b) {
-          b.classList.toggle("active", b.getAttribute("data-tab") === "themes");
-        });
-      }
-      renderCards();
+    btn.addEventListener("click", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      openThemesSection();
     });
     if (settingsBtn) nav.insertBefore(btn, settingsBtn);
     else nav.appendChild(btn);
     return true;
   }
 
+  function ensureFloatingFallback() {
+    if (document.getElementById("theme-fab")) return true;
+    var fab = document.createElement("button");
+    fab.id = "theme-fab";
+    fab.type = "button";
+    fab.title = "Themes";
+    fab.setAttribute("aria-label", "Open themes");
+    fab.innerHTML = "🎨";
+    fab.style.cssText =
+      "position:fixed;bottom:20px;right:20px;z-index:99999;width:48px;height:48px;" +
+      "border-radius:50%;border:1px solid rgba(255,77,240,.4);background:linear-gradient(135deg,#ff4df0,#d63dff);" +
+      "color:#fff;font-size:22px;cursor:pointer;box-shadow:0 6px 20px rgba(255,77,240,.35);" +
+      "display:flex;align-items:center;justify-content:center;line-height:1;";
+    fab.addEventListener("click", function (e) {
+      e.preventDefault();
+      openThemesSection();
+    });
+    document.body.appendChild(fab);
+    return true;
+  }
+
   function ensureSection() {
-    var content = document.querySelector(".content");
+    var content = document.querySelector(".content") || document.querySelector("main .content") || document.querySelector("main.main");
     if (!content) return false;
     if (document.getElementById("themes")) return true;
+
     var section = document.createElement("section");
     section.id = "themes";
     section.className = "page-section";
@@ -179,7 +236,7 @@
     var html = "";
     order.forEach(function (g) {
       if (!groups[g]) return;
-      html += '<h3 class="subhead themes-group-title">' + g + "</h3><div class="themes-row">';
+      html += '<h3 class="subhead themes-group-title">' + g + '</h3><div class="themes-row">';
       groups[g].forEach(function (t) {
         html +=
           '<button type="button" class="theme-card' + (t.id === current ? " active" : "") +
@@ -204,6 +261,7 @@
     ensureDropdown();
     ensureNav();
     ensureSection();
+    ensureFloatingFallback();
     var saved = "default";
     try { saved = localStorage.getItem("dashboardTheme") || "default"; } catch (_) {}
     applyTheme(saved);
@@ -214,13 +272,34 @@
   function retry() {
     n++;
     boot();
-    if (n < 40) setTimeout(retry, 200);
+    if (n < 80) setTimeout(retry, 250);
   }
+
+  try {
+    var obs = new MutationObserver(function () {
+      ensureNav();
+      ensureDropdown();
+      ensureSection();
+      ensureFloatingFallback();
+    });
+    obs.observe(document.documentElement, { childList: true, subtree: true });
+  } catch (_) {}
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", retry);
   else retry();
 
+  document.addEventListener("click", function (e) {
+    var t = e.target;
+    if (!t) return;
+    if (t.id === "login-button" || (t.closest && t.closest("#login-button"))) {
+      setTimeout(boot, 500);
+      setTimeout(boot, 1500);
+      setTimeout(boot, 3000);
+    }
+  }, true);
+
   window.__applyDashboardTheme = applyTheme;
   window.__dashboardThemes = THEMES;
-  console.log("[theme-boot] v8 — " + THEMES.length + " structural themes");
+  window.__openThemes = openThemesSection;
+  console.log("[theme-boot] v9 — " + THEMES.length + " themes + FAB fallback");
 })();
