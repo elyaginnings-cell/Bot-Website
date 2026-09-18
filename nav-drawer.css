@@ -1,0 +1,276 @@
+/* ============================================================
+   Nav drawer — 3-line hamburger pulls tabs from the side
+   Works on mobile + desktop
+   ============================================================ */
+
+#nav-hamburger {
+  position: fixed;
+  top: max(12px, env(safe-area-inset-top));
+  left: max(12px, env(safe-area-inset-left));
+  z-index: 100050;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 77, 240, 0.35);
+  background: rgba(18, 8, 28, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 0;
+  transition: background 0.15s, border-color 0.15s, transform 0.15s;
+}
+#nav-hamburger:hover {
+  background: rgba(40, 16, 56, 0.95);
+  border-color: rgba(255, 77, 240, 0.55);
+}
+#nav-hamburger:active { transform: scale(0.96); }
+#nav-hamburger span {
+  display: block;
+  width: 18px;
+  height: 2px;
+  border-radius: 2px;
+  background: #f5e9ff;
+  transition: transform 0.2s, opacity 0.2s;
+}
+body.nav-drawer-open #nav-hamburger span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+body.nav-drawer-open #nav-hamburger span:nth-child(2) {
+  opacity: 0;
+}
+body.nav-drawer-open #nav-hamburger span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+#nav-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100040;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.22s ease, visibility 0.22s ease;
+  pointer-events: none;
+}
+body.nav-drawer-open #nav-drawer-backdrop {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+#nav-drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 100045;
+  width: min(300px, 86vw);
+  max-width: 320px;
+  background: rgba(14, 6, 24, 0.98);
+  border-right: 1px solid rgba(255, 77, 240, 0.28);
+  box-shadow: 12px 0 40px rgba(0, 0, 0, 0.45);
+  transform: translateX(-105%);
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  display: flex;
+  flex-direction: column;
+  padding: max(16px, env(safe-area-inset-top)) 14px max(16px, env(safe-area-inset-bottom));
+  overflow: hidden;
+}
+body.nav-drawer-open #nav-drawer {
+  transform: translateX(0);
+}
+
+#nav-drawer-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 6px 16px;
+  border-bottom: 1px solid rgba(255, 77, 240, 0.2);
+  margin-bottom: 12px;
+  flex-shrink: 0;
+}
+#nav-drawer-header .brand-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  background: rgba(255, 77, 240, 0.12);
+  border: 1px solid rgba(255, 77, 240, 0.25);
+}
+#nav-drawer-header strong {
+  display: block;
+  color: #f5e9ff;
+  font-size: 15px;
+  font-weight: 700;
+}
+#nav-drawer-header span {
+  display: block;
+  color: #b89cd9;
+  font-size: 11px;
+}
+
+#nav-drawer-list {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-right: 4px;
+  -webkit-overflow-scrolling: touch;
+}
+
+#nav-drawer-list button.nav-drawer-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  padding: 12px 14px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: transparent;
+  color: #e8d8f8;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+  min-height: 48px;
+}
+#nav-drawer-list button.nav-drawer-item:hover {
+  background: rgba(255, 77, 240, 0.1);
+  border-color: rgba(255, 77, 240, 0.2);
+}
+#nav-drawer-list button.nav-drawer-item.active {
+  background: linear-gradient(135deg, #ff4df0, #d63dff);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 4px 16px rgba(255, 77, 240, 0.3);
+  font-weight: 600;
+}
+#nav-drawer-list button.nav-drawer-item .ndi-icon {
+  font-size: 18px;
+  width: 28px;
+  text-align: center;
+  flex-shrink: 0;
+  line-height: 1;
+}
+#nav-drawer-list button.nav-drawer-item .ndi-label {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#nav-drawer-footer {
+  flex-shrink: 0;
+  padding-top: 12px;
+  margin-top: 8px;
+  border-top: 1px solid rgba(255, 77, 240, 0.15);
+  font-size: 11px;
+  color: #8a6aa8;
+  text-align: center;
+}
+
+body[class*="theme-"] #nav-hamburger {
+  border-color: var(--border, rgba(255, 77, 240, 0.35));
+  background: var(--card-solid, rgba(18, 8, 28, 0.92));
+}
+body[class*="theme-"] #nav-hamburger span {
+  background: var(--text, #f5e9ff);
+}
+body[class*="theme-"] #nav-drawer {
+  background: var(--sidebar, rgba(14, 6, 24, 0.98));
+  border-right-color: var(--border, rgba(255, 77, 240, 0.28));
+}
+body[class*="theme-"] #nav-drawer-header strong {
+  color: var(--text, #f5e9ff);
+}
+body[class*="theme-"] #nav-drawer-header span {
+  color: var(--muted, #b89cd9);
+}
+body[class*="theme-"] #nav-drawer-list button.nav-drawer-item {
+  color: var(--text, #e8d8f8);
+}
+body[class*="theme-"] #nav-drawer-list button.nav-drawer-item:hover {
+  background: var(--accent-soft, rgba(255, 77, 240, 0.1));
+  border-color: var(--border, rgba(255, 77, 240, 0.2));
+}
+body[class*="theme-"] #nav-drawer-list button.nav-drawer-item.active {
+  background: var(--nav-active, linear-gradient(135deg, #ff4df0, #d63dff));
+  color: #fff;
+}
+
+body.theme-paper #nav-hamburger {
+  background: #fffdf8;
+  border-color: rgba(139, 105, 20, 0.3);
+}
+body.theme-paper #nav-hamburger span {
+  background: #1a1610;
+}
+body.theme-paper #nav-drawer {
+  background: #faf6ee;
+  border-right-color: rgba(139, 105, 20, 0.25);
+}
+body.theme-paper #nav-drawer-header strong { color: #1a1610; }
+body.theme-paper #nav-drawer-header span { color: #6a6050; }
+body.theme-paper #nav-drawer-list button.nav-drawer-item { color: #1a1610; }
+body.theme-paper #nav-drawer-list button.nav-drawer-item.active {
+  background: #8b6914;
+  color: #fff;
+}
+
+body.theme-terminal #nav-hamburger {
+  border-radius: 0;
+  border-color: #39ff14;
+  background: #0a120a;
+}
+body.theme-terminal #nav-hamburger span { background: #39ff14; }
+body.theme-terminal #nav-drawer {
+  border-radius: 0;
+  border-right: 2px solid #39ff14;
+  background: #0a120a;
+}
+body.theme-terminal #nav-drawer-list button.nav-drawer-item {
+  border-radius: 0;
+  font-family: "JetBrains Mono", monospace;
+  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+}
+body.theme-terminal #nav-drawer-list button.nav-drawer-item.active {
+  background: #39ff14;
+  color: #050a05;
+}
+
+@media (min-width: 961px) {
+  body.mode-auto .header,
+  body.mode-desktop .header {
+    padding-left: 56px;
+  }
+}
+@media (max-width: 960px) {
+  body.mode-auto .header,
+  body.mode-mobile .header {
+    padding-left: 52px !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #nav-drawer,
+  #nav-drawer-backdrop,
+  #nav-hamburger span {
+    transition: none !important;
+  }
+}
