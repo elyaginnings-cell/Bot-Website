@@ -4,8 +4,8 @@
  */
 (function () {
   "use strict";
-  if (window.__themeBootV5) return;
-  window.__themeBootV5 = true;
+  if (window.__themeBootV6) return;
+  window.__themeBootV6 = true;
 
   var THEMES = [
     { id: "default", name: "Default", emoji: "💜", blurb: "Original neon violet", group: "Original" },
@@ -52,16 +52,17 @@
   var ALL_IDS = THEMES.map(function (t) { return t.id; });
 
   function loadCss() {
-    var existing = document.getElementById("themes-extra-css");
-    if (existing) {
-      existing.href = "/themes-extra.css?v=5";
-      return;
+    function ensure(id, href) {
+      var el = document.getElementById(id);
+      if (el) { el.href = href; return; }
+      var link = document.createElement("link");
+      link.id = id;
+      link.rel = "stylesheet";
+      link.href = href;
+      document.head.appendChild(link);
     }
-    var link = document.createElement("link");
-    link.id = "themes-extra-css";
-    link.rel = "stylesheet";
-    link.href = "/themes-extra.css?v=5";
-    document.head.appendChild(link);
+    ensure("themes-packs-css", "/themes-packs.css?v=6");
+    ensure("themes-force-css", "/themes-force.css?v=6");
   }
 
   function applyTheme(name) {
@@ -245,5 +246,5 @@
 
   window.__applyDashboardTheme = applyTheme;
   window.__dashboardThemes = THEMES;
-  console.log("[theme-boot] v5 — " + THEMES.length + " themes");
+  console.log("[theme-boot] v6 — " + THEMES.length + " themes");
 })();
