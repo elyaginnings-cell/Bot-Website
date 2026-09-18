@@ -1,162 +1,80 @@
-/* Garden theme — fixed light pastel */
-@import url("https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap");
+/* GARDEN — Sunflower garden theme (detailed, soft, romantic) */
+@import url("https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;500;600;700;800&family=Quicksand:wght@500;600;700&display=swap");
 
 #server-view.theme-garden,
 .server-view.theme-garden {
-  --sv-bg-primary: #fff8fc !important;
-  --sv-bg-secondary: #f5ecff !important;
-  --sv-bg-tertiary: #fce7f3 !important;
-  --sv-bg-modifier: rgba(232, 121, 198, 0.12) !important;
-  --sv-bg-modifier-hover: rgba(192, 132, 252, 0.22) !important;
-  --sv-bg-modifier-active: rgba(192, 132, 252, 0.34) !important;
-  --sv-text: #3d2e4a !important;
-  --sv-text-muted: #8b7a9e !important;
-  --sv-text-link: #c026d3 !important;
-  --sv-header: #6b21a8 !important;
-  --sv-interactive: #7c6b94 !important;
-  --sv-interactive-hover: #5b21b6 !important;
-  --sv-interactive-active: #4c1d95 !important;
-  --sv-brand: #e879f9 !important;
-  --sv-brand-hover: #d946ef !important;
-  --sv-mention: rgba(232, 121, 249, 0.28) !important;
-  --sv-mention-hover: rgba(232, 121, 249, 0.42) !important;
-  --sv-mention-text: #a21caf !important;
-  --sv-embed-bg: #ffffff !important;
-  --sv-input-bg: #ffffff !important;
-  --sv-scrollbar: #e9d5ff !important;
-  --sv-font: "Nunito", "Noto Sans", system-ui, sans-serif !important;
-  color: #3d2e4a !important;
-  background: linear-gradient(160deg, #fdf2f8 0%, #f5f3ff 45%, #faf5ff 100%) !important;
-  font-family: "Nunito", "Noto Sans", system-ui, sans-serif !important;
+  --sv-bg-primary: #fff9f0;
+  --sv-bg-secondary: #fff3e0;
+  --sv-bg-tertiary: #ffe8f0;
+  --sv-bg-modifier: rgba(251, 191, 36, 0.12);
+  --sv-bg-modifier-hover: rgba(244, 114, 182, 0.16);
+  --sv-bg-modifier-active: rgba(192, 132, 252, 0.22);
+  --sv-text: #4a3560;
+  --sv-text-muted: #9a7fb0;
+  --sv-text-link: #d946ef;
+  --sv-header: #7c3aed;
+  --sv-interactive: #8b6fa0;
+  --sv-interactive-hover: #6b21a8;
+  --sv-interactive-active: #5b21b6;
+  --sv-brand: #f59e0b;
+  --sv-brand-hover: #ec4899;
+  --sv-mention: rgba(244, 114, 182, 0.28);
+  --sv-mention-hover: rgba(251, 191, 36, 0.35);
+  --sv-mention-text: #a21caf;
+  --sv-embed-bg: #ffffff;
+  --sv-input-bg: #ffffff;
+  --sv-scrollbar: #f9a8d4;
+  --sv-font: "Nunito", "Quicksand", system-ui, sans-serif;
+  --sv-radius-sm: 12px;
+  --sv-radius-md: 16px;
+  --sv-radius-lg: 22px;
+  --garden-sun: #fde047;
+  --garden-sun-deep: #f59e0b;
+  --garden-pink: #f9a8d4;
+  --garden-rose: #f472b6;
+  --garden-lavender: #c4b5fd;
+  --garden-lilac: #a78bfa;
+  --garden-cream: #fffbeb;
+  --garden-petal: #fce7f3;
+  --garden-leaf: #86efac;
+  --garden-sky: #e0f2fe;
+  color: var(--sv-text) !important;
+  font-family: var(--sv-font) !important;
+  background:
+    radial-gradient(ellipse 80% 50% at 10% 0%, rgba(253, 224, 71, 0.45) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 40% at 90% 5%, rgba(249, 168, 212, 0.4) 0%, transparent 50%),
+    radial-gradient(ellipse 50% 35% at 70% 100%, rgba(167, 139, 250, 0.25) 0%, transparent 50%),
+    radial-gradient(ellipse 40% 30% at 20% 90%, rgba(134, 239, 172, 0.2) 0%, transparent 45%),
+    linear-gradient(165deg, #fff9f0 0%, #fdf2f8 35%, #f5f3ff 70%, #fefce8 100%) !important;
 }
+
+#server-view.theme-garden::before,
+.server-view.theme-garden::before {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.55;
+  background-image:
+    radial-gradient(circle at 12% 22%, rgba(253, 224, 71, 0.7) 0 4px, transparent 5px),
+    radial-gradient(circle at 28% 48%, rgba(249, 168, 212, 0.65) 0 3px, transparent 4px),
+    radial-gradient(circle at 78% 18%, rgba(196, 181, 253, 0.7) 0 5px, transparent 6px),
+    radial-gradient(circle at 88% 62%, rgba(253, 224, 71, 0.55) 0 3px, transparent 4px),
+    radial-gradient(circle at 42% 78%, rgba(244, 114, 182, 0.5) 0 4px, transparent 5px),
+    radial-gradient(circle at 62% 38%, rgba(134, 239, 172, 0.45) 0 3px, transparent 4px),
+    radial-gradient(circle at 8% 72%, rgba(167, 139, 250, 0.5) 0 3px, transparent 4px);
+}
+
+#server-view.theme-garden > *,
+.server-view.theme-garden > * { position: relative; z-index: 1; }
 
 #server-view.theme-garden .sv-topbar,
 .server-view.theme-garden .sv-topbar {
-  background: linear-gradient(90deg, #fce7f3, #f3e8ff 50%, #fef9c3) !important;
-  border-bottom: 2px solid rgba(232, 121, 249, 0.35) !important;
-  box-shadow: 0 4px 16px rgba(168, 85, 247, 0.1) !important;
-}
-
-#server-view.theme-garden .sv-channels,
-.server-view.theme-garden .sv-channels {
-  background: rgba(255, 255, 255, 0.85) !important;
-  border-right: 2px solid rgba(249, 168, 212, 0.5) !important;
-}
-
-#server-view.theme-garden .sv-channels-head span,
-.server-view.theme-garden .sv-channels-head span {
-  font-family: "Fredoka", "Nunito", sans-serif !important;
-  font-weight: 600 !important;
-  color: #a855f7 !important;
-}
-
-#server-view.theme-garden .sv-ch,
-.server-view.theme-garden .sv-ch {
-  border-radius: 12px !important;
-  color: #5b4a6e !important;
-}
-
-#server-view.theme-garden .sv-ch:hover,
-.server-view.theme-garden .sv-ch:hover {
-  background: rgba(232, 121, 249, 0.14) !important;
-  color: #6b21a8 !important;
-}
-
-#server-view.theme-garden .sv-ch.active,
-.server-view.theme-garden .sv-ch.active {
-  background: linear-gradient(135deg, rgba(249, 168, 212, 0.5), rgba(192, 132, 252, 0.4)) !important;
-  color: #6b21a8 !important;
-  font-weight: 700 !important;
-}
-
-#server-view.theme-garden .sv-messages,
-.server-view.theme-garden .sv-messages {
-  background: transparent !important;
-}
-
-#server-view.theme-garden .sv-msg,
-#server-view.theme-garden .sv-msg-content,
-.server-view.theme-garden .sv-msg,
-.server-view.theme-garden .sv-msg-content {
-  color: #3d2e4a !important;
-}
-
-#server-view.theme-garden .sv-msg-meta strong,
-.server-view.theme-garden .sv-msg-meta strong {
-  font-family: "Fredoka", "Nunito", sans-serif !important;
-  color: #7e22ce !important;
-}
-
-#server-view.theme-garden .sv-msg-meta span,
-#server-view.theme-garden .sv-msg-time,
-.server-view.theme-garden .sv-msg-meta span,
-.server-view.theme-garden .sv-msg-time {
-  color: #9b8aad !important;
-}
-
-#server-view.theme-garden .sv-composer,
-.server-view.theme-garden .sv-composer {
-  background: #ffffff !important;
-  border: 2px solid #f9a8d4 !important;
-  border-radius: 22px !important;
-  box-shadow: 0 4px 0 rgba(249, 168, 212, 0.35), 0 8px 20px rgba(168, 85, 247, 0.12) !important;
-}
-
-#server-view.theme-garden .sv-composer input,
-#server-view.theme-garden .sv-composer textarea,
-.server-view.theme-garden .sv-composer input,
-.server-view.theme-garden .sv-composer textarea {
-  color: #3d2e4a !important;
-  background: transparent !important;
-}
-
-#server-view.theme-garden .sv-composer input::placeholder,
-.server-view.theme-garden .sv-composer input::placeholder {
-  color: #c4b5d4 !important;
-}
-
-#server-view.theme-garden .sv-send-btn,
-.server-view.theme-garden .sv-send-btn {
-  background: linear-gradient(135deg, #fde047, #f9a8d4 50%, #c084fc) !important;
-  color: #4c1d95 !important;
-  font-family: "Fredoka", sans-serif !important;
-  font-weight: 600 !important;
-  border-radius: 999px !important;
-  border: none !important;
-}
-
-#server-view.theme-garden .sv-settings-panel,
-.server-view.theme-garden .sv-settings-panel {
-  background: linear-gradient(180deg, #ffffff, #fdf2f8) !important;
-  border: 2px solid #f9a8d4 !important;
-  border-radius: 18px !important;
-  box-shadow: 0 12px 28px rgba(168, 85, 247, 0.18) !important;
-  color: #3d2e4a !important;
-}
-
-#server-view.theme-garden .sv-settings-panel h4,
-.server-view.theme-garden .sv-settings-panel h4 {
-  color: #a855f7 !important;
-  font-family: "Fredoka", sans-serif !important;
-}
-
-#server-view.theme-garden .sv-settings-row label,
-.server-view.theme-garden .sv-settings-row label {
-  color: #6b21a8 !important;
-}
-
-#server-view.theme-garden .sv-settings-row select,
-.server-view.theme-garden .sv-settings-row select {
-  background: #faf5ff !important;
-  border: 2px solid #e9d5ff !important;
-  border-radius: 12px !important;
-  color: #6b21a8 !important;
-}
-
-#server-view.theme-garden .sv-empty,
-.server-view.theme-garden .sv-empty {
-  color: #a78bfa !important;
-  font-family: "Fredoka", sans-serif !important;
+  background: linear-gradient(90deg, #fef9c3 0%, #fce7f3 25%, #f3e8ff 50%, #fce7f3 75%, #fef3c7 100%) !important;
+  border-bottom: 3px solid transparent !important;
+  border-image: linear-gradient(90deg, #fde047, #f9a8d4, #c4b5fd, #fde047) 1 !important;
+  box-shadow: 0 4px 20px rgba(251, 191, 36, 0.15), 0 2px 8px rgba(244, 114, 182, 0.1) !important;
 }
 
 #server-view.theme-garden .sv-server-pill,
@@ -164,8 +82,12 @@
 .server-view.theme-garden .sv-server-pill,
 .server-view.theme-garden #sv-channel-title {
   font-family: "Fredoka", "Nunito", sans-serif !important;
-  color: #6b21a8 !important;
+  font-weight: 600 !important;
+  color: #7c3aed !important;
+  letter-spacing: 0.02em;
 }
+#server-view.theme-garden .sv-server-pill::before,
+.server-view.theme-garden .sv-server-pill::before { content: "\ud83c\udf3b "; }
 
 #server-view.theme-garden .sv-back,
 #server-view.theme-garden .sv-menu-btn,
@@ -173,21 +95,19 @@
 .server-view.theme-garden .sv-back,
 .server-view.theme-garden .sv-menu-btn,
 .server-view.theme-garden .sv-icon-btn {
-  color: #7e22ce !important;
+  color: #a21caf !important;
+  border-radius: 999px !important;
+  transition: background 0.2s ease, transform 0.15s ease;
 }
-
 #server-view.theme-garden .sv-back:hover,
 #server-view.theme-garden .sv-menu-btn:hover,
 #server-view.theme-garden .sv-icon-btn:hover,
 .server-view.theme-garden .sv-back:hover,
 .server-view.theme-garden .sv-menu-btn:hover,
 .server-view.theme-garden .sv-icon-btn:hover {
-  background: rgba(232, 121, 249, 0.18) !important;
-}
-
-#server-view.theme-garden .sv-cat,
-.server-view.theme-garden .sv-cat {
-  color: #9b8aad !important;
+  background: rgba(253, 224, 71, 0.45) !important;
+  color: #6b21a8 !important;
+  transform: scale(1.06);
 }
 
 #server-view.theme-garden .sv-name-wrap,
@@ -195,9 +115,324 @@
   background: #ffffff !important;
   border: 2px solid #f9a8d4 !important;
   border-radius: 999px !important;
+  box-shadow: 0 3px 0 rgba(249, 168, 212, 0.35) !important;
 }
-
 #server-view.theme-garden .sv-name-wrap input,
 .server-view.theme-garden .sv-name-wrap input {
   color: #6b21a8 !important;
+  font-family: "Nunito", sans-serif !important;
+  font-weight: 600 !important;
+}
+
+#server-view.theme-garden .sv-channels,
+.server-view.theme-garden .sv-channels {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0%, rgba(253, 242, 248, 0.88) 100%) !important;
+  border-right: 2px solid rgba(249, 168, 212, 0.55) !important;
+  box-shadow: 4px 0 24px rgba(167, 139, 250, 0.08);
+}
+#server-view.theme-garden .sv-channels-head,
+.server-view.theme-garden .sv-channels-head {
+  border-bottom: 1px dashed rgba(244, 114, 182, 0.35) !important;
+}
+#server-view.theme-garden .sv-channels-head span,
+.server-view.theme-garden .sv-channels-head span {
+  font-family: "Fredoka", "Nunito", sans-serif !important;
+  font-weight: 600 !important;
+  color: #c026d3 !important;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 0.72rem !important;
+}
+#server-view.theme-garden .sv-channels-head span::before,
+.server-view.theme-garden .sv-channels-head span::before { content: "\ud83c\udf3c "; }
+
+#server-view.theme-garden .sv-cat,
+.server-view.theme-garden .sv-cat {
+  color: #a78bfa !important;
+  font-family: "Fredoka", sans-serif !important;
+  font-weight: 600 !important;
+  font-size: 0.7rem !important;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+#server-view.theme-garden .sv-ch,
+.server-view.theme-garden .sv-ch {
+  border-radius: 14px !important;
+  color: #5b4a6e !important;
+  margin: 2px 6px !important;
+  transition: background 0.18s ease, transform 0.12s ease, box-shadow 0.18s ease;
+}
+#server-view.theme-garden .sv-ch:hover,
+.server-view.theme-garden .sv-ch:hover {
+  background: rgba(253, 224, 71, 0.28) !important;
+  color: #6b21a8 !important;
+  transform: translateX(3px);
+}
+#server-view.theme-garden .sv-ch.active,
+.server-view.theme-garden .sv-ch.active {
+  background: linear-gradient(135deg, rgba(253, 224, 71, 0.55), rgba(249, 168, 212, 0.5), rgba(196, 181, 253, 0.45)) !important;
+  color: #5b21b6 !important;
+  font-weight: 700 !important;
+  box-shadow: 0 3px 0 rgba(244, 114, 182, 0.25), 0 6px 16px rgba(167, 139, 250, 0.15) !important;
+}
+#server-view.theme-garden .sv-hash,
+.server-view.theme-garden .sv-hash { color: #f59e0b !important; }
+
+#server-view.theme-garden .sv-messages,
+.server-view.theme-garden .sv-messages { background: transparent !important; }
+#server-view.theme-garden .sv-msg,
+.server-view.theme-garden .sv-msg {
+  color: #4a3560 !important;
+  border-radius: 12px;
+  transition: background 0.15s ease;
+}
+#server-view.theme-garden .sv-msg:hover,
+.server-view.theme-garden .sv-msg:hover { background: rgba(255, 255, 255, 0.45) !important; }
+#server-view.theme-garden .sv-msg-meta strong,
+.server-view.theme-garden .sv-msg-meta strong,
+#server-view.theme-garden .sv-author,
+.server-view.theme-garden .sv-author {
+  font-family: "Fredoka", "Nunito", sans-serif !important;
+  font-weight: 600 !important;
+  color: #7c3aed !important;
+}
+#server-view.theme-garden .sv-msg-meta span,
+#server-view.theme-garden .sv-msg-time,
+#server-view.theme-garden .sv-time,
+.server-view.theme-garden .sv-msg-meta span,
+.server-view.theme-garden .sv-msg-time,
+.server-view.theme-garden .sv-time {
+  color: #b794c8 !important;
+  font-size: 0.78em !important;
+}
+#server-view.theme-garden .sv-msg-content,
+.server-view.theme-garden .sv-msg-content {
+  color: #4a3560 !important;
+  line-height: 1.55 !important;
+}
+#server-view.theme-garden .sv-mention,
+.server-view.theme-garden .sv-mention {
+  background: rgba(249, 168, 212, 0.35) !important;
+  color: #a21caf !important;
+  border-radius: 6px !important;
+  padding: 0 4px !important;
+}
+
+#server-view.theme-garden .sv-embed,
+.server-view.theme-garden .sv-embed {
+  background: #ffffff !important;
+  border-radius: 16px !important;
+  border-left: 4px solid #f59e0b !important;
+  box-shadow: 0 4px 16px rgba(167, 139, 250, 0.12) !important;
+}
+#server-view.theme-garden .sv-embed-title,
+.server-view.theme-garden .sv-embed-title {
+  color: #7c3aed !important;
+  font-family: "Fredoka", sans-serif !important;
+}
+#server-view.theme-garden .sv-embed-desc,
+#server-view.theme-garden .sv-embed-field-value,
+.server-view.theme-garden .sv-embed-desc,
+.server-view.theme-garden .sv-embed-field-value { color: #5b4a6e !important; }
+
+#server-view.theme-garden .sv-msg-actions,
+.server-view.theme-garden .sv-msg-actions {
+  background: #ffffff !important;
+  border: 2px solid #f9a8d4 !important;
+  border-radius: 999px !important;
+  box-shadow: 0 4px 14px rgba(244, 114, 182, 0.2) !important;
+}
+#server-view.theme-garden .sv-reply-btn,
+.server-view.theme-garden .sv-reply-btn {
+  color: #a21caf !important;
+  border-radius: 999px !important;
+}
+#server-view.theme-garden .sv-reply-btn:hover,
+.server-view.theme-garden .sv-reply-btn:hover {
+  background: rgba(253, 224, 71, 0.5) !important;
+  color: #6b21a8 !important;
+}
+
+#server-view.theme-garden .sv-composer-wrap,
+.server-view.theme-garden .sv-composer-wrap {
+  background: transparent !important;
+  padding: 8px 12px 12px !important;
+}
+#server-view.theme-garden .sv-composer,
+.server-view.theme-garden .sv-composer {
+  background: #ffffff !important;
+  border: 2.5px solid #f9a8d4 !important;
+  border-radius: 24px !important;
+  box-shadow: 0 4px 0 rgba(249, 168, 212, 0.4), 0 10px 28px rgba(167, 139, 250, 0.12), inset 0 1px 0 #fff !important;
+}
+#server-view.theme-garden .sv-composer:focus-within,
+.server-view.theme-garden .sv-composer:focus-within {
+  border-color: #f59e0b !important;
+  box-shadow: 0 4px 0 rgba(251, 191, 36, 0.45), 0 12px 32px rgba(251, 191, 36, 0.18), inset 0 1px 0 #fff !important;
+}
+#server-view.theme-garden .sv-composer input,
+#server-view.theme-garden .sv-composer textarea,
+.server-view.theme-garden .sv-composer input,
+.server-view.theme-garden .sv-composer textarea {
+  color: #4a3560 !important;
+  background: transparent !important;
+  font-family: "Nunito", sans-serif !important;
+}
+#server-view.theme-garden .sv-composer input::placeholder,
+.server-view.theme-garden .sv-composer input::placeholder {
+  color: #c4a8d4 !important;
+  font-style: italic;
+}
+#server-view.theme-garden .sv-send-btn,
+.server-view.theme-garden .sv-send-btn {
+  background: linear-gradient(135deg, #fde047 0%, #fbbf24 35%, #f9a8d4 70%, #c4b5fd 100%) !important;
+  color: #5b21b6 !important;
+  font-family: "Fredoka", sans-serif !important;
+  font-weight: 600 !important;
+  border-radius: 999px !important;
+  border: none !important;
+  box-shadow: 0 3px 0 rgba(168, 85, 247, 0.28) !important;
+}
+#server-view.theme-garden .sv-send-btn:hover:not(:disabled),
+.server-view.theme-garden .sv-send-btn:hover:not(:disabled) {
+  filter: brightness(1.08) saturate(1.1);
+  transform: translateY(-1px);
+}
+
+#server-view.theme-garden .sv-composer-tools button,
+.server-view.theme-garden .sv-composer-tools button {
+  color: #a78bfa !important;
+  border-color: #e9d5ff !important;
+  border-radius: 10px !important;
+  background: #faf5ff !important;
+}
+#server-view.theme-garden .sv-composer-tools button:hover,
+.server-view.theme-garden .sv-composer-tools button:hover {
+  color: #6b21a8 !important;
+  border-color: #f9a8d4 !important;
+  background: #fce7f3 !important;
+}
+
+#server-view.theme-garden .sv-settings-panel,
+.server-view.theme-garden .sv-settings-panel {
+  background: linear-gradient(165deg, #ffffff 0%, #fdf4ff 40%, #fef9c3 100%) !important;
+  border: 2.5px solid #f9a8d4 !important;
+  border-radius: 22px !important;
+  box-shadow: 0 16px 40px rgba(167, 139, 250, 0.2), 0 0 0 1px rgba(253, 224, 71, 0.3) !important;
+  color: #4a3560 !important;
+  overflow: hidden;
+}
+#server-view.theme-garden .sv-settings-panel::before,
+.server-view.theme-garden .sv-settings-panel::before {
+  content: "\ud83c\udf3b \ud83c\udf38 \ud83e\udd8b \ud83c\udf3c \ud83d\udc1d";
+  display: block;
+  text-align: center;
+  font-size: 1.1rem;
+  letter-spacing: 0.45em;
+  padding: 10px 8px 4px;
+}
+#server-view.theme-garden .sv-settings-panel h4,
+.server-view.theme-garden .sv-settings-panel h4 {
+  color: #a855f7 !important;
+  font-family: "Fredoka", sans-serif !important;
+  font-weight: 600 !important;
+  text-align: center;
+}
+#server-view.theme-garden .sv-settings-row label,
+.server-view.theme-garden .sv-settings-row label {
+  color: #7c3aed !important;
+  font-family: "Nunito", sans-serif !important;
+  font-weight: 700 !important;
+}
+#server-view.theme-garden .sv-settings-row select,
+.server-view.theme-garden .sv-settings-row select {
+  background: #ffffff !important;
+  border: 2px solid #e9d5ff !important;
+  border-radius: 14px !important;
+  color: #6b21a8 !important;
+  font-family: "Nunito", sans-serif !important;
+  font-weight: 600 !important;
+  box-shadow: 0 2px 0 rgba(196, 181, 253, 0.35) !important;
+}
+#server-view.theme-garden .sv-settings-row select:focus,
+.server-view.theme-garden .sv-settings-row select:focus {
+  border-color: #f59e0b !important;
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(253, 224, 71, 0.35) !important;
+}
+
+#server-view.theme-garden .sv-empty,
+.server-view.theme-garden .sv-empty {
+  color: #a78bfa !important;
+  font-family: "Fredoka", "Nunito", sans-serif !important;
+  text-align: center;
+  padding: 2rem 1rem !important;
+}
+#server-view.theme-garden .sv-empty::before,
+.server-view.theme-garden .sv-empty::before {
+  content: "\ud83c\udf3b \ud83c\udf38 \ud83e\udde1 \ud83c\udf3c";
+  display: block;
+  font-size: 1.75rem;
+  margin-bottom: 12px;
+  letter-spacing: 0.35em;
+}
+
+#server-view.theme-garden .sv-toast,
+.server-view.theme-garden .sv-toast {
+  background: linear-gradient(90deg, #fde047, #f9a8d4 50%, #c4b5fd) !important;
+  color: #5b21b6 !important;
+  border-radius: 999px !important;
+  font-family: "Fredoka", sans-serif !important;
+  font-weight: 600 !important;
+  box-shadow: 0 6px 20px rgba(244, 114, 182, 0.3) !important;
+}
+
+#server-view.theme-garden .sv-code,
+#server-view.theme-garden .sv-codeblock,
+.server-view.theme-garden .sv-code,
+.server-view.theme-garden .sv-codeblock {
+  background: #faf5ff !important;
+  border: 1px solid #e9d5ff !important;
+  border-radius: 12px !important;
+  color: #6b21a8 !important;
+}
+
+#server-view.theme-garden .sv-channel-list::-webkit-scrollbar-thumb,
+#server-view.theme-garden .sv-messages::-webkit-scrollbar-thumb,
+.server-view.theme-garden .sv-channel-list::-webkit-scrollbar-thumb,
+.server-view.theme-garden .sv-messages::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #fde047, #f9a8d4) !important;
+  border-radius: 999px !important;
+}
+
+#server-view.theme-garden #sv-member-list,
+.server-view.theme-garden #sv-member-list {
+  background: rgba(255, 255, 255, 0.85) !important;
+  border-left: 2px solid rgba(249, 168, 212, 0.45) !important;
+}
+#server-view.theme-garden #sv-member-list .sv-ml-group,
+.server-view.theme-garden #sv-member-list .sv-ml-group {
+  color: #a78bfa !important;
+  font-family: "Fredoka", sans-serif !important;
+}
+#server-view.theme-garden #sv-member-list .sv-member-name,
+.server-view.theme-garden #sv-member-list .sv-member-name { color: #5b4a6e !important; }
+#server-view.theme-garden #sv-member-list .sv-member-row:hover,
+.server-view.theme-garden #sv-member-list .sv-member-row:hover {
+  background: rgba(253, 224, 71, 0.2) !important;
+  border-radius: 10px;
+}
+
+#server-view.theme-garden .sv-reply-bar,
+.server-view.theme-garden .sv-reply-bar {
+  background: rgba(253, 242, 248, 0.9) !important;
+  border-left: 3px solid #f59e0b !important;
+  border-radius: 0 12px 12px 0 !important;
+  color: #6b21a8 !important;
+}
+
+#server-view.theme-garden ::selection,
+.server-view.theme-garden ::selection {
+  background: rgba(253, 224, 71, 0.45);
+  color: #5b21b6;
 }
