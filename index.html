@@ -17,13 +17,40 @@
     if (html.length < 5000 || html.indexOf("server-view") === -1) {
       throw new Error("Unexpected content length " + html.length);
     }
+    var SV_THEME_OPTIONS =
+      '<option value="discord">Discord</option>' +
+      '<option value="darker">Darker</option>' +
+      '<option value="amoled">AMOLED</option>' +
+      '<option value="ash">Ash</option>' +
+      '<option value="blurple">Blurple</option>' +
+      '<option value="light">Light</option>' +
+      '<option value="midnight">Midnight</option>' +
+      '<option value="nord">Nord</option>' +
+      '<option value="dracula">Dracula</option>' +
+      '<option value="catppuccin">Catppuccin</option>' +
+      '<option value="tokyo">Tokyo Night</option>' +
+      '<option value="gruvbox">Gruvbox</option>' +
+      '<option value="forest">Forest</option>' +
+      '<option value="ocean">Ocean</option>' +
+      '<option value="crimson">Crimson</option>' +
+      '<option value="cyber">Cyber</option>' +
+      '<option value="vapor">Vapor</option>' +
+      '<option value="soft">Soft</option>' +
+      '<option value="mono">Mono</option>' +
+      '<option value="terminal">Terminal</option>' +
+      '<option value="garden">Garden</option>';
     html = html
-      .replace(/server-view\.js\?v=\d+/g, "server-view.js?v=36")
+      .replace(/server-view\.js\?v=\d+/g, "server-view.js?v=37")
       .replace(/sv-members-load\.js\?v=\d+/g, "sv-members-load.js?v=37")
       .replace(/server-view\.css(?![?\w])/g, "server-view.css?v=5")
       .replace(/server-view-reply\.css(?![?\w])/g, "server-view-reply.css?v=5")
       .replace(/sv-rich\.css(?![?\w])/g, "sv-rich.css?v=5")
-      .replace(/server-view-members\.css\?v=\d+/g, "server-view-members.css?v=14");
+      .replace(/server-view-members\.css\?v=\d+/g, "server-view-members.css?v=14")
+      .replace(/server-view-theme-garden\.css(?![?\w])/g, "server-view-theme-garden.css?v=3")
+      .replace(
+        /<select id="sv-theme">[\s\S]*?<\/select>/,
+        '<select id="sv-theme">' + SV_THEME_OPTIONS + '</select>'
+      );
     document.open();
     document.write(html);
     document.close();
@@ -66,7 +93,7 @@
     await loadScript("/sv-phase0.js?v=2");
     await loadScript("/theme-boot.js?v=13");
     await loadScript("/nav-drawer.js?v=2");
-    await loadScript("/sv-themes-expand.js?v=1");
+    await loadScript("/sv-themes-expand.js?v=2");
   } catch (e) {
     document.body.innerHTML =
       "<div style=\"font-family:system-ui;padding:2rem;max-width:32rem\">" +
