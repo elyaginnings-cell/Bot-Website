@@ -1,11 +1,10 @@
 /**
- * Expand Server View theme dropdown + apply classes generically.
- * Does not depend on dashboard themes.
+ * Server View themes v2 — expand settings dropdown + apply theme classes.
  */
 (function () {
   "use strict";
-  if (window.__svThemesExpandV1) return;
-  window.__svThemesExpandV1 = true;
+  if (window.__svThemesExpandV2) return;
+  window.__svThemesExpandV2 = true;
 
   var THEMES = [
     { id: "discord", label: "Discord" },
@@ -28,94 +27,128 @@
     { id: "soft", label: "Soft" },
     { id: "mono", label: "Mono" },
     { id: "terminal", label: "Terminal" },
-    { id: "garden", label: "Garden \ud83c\udf3b" },
+    { id: "garden", label: "Garden" },
   ];
 
-  var ALL_IDS = THEMES.map(function (t) { return t.id; });
+  var ALL = THEMES.map(function (t) { return t.id; });
 
-  function loadCss() {
-    if (document.getElementById("sv-themes-extra-css")) return;
-    var link = document.createElement("link");
-    link.id = "sv-themes-extra-css";
-    link.rel = "stylesheet";
-    link.href = "/server-view-themes-extra.css?v=1";
-    document.head.appendChild(link);
+  function ensureCss() {
+    if (!document.getElementById("sv-themes-extra-css")) {
+      var a = document.createElement("link");
+      a.id = "sv-themes-extra-css";
+      a.rel = "stylesheet";
+      a.href = "/server-view-themes-extra.css?v=2";
+      document.head.appendChild(a);
+    }
+    var links = document.querySelectorAll('link[href*="server-view-theme-garden"]');
+    if (links.length) {
+      links.forEach(function (l) { l.href = "/server-view-theme-garden.css?v=3"; });
+    } else if (!document.getElementById("sv-theme-garden-css")) {
+      var g = document.createElement("link");
+      g.id = "sv-theme-garden-css";
+      g.rel = "stylesheet";
+      g.href = "/server-view-theme-garden.css?v=3";
+      document.head.appendChild(g);
+    }
   }
 
   function fillSelect() {
     var sel = document.getElementById("sv-theme");
     if (!sel) return false;
-    var current = sel.value || localStorage.getItem("svTheme") || "discord";
-    sel.innerHTML = THEMES.map(function (t) {
-      return '<option value="' + t.id + '">' + t.label + "</option>";
-    }).join("");
-    if (ALL_IDS.indexOf(current) < 0) current = "discord";
+    var saved = "discord";
+    try { saved = localStorage.getItem("svTheme") || "discord"; } catch (_) {}
+    var current = sel.value || saved;
+    if (ALL.indexOf(current) < 0) current = "discord";
+    if (sel.options.length < THEMES.length) {
+      sel.innerHTML = THEMES.map(function (t) {
+        return '<option value="' + t.id + '">' + t.label + "</option>";
+      }).join("");
+    }
     sel.value = current;
     return true;
   }
 
-  function applyThemeClass(theme) {
+  function applyTheme(theme) {
     var view = document.getElementById("server-view");
     if (!view) return;
-    var toRemove = [];
+    theme = theme || "discord";
+    if (ALL.indexOf(theme) < 0) theme = "discord";
+    var rm = [];
     view.classList.forEach(function (c) {
-      if (c.indexOf("theme-") === 0) toRemove.push(c);
+      if (c.indexOf("theme-") === 0) rm.push(c);
     });
-    toRemove.forEach(function (c) { view.classList.remove(c); });
-    if (theme && theme !== "discord") {
-      view.classList.add("theme-" + theme);
-    }
+    rm.forEach(function (c) { view.classList.remove(c); });
+    if (theme !== "discord") view.classList.add("theme-" + theme);
+    try { localStorage.setItem("svTheme", theme); } catch (_) {}
+    var sel = document.getElementById("sv-theme");
+    if (sel && sel.value !== theme) sel.value = theme;
   }
 
-  function hook() {
+  function onThemeChange() {
     var sel = document.getElementById("sv-theme");
-    if (!sel || sel.__svThemesHooked) return !!sel;
-    sel.__svThemesHooked = true;
+    if (!sel) return;
+    applyTheme(sel.value || "discord");
+  }
 
-    sel.addEventListener("change", function () {
-      var theme = sel.value || "discord";
-      applyThemeClass(theme);
-      try { localStorage.setItem("svTheme", theme); } catch (_) {}
-    });
-
-    var theme = sel.value || localStorage.getItem("svTheme") || "discord";
-    applyThemeClass(theme);
-
-    var view = document.getElementById("server-view");
-    if (view) {
-      var obs = new MutationObserver(function () {
-        var t = localStorage.getItem("svTheme") || "discord";
-        if (t !== "discord" && !view.classList.contains("theme-" + t)) {
-          var has = false;
-          view.classList.forEach(function (c) {
-            if (c.indexOf("theme-") === 0) has = true;
-          });
-          if (!has) applyThemeClass(t);
-        }
-      });
-      obs.observe(view, { attributes: true, attributeFilter: ["class"] });
+  function hookSelect() {
+    var sel = document.getElementById("sv-theme");
+    if (!sel) return false;
+    fillSelect();
+    if (!sel.__svThemeBound) {
+      sel.__svThemeBound = true;
+      sel.addEventListener("change", onThemeChange);
     }
+    var t = sel.value;
+    try { t = t || localStorage.getItem("svTheme") || "discord"; } catch (_) { t = t || "discord"; }
+    applyTheme(t);
+    return true;
+  }
+
+  function hookSettingsBtn() {
+    var btn = document.getElementById("sv-settings-btn");
+    if (!btn || btn.__svThemeBound) return !!btn;
+    btn.__svThemeBound = true;
+    btn.addEventListener("click", function () {
+      setTimeout(function () { ensureCss(); fillSelect(); hookSelect(); }, 0);
+      setTimeout(fillSelect, 50);
+    }, true);
     return true;
   }
 
   function boot() {
-    loadCss();
-    fillSelect();
-    hook();
+    ensureCss();
+    hookSelect();
+    hookSettingsBtn();
   }
+
+  setInterval(function () {
+    var view = document.getElementById("server-view");
+    if (!view || view.hidden) return;
+    var t = "discord";
+    try { t = localStorage.getItem("svTheme") || "discord"; } catch (_) {}
+    if (t !== "discord" && !view.classList.contains("theme-" + t)) applyTheme(t);
+    fillSelect();
+  }, 1500);
 
   var n = 0;
   function retry() {
     n++;
     boot();
-    if (n < 50) setTimeout(retry, 200);
+    if (n < 60) setTimeout(retry, 250);
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", retry);
-  } else {
-    retry();
-  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", retry);
+  else retry();
 
-  console.log("[sv-themes-expand] v1 — " + THEMES.length + " Server View themes");
+  document.addEventListener("click", function (e) {
+    var t = e.target;
+    if (!t) return;
+    if (t.id === "sv-settings-btn" || (t.closest && t.closest("#sv-settings-btn"))) {
+      setTimeout(function () { fillSelect(); hookSelect(); }, 0);
+    }
+  }, true);
+
+  window.__svApplyTheme = applyTheme;
+  window.__svFillThemes = fillSelect;
+  console.log("[sv-themes-expand] v2 — " + THEMES.length + " themes in SV settings");
 })();
