@@ -74,7 +74,7 @@
     ensure("themes-force-struct-css", "/themes-force-struct.css?v=10");
     ensure("themes-radical-css", "/themes-radical.css?v=2");
     ensure("themes-insane-css", "/themes-insane.css?v=1");
-    ensure("theme-sweetheart-css", "/theme-sweetheart.css?v=2");
+    ensure("theme-sweetheart-css", "/theme-sweetheart.css?v=3");
   }
 
   function updateDrawerFooter(themeId) {
@@ -109,6 +109,11 @@
       cur.textContent = meta ? meta.emoji + " " + meta.name : name;
     }
     updateDrawerFooter(name);
+    // Re-assert drawer nav after theme change
+    document.body.classList.add("drawer-nav-only");
+    if (typeof window.__openNavDrawer === "function") {
+      /* no-op open; just ensure hamburger exists via side effect of scripts */
+    }
   }
 
   function openThemesSection() {
@@ -287,7 +292,6 @@
     try { saved = localStorage.getItem("dashboardTheme") || "default"; } catch (_) {}
     applyTheme(saved);
     renderCards();
-    // keep Paisley footer if drawer rebuilds
     setTimeout(function () { updateDrawerFooter(saved); }, 500);
     setTimeout(function () { updateDrawerFooter(localStorage.getItem("dashboardTheme") || saved); }, 2000);
   }
@@ -327,5 +331,5 @@
   window.__applyDashboardTheme = applyTheme;
   window.__dashboardThemes = THEMES;
   window.__openThemes = openThemesSection;
-  console.log("[theme-boot] v16 — Sweetheart + Paisley footer");
+  console.log("[theme-boot] v16 — Sweetheart v3 + Paisley footer");
 })();
