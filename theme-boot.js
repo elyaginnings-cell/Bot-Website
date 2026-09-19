@@ -1,63 +1,62 @@
 /**
- * Dashboard themes v16 — Sweetheart readability + Paisley footer
+ * Dashboard themes v17 — stop retry/observer freeze so clicks work
  */
 (function () {
   "use strict";
-  if (window.__themeBootV16) return;
-  window.__themeBootV16 = true;
+  if (window.__themeBootV17) return;
+  window.__themeBootV17 = true;
 
   var THEMES = [
     {
       id: "sweetheart",
       name: "Sweetheart",
-      emoji: "🌻",
-      blurb: "For Paisley — sunflowers, hearts, stars & soft nature",
+      emoji: "\ud83c\udf3b",
+      blurb: "Sunflowers, hearts, stars and soft nature",
       group: "Special"
     },
-    { id: "default", name: "Default", emoji: "💜", blurb: "Original neon violet", group: "Original" },
-    { id: "mocha", name: "Mocha", emoji: "☕", blurb: "Warm coffee house", group: "Original" },
-    { id: "neon", name: "Neon", emoji: "💖", blurb: "Pink / cyan glow", group: "Original" },
-    { id: "midnight", name: "Midnight", emoji: "🌙", blurb: "Cool night blue", group: "Original" },
-    { id: "sakura", name: "Sakura", emoji: "🌸", blurb: "Soft cherry blossom", group: "Original" },
-    { id: "sunflower", name: "Sunflower", emoji: "🌼", blurb: "Golden garden", group: "Original" },
-    { id: "bloodmoon", name: "Bloodmoon", emoji: "🩸", blurb: "Crimson horror UI", group: "Original" },
-    { id: "terminal", name: "Terminal", emoji: "💻", blurb: "CRT scanlines + mono console", group: "Original" },
-    { id: "ocean", name: "Ocean", emoji: "🌊", blurb: "Deep sea dashboard", group: "Nature" },
-    { id: "forest", name: "Forest", emoji: "🌲", blurb: "Moss canopy UI", group: "Nature" },
-    { id: "mint", name: "Mint", emoji: "🍃", blurb: "Fresh soft green", group: "Nature" },
-    { id: "bamboo", name: "Bamboo", emoji: "🎋", blurb: "Lime grove", group: "Nature" },
-    { id: "arctic", name: "Arctic", emoji: "🧊", blurb: "Light ice + snow sparkles", group: "Nature" },
-    { id: "aurora", name: "Aurora", emoji: "🌌", blurb: "Northern glow blobs", group: "Nature" },
-    { id: "cyberpunk", name: "Cyberpunk", emoji: "🤖", blurb: "Angled chrome + neon grid", group: "Neon" },
-    { id: "synthwave", name: "Synthwave", emoji: "🕹️", blurb: "80s perspective grid", group: "Neon" },
-    { id: "vaporwave", name: "Vaporwave", emoji: "🌴", blurb: "Double-border aesthetic", group: "Neon" },
-    { id: "lava", name: "Lava", emoji: "🌋", blurb: "Molten bottom glow", group: "Neon" },
-    { id: "candy", name: "Candy", emoji: "🍬", blurb: "Pastel pill product", group: "Neon" },
-    { id: "nord", name: "Nord", emoji: "❄️", blurb: "Flat pro IDE slate", group: "Dev" },
-    { id: "dracula", name: "Dracula", emoji: "🧛", blurb: "Editor purple", group: "Dev" },
-    { id: "catppuccin", name: "Catppuccin", emoji: "🐱", blurb: "Soft mocha code", group: "Dev" },
-    { id: "gruvbox", name: "Gruvbox", emoji: "🐻", blurb: "Warm retro code", group: "Dev" },
-    { id: "tokyonight", name: "Tokyo Night", emoji: "🌃", blurb: "Soft city blues", group: "Dev" },
-    { id: "solarized", name: "Solarized", emoji: "☀️", blurb: "Classic terminal tones", group: "Dev" },
-    { id: "rosegold", name: "Rose Gold", emoji: "✨", blurb: "Luxury serif dark", group: "Soft" },
-    { id: "amethyst", name: "Amethyst", emoji: "🔮", blurb: "Royal purple", group: "Soft" },
-    { id: "coral", name: "Coral", emoji: "🪸", blurb: "Soft rose pills", group: "Soft" },
-    { id: "honey", name: "Honey", emoji: "🍯", blurb: "Golden amber site", group: "Soft" },
-    { id: "icecream", name: "Ice Cream", emoji: "🍦", blurb: "Super-rounded dessert UI", group: "Soft" },
-    { id: "clay", name: "Clay", emoji: "🧱", blurb: "Chunky offset-shadow toy UI", group: "Soft" },
-    { id: "emerald", name: "Emerald", emoji: "💎", blurb: "Luxury green", group: "Pro" },
-    { id: "coffee", name: "Coffeehouse", emoji: "🫘", blurb: "Espresso & cream", group: "Pro" },
-    { id: "paper", name: "Paper", emoji: "📄", blurb: "Editorial magazine / journal", group: "Pro" },
-    { id: "slate", name: "Slate", emoji: "🪨", blurb: "Flat gray pro", group: "Pro" },
-    { id: "obsidian", name: "Obsidian", emoji: "⬛", blurb: "Hard minimal black", group: "Pro" },
-    { id: "steel", name: "Steel", emoji: "🛡️", blurb: "Flat metal", group: "Pro" },
-    { id: "sunset", name: "Sunset", emoji: "🌇", blurb: "Dusk gradient site", group: "Pro" },
-    { id: "mono", name: "Mono", emoji: "⬛", blurb: "Brutalist newspaper zero-radius", group: "Pro" }
+    { id: "default", name: "Default", emoji: "\ud83d\udc9c", blurb: "Original neon violet", group: "Original" },
+    { id: "mocha", name: "Mocha", emoji: "\u2615", blurb: "Warm coffee house", group: "Original" },
+    { id: "neon", name: "Neon", emoji: "\ud83d\udc96", blurb: "Pink / cyan glow", group: "Original" },
+    { id: "midnight", name: "Midnight", emoji: "\ud83c\udf03", blurb: "Cool night blue", group: "Original" },
+    { id: "sakura", name: "Sakura", emoji: "\ud83c\udf38", blurb: "Soft cherry blossom", group: "Original" },
+    { id: "sunflower", name: "Sunflower", emoji: "\ud83c\udf3c", blurb: "Golden garden", group: "Original" },
+    { id: "bloodmoon", name: "Bloodmoon", emoji: "\ud83e\ude78", blurb: "Crimson horror UI", group: "Original" },
+    { id: "terminal", name: "Terminal", emoji: "\ud83d\udcbb", blurb: "CRT scanlines + mono console", group: "Original" },
+    { id: "ocean", name: "Ocean", emoji: "\ud83c\udf0a", blurb: "Deep sea dashboard", group: "Nature" },
+    { id: "forest", name: "Forest", emoji: "\ud83c\udf32", blurb: "Moss canopy UI", group: "Nature" },
+    { id: "mint", name: "Mint", emoji: "\ud83c\udf43", blurb: "Fresh soft green", group: "Nature" },
+    { id: "bamboo", name: "Bamboo", emoji: "\ud83c\udf8b", blurb: "Lime grove", group: "Nature" },
+    { id: "arctic", name: "Arctic", emoji: "\ud83e\uddca", blurb: "Light ice + snow sparkles", group: "Nature" },
+    { id: "aurora", name: "Aurora", emoji: "\ud83c\udf0c", blurb: "Northern glow blobs", group: "Nature" },
+    { id: "cyberpunk", name: "Cyberpunk", emoji: "\ud83e\udd16", blurb: "Angled chrome + neon grid", group: "Neon" },
+    { id: "synthwave", name: "Synthwave", emoji: "\ud83d\udd79\ufe0f", blurb: "80s perspective grid", group: "Neon" },
+    { id: "vaporwave", name: "Vaporwave", emoji: "\ud83c\udf34", blurb: "Double-border aesthetic", group: "Neon" },
+    { id: "lava", name: "Lava", emoji: "\ud83c\udf0b", blurb: "Molten bottom glow", group: "Neon" },
+    { id: "candy", name: "Candy", emoji: "\ud83c\udf6c", blurb: "Pastel pill product", group: "Neon" },
+    { id: "nord", name: "Nord", emoji: "\u2744\ufe0f", blurb: "Flat pro IDE slate", group: "Dev" },
+    { id: "dracula", name: "Dracula", emoji: "\ud83e\udddb", blurb: "Editor purple", group: "Dev" },
+    { id: "catppuccin", name: "Catppuccin", emoji: "\ud83d\udc31", blurb: "Soft mocha code", group: "Dev" },
+    { id: "gruvbox", name: "Gruvbox", emoji: "\ud83d\udc3b", blurb: "Warm retro code", group: "Dev" },
+    { id: "tokyonight", name: "Tokyo Night", emoji: "\ud83c\udf03", blurb: "Soft city blues", group: "Dev" },
+    { id: "solarized", name: "Solarized", emoji: "\u2600\ufe0f", blurb: "Classic terminal tones", group: "Dev" },
+    { id: "rosegold", name: "Rose Gold", emoji: "\u2728", blurb: "Luxury serif dark", group: "Soft" },
+    { id: "amethyst", name: "Amethyst", emoji: "\ud83d\udd2e", blurb: "Royal purple", group: "Soft" },
+    { id: "coral", name: "Coral", emoji: "\ud83e\udeb8", blurb: "Soft rose pills", group: "Soft" },
+    { id: "honey", name: "Honey", emoji: "\ud83c\udf6f", blurb: "Golden amber site", group: "Soft" },
+    { id: "icecream", name: "Ice Cream", emoji: "\ud83c\udf66", blurb: "Super-rounded dessert UI", group: "Soft" },
+    { id: "clay", name: "Clay", emoji: "\ud83e\uddf1", blurb: "Chunky offset-shadow toy UI", group: "Soft" },
+    { id: "emerald", name: "Emerald", emoji: "\ud83d\udc8e", blurb: "Luxury green", group: "Pro" },
+    { id: "coffee", name: "Coffeehouse", emoji: "\ud83e\uded8", blurb: "Espresso & cream", group: "Pro" },
+    { id: "paper", name: "Paper", emoji: "\ud83d\udcc4", blurb: "Editorial magazine / journal", group: "Pro" },
+    { id: "slate", name: "Slate", emoji: "\ud83e\udea8", blurb: "Flat gray pro", group: "Pro" },
+    { id: "obsidian", name: "Obsidian", emoji: "\u2b1b", blurb: "Hard minimal black", group: "Pro" },
+    { id: "steel", name: "Steel", emoji: "\ud83d\udee1\ufe0f", blurb: "Flat metal", group: "Pro" },
+    { id: "sunset", name: "Sunset", emoji: "\ud83c\udf07", blurb: "Dusk gradient site", group: "Pro" },
+    { id: "mono", name: "Mono", emoji: "\u2b1b", blurb: "Brutalist newspaper zero-radius", group: "Pro" }
   ];
 
   var ALL_IDS = THEMES.map(function (t) { return t.id; });
   var DEFAULT_FOOTER = "Tap a category name to collapse";
-  var SWEET_FOOTER = "Paisley ❤️  ·  🌻 ⭐ 🐱 ❄️ 🍓";
 
   function loadCss() {
     function ensure(id, href) {
@@ -80,9 +79,7 @@
   function updateDrawerFooter(themeId) {
     var foot = document.getElementById("nav-drawer-footer");
     if (!foot) return;
-    if (themeId === "sweetheart") {
-      foot.textContent = SWEET_FOOTER;
-    } else if (foot.textContent.indexOf("Paisley") >= 0) {
+    if (themeId !== "sweetheart" && foot.textContent.indexOf("Paisley") >= 0) {
       foot.textContent = DEFAULT_FOOTER;
     }
   }
@@ -109,11 +106,7 @@
       cur.textContent = meta ? meta.emoji + " " + meta.name : name;
     }
     updateDrawerFooter(name);
-    // Re-assert drawer nav after theme change
     document.body.classList.add("drawer-nav-only");
-    if (typeof window.__openNavDrawer === "function") {
-      /* no-op open; just ensure hamburger exists via side effect of scripts */
-    }
   }
 
   function openThemesSection() {
@@ -131,7 +124,7 @@
     var title = document.getElementById("page-title");
     if (title) title.textContent = "Themes";
     var desc = document.getElementById("page-description");
-    if (desc) desc.textContent = "Each theme is a different website — plus Sweetheart for Paisley.";
+    if (desc) desc.textContent = "Pick a full-site look for the dashboard.";
     renderCards();
   }
 
@@ -193,7 +186,7 @@
     btn.setAttribute("data-tab", "themes");
     btn.id = "nav-themes";
     btn.title = "Dashboard themes";
-    btn.innerHTML = "<span>🎨</span><em>Themes</em>";
+    btn.innerHTML = "<span>\ud83c\udfa8</span><em>Themes</em>";
     btn.addEventListener("click", function (e) {
       e.preventDefault();
       e.stopPropagation();
@@ -211,7 +204,7 @@
     fab.type = "button";
     fab.title = "Themes";
     fab.setAttribute("aria-label", "Open themes");
-    fab.innerHTML = "🎨";
+    fab.innerHTML = "\ud83c\udfa8";
     fab.style.cssText =
       "position:fixed;bottom:20px;right:20px;z-index:99999;width:48px;height:48px;" +
       "border-radius:50%;border:1px solid rgba(255,77,240,.4);background:linear-gradient(135deg,#ff4df0,#d63dff);" +
@@ -241,7 +234,7 @@
       '<div class="card form-card wide">' +
       '<span class="eyebrow">APPEARANCE</span>' +
       "<h2>Dashboard themes</h2>" +
-      '<p class="form-hint">Full website packs — plus <strong>Sweetheart</strong> for Paisley ❤️</p>' +
+      '<p class="form-hint">Full website color packs.</p>' +
       '<p class="form-hint">Current: <strong id="themes-current-label">—</strong></p>' +
       '<div id="themes-grid" class="themes-grid"></div>' +
       "</div>";
@@ -293,43 +286,36 @@
     applyTheme(saved);
     renderCards();
     setTimeout(function () { updateDrawerFooter(saved); }, 500);
-    setTimeout(function () { updateDrawerFooter(localStorage.getItem("dashboardTheme") || saved); }, 2000);
   }
 
   var n = 0;
   function retry() {
     n++;
     boot();
-    if (n < 80) setTimeout(retry, 250);
+    if (n < 6) setTimeout(retry, n === 1 ? 300 : 800);
   }
 
   try {
+    var obsTimer = null;
     var obs = new MutationObserver(function () {
-      ensureNav();
-      ensureDropdown();
-      ensureSection();
-      ensureFloatingFallback();
-      var t = localStorage.getItem("dashboardTheme") || "default";
-      if (t === "sweetheart") updateDrawerFooter("sweetheart");
+      if (obsTimer) clearTimeout(obsTimer);
+      obsTimer = setTimeout(function () {
+        if (!document.getElementById("theme-fab")) ensureFloatingFallback();
+        if (!document.getElementById("themes")) ensureSection();
+        if (!document.getElementById("dashboard-theme")) ensureDropdown();
+      }, 600);
     });
     obs.observe(document.documentElement, { childList: true, subtree: true });
+    setTimeout(function () {
+      try { obs.disconnect(); } catch (_) {}
+    }, 12000);
   } catch (_) {}
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", retry);
   else retry();
 
-  document.addEventListener("click", function (e) {
-    var t = e.target;
-    if (!t) return;
-    if (t.id === "login-button" || (t.closest && t.closest("#login-button"))) {
-      setTimeout(boot, 500);
-      setTimeout(boot, 1500);
-      setTimeout(boot, 3000);
-    }
-  }, true);
-
   window.__applyDashboardTheme = applyTheme;
   window.__dashboardThemes = THEMES;
   window.__openThemes = openThemesSection;
-  console.log("[theme-boot] v16 — Sweetheart v3 + Paisley footer");
+  console.log("[theme-boot] v17 — limited boot, no freeze loop");
 })();
