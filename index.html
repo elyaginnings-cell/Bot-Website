@@ -14,11 +14,14 @@
   background:rgba(18,8,28,.96)!important;
   display:flex!important;flex-direction:column!important;align-items:center!important;
   justify-content:center!important;gap:5px!important;padding:0!important;
+  opacity:1!important;visibility:visible!important;pointer-events:auto!important;
 }
 #nav-hamburger span{display:block!important;width:18px!important;height:2.5px!important;background:#f5e9ff!important;border-radius:2px!important;}
 body.drawer-nav-only .sidebar,body.drawer-nav-only .navigation,body.drawer-nav-only.mode-mobile .navigation,body.drawer-nav-only.mode-auto .navigation{
   display:none!important;visibility:hidden!important;pointer-events:none!important;height:0!important;opacity:0!important;
 }
+#nav-drawer-backdrop{pointer-events:none!important;}
+body.nav-drawer-open #nav-drawer-backdrop{pointer-events:auto!important;}
 </style>
 </head>
 <body>
@@ -85,7 +88,7 @@ body.drawer-nav-only .sidebar,body.drawer-nav-only .navigation,body.drawer-nav-o
       l.href = href;
       document.head.appendChild(l);
     }
-    loadCss("/nav-drawer.css?v=8");
+    loadCss("/nav-drawer.css?v=9");
     loadCss("/mobile-fix.css?v=5");
     loadCss("/themes-insane.css?v=1");
     loadCss("/theme-sweetheart.css?v=3");
@@ -118,7 +121,7 @@ body.drawer-nav-only .sidebar,body.drawer-nav-only .navigation,body.drawer-nav-o
     await loadScript("/sv-ux-polish.js?v=3");
     await loadScript("/sv-phase0.js?v=2");
     await loadScript("/theme-boot.js?v=16");
-    await loadScript("/nav-drawer.js?v=8");
+    await loadScript("/nav-drawer.js?v=9");
     await loadScript("/sv-themes-expand.js?v=2");
   } catch (e) {
     document.body.innerHTML =
