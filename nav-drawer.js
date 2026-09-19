@@ -1,14 +1,11 @@
 /**
- * Nav drawer v8 — never lose hamburger; always kill original nav
+ * Nav drawer v9 — stable hamburger + grouped nav
+ * FIX: removed attribute MutationObserver (was infinite-looping and freezing all clicks)
  */
 (function () {
   "use strict";
-  // Allow re-init if older version was loaded
-  if (window.__navDrawerV8) return;
-  window.__navDrawerV8 = true;
-  window.__navDrawerV7 = true;
-  window.__navDrawerV6 = true;
-  window.__navDrawerV5 = true;
+  if (window.__navDrawerV9) return;
+  window.__navDrawerV9 = true;
 
   var BOT_NAME = "Coffee Shop";
   var BOT_SUB = "Bot Control";
@@ -77,77 +74,86 @@
     return "other";
   }
 
-  function injectCriticalCss() {
-    var style = document.getElementById("nav-drawer-critical");
-    if (!style) {
-      style = document.createElement("style");
-      style.id = "nav-drawer-critical";
-      (document.head || document.documentElement).appendChild(style);
-    }
+  function injectCss() {
+    if (document.getElementById("nav-drawer-critical-v9")) return;
+    var style = document.createElement("style");
+    style.id = "nav-drawer-critical-v9";
     style.textContent = [
-      "body.drawer-nav-only .sidebar,body.drawer-nav-only aside.sidebar,",
-      "body.drawer-nav-only .navigation,body.drawer-nav-only.mode-mobile .navigation,",
-      "body.drawer-nav-only.mode-auto .navigation,body.drawer-nav-only.mode-desktop .navigation,",
-      "body.drawer-nav-only nav.navigation,body.drawer-nav-only .nav-tabs,body.drawer-nav-only .tab-bar{",
-      "display:none!important;visibility:hidden!important;pointer-events:none!important;",
-      "height:0!important;max-height:0!important;overflow:hidden!important;opacity:0!important;",
-      "position:absolute!important;left:-9999px!important;width:0!important;}",
+      "body.drawer-nav-only .sidebar,",
+      "body.drawer-nav-only aside.sidebar:not(#nav-drawer),",
+      "body.drawer-nav-only .navigation,",
+      "body.drawer-nav-only nav.navigation,",
+      "body.drawer-nav-only .nav-tabs,",
+      "body.drawer-nav-only .tab-bar {",
+      "  display:none!important;visibility:hidden!important;pointer-events:none!important;",
+      "  height:0!important;max-height:0!important;overflow:hidden!important;opacity:0!important;",
+      "}",
       "#nav-hamburger{",
-      "position:fixed!important;top:max(12px,env(safe-area-inset-top))!important;",
-      "left:max(12px,env(safe-area-inset-left))!important;z-index:2147483000!important;",
-      "width:48px!important;height:48px!important;border-radius:14px!important;",
-      "display:flex!important;flex-direction:column!important;align-items:center!important;",
-      "justify-content:center!important;gap:5px!important;padding:0!important;",
-      "opacity:1!important;visibility:visible!important;pointer-events:auto!important;",
-      "-webkit-tap-highlight-color:transparent!important;}",
-      "#nav-hamburger span{display:block!important;width:18px!important;height:2.5px!important;border-radius:2px!important;}",
+      "  position:fixed!important;",
+      "  top:max(12px,env(safe-area-inset-top))!important;",
+      "  left:max(12px,env(safe-area-inset-left))!important;",
+      "  z-index:2147483000!important;",
+      "  width:48px!important;height:48px!important;",
+      "  border-radius:14px!important;",
+      "  border:1px solid rgba(255,77,240,.55)!important;",
+      "  background:rgba(18,8,28,.96)!important;",
+      "  display:flex!important;flex-direction:column!important;",
+      "  align-items:center!important;justify-content:center!important;",
+      "  gap:5px!important;padding:0!important;margin:0!important;",
+      "  cursor:pointer!important;opacity:1!important;visibility:visible!important;",
+      "  pointer-events:auto!important;box-shadow:0 8px 24px rgba(0,0,0,.4)!important;",
+      "}",
+      "#nav-hamburger span{",
+      "  display:block!important;width:18px!important;height:2.5px!important;",
+      "  background:#f5e9ff!important;border-radius:2px!important;",
+      "  transition:transform .2s,opacity .2s;",
+      "}",
       "body.nav-drawer-open #nav-hamburger span:nth-child(1){transform:translateY(7.5px) rotate(45deg);}",
       "body.nav-drawer-open #nav-hamburger span:nth-child(2){opacity:0;}",
       "body.nav-drawer-open #nav-hamburger span:nth-child(3){transform:translateY(-7.5px) rotate(-45deg);}",
-      "#nav-drawer-backdrop{position:fixed!important;inset:0!important;z-index:2147482000!important;background:rgba(0,0,0,.55)!important;opacity:0;visibility:hidden;pointer-events:none;}",
-      "body.nav-drawer-open #nav-drawer-backdrop{opacity:1;visibility:visible;pointer-events:auto;}",
-      "#nav-drawer{position:fixed!important;top:0!important;left:0!important;bottom:0!important;z-index:2147482500!important;",
-      "width:min(310px,88vw)!important;transform:translateX(-105%);transition:transform .28s;",
-      "display:flex!important;flex-direction:column!important;overflow:hidden!important;",
-      "padding:max(18px,env(safe-area-inset-top)) 16px max(18px,env(safe-area-inset-bottom));}",
-      "body.nav-drawer-open #nav-drawer{transform:translateX(0);}",
-      "body.drawer-nav-only .header{padding-left:58px!important;}",
-      ".nav-drawer-group-items.is-collapsed{display:none!important;}"
+      "#nav-drawer-backdrop{",
+      "  position:fixed!important;inset:0!important;z-index:2147482000!important;",
+      "  background:rgba(0,0,0,.55)!important;",
+      "  opacity:0!important;visibility:hidden!important;pointer-events:none!important;",
+      "  transition:opacity .2s,visibility .2s;",
+      "}",
+      "body.nav-drawer-open #nav-drawer-backdrop{",
+      "  opacity:1!important;visibility:visible!important;pointer-events:auto!important;",
+      "}",
+      "#nav-drawer{",
+      "  position:fixed!important;top:0!important;left:0!important;bottom:0!important;",
+      "  z-index:2147482500!important;width:min(310px,88vw)!important;",
+      "  transform:translateX(-105%)!important;transition:transform .28s!important;",
+      "  display:flex!important;flex-direction:column!important;overflow:hidden!important;",
+      "  padding:max(18px,env(safe-area-inset-top)) 16px max(18px,env(safe-area-inset-bottom))!important;",
+      "  background:rgba(14,8,22,.98)!important;border-right:1px solid rgba(255,77,240,.25)!important;",
+      "  box-shadow:12px 0 40px rgba(0,0,0,.45)!important;",
+      "  pointer-events:auto!important;",
+      "}",
+      "body.nav-drawer-open #nav-drawer{transform:translateX(0)!important;}",
+      "#nav-drawer-header{display:flex;align-items:center;gap:12px;background:none;border:none;color:inherit;cursor:pointer;text-align:left;padding:8px;margin-bottom:12px;width:100%;}",
+      "#nav-drawer-header .brand-icon{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;background:linear-gradient(135deg,#ff4df0,#d63dff);flex-shrink:0;}",
+      "#nav-drawer-header strong{display:block;font-size:15px;color:#f5e9ff;}",
+      "#nav-drawer-header span{display:block;font-size:11px;color:rgba(245,233,255,.6);}",
+      "#nav-drawer-list{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:12px;}",
+      ".nav-drawer-group{display:flex;align-items:center;gap:8px;width:100%;background:none;border:none;color:rgba(245,233,255,.55);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:10px 8px 6px;cursor:pointer;}",
+      ".nav-drawer-group .ndg-chevron{margin-left:auto;font-size:9px;transition:transform .2s;}",
+      ".nav-drawer-group.is-collapsed .ndg-chevron{transform:rotate(-90deg);}",
+      ".nav-drawer-group-items{display:flex;flex-direction:column;gap:2px;padding:0 0 8px 4px;}",
+      ".nav-drawer-group-items.is-collapsed{display:none!important;}",
+      ".nav-drawer-item{display:flex;align-items:center;gap:10px;width:100%;background:transparent;border:none;border-radius:12px;color:#e8d8f8;font-size:14px;padding:10px 12px;cursor:pointer;text-align:left;}",
+      ".nav-drawer-item:hover{background:rgba(255,77,240,.12);}",
+      ".nav-drawer-item.active{background:rgba(255,77,240,.22);color:#fff;font-weight:600;}",
+      ".nav-drawer-item .ndi-icon{width:22px;text-align:center;flex-shrink:0;}",
+      "#nav-drawer-footer{font-size:11px;color:rgba(245,233,255,.45);text-align:center;padding-top:8px;border-top:1px solid rgba(255,255,255,.06);}",
+      "body.drawer-nav-only .header{padding-left:58px!important;}"
     ].join("\n");
+    (document.head || document.documentElement).appendChild(style);
   }
 
-  function loadCss() {
-    injectCriticalCss();
-    var link = document.getElementById("nav-drawer-css");
-    if (!link) {
-      link = document.createElement("link");
-      link.id = "nav-drawer-css";
-      link.rel = "stylesheet";
-      (document.head || document.documentElement).appendChild(link);
-    }
-    link.href = "/nav-drawer.css?v=8";
-  }
-
-  function killOriginalNav() {
+  function hideOriginalNav() {
     if (!document.body) return;
     document.body.classList.add("drawer-nav-only");
-    [
-      ".sidebar", "aside.sidebar", ".navigation", "nav.navigation",
-      ".nav-tabs", ".tab-bar", ".tabs-row", ".sidebar-brand"
-    ].forEach(function (sel) {
-      document.querySelectorAll(sel).forEach(function (el) {
-        // Don't hide our drawer if someone mis-classed it
-        if (el.id === "nav-drawer" || el.closest && el.closest("#nav-drawer")) return;
-        el.style.setProperty("display", "none", "important");
-        el.style.setProperty("visibility", "hidden", "important");
-        el.style.setProperty("pointer-events", "none", "important");
-        el.style.setProperty("height", "0", "important");
-        el.style.setProperty("max-height", "0", "important");
-        el.style.setProperty("overflow", "hidden", "important");
-        el.style.setProperty("opacity", "0", "important");
-        el.setAttribute("aria-hidden", "true");
-      });
-    });
   }
 
   function detectBotName() {
@@ -170,23 +176,16 @@
       btn.setAttribute("aria-expanded", "false");
       btn.innerHTML = "<span></span><span></span><span></span>";
       document.body.appendChild(btn);
-      function onHam(e) {
+      btn.addEventListener("click", function (e) {
         e.preventDefault();
         e.stopPropagation();
         toggle();
-      }
-      btn.addEventListener("click", onHam, { passive: false });
-      btn.addEventListener("touchend", onHam, { passive: false });
+      });
     }
-    // Force visible every pass
-    btn.style.setProperty("display", "flex", "important");
-    btn.style.setProperty("visibility", "visible", "important");
-    btn.style.setProperty("opacity", "1", "important");
-    btn.style.setProperty("pointer-events", "auto", "important");
-    btn.style.setProperty("z-index", "2147483000", "important");
 
-    if (!document.getElementById("nav-drawer-backdrop")) {
-      var backdrop = document.createElement("div");
+    var backdrop = document.getElementById("nav-drawer-backdrop");
+    if (!backdrop) {
+      backdrop = document.createElement("div");
       backdrop.id = "nav-drawer-backdrop";
       document.body.appendChild(backdrop);
       backdrop.addEventListener("click", function () { close(); });
@@ -198,7 +197,7 @@
       drawer.setAttribute("role", "dialog");
       drawer.setAttribute("aria-label", "Navigation");
       drawer.innerHTML =
-        '<button type="button" id="nav-drawer-header" class="nav-brand-btn" title="Go to overview">' +
+        '<button type="button" id="nav-drawer-header">' +
         '<div class="brand-icon">' + BOT_ICON + "</div>" +
         '<div><strong id="nav-bot-title">' + BOT_NAME + "</strong><span>" + BOT_SUB + "</span></div>" +
         "</button>" +
@@ -220,8 +219,8 @@
       }
     }
 
-    if (!window.__navDrawerEsc) {
-      window.__navDrawerEsc = true;
+    if (!window.__navDrawerEscV9) {
+      window.__navDrawerEscV9 = true;
       document.addEventListener("keydown", function (e) {
         if (e.key === "Escape") close();
       });
@@ -312,7 +311,6 @@
       head.type = "button";
       head.className = "nav-drawer-group" + (isCollapsed ? " is-collapsed" : "");
       head.setAttribute("data-group", gid);
-      head.setAttribute("aria-expanded", isCollapsed ? "false" : "true");
       head.innerHTML =
         '<span class="ndg-icon">' + meta.icon + "</span>" +
         '<span class="ndg-label">' + meta.label + "</span>" +
@@ -320,7 +318,6 @@
 
       var wrap = document.createElement("div");
       wrap.className = "nav-drawer-group-items" + (isCollapsed ? " is-collapsed" : "");
-      wrap.setAttribute("data-group-items", gid);
 
       groupItems.forEach(function (item) {
         var b = document.createElement("button");
@@ -345,11 +342,9 @@
         if (nowCollapsed) {
           wrap.classList.add("is-collapsed");
           head.classList.add("is-collapsed");
-          head.setAttribute("aria-expanded", "false");
         } else {
           wrap.classList.remove("is-collapsed");
           head.classList.remove("is-collapsed");
-          head.setAttribute("aria-expanded", "true");
         }
         var map = loadCollapsed();
         if (nowCollapsed) map[gid] = true;
@@ -364,8 +359,7 @@
 
   function activateTab(item) {
     if (item.el && document.body.contains(item.el)) {
-      item.el.click();
-      return;
+      try { item.el.click(); return; } catch (_) {}
     }
     var tab = item.tab;
     if (!tab) return;
@@ -396,10 +390,8 @@
     detectBotName();
     var titleEl = document.getElementById("nav-bot-title");
     if (titleEl) titleEl.textContent = BOT_NAME;
-    killOriginalNav();
     ensureUI();
     renderList();
-    // Paisley footer if sweetheart theme
     try {
       if ((localStorage.getItem("dashboardTheme") || "") === "sweetheart") {
         var foot = document.getElementById("nav-drawer-footer");
@@ -428,42 +420,45 @@
     else open();
   }
 
-  function boot() {
+  function bootOnce() {
     if (!document.body) return;
-    loadCss();
+    injectCss();
     detectBotName();
-    killOriginalNav();
+    hideOriginalNav();
     ensureUI();
-    try {
-      if (!window.__navKillObsV8) {
-        window.__navKillObsV8 = true;
-        var obs = new MutationObserver(function () {
-          killOriginalNav();
-          ensureUI();
-        });
-        obs.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["class", "style"] });
-      }
-    } catch (_) {}
+    close(); // never leave backdrop blocking clicks
   }
 
-  var n = 0;
-  function retry() {
-    n++;
-    boot();
-    if (n < 100) setTimeout(retry, 100);
+  function scheduleBoots() {
+    [0, 200, 600, 1200, 2500, 5000].forEach(function (ms) {
+      setTimeout(bootOnce, ms);
+    });
   }
 
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", retry);
+    document.addEventListener("DOMContentLoaded", scheduleBoots);
   } else {
-    retry();
+    scheduleBoots();
   }
-  setTimeout(boot, 300);
-  setTimeout(boot, 1000);
-  setTimeout(boot, 2500);
-  setTimeout(boot, 5000);
+
+  // Only watch new nodes, debounced — NEVER attributes (that caused the freeze)
+  try {
+    var timer = null;
+    var obs = new MutationObserver(function () {
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(function () {
+        hideOriginalNav();
+        ensureUI();
+      }, 400);
+    });
+    function startObs() {
+      if (document.body) obs.observe(document.body, { childList: true, subtree: true });
+    }
+    if (document.body) startObs();
+    else document.addEventListener("DOMContentLoaded", startObs);
+  } catch (_) {}
 
   window.__openNavDrawer = open;
   window.__closeNavDrawer = close;
-  console.log("[nav-drawer] v8 — hamburger forced, original nav killed");
+  console.log("[nav-drawer] v9 stable — clicks fixed");
 })();
