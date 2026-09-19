@@ -1,10 +1,10 @@
 /**
- * Tickets dashboard panel v1 — full customization + AI agent settings
+ * Tickets dashboard v2 — categories, questions, custom channel names
  */
 (function () {
   "use strict";
-  if (window.__featuresTicketsV1) return;
-  window.__featuresTicketsV1 = true;
+  if (window.__featuresTicketsV2) return;
+  window.__featuresTicketsV2 = true;
 
   function $(id) {
     return document.getElementById(id);
@@ -19,7 +19,7 @@
     });
   }
 
-  function categories() {
+  function categoryChannels() {
     try {
       if (window.syncGlobals) window.syncGlobals();
     } catch (_) {}
@@ -35,19 +35,6 @@
     return window.rolesCache || [];
   }
 
-  function fillSelect(el, items, placeholder, isRole) {
-    if (!el) return;
-    var cur = el.value;
-    el.innerHTML = '<option value="">' + (placeholder || "Select…") + "</option>";
-    items.forEach(function (x) {
-      var o = document.createElement("option");
-      o.value = x.id;
-      o.textContent = isRole ? x.name || x.id : "#" + (x.name || x.id);
-      el.appendChild(o);
-    });
-    if (cur) el.value = cur;
-  }
-
   function setStatus(text, ok) {
     var el = $("ticket-status");
     if (!el) return;
@@ -55,65 +42,102 @@
     el.style.color = ok === false ? "#f87171" : ok ? "#4ade80" : "";
   }
 
+  function escapeAttr(s) {
+    return String(s || "")
+      .replace(/&/g, "&")
+      .replace(/"/g, """)
+      .replace(/</g, "<");
+  }
+  function escapeHtml(s) {
+    return String(s || "")
+      .replace(/&/g, "&")
+      .replace(/</g, "<");
+  }
+
   function defaultCategories() {
     return [
-      { id: "general", label: "General Support", emoji: "🛠️", aiEnabled: true, aiInstructions: "", staffRoleIds: [], escalateRoleIds: [], escalateUserIds: [] },
-      { id: "report", label: "Report a User", emoji: "🚨", aiEnabled: true, aiInstructions: "Collect evidence and escalate serious reports.", staffRoleIds: [], escalateRoleIds: [], escalateUserIds: [] },
-      { id: "partner", label: "Partnership", emoji: "🤝", aiEnabled: false, aiInstructions: "", staffRoleIds: [], escalateRoleIds: [], escalateUserIds: [] },
-      { id: "bug", label: "Bug Report", emoji: "🐛", aiEnabled: true, aiInstructions: "Ask for steps to reproduce.", staffRoleIds: [], escalateRoleIds: [], escalateUserIds: [] },
-      { id: "other", label: "Other", emoji: "💬", aiEnabled: true, aiInstructions: "", staffRoleIds: [], escalateRoleIds: [], escalateUserIds: [] }
+      {
+        id: "general",
+        label: "General Support",
+        emoji: "🛠️",
+        aiEnabled: true,
+        aiInstructions: "",
+        description: "",
+        questions: []
+      },
+      {
+        id: "report",
+        label: "Report a User",
+        emoji: "🚨",
+        aiEnabled: true,
+        aiInstructions: "Collect evidence.",
+        description: "",
+        questions: [
+          { id: "who", label: "Who are you reporting?", placeholder: "Username or ID", required: true, paragraph: false },
+          { id: "what", label: "What happened?", placeholder: "Describe the issue", required: true, paragraph: true }
+        ]
+      }
     ];
   }
 
   var draftCats = defaultCategories();
 
   function ensureSection() {
+    var content =
+      document.querySelector(".content") ||
+      document.querySelector("main .content") ||
+      document.querySelector("#app .content");
     var sec = $("tickets");
+    if (!sec && content) {
+      sec = document.createElement("section");
+      sec.id = "tickets";
+      sec.className = "page-section";
+      content.appendChild(sec);
+    }
     if (!sec) return false;
 
-    // Replace minimal panel with full UI once
-    if (sec.getAttribute("data-tickets-v1") === "1") return true;
-    sec.setAttribute("data-tickets-v1", "1");
+    if (sec.getAttribute("data-tickets-v2") === "1") return true;
+    sec.setAttribute("data-tickets-v2", "1");
 
     sec.innerHTML =
       '<div class="card form-card wide">' +
       '<span class="eyebrow">TICKETS</span>' +
       "<h2>Support tickets</h2>" +
-      '<p class="form-hint">Fully customizable. After saving, run <code>/ticket-panel</code> in Discord to post (or re-post) the panel.</p>' +
+      '<p class="form-hint">Build your own categories, questions, and channel names. After saving, run <code>/ticket-panel</code> in Discord.</p>' +
       '<label class="toggle"><input type="checkbox" id="ticket-enabled" checked> <span>Enabled</span></label>' +
       "<h3 class=\"subhead\">Channels & staff</h3>" +
       '<div class="config-grid">' +
       '<div class="input-group"><label>Discord category (parent)</label><select id="ticket-category-id"><option value="">Select…</option></select></div>' +
       '<div class="input-group"><label>Or paste category ID</label><input id="ticket-category-manual" type="text" placeholder="Snowflake ID"></div>' +
       '<div class="input-group"><label>Transcript channel</label><select id="ticket-transcript-channel"><option value="">None</option></select></div>' +
-      '<div class="input-group"><label>Max open tickets / user</label><input id="ticket-max-open" type="number" min="1" max="10" value="1"></div>' +
+      '<div class="input-group"><label>Max open / user</label><input id="ticket-max-open" type="number" min="1" max="10" value="1"></div>' +
       "</div>" +
-      '<div class="input-group"><label>Staff roles (see all tickets)</label><div class="inline-row"><select id="ticket-staff-role"><option value="">Select a role…</option></select> <button class="button" id="add-ticket-staff" type="button">Add</button></div></div>' +
+      '<div class="input-group"><label>Staff roles</label><div class="inline-row"><select id="ticket-staff-role"><option value="">Select…</option></select> <button class="button" id="add-ticket-staff" type="button">Add</button></div></div>' +
       '<div id="ticket-staff-list" class="level-roles-list"></div>' +
+      "<h3 class=\"subhead\">Channel naming</h3>" +
+      '<p class="form-hint">Use tokens: <code>{category}</code> <code>{label}</code> <code>{user}</code> <code>{n}</code> <code>{id}</code> — e.g. <code>{category}-{user}-{n}</code> or <code>{label}-{user}</code></p>' +
+      '<div class="input-group"><label>Naming format</label><input id="ticket-naming" type="text" maxlength="80" placeholder="{category}-{user}-{n}"></div>' +
       "<h3 class=\"subhead\">Panel look</h3>" +
       '<div class="config-grid">' +
-      '<div class="input-group"><label>Panel title</label><input id="ticket-panel-title" type="text" maxlength="120" placeholder="Support Center"></div>' +
+      '<div class="input-group"><label>Panel title</label><input id="ticket-panel-title" type="text" maxlength="120"></div>' +
       '<div class="input-group"><label>Panel color (hex)</label><input id="ticket-panel-color" type="text" placeholder="#5865F2"></div>' +
       "</div>" +
-      '<div class="input-group" style="grid-column:1/-1"><label>Panel description</label><textarea id="ticket-panel-desc" rows="3" maxlength="2000" placeholder="Need help? Select a category…"></textarea></div>' +
-      '<div class="input-group" style="grid-column:1/-1"><label>Welcome message (inside ticket)</label><textarea id="ticket-welcome" rows="2" maxlength="1500" placeholder="Staff will be with you shortly…"></textarea></div>' +
-      "<h3 class=\"subhead\">Categories</h3>" +
-      '<p class="form-hint">These appear in the dropdown on the panel. Up to 25. Toggle AI per category.</p>' +
+      '<div class="input-group"><label>Panel description</label><textarea id="ticket-panel-desc" rows="3" maxlength="2000"></textarea></div>' +
+      '<div class="input-group"><label>Welcome message</label><textarea id="ticket-welcome" rows="2" maxlength="1500"></textarea></div>' +
+      "<h3 class=\"subhead\">Your categories</h3>" +
+      '<p class="form-hint">Add categories yourself. Each can have up to 5 intake questions (shown as a form when someone opens that category).</p>' +
       '<div id="ticket-cats-list"></div>' +
-      '<div class="inline-row" style="margin-top:8px;gap:8px;flex-wrap:wrap">' +
-      '<button class="button" type="button" id="ticket-cat-add">+ Add category</button>' +
-      "</div>" +
+      '<button class="button" type="button" id="ticket-cat-add" style="margin-top:8px">+ Add category</button>' +
       "<h3 class=\"subhead\">AI ticket agent</h3>" +
-      '<label class="toggle"><input type="checkbox" id="ticket-ai-enabled"> <span>AI handles tickets automatically</span></label>' +
-      '<p class="form-hint">When on, the bot replies in open tickets. If it cannot help (or the user says human / manager / escalate), it pings the roles/users below.</p>' +
-      '<label class="toggle"><input type="checkbox" id="ticket-ai-no-mention" checked> <span>Reply without @mention (recommended)</span></label>' +
-      '<label class="toggle"><input type="checkbox" id="ticket-ai-ignore-staff" checked> <span>Ignore staff messages in tickets</span></label>' +
-      '<div class="input-group" style="grid-column:1/-1"><label>AI system instructions</label><textarea id="ticket-ai-prompt" rows="3" maxlength="2000" placeholder="You are a helpful support agent…"></textarea></div>' +
-      '<div class="input-group" style="grid-column:1/-1"><label>Escalate keywords (comma-separated)</label><input id="ticket-ai-keywords" type="text" placeholder="human, manager, admin, staff please, escalate"></div>' +
-      '<div class="input-group" style="grid-column:1/-1"><label>Message when escalating</label><input id="ticket-ai-escalate-msg" type="text" maxlength="400" placeholder="I\'ve looped in the team…"></div>' +
-      '<div class="input-group"><label>Default escalate role</label><div class="inline-row"><select id="ticket-ai-esc-role"><option value="">Select…</option></select> <button class="button" type="button" id="ticket-ai-esc-role-add">Add</button></div></div>' +
+      '<label class="toggle"><input type="checkbox" id="ticket-ai-enabled"> <span>AI handles tickets</span></label>' +
+      '<label class="toggle"><input type="checkbox" id="ticket-ai-no-mention" checked> <span>Reply without @mention</span></label>' +
+      '<label class="toggle"><input type="checkbox" id="ticket-ai-ignore-staff" checked> <span>Ignore staff messages</span></label>' +
+      '<div class="input-group"><label>AI system instructions</label><textarea id="ticket-ai-prompt" rows="3" maxlength="2000"></textarea></div>' +
+      '<div class="input-group"><label>Escalate keywords</label><input id="ticket-ai-keywords" type="text" placeholder="human, manager, escalate"></div>' +
+      '<div class="input-group"><label>Escalate message</label><input id="ticket-ai-escalate-msg" type="text" maxlength="400"></div>' +
+      '<div class="input-group"><label>Escalate role</label><div class="inline-row"><select id="ticket-ai-esc-role"><option value="">Select…</option></select> <button class="button" type="button" id="ticket-ai-esc-role-add">Add</button></div></div>' +
       '<div id="ticket-ai-esc-roles" class="level-roles-list"></div>' +
-      '<div class="input-group"><label>Default escalate user ID</label><div class="inline-row"><input id="ticket-ai-esc-user" type="text" placeholder="User snowflake"> <button class="button" type="button" id="ticket-ai-esc-user-add">Add</button></div></div>' +
+      '<div class="input-group"><label>Escalate user ID</label><div class="inline-row"><input id="ticket-ai-esc-user" type="text" placeholder="User snowflake"> <button class="button" type="button" id="ticket-ai-esc-user-add">Add</button></div></div>' +
       '<div id="ticket-ai-esc-users" class="level-roles-list"></div>' +
       '<button class="button" id="save-tickets" type="button" style="margin-top:12px">Save Ticket Settings</button>' +
       '<p class="form-hint" id="ticket-status"></p>' +
@@ -123,14 +147,40 @@
     return true;
   }
 
+  function fillSelects() {
+    var catEl = $("ticket-category-id");
+    if (catEl) {
+      var cur = catEl.value;
+      catEl.innerHTML = '<option value="">Select a category…</option>';
+      categoryChannels().forEach(function (c) {
+        var o = document.createElement("option");
+        o.value = c.id;
+        o.textContent = c.name || c.id;
+        catEl.appendChild(o);
+      });
+      if (cur) catEl.value = cur;
+    }
+    function fill(el, items, ph, isRole) {
+      if (!el) return;
+      var c = el.value;
+      el.innerHTML = '<option value="">' + (ph || "Select…") + "</option>";
+      items.forEach(function (x) {
+        var o = document.createElement("option");
+        o.value = x.id;
+        o.textContent = isRole ? x.name || x.id : "#" + (x.name || x.id);
+        el.appendChild(o);
+      });
+      if (c) el.value = c;
+    }
+    fill($("ticket-transcript-channel"), channels(), "None", false);
+    fill($("ticket-staff-role"), roles(), "Select…", true);
+    fill($("ticket-ai-esc-role"), roles(), "Select…", true);
+  }
+
   function renderStaff() {
     var list = $("ticket-staff-list");
     if (!list) return;
-    var ids = ((window.currentConfig || {}).tickets || {}).staffRoleIds || [];
-    // keep in sync with draft if we just edited — use data attribute store
-    if (window.__ticketStaffIds) ids = window.__ticketStaffIds;
-    else window.__ticketStaffIds = ids.slice();
-
+    var ids = window.__ticketStaffIds || [];
     var rl = roles();
     if (!ids.length) {
       list.innerHTML = '<p class="form-hint">No staff roles yet.</p>';
@@ -167,7 +217,7 @@
     var ids = window.__ticketEscRoles || [];
     var rl = roles();
     if (!ids.length) {
-      list.innerHTML = '<p class="form-hint">None — will fall back to staff roles.</p>';
+      list.innerHTML = '<p class="form-hint">None — falls back to staff roles.</p>';
       return;
     }
     list.innerHTML = ids
@@ -229,14 +279,44 @@
     var list = $("ticket-cats-list");
     if (!list) return;
     if (!draftCats.length) draftCats = defaultCategories();
+
     list.innerHTML = draftCats
       .map(function (c, i) {
+        var qs = Array.isArray(c.questions) ? c.questions : [];
+        var qHtml = qs
+          .map(function (q, qi) {
+            return (
+              '<div class="config-grid" style="margin:6px 0;padding:8px;border:1px solid rgba(128,128,128,.25);border-radius:10px" data-q-i="' +
+              qi +
+              '">' +
+              '<div class="input-group"><label>Q label</label><input data-qf="label" value="' +
+              escapeAttr(q.label) +
+              '"></div>' +
+              '<div class="input-group"><label>Placeholder</label><input data-qf="placeholder" value="' +
+              escapeAttr(q.placeholder || "") +
+              '"></div>' +
+              '<div class="input-group"><label>Long answer?</label><label class="toggle"><input type="checkbox" data-qf="paragraph"' +
+              (q.paragraph ? " checked" : "") +
+              '> <span>Paragraph</span></label></div>' +
+              '<div class="input-group"><label>Required?</label><label class="toggle"><input type="checkbox" data-qf="required"' +
+              (q.required !== false ? " checked" : "") +
+              '> <span>Required</span></label></div>' +
+              '<button type="button" class="button" data-rm-q="' +
+              i +
+              ":" +
+              qi +
+              '">Remove question</button>' +
+              "</div>"
+            );
+          })
+          .join("");
+
         return (
-          '<div class="card" style="padding:12px;margin-bottom:10px" data-cat-i="' +
+          '<div class="card" style="padding:12px;margin-bottom:12px" data-cat-i="' +
           i +
           '">' +
           '<div class="config-grid">' +
-          '<div class="input-group"><label>ID</label><input data-f="id" value="' +
+          '<div class="input-group"><label>ID (no spaces)</label><input data-f="id" value="' +
           escapeAttr(c.id) +
           '"></div>' +
           '<div class="input-group"><label>Label</label><input data-f="label" value="' +
@@ -247,14 +327,23 @@
           '"></div>' +
           '<div class="input-group"><label>AI on this category</label><label class="toggle"><input type="checkbox" data-f="aiEnabled"' +
           (c.aiEnabled !== false ? " checked" : "") +
-          '> <span>AI enabled</span></label></div>' +
+          '> <span>AI</span></label></div>' +
           "</div>" +
-          '<div class="input-group"><label>Description (dropdown hint)</label><input data-f="description" value="' +
+          '<div class="input-group"><label>Dropdown description</label><input data-f="description" value="' +
           escapeAttr(c.description || "") +
           '"></div>' +
-          '<div class="input-group"><label>AI instructions for this category</label><textarea data-f="aiInstructions" rows="2">' +
+          '<div class="input-group"><label>AI instructions</label><textarea data-f="aiInstructions" rows="2">' +
           escapeHtml(c.aiInstructions || "") +
           "</textarea></div>" +
+          "<h4 class=\"subhead\" style=\"margin-top:8px\">Questions (max 5)</h4>" +
+          '<div data-q-wrap="' +
+          i +
+          '">' +
+          qHtml +
+          "</div>" +
+          '<button type="button" class="button" data-add-q="' +
+          i +
+          '">+ Add question</button> ' +
           '<button type="button" class="button" data-rm-cat="' +
           i +
           '">Remove category</button>' +
@@ -266,23 +355,36 @@
     list.querySelectorAll("[data-rm-cat]").forEach(function (btn) {
       btn.addEventListener("click", function () {
         syncCatsFromDom();
-        var i = parseInt(btn.getAttribute("data-rm-cat"), 10);
-        draftCats.splice(i, 1);
+        draftCats.splice(parseInt(btn.getAttribute("data-rm-cat"), 10), 1);
         renderCats();
       });
     });
-  }
-
-  function escapeAttr(s) {
-    return String(s || "")
-      .replace(/&/g, "&")
-      .replace(/"/g, """)
-      .replace(/</g, "<");
-  }
-  function escapeHtml(s) {
-    return String(s || "")
-      .replace(/&/g, "&")
-      .replace(/</g, "<");
+    list.querySelectorAll("[data-add-q]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        syncCatsFromDom();
+        var i = parseInt(btn.getAttribute("data-add-q"), 10);
+        if (!draftCats[i].questions) draftCats[i].questions = [];
+        if (draftCats[i].questions.length >= 5) return;
+        draftCats[i].questions.push({
+          id: "q" + (draftCats[i].questions.length + 1),
+          label: "New question",
+          placeholder: "",
+          required: true,
+          paragraph: false
+        });
+        renderCats();
+      });
+    });
+    list.querySelectorAll("[data-rm-q]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        syncCatsFromDom();
+        var parts = btn.getAttribute("data-rm-q").split(":");
+        var ci = parseInt(parts[0], 10);
+        var qi = parseInt(parts[1], 10);
+        draftCats[ci].questions.splice(qi, 1);
+        renderCats();
+      });
+    });
   }
 
   function syncCatsFromDom() {
@@ -291,11 +393,33 @@
     var next = [];
     list.querySelectorAll("[data-cat-i]").forEach(function (card) {
       var get = function (f) {
-        var el = card.querySelector('[data-f="' + f + '"]');
+        var el = card.querySelector(':scope > .config-grid [data-f="' + f + '"], :scope > .input-group [data-f="' + f + '"], [data-f="' + f + '"]');
+        // simpler: any data-f in card but not inside data-q-i
+        el = null;
+        card.querySelectorAll("[data-f]").forEach(function (node) {
+          if (node.closest("[data-q-i]")) return;
+          if (node.getAttribute("data-f") === f) el = node;
+        });
         if (!el) return "";
         if (el.type === "checkbox") return el.checked;
         return el.value;
       };
+      var questions = [];
+      card.querySelectorAll("[data-q-i]").forEach(function (qcard, qi) {
+        var qget = function (f) {
+          var el = qcard.querySelector('[data-qf="' + f + '"]');
+          if (!el) return "";
+          if (el.type === "checkbox") return el.checked;
+          return el.value;
+        };
+        questions.push({
+          id: "q" + (qi + 1),
+          label: String(qget("label") || "Question").slice(0, 45),
+          placeholder: String(qget("placeholder") || "").slice(0, 100),
+          required: !!qget("required"),
+          paragraph: !!qget("paragraph")
+        });
+      });
       next.push({
         id: String(get("id") || "cat").slice(0, 40),
         label: String(get("label") || "Category").slice(0, 80),
@@ -303,6 +427,7 @@
         description: String(get("description") || "").slice(0, 100),
         aiEnabled: !!get("aiEnabled"),
         aiInstructions: String(get("aiInstructions") || "").slice(0, 800),
+        questions: questions,
         staffRoleIds: [],
         escalateRoleIds: [],
         escalateUserIds: []
@@ -316,7 +441,6 @@
     if (!/^[0-9a-fA-F]{6}$/.test(h)) return 0x5865f2;
     return parseInt(h, 16);
   }
-
   function intToHex(n) {
     var x = Number(n);
     if (!Number.isFinite(x)) return "#5865F2";
@@ -330,6 +454,7 @@
     if ($("ticket-category-manual")) $("ticket-category-manual").value = T.categoryId || "";
     if ($("ticket-transcript-channel")) $("ticket-transcript-channel").value = T.transcriptChannelId || "";
     if ($("ticket-max-open")) $("ticket-max-open").value = T.maxOpenPerUser != null ? T.maxOpenPerUser : 1;
+    if ($("ticket-naming")) $("ticket-naming").value = T.namingFormat || "{category}-{user}-{n}";
     if ($("ticket-panel-title")) $("ticket-panel-title").value = T.panelTitle || "Support Center";
     if ($("ticket-panel-desc"))
       $("ticket-panel-desc").value =
@@ -339,19 +464,23 @@
       $("ticket-welcome").value = T.welcomeMessage || "Staff will be with you shortly. Please describe your issue.";
 
     window.__ticketStaffIds = Array.isArray(T.staffRoleIds) ? T.staffRoleIds.map(String) : [];
-    draftCats = Array.isArray(T.categories) && T.categories.length ? T.categories.map(function (c) {
-      return {
-        id: c.id,
-        label: c.label,
-        emoji: c.emoji,
-        description: c.description || "",
-        aiEnabled: c.aiEnabled !== false,
-        aiInstructions: c.aiInstructions || "",
-        staffRoleIds: c.staffRoleIds || [],
-        escalateRoleIds: c.escalateRoleIds || [],
-        escalateUserIds: c.escalateUserIds || []
-      };
-    }) : defaultCategories();
+    draftCats =
+      Array.isArray(T.categories) && T.categories.length
+        ? T.categories.map(function (c) {
+            return {
+              id: c.id,
+              label: c.label,
+              emoji: c.emoji,
+              description: c.description || "",
+              aiEnabled: c.aiEnabled !== false,
+              aiInstructions: c.aiInstructions || "",
+              questions: Array.isArray(c.questions) ? c.questions : [],
+              staffRoleIds: c.staffRoleIds || [],
+              escalateRoleIds: c.escalateRoleIds || [],
+              escalateUserIds: c.escalateUserIds || []
+            };
+          })
+        : defaultCategories();
 
     var ai = T.ai || {};
     if ($("ticket-ai-enabled")) $("ticket-ai-enabled").checked = !!ai.enabled;
@@ -362,7 +491,7 @@
         ai.systemPrompt ||
         "You are a helpful Discord support agent. Be concise. If you cannot help, end with ESCALATE: reason.";
     if ($("ticket-ai-keywords"))
-      $("ticket-ai-keywords").value = (ai.autoEscalateKeywords || ["human", "manager", "admin", "staff please", "escalate"]).join(", ");
+      $("ticket-ai-keywords").value = (ai.autoEscalateKeywords || ["human", "manager", "escalate"]).join(", ");
     if ($("ticket-ai-escalate-msg"))
       $("ticket-ai-escalate-msg").value =
         ai.escalateMessage || "I've looped in the team for this one — they'll take it from here.";
@@ -377,29 +506,9 @@
     renderCats();
   }
 
-  function fillSelects() {
-    fillSelect($("ticket-category-id"), categories(), "Select a category…", false);
-    // category select uses category channels — fix labels
-    var catEl = $("ticket-category-id");
-    if (catEl) {
-      var cur = catEl.value;
-      catEl.innerHTML = '<option value="">Select a category…</option>';
-      categories().forEach(function (c) {
-        var o = document.createElement("option");
-        o.value = c.id;
-        o.textContent = c.name || c.id;
-        catEl.appendChild(o);
-      });
-      if (cur) catEl.value = cur;
-    }
-    fillSelect($("ticket-transcript-channel"), channels(), "None", false);
-    fillSelect($("ticket-staff-role"), roles(), "Select a role…", true);
-    fillSelect($("ticket-ai-esc-role"), roles(), "Select…", true);
-  }
-
   async function save() {
     try {
-      if (!window.saveConfig) throw new Error("saveConfig missing");
+      if (!window.saveConfig) throw new Error("saveConfig missing — are you logged in?");
       setStatus("Saving…", true);
       syncCatsFromDom();
 
@@ -424,6 +533,7 @@
               ? $("ticket-transcript-channel").value
               : null,
           maxOpenPerUser: parseInt(($("ticket-max-open") && $("ticket-max-open").value) || "1", 10) || 1,
+          namingFormat: ($("ticket-naming") && $("ticket-naming").value.trim()) || "{category}-{user}-{n}",
           staffRoleIds: window.__ticketStaffIds || [],
           panelTitle: ($("ticket-panel-title") && $("ticket-panel-title").value) || "Support Center",
           panelDescription:
@@ -453,7 +563,7 @@
       setStatus(
         d && d.savedToBot === false
           ? "Saved on website. Bot offline — will sync when bot is up."
-          : "✅ Ticket settings saved. Run /ticket-panel to refresh the Discord panel.",
+          : "✅ Saved. Run /ticket-panel in Discord to refresh the panel.",
         true
       );
       if (window.loadGuildData) await window.loadGuildData();
@@ -465,8 +575,8 @@
 
   function wire() {
     var addStaff = $("add-ticket-staff");
-    if (addStaff && !addStaff.__wired) {
-      addStaff.__wired = true;
+    if (addStaff && !addStaff.__w2) {
+      addStaff.__w2 = true;
       addStaff.addEventListener("click", function () {
         var sel = $("ticket-staff-role");
         if (!sel || !sel.value) return;
@@ -476,8 +586,8 @@
       });
     }
     var addEscR = $("ticket-ai-esc-role-add");
-    if (addEscR && !addEscR.__wired) {
-      addEscR.__wired = true;
+    if (addEscR && !addEscR.__w2) {
+      addEscR.__w2 = true;
       addEscR.addEventListener("click", function () {
         var sel = $("ticket-ai-esc-role");
         if (!sel || !sel.value) return;
@@ -487,8 +597,8 @@
       });
     }
     var addEscU = $("ticket-ai-esc-user-add");
-    if (addEscU && !addEscU.__wired) {
-      addEscU.__wired = true;
+    if (addEscU && !addEscU.__w2) {
+      addEscU.__w2 = true;
       addEscU.addEventListener("click", function () {
         var inp = $("ticket-ai-esc-user");
         var v = inp && inp.value.trim();
@@ -500,8 +610,8 @@
       });
     }
     var addCat = $("ticket-cat-add");
-    if (addCat && !addCat.__wired) {
-      addCat.__wired = true;
+    if (addCat && !addCat.__w2) {
+      addCat.__w2 = true;
       addCat.addEventListener("click", function () {
         syncCatsFromDom();
         draftCats.push({
@@ -511,6 +621,7 @@
           description: "",
           aiEnabled: true,
           aiInstructions: "",
+          questions: [],
           staffRoleIds: [],
           escalateRoleIds: [],
           escalateUserIds: []
@@ -519,8 +630,8 @@
       });
     }
     var saveBtn = $("save-tickets");
-    if (saveBtn && !saveBtn.__wired) {
-      saveBtn.__wired = true;
+    if (saveBtn && !saveBtn.__w2) {
+      saveBtn.__w2 = true;
       saveBtn.addEventListener("click", function (e) {
         e.preventDefault();
         save();
@@ -535,31 +646,18 @@
     wire();
   }
 
-  [0, 400, 1200, 3000].forEach(function (ms) {
+  [0, 300, 800, 2000, 4000].forEach(function (ms) {
     setTimeout(boot, ms);
   });
-
-  // re-apply when config loads
-  var _apply = window.applyGuildConfigToUI;
-  if (typeof _apply === "function" && !_apply.__ticketsWrapped) {
-    window.applyGuildConfigToUI = function () {
-      var r = _apply.apply(this, arguments);
-      try {
-        boot();
-      } catch (_) {}
-      return r;
-    };
-    window.applyGuildConfigToUI.__ticketsWrapped = true;
-  }
 
   document.addEventListener(
     "click",
     function (e) {
       var t = e.target && e.target.closest && e.target.closest('[data-tab="tickets"]');
-      if (t) setTimeout(boot, 50);
+      if (t) setTimeout(boot, 30);
     },
     true
   );
 
-  console.log("[features-tickets] v1 ready");
+  console.log("[features-tickets] v2 — naming + questions");
 })();
