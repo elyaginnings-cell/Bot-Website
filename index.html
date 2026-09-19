@@ -16,8 +16,8 @@
   justify-content:center!important;gap:5px!important;padding:0!important;
 }
 #nav-hamburger span{display:block!important;width:18px!important;height:2.5px!important;background:#f5e9ff!important;border-radius:2px!important;}
-body.drawer-nav-only .navigation,body.drawer-nav-only.mode-mobile .navigation,body.drawer-nav-only.mode-auto .navigation{
-  display:none!important;visibility:hidden!important;pointer-events:none!important;
+body.drawer-nav-only .sidebar,body.drawer-nav-only .navigation,body.drawer-nav-only.mode-mobile .navigation,body.drawer-nav-only.mode-auto .navigation{
+  display:none!important;visibility:hidden!important;pointer-events:none!important;height:0!important;opacity:0!important;
 }
 </style>
 </head>
@@ -85,10 +85,10 @@ body.drawer-nav-only .navigation,body.drawer-nav-only.mode-mobile .navigation,bo
       l.href = href;
       document.head.appendChild(l);
     }
-    loadCss("/nav-drawer.css?v=7");
+    loadCss("/nav-drawer.css?v=8");
     loadCss("/mobile-fix.css?v=5");
     loadCss("/themes-insane.css?v=1");
-    loadCss("/theme-sweetheart.css?v=2");
+    loadCss("/theme-sweetheart.css?v=3");
     await loadScript("/features-ui.js?v=9");
     await loadScript("/features-config.js?v=18");
     await loadScript("/features-ui-patch.js?v=13");
@@ -118,7 +118,7 @@ body.drawer-nav-only .navigation,body.drawer-nav-only.mode-mobile .navigation,bo
     await loadScript("/sv-ux-polish.js?v=3");
     await loadScript("/sv-phase0.js?v=2");
     await loadScript("/theme-boot.js?v=16");
-    await loadScript("/nav-drawer.js?v=7");
+    await loadScript("/nav-drawer.js?v=8");
     await loadScript("/sv-themes-expand.js?v=2");
   } catch (e) {
     document.body.innerHTML =
