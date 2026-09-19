@@ -1,26 +1,17 @@
 /**
- * Nav drawer v3 — grouped tabs; bot title replaces Home
+ * Nav drawer v4 — force-hide original nav; hamburger always visible
  */
 (function () {
   "use strict";
-  if (window.__navDrawerV3) return;
-  window.__navDrawerV3 = true;
+  if (window.__navDrawerV4) return;
+  window.__navDrawerV4 = true;
 
   var BOT_NAME = "Coffee Shop";
   var BOT_SUB = "Bot Control";
   var BOT_ICON = "☕";
 
-  /** tab id / label keywords → group */
   var GROUP_ORDER = [
-    "dashboard",
-    "moderation",
-    "ai",
-    "economy",
-    "community",
-    "staff",
-    "tools",
-    "settings",
-    "other"
+    "dashboard", "moderation", "ai", "economy", "community", "staff", "tools", "settings", "other"
   ];
 
   var GROUP_META = {
@@ -35,44 +26,18 @@
     other: { label: "More", icon: "✨" }
   };
 
-  /** explicit tab → group */
   var TAB_GROUP = {
-    overview: "dashboard",
-    home: "dashboard",
-    moderation: "moderation",
-    mod: "moderation",
-    logs: "moderation",
+    overview: "dashboard", home: "dashboard",
+    moderation: "moderation", mod: "moderation", logs: "moderation",
     invites: "community",
-    leveling: "economy",
-    currency: "economy",
-    beans: "economy",
-    shop: "economy",
-    fishing: "economy",
-    fish: "economy",
-    bump: "economy",
-    birthday: "community",
-    verification: "community",
-    verify: "community",
-    suggestions: "community",
-    suggest: "community",
-    qotd: "community",
-    selfroles: "community",
-    tickets: "tools",
-    server: "tools",
-    "server-view": "tools",
-    serverview: "tools",
-    applications: "staff",
-    apply: "staff",
-    loa: "staff",
-    activitycheck: "staff",
-    active: "staff",
-    automod: "ai",
-    aistaff: "ai",
-    aichat: "ai",
-    ai: "ai",
-    settings: "settings",
-    themes: "settings",
-    theme: "settings"
+    leveling: "economy", currency: "economy", beans: "economy", shop: "economy",
+    fishing: "economy", fish: "economy", bump: "economy",
+    birthday: "community", verification: "community", verify: "community",
+    suggestions: "community", suggest: "community", qotd: "community", selfroles: "community",
+    tickets: "tools", server: "tools", "server-view": "tools", serverview: "tools",
+    applications: "staff", apply: "staff", loa: "staff", activitycheck: "staff", active: "staff",
+    automod: "ai", aistaff: "ai", aichat: "ai", ai: "ai",
+    settings: "settings", themes: "settings", theme: "settings"
   };
 
   function groupFor(tab, label) {
@@ -90,71 +55,168 @@
     return "other";
   }
 
+  /** Critical CSS injected inline so hamburger shows even if /nav-drawer.css fails */
+  function injectCriticalCss() {
+    if (document.getElementById("nav-drawer-critical")) return;
+    var style = document.createElement("style");
+    style.id = "nav-drawer-critical";
+    style.textContent = [
+      "/* kill original sidebar + tab strip */",
+      "body.drawer-nav-only .sidebar,",
+      "body.drawer-nav-only aside.sidebar,",
+      "body.drawer-nav-only .navigation,",
+      "body.drawer-nav-only nav.navigation,",
+      "body.drawer-nav-only .nav-tabs,",
+      "body.drawer-nav-only .tab-bar,",
+      "body.drawer-nav-only .tabs-row,",
+      "body.drawer-nav-only #app > .sidebar {",
+      "  display:none!important;visibility:hidden!important;pointer-events:none!important;",
+      "  width:0!important;height:0!important;max-height:0!important;overflow:hidden!important;",
+      "  margin:0!important;padding:0!important;border:none!important;opacity:0!important;",
+      "}",
+      "body.drawer-nav-only #app{display:flex!important;flex-direction:column!important;width:100%!important;max-width:1280px!important;margin:0 auto!important;}",
+      "body.drawer-nav-only .main{width:100%!important;flex:1!important;min-width:0!important;}",
+      "/* hamburger — always on top */",
+      "#nav-hamburger{",
+      "  position:fixed!important;top:max(12px,env(safe-area-inset-top))!important;",
+      "  left:max(12px,env(safe-area-inset-left))!important;z-index:2147483000!important;",
+      "  width:48px!important;height:48px!important;border-radius:14px!important;",
+      "  border:1px solid rgba(255,77,240,.5)!important;",
+      "  background:rgba(18,8,28,.96)!important;backdrop-filter:blur(12px)!important;",
+      "  box-shadow:0 8px 28px rgba(0,0,0,.45)!important;cursor:pointer!important;",
+      "  display:flex!important;flex-direction:column!important;align-items:center!important;",
+      "  justify-content:center!important;gap:5px!important;padding:0!important;margin:0!important;",
+      "  opacity:1!important;visibility:visible!important;pointer-events:auto!important;",
+      "}",
+      "#nav-hamburger span{",
+      "  display:block!important;width:18px!important;height:2.5px!important;",
+      "  border-radius:2px!important;background:#f5e9ff!important;",
+      "}",
+      "body.nav-drawer-open #nav-hamburger span:nth-child(1){transform:translateY(7.5px) rotate(45deg);}",
+      "body.nav-drawer-open #nav-hamburger span:nth-child(2){opacity:0;}",
+      "body.nav-drawer-open #nav-hamburger span:nth-child(3){transform:translateY(-7.5px) rotate(-45deg);}",
+      "#nav-drawer-backdrop{",
+      "  position:fixed!important;inset:0!important;z-index:2147482000!important;",
+      "  background:rgba(0,0,0,.55)!important;opacity:0;visibility:hidden;pointer-events:none;",
+      "  transition:opacity .2s,visibility .2s;",
+      "}",
+      "body.nav-drawer-open #nav-drawer-backdrop{opacity:1;visibility:visible;pointer-events:auto;}",
+      "#nav-drawer{",
+      "  position:fixed!important;top:0!important;left:0!important;bottom:0!important;",
+      "  z-index:2147482500!important;width:min(310px,88vw)!important;",
+      "  background:rgba(12,5,22,.98)!important;border-right:1px solid rgba(255,77,240,.3)!important;",
+      "  transform:translateX(-105%);transition:transform .28s cubic-bezier(.22,1,.36,1);",
+      "  display:flex!important;flex-direction:column!important;",
+      "  padding:max(18px,env(safe-area-inset-top)) 16px max(18px,env(safe-area-inset-bottom));",
+      "  overflow:hidden!important;",
+      "}",
+      "body.nav-drawer-open #nav-drawer{transform:translateX(0);}",
+      "body.drawer-nav-only .header{padding-left:58px!important;}"
+    ].join("\n");
+    (document.head || document.documentElement).appendChild(style);
+  }
+
   function loadCss() {
+    injectCriticalCss();
     if (document.getElementById("nav-drawer-css")) return;
     var link = document.createElement("link");
     link.id = "nav-drawer-css";
     link.rel = "stylesheet";
-    link.href = "/nav-drawer.css?v=3";
-    document.head.appendChild(link);
+    link.href = "/nav-drawer.css?v=4";
+    (document.head || document.documentElement).appendChild(link);
+  }
+
+  function killOriginalNav() {
+    document.body.classList.add("drawer-nav-only");
+    var selectors = [
+      ".sidebar", "aside.sidebar", ".navigation", "nav.navigation",
+      ".nav-tabs", ".tab-bar", ".tabs-row"
+    ];
+    selectors.forEach(function (sel) {
+      document.querySelectorAll(sel).forEach(function (el) {
+        // keep .navigation in DOM for collectTabs, but hide hard
+        el.style.setProperty("display", "none", "important");
+        el.style.setProperty("visibility", "hidden", "important");
+        el.style.setProperty("pointer-events", "none", "important");
+        el.style.setProperty("height", "0", "important");
+        el.style.setProperty("max-height", "0", "important");
+        el.style.setProperty("overflow", "hidden", "important");
+        el.style.setProperty("opacity", "0", "important");
+        el.setAttribute("aria-hidden", "true");
+        if (el.classList.contains("sidebar") || el.tagName === "ASIDE") {
+          el.style.setProperty("width", "0", "important");
+          el.style.setProperty("margin", "0", "important");
+          el.style.setProperty("padding", "0", "important");
+        }
+      });
+    });
   }
 
   function detectBotName() {
     try {
-      var el = document.querySelector(".sidebar .brand strong, .brand strong, #bot-name");
+      var el = document.querySelector(".sidebar .brand strong, .sidebar-brand strong, .brand strong, #bot-name");
       if (el && el.textContent.trim()) BOT_NAME = el.textContent.trim();
-    } catch (_) {}
-    try {
-      var t = document.title || "";
-      if (/coffee/i.test(t)) BOT_NAME = "Coffee Shop";
     } catch (_) {}
   }
 
   function ensureUI() {
-    if (document.getElementById("nav-hamburger")) return true;
+    if (!document.body) return false;
 
-    var btn = document.createElement("button");
-    btn.id = "nav-hamburger";
-    btn.type = "button";
-    btn.title = "Open navigation";
-    btn.setAttribute("aria-label", "Open navigation menu");
-    btn.setAttribute("aria-expanded", "false");
-    btn.innerHTML = "<span></span><span></span><span></span>";
-    document.body.appendChild(btn);
-
-    var backdrop = document.createElement("div");
-    backdrop.id = "nav-drawer-backdrop";
-    document.body.appendChild(backdrop);
-
-    var drawer = document.createElement("aside");
-    drawer.id = "nav-drawer";
-    drawer.setAttribute("role", "dialog");
-    drawer.setAttribute("aria-label", "Navigation");
-    drawer.innerHTML =
-      '<button type="button" id="nav-drawer-header" class="nav-brand-btn" title="Go to overview">' +
-      '<div class="brand-icon">' + BOT_ICON + "</div>" +
-      "<div><strong id="nav-bot-title">" + BOT_NAME + "</strong><span>" + BOT_SUB + "</span></div>" +
-      "</button>" +
-      '<div id="nav-drawer-list"></div>' +
-      '<div id="nav-drawer-footer">Grouped menu · Esc to close</div>';
-    document.body.appendChild(drawer);
-
-    btn.addEventListener("click", function (e) {
-      e.preventDefault();
-      e.stopPropagation();
-      toggle();
-    });
-    backdrop.addEventListener("click", function () { close(); });
-    document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape") close();
-    });
-
-    var brand = document.getElementById("nav-drawer-header");
-    if (brand) {
-      brand.addEventListener("click", function (e) {
+    if (!document.getElementById("nav-hamburger")) {
+      var btn = document.createElement("button");
+      btn.id = "nav-hamburger";
+      btn.type = "button";
+      btn.title = "Open navigation";
+      btn.setAttribute("aria-label", "Open navigation menu");
+      btn.setAttribute("aria-expanded", "false");
+      btn.innerHTML = "<span></span><span></span><span></span>";
+      document.body.appendChild(btn);
+      btn.addEventListener("click", function (e) {
         e.preventDefault();
-        activateTab({ tab: "overview", label: "Overview", el: document.querySelector('.nav-item[data-tab="overview"]') });
-        close();
+        e.stopPropagation();
+        toggle();
+      });
+    }
+
+    if (!document.getElementById("nav-drawer-backdrop")) {
+      var backdrop = document.createElement("div");
+      backdrop.id = "nav-drawer-backdrop";
+      document.body.appendChild(backdrop);
+      backdrop.addEventListener("click", function () { close(); });
+    }
+
+    if (!document.getElementById("nav-drawer")) {
+      var drawer = document.createElement("aside");
+      drawer.id = "nav-drawer";
+      drawer.setAttribute("role", "dialog");
+      drawer.setAttribute("aria-label", "Navigation");
+      drawer.innerHTML =
+        '<button type="button" id="nav-drawer-header" class="nav-brand-btn" title="Go to overview">' +
+        '<div class="brand-icon">' + BOT_ICON + "</div>" +
+        "<div><strong id="nav-bot-title">" + BOT_NAME + "</strong><span>" + BOT_SUB + "</span></div>" +
+        "</button>" +
+        '<div id="nav-drawer-list"></div>' +
+        '<div id="nav-drawer-footer">Grouped menu · Esc to close</div>';
+      document.body.appendChild(drawer);
+
+      var brand = document.getElementById("nav-drawer-header");
+      if (brand) {
+        brand.addEventListener("click", function (e) {
+          e.preventDefault();
+          activateTab({
+            tab: "overview",
+            label: "Overview",
+            el: document.querySelector('.nav-item[data-tab="overview"]')
+          });
+          close();
+        });
+      }
+    }
+
+    if (!window.__navDrawerEsc) {
+      window.__navDrawerEsc = true;
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") close();
       });
     }
 
@@ -179,7 +241,6 @@
         label = String(label).trim();
         icon = String(icon).trim();
         if (!tab && !label) return;
-        // Home / Overview removed from list — brand title replaces it
         var key = (tab || label).toLowerCase();
         if (key === "overview" || key === "home" || label.toLowerCase() === "home") return;
         if (seen[key]) return;
@@ -195,12 +256,10 @@
       });
     }
 
-    // Feature-injected sections not always in .navigation
     document.querySelectorAll(".page-section[id]").forEach(function (sec) {
       var id = sec.id;
       if (!id || seen[id.toLowerCase()]) return;
       if (id === "overview" || id === "home") return;
-      // skip if no real nav hook and unknown
       var known = TAB_GROUP[id.toLowerCase()];
       if (!known && !/^(automod|aistaff|aichat|loa|activitycheck|applications|fishing|bump|verification|suggestions|tickets|qotd|selfroles|themes)$/i.test(id)) return;
       seen[id.toLowerCase()] = true;
@@ -208,7 +267,7 @@
       items.push({
         tab: id,
         label: pretty,
-        icon: GROUP_META[groupFor(id, pretty)] ? GROUP_META[groupFor(id, pretty)].icon : "•",
+        icon: (GROUP_META[groupFor(id, pretty)] || {}).icon || "•",
         el: null,
         active: sec.classList.contains("active"),
         group: groupFor(id, pretty)
@@ -218,7 +277,6 @@
     if (!seen["themes"]) {
       items.push({ tab: "themes", label: "Themes", icon: "🎨", el: null, active: false, group: "settings" });
     }
-
     return items;
   }
 
@@ -227,26 +285,22 @@
     if (!list) return;
     var items = collectTabs();
     list.innerHTML = "";
-
     var byGroup = {};
     items.forEach(function (item) {
       var g = item.group || "other";
       if (!byGroup[g]) byGroup[g] = [];
       byGroup[g].push(item);
     });
-
     GROUP_ORDER.forEach(function (gid) {
       var groupItems = byGroup[gid];
       if (!groupItems || !groupItems.length) return;
       var meta = GROUP_META[gid] || { label: gid, icon: "•" };
-
       var head = document.createElement("div");
       head.className = "nav-drawer-group";
       head.innerHTML =
         '<span class="ndg-icon">' + meta.icon + "</span>" +
         '<span class="ndg-label">' + meta.label + "</span>";
       list.appendChild(head);
-
       groupItems.forEach(function (item) {
         var b = document.createElement("button");
         b.type = "button";
@@ -298,6 +352,7 @@
     detectBotName();
     var titleEl = document.getElementById("nav-bot-title");
     if (titleEl) titleEl.textContent = BOT_NAME;
+    killOriginalNav();
     renderList();
     document.body.classList.add("nav-drawer-open");
     var btn = document.getElementById("nav-hamburger");
@@ -322,18 +377,20 @@
   }
 
   function boot() {
+    if (!document.body) return;
     loadCss();
     detectBotName();
-    document.body.classList.add("drawer-nav-only");
+    killOriginalNav();
     ensureUI();
+    // Re-kill if features re-inject nav
     try {
-      var nav = document.querySelector(".navigation");
-      if (nav && !nav.__drawerObserved) {
-        nav.__drawerObserved = true;
+      if (!window.__navKillObs) {
+        window.__navKillObs = true;
         var obs = new MutationObserver(function () {
-          if (document.body.classList.contains("nav-drawer-open")) renderList();
+          killOriginalNav();
+          if (!document.getElementById("nav-hamburger")) ensureUI();
         });
-        obs.observe(nav, { childList: true, subtree: true });
+        obs.observe(document.body, { childList: true, subtree: true });
       }
     } catch (_) {}
   }
@@ -342,7 +399,7 @@
   function retry() {
     n++;
     boot();
-    if (n < 50) setTimeout(retry, 200);
+    if (n < 60) setTimeout(retry, 150);
   }
 
   if (document.readyState === "loading") {
@@ -350,8 +407,12 @@
   } else {
     retry();
   }
+  // Extra late passes after feature scripts
+  setTimeout(boot, 500);
+  setTimeout(boot, 1500);
+  setTimeout(boot, 3000);
 
   window.__openNavDrawer = open;
   window.__closeNavDrawer = close;
-  console.log("[nav-drawer] v3 — grouped tabs, bot title replaces Home");
+  console.log("[nav-drawer] v4 — original nav killed, hamburger forced visible");
 })();
