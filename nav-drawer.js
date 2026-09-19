@@ -1,10 +1,10 @@
 /**
- * Nav drawer v4 — force-hide original nav; hamburger always visible
+ * Nav drawer v5 — mobile-safe hamburger + grouped side panel
  */
 (function () {
   "use strict";
-  if (window.__navDrawerV4) return;
-  window.__navDrawerV4 = true;
+  if (window.__navDrawerV5) return;
+  window.__navDrawerV5 = true;
 
   var BOT_NAME = "Coffee Shop";
   var BOT_SUB = "Bot Control";
@@ -55,61 +55,44 @@
     return "other";
   }
 
-  /** Critical CSS injected inline so hamburger shows even if /nav-drawer.css fails */
   function injectCriticalCss() {
     if (document.getElementById("nav-drawer-critical")) return;
     var style = document.createElement("style");
     style.id = "nav-drawer-critical";
     style.textContent = [
-      "/* kill original sidebar + tab strip */",
       "body.drawer-nav-only .sidebar,",
       "body.drawer-nav-only aside.sidebar,",
       "body.drawer-nav-only .navigation,",
+      "body.drawer-nav-only.mode-mobile .navigation,",
+      "body.drawer-nav-only.mode-auto .navigation,",
       "body.drawer-nav-only nav.navigation,",
       "body.drawer-nav-only .nav-tabs,",
-      "body.drawer-nav-only .tab-bar,",
-      "body.drawer-nav-only .tabs-row,",
-      "body.drawer-nav-only #app > .sidebar {",
+      "body.drawer-nav-only .tab-bar {",
       "  display:none!important;visibility:hidden!important;pointer-events:none!important;",
       "  width:0!important;height:0!important;max-height:0!important;overflow:hidden!important;",
-      "  margin:0!important;padding:0!important;border:none!important;opacity:0!important;",
+      "  opacity:0!important;position:absolute!important;left:-9999px!important;",
       "}",
-      "body.drawer-nav-only #app{display:flex!important;flex-direction:column!important;width:100%!important;max-width:1280px!important;margin:0 auto!important;}",
-      "body.drawer-nav-only .main{width:100%!important;flex:1!important;min-width:0!important;}",
-      "/* hamburger — always on top */",
       "#nav-hamburger{",
       "  position:fixed!important;top:max(12px,env(safe-area-inset-top))!important;",
       "  left:max(12px,env(safe-area-inset-left))!important;z-index:2147483000!important;",
       "  width:48px!important;height:48px!important;border-radius:14px!important;",
       "  border:1px solid rgba(255,77,240,.5)!important;",
-      "  background:rgba(18,8,28,.96)!important;backdrop-filter:blur(12px)!important;",
-      "  box-shadow:0 8px 28px rgba(0,0,0,.45)!important;cursor:pointer!important;",
+      "  background:rgba(18,8,28,.96)!important;",
       "  display:flex!important;flex-direction:column!important;align-items:center!important;",
-      "  justify-content:center!important;gap:5px!important;padding:0!important;margin:0!important;",
+      "  justify-content:center!important;gap:5px!important;padding:0!important;",
       "  opacity:1!important;visibility:visible!important;pointer-events:auto!important;",
+      "  -webkit-tap-highlight-color:transparent!important;",
       "}",
-      "#nav-hamburger span{",
-      "  display:block!important;width:18px!important;height:2.5px!important;",
-      "  border-radius:2px!important;background:#f5e9ff!important;",
-      "}",
+      "#nav-hamburger span{display:block!important;width:18px!important;height:2.5px!important;background:#f5e9ff!important;border-radius:2px!important;}",
       "body.nav-drawer-open #nav-hamburger span:nth-child(1){transform:translateY(7.5px) rotate(45deg);}",
       "body.nav-drawer-open #nav-hamburger span:nth-child(2){opacity:0;}",
       "body.nav-drawer-open #nav-hamburger span:nth-child(3){transform:translateY(-7.5px) rotate(-45deg);}",
-      "#nav-drawer-backdrop{",
-      "  position:fixed!important;inset:0!important;z-index:2147482000!important;",
-      "  background:rgba(0,0,0,.55)!important;opacity:0;visibility:hidden;pointer-events:none;",
-      "  transition:opacity .2s,visibility .2s;",
-      "}",
+      "#nav-drawer-backdrop{position:fixed!important;inset:0!important;z-index:2147482000!important;background:rgba(0,0,0,.55)!important;opacity:0;visibility:hidden;pointer-events:none;}",
       "body.nav-drawer-open #nav-drawer-backdrop{opacity:1;visibility:visible;pointer-events:auto;}",
-      "#nav-drawer{",
-      "  position:fixed!important;top:0!important;left:0!important;bottom:0!important;",
-      "  z-index:2147482500!important;width:min(310px,88vw)!important;",
-      "  background:rgba(12,5,22,.98)!important;border-right:1px solid rgba(255,77,240,.3)!important;",
-      "  transform:translateX(-105%);transition:transform .28s cubic-bezier(.22,1,.36,1);",
-      "  display:flex!important;flex-direction:column!important;",
-      "  padding:max(18px,env(safe-area-inset-top)) 16px max(18px,env(safe-area-inset-bottom));",
-      "  overflow:hidden!important;",
-      "}",
+      "#nav-drawer{position:fixed!important;top:0!important;left:0!important;bottom:0!important;z-index:2147482500!important;",
+      "  width:min(310px,88vw)!important;background:rgba(12,5,22,.98)!important;transform:translateX(-105%);",
+      "  transition:transform .28s;display:flex!important;flex-direction:column!important;overflow:hidden!important;",
+      "  padding:max(18px,env(safe-area-inset-top)) 16px max(18px,env(safe-area-inset-bottom));}",
       "body.nav-drawer-open #nav-drawer{transform:translateX(0);}",
       "body.drawer-nav-only .header{padding-left:58px!important;}"
     ].join("\n");
@@ -118,12 +101,13 @@
 
   function loadCss() {
     injectCriticalCss();
-    if (document.getElementById("nav-drawer-css")) return;
-    var link = document.createElement("link");
-    link.id = "nav-drawer-css";
-    link.rel = "stylesheet";
-    link.href = "/nav-drawer.css?v=4";
-    (document.head || document.documentElement).appendChild(link);
+    if (!document.getElementById("nav-drawer-css")) {
+      var link = document.createElement("link");
+      link.id = "nav-drawer-css";
+      link.rel = "stylesheet";
+      link.href = "/nav-drawer.css?v=5";
+      (document.head || document.documentElement).appendChild(link);
+    }
   }
 
   function killOriginalNav() {
@@ -134,7 +118,6 @@
     ];
     selectors.forEach(function (sel) {
       document.querySelectorAll(sel).forEach(function (el) {
-        // keep .navigation in DOM for collectTabs, but hide hard
         el.style.setProperty("display", "none", "important");
         el.style.setProperty("visibility", "hidden", "important");
         el.style.setProperty("pointer-events", "none", "important");
@@ -143,11 +126,6 @@
         el.style.setProperty("overflow", "hidden", "important");
         el.style.setProperty("opacity", "0", "important");
         el.setAttribute("aria-hidden", "true");
-        if (el.classList.contains("sidebar") || el.tagName === "ASIDE") {
-          el.style.setProperty("width", "0", "important");
-          el.style.setProperty("margin", "0", "important");
-          el.style.setProperty("padding", "0", "important");
-        }
       });
     });
   }
@@ -175,7 +153,12 @@
         e.preventDefault();
         e.stopPropagation();
         toggle();
-      });
+      }, { passive: false });
+      btn.addEventListener("touchend", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        toggle();
+      }, { passive: false });
     }
 
     if (!document.getElementById("nav-drawer-backdrop")) {
@@ -193,7 +176,7 @@
       drawer.innerHTML =
         '<button type="button" id="nav-drawer-header" class="nav-brand-btn" title="Go to overview">' +
         '<div class="brand-icon">' + BOT_ICON + "</div>" +
-        "<div><strong id="nav-bot-title">" + BOT_NAME + "</strong><span>" + BOT_SUB + "</span></div>" +
+        "<div><strong id=\"nav-bot-title\">" + BOT_NAME + "</strong><span>" + BOT_SUB + "</span></div>" +
         "</button>" +
         '<div id="nav-drawer-list"></div>' +
         '<div id="nav-drawer-footer">Grouped menu · Esc to close</div>';
@@ -382,7 +365,6 @@
     detectBotName();
     killOriginalNav();
     ensureUI();
-    // Re-kill if features re-inject nav
     try {
       if (!window.__navKillObs) {
         window.__navKillObs = true;
@@ -399,7 +381,7 @@
   function retry() {
     n++;
     boot();
-    if (n < 60) setTimeout(retry, 150);
+    if (n < 80) setTimeout(retry, 120);
   }
 
   if (document.readyState === "loading") {
@@ -407,12 +389,12 @@
   } else {
     retry();
   }
-  // Extra late passes after feature scripts
-  setTimeout(boot, 500);
-  setTimeout(boot, 1500);
-  setTimeout(boot, 3000);
+  setTimeout(boot, 400);
+  setTimeout(boot, 1200);
+  setTimeout(boot, 2500);
+  setTimeout(boot, 5000);
 
   window.__openNavDrawer = open;
   window.__closeNavDrawer = close;
-  console.log("[nav-drawer] v4 — original nav killed, hamburger forced visible");
+  console.log("[nav-drawer] v5 — mobile hamburger + grouped drawer");
 })();
