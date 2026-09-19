@@ -59,7 +59,6 @@ function ensureEmailLoginForm() {
           type="email"
           inputmode="email"
           autocomplete="email"
-          required
           placeholder="you@example.com"
         >
       </label>
@@ -71,7 +70,6 @@ function ensureEmailLoginForm() {
           name="password"
           type="password"
           autocomplete="current-password"
-          required
           minlength="8"
           placeholder="At least 8 characters"
         >
@@ -174,14 +172,6 @@ async function submitPasswordAuth(endpoint) {
       return;
     }
 
-    /*
-     * IMPORTANT:
-     *
-     * Email login is now completely independent from Discord OAuth.
-     *
-     * If this account has a linked Discord account, that's fine.
-     * We DO NOT redirect to /api/login.
-     */
     window.location.reload();
   } catch {
     setLoginError("Could not reach the login server.");
