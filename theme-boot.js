@@ -1,17 +1,17 @@
 /**
- * Dashboard themes v15 — + Sweetheart special theme
+ * Dashboard themes v16 — Sweetheart readability + Paisley footer
  */
 (function () {
   "use strict";
-  if (window.__themeBootV15) return;
-  window.__themeBootV15 = true;
+  if (window.__themeBootV16) return;
+  window.__themeBootV16 = true;
 
   var THEMES = [
     {
       id: "sweetheart",
       name: "Sweetheart",
       emoji: "🌻",
-      blurb: "Made for her — sunflowers, hearts, stars, soft nature",
+      blurb: "For Paisley — sunflowers, hearts, stars & soft nature",
       group: "Special"
     },
     { id: "default", name: "Default", emoji: "💜", blurb: "Original neon violet", group: "Original" },
@@ -56,6 +56,8 @@
   ];
 
   var ALL_IDS = THEMES.map(function (t) { return t.id; });
+  var DEFAULT_FOOTER = "Tap a category name to collapse";
+  var SWEET_FOOTER = "Paisley ❤️  ·  🌻 ⭐ 🐱 ❄️ 🍓";
 
   function loadCss() {
     function ensure(id, href) {
@@ -72,7 +74,17 @@
     ensure("themes-force-struct-css", "/themes-force-struct.css?v=10");
     ensure("themes-radical-css", "/themes-radical.css?v=2");
     ensure("themes-insane-css", "/themes-insane.css?v=1");
-    ensure("theme-sweetheart-css", "/theme-sweetheart.css?v=1");
+    ensure("theme-sweetheart-css", "/theme-sweetheart.css?v=2");
+  }
+
+  function updateDrawerFooter(themeId) {
+    var foot = document.getElementById("nav-drawer-footer");
+    if (!foot) return;
+    if (themeId === "sweetheart") {
+      foot.textContent = SWEET_FOOTER;
+    } else if (foot.textContent.indexOf("Paisley") >= 0) {
+      foot.textContent = DEFAULT_FOOTER;
+    }
   }
 
   function applyTheme(name) {
@@ -96,6 +108,7 @@
       var meta = THEMES.find(function (t) { return t.id === name; });
       cur.textContent = meta ? meta.emoji + " " + meta.name : name;
     }
+    updateDrawerFooter(name);
   }
 
   function openThemesSection() {
@@ -113,7 +126,7 @@
     var title = document.getElementById("page-title");
     if (title) title.textContent = "Themes";
     var desc = document.getElementById("page-description");
-    if (desc) desc.textContent = "Each theme is a different website — plus a special Sweetheart pack.";
+    if (desc) desc.textContent = "Each theme is a different website — plus Sweetheart for Paisley.";
     renderCards();
   }
 
@@ -223,7 +236,7 @@
       '<div class="card form-card wide">' +
       '<span class="eyebrow">APPEARANCE</span>' +
       "<h2>Dashboard themes</h2>" +
-      '<p class="form-hint">Full website packs — plus <strong>Sweetheart</strong>, a special soft garden theme.</p>' +
+      '<p class="form-hint">Full website packs — plus <strong>Sweetheart</strong> for Paisley ❤️</p>' +
       '<p class="form-hint">Current: <strong id="themes-current-label">—</strong></p>' +
       '<div id="themes-grid" class="themes-grid"></div>' +
       "</div>";
@@ -274,6 +287,9 @@
     try { saved = localStorage.getItem("dashboardTheme") || "default"; } catch (_) {}
     applyTheme(saved);
     renderCards();
+    // keep Paisley footer if drawer rebuilds
+    setTimeout(function () { updateDrawerFooter(saved); }, 500);
+    setTimeout(function () { updateDrawerFooter(localStorage.getItem("dashboardTheme") || saved); }, 2000);
   }
 
   var n = 0;
@@ -289,6 +305,8 @@
       ensureDropdown();
       ensureSection();
       ensureFloatingFallback();
+      var t = localStorage.getItem("dashboardTheme") || "default";
+      if (t === "sweetheart") updateDrawerFooter("sweetheart");
     });
     obs.observe(document.documentElement, { childList: true, subtree: true });
   } catch (_) {}
@@ -309,5 +327,5 @@
   window.__applyDashboardTheme = applyTheme;
   window.__dashboardThemes = THEMES;
   window.__openThemes = openThemesSection;
-  console.log("[theme-boot] v15 — " + THEMES.length + " themes incl. Sweetheart");
+  console.log("[theme-boot] v16 — Sweetheart + Paisley footer");
 })();
