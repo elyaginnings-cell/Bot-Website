@@ -22,7 +22,13 @@ export default async function handler(req, res) {
       });
     }
 
-    if (!session || session.staff !== true) {
+    if (!session) {
+      return res.status(401).json({
+        authenticated: false,
+      });
+    }
+
+    if (session.staff !== true) {
       clearSessionCookies(res);
 
       return res.status(403).json({
