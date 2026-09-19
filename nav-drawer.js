@@ -1,10 +1,10 @@
 /**
- * Nav drawer v6 — collapsible category groups
+ * Nav drawer v7 — collapsible CATEGORIES only (tabs stay normal)
  */
 (function () {
   "use strict";
-  if (window.__navDrawerV6) return;
-  window.__navDrawerV6 = true;
+  if (window.__navDrawerV7) return;
+  window.__navDrawerV7 = true;
 
   var BOT_NAME = "Coffee Shop";
   var BOT_SUB = "Bot Control";
@@ -102,21 +102,7 @@
       "padding:max(18px,env(safe-area-inset-top)) 16px max(18px,env(safe-area-inset-bottom));}",
       "body.nav-drawer-open #nav-drawer{transform:translateX(0);}",
       "body.drawer-nav-only .header{padding-left:58px!important;}",
-      /* collapsible groups */
-      ".nav-drawer-group{display:flex!important;align-items:center!important;gap:8px!important;",
-      "width:100%!important;padding:10px 10px 6px!important;margin-top:6px!important;",
-      "border:none!important;background:transparent!important;cursor:pointer!important;",
-      "text-align:left!important;border-radius:10px!important;user-select:none!important;",
-      "-webkit-tap-highlight-color:transparent!important;}",
-      ".nav-drawer-group:hover{background:rgba(255,77,240,.08)!important;}",
-      ".nav-drawer-group .ndg-icon{font-size:13px;}",
-      ".nav-drawer-group .ndg-label{flex:1;font-size:11px;font-weight:700;letter-spacing:.08em;",
-      "text-transform:uppercase;color:#9b7ab8;}",
-      ".nav-drawer-group .ndg-chevron{font-size:10px;color:#9b7ab8;transition:transform .2s;margin-left:4px;}",
-      ".nav-drawer-group.collapsed .ndg-chevron{transform:rotate(-90deg);}",
-      ".nav-drawer-group-items{display:flex;flex-direction:column;gap:3px;overflow:hidden;",
-      "max-height:800px;opacity:1;transition:max-height .25s ease,opacity .2s ease;}",
-      ".nav-drawer-group-items.collapsed{max-height:0!important;opacity:0;pointer-events:none;}"
+      ".nav-drawer-group-items.is-collapsed{display:none!important;}"
     ].join("\n");
     (document.head || document.documentElement).appendChild(style);
   }
@@ -127,7 +113,7 @@
       var link = document.createElement("link");
       link.id = "nav-drawer-css";
       link.rel = "stylesheet";
-      link.href = "/nav-drawer.css?v=6";
+      link.href = "/nav-drawer.css?v=7";
       (document.head || document.documentElement).appendChild(link);
     }
   }
@@ -166,16 +152,13 @@
       btn.setAttribute("aria-expanded", "false");
       btn.innerHTML = "<span></span><span></span><span></span>";
       document.body.appendChild(btn);
-      btn.addEventListener("click", function (e) {
+      function onHam(e) {
         e.preventDefault();
         e.stopPropagation();
         toggle();
-      }, { passive: false });
-      btn.addEventListener("touchend", function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        toggle();
-      }, { passive: false });
+      }
+      btn.addEventListener("click", onHam, { passive: false });
+      btn.addEventListener("touchend", onHam, { passive: false });
     }
 
     if (!document.getElementById("nav-drawer-backdrop")) {
@@ -196,7 +179,7 @@
         '<div><strong id="nav-bot-title">' + BOT_NAME + "</strong><span>" + BOT_SUB + "</span></div>" +
         "</button>" +
         '<div id="nav-drawer-list"></div>' +
-        '<div id="nav-drawer-footer">Tap a category to collapse · Esc closes</div>';
+        '<div id="nav-drawer-footer">Tap a category name to collapse</div>';
       document.body.appendChild(drawer);
 
       var brand = document.getElementById("nav-drawer-header");
@@ -298,24 +281,24 @@
       var groupItems = byGroup[gid];
       if (!groupItems || !groupItems.length) return;
       var meta = GROUP_META[gid] || { label: gid, icon: "•" };
-      var isCollapsed = !!collapsedMap[gid];
 
-      // Keep group open if it contains the active tab
-      var hasActive = groupItems.some(function (it) { return it.active; });
-      if (hasActive) isCollapsed = false;
+      // Only collapse categories the user minimized — never the tabs themselves
+      var isCollapsed = !!collapsedMap[gid];
+      // Keep open if current page is inside this group
+      if (groupItems.some(function (it) { return it.active; })) isCollapsed = false;
 
       var head = document.createElement("button");
       head.type = "button";
-      head.className = "nav-drawer-group" + (isCollapsed ? " collapsed" : "");
+      head.className = "nav-drawer-group" + (isCollapsed ? " is-collapsed" : "");
       head.setAttribute("data-group", gid);
       head.setAttribute("aria-expanded", isCollapsed ? "false" : "true");
       head.innerHTML =
         '<span class="ndg-icon">' + meta.icon + "</span>" +
         '<span class="ndg-label">' + meta.label + "</span>" +
-        '<span class="ndg-chevron">▼</span>';
+        '<span class="ndg-chevron" aria-hidden="true">▼</span>';
 
       var wrap = document.createElement("div");
-      wrap.className = "nav-drawer-group-items" + (isCollapsed ? " collapsed" : "");
+      wrap.className = "nav-drawer-group-items" + (isCollapsed ? " is-collapsed" : "");
       wrap.setAttribute("data-group-items", gid);
 
       groupItems.forEach(function (item) {
@@ -327,6 +310,7 @@
           '<span class="ndi-icon">' + item.icon + '</span><span class="ndi-label">' + item.label + "</span>";
         b.addEventListener("click", function (e) {
           e.preventDefault();
+          e.stopPropagation();
           activateTab(item);
           close();
         });
@@ -336,10 +320,16 @@
       head.addEventListener("click", function (e) {
         e.preventDefault();
         e.stopPropagation();
-        var nowCollapsed = !wrap.classList.contains("collapsed");
-        wrap.classList.toggle("collapsed", nowCollapsed);
-        head.classList.toggle("collapsed", nowCollapsed);
-        head.setAttribute("aria-expanded", nowCollapsed ? "false" : "true");
+        var nowCollapsed = !wrap.classList.contains("is-collapsed");
+        if (nowCollapsed) {
+          wrap.classList.add("is-collapsed");
+          head.classList.add("is-collapsed");
+          head.setAttribute("aria-expanded", "false");
+        } else {
+          wrap.classList.remove("is-collapsed");
+          head.classList.remove("is-collapsed");
+          head.setAttribute("aria-expanded", "true");
+        }
         var map = loadCollapsed();
         if (nowCollapsed) map[gid] = true;
         else delete map[gid];
@@ -445,5 +435,5 @@
 
   window.__openNavDrawer = open;
   window.__closeNavDrawer = close;
-  console.log("[nav-drawer] v6 — collapsible categories");
+  console.log("[nav-drawer] v7 — category collapse only");
 })();
