@@ -1,25 +1,32 @@
 /**
- * Dashboard themes v14 — insane structural packs
+ * Dashboard themes v15 — + Sweetheart special theme
  */
 (function () {
   "use strict";
-  if (window.__themeBootV14) return;
-  window.__themeBootV14 = true;
+  if (window.__themeBootV15) return;
+  window.__themeBootV15 = true;
 
   var THEMES = [
+    {
+      id: "sweetheart",
+      name: "Sweetheart",
+      emoji: "🌻",
+      blurb: "Made for her — sunflowers, hearts, stars, soft nature",
+      group: "Special"
+    },
     { id: "default", name: "Default", emoji: "💜", blurb: "Original neon violet", group: "Original" },
     { id: "mocha", name: "Mocha", emoji: "☕", blurb: "Warm coffee house", group: "Original" },
     { id: "neon", name: "Neon", emoji: "💖", blurb: "Pink / cyan glow", group: "Original" },
     { id: "midnight", name: "Midnight", emoji: "🌙", blurb: "Cool night blue", group: "Original" },
     { id: "sakura", name: "Sakura", emoji: "🌸", blurb: "Soft cherry blossom", group: "Original" },
-    { id: "sunflower", name: "Sunflower", emoji: "🌻", blurb: "Golden garden", group: "Original" },
+    { id: "sunflower", name: "Sunflower", emoji: "🌼", blurb: "Golden garden", group: "Original" },
     { id: "bloodmoon", name: "Bloodmoon", emoji: "🩸", blurb: "Crimson horror UI", group: "Original" },
     { id: "terminal", name: "Terminal", emoji: "💻", blurb: "CRT scanlines + mono console", group: "Original" },
     { id: "ocean", name: "Ocean", emoji: "🌊", blurb: "Deep sea dashboard", group: "Nature" },
     { id: "forest", name: "Forest", emoji: "🌲", blurb: "Moss canopy UI", group: "Nature" },
     { id: "mint", name: "Mint", emoji: "🍃", blurb: "Fresh soft green", group: "Nature" },
     { id: "bamboo", name: "Bamboo", emoji: "🎋", blurb: "Lime grove", group: "Nature" },
-    { id: "arctic", name: "Arctic", emoji: "🧊", blurb: "Light ice product site", group: "Nature" },
+    { id: "arctic", name: "Arctic", emoji: "🧊", blurb: "Light ice + snow sparkles", group: "Nature" },
     { id: "aurora", name: "Aurora", emoji: "🌌", blurb: "Northern glow blobs", group: "Nature" },
     { id: "cyberpunk", name: "Cyberpunk", emoji: "🤖", blurb: "Angled chrome + neon grid", group: "Neon" },
     { id: "synthwave", name: "Synthwave", emoji: "🕹️", blurb: "80s perspective grid", group: "Neon" },
@@ -40,7 +47,7 @@
     { id: "clay", name: "Clay", emoji: "🧱", blurb: "Chunky offset-shadow toy UI", group: "Soft" },
     { id: "emerald", name: "Emerald", emoji: "💎", blurb: "Luxury green", group: "Pro" },
     { id: "coffee", name: "Coffeehouse", emoji: "🫘", blurb: "Espresso & cream", group: "Pro" },
-    { id: "paper", name: "Paper", emoji: "📄", blurb: "Editorial magazine", group: "Pro" },
+    { id: "paper", name: "Paper", emoji: "📄", blurb: "Editorial magazine / journal", group: "Pro" },
     { id: "slate", name: "Slate", emoji: "🪨", blurb: "Flat gray pro", group: "Pro" },
     { id: "obsidian", name: "Obsidian", emoji: "⬛", blurb: "Hard minimal black", group: "Pro" },
     { id: "steel", name: "Steel", emoji: "🛡️", blurb: "Flat metal", group: "Pro" },
@@ -65,6 +72,7 @@
     ensure("themes-force-struct-css", "/themes-force-struct.css?v=10");
     ensure("themes-radical-css", "/themes-radical.css?v=2");
     ensure("themes-insane-css", "/themes-insane.css?v=1");
+    ensure("theme-sweetheart-css", "/theme-sweetheart.css?v=1");
   }
 
   function applyTheme(name) {
@@ -105,7 +113,7 @@
     var title = document.getElementById("page-title");
     if (title) title.textContent = "Themes";
     var desc = document.getElementById("page-description");
-    if (desc) desc.textContent = "Each theme is a different website — fonts, shape, chrome, everything.";
+    if (desc) desc.textContent = "Each theme is a different website — plus a special Sweetheart pack.";
     renderCards();
   }
 
@@ -215,7 +223,7 @@
       '<div class="card form-card wide">' +
       '<span class="eyebrow">APPEARANCE</span>' +
       "<h2>Dashboard themes</h2>" +
-      '<p class="form-hint">Each pack is a different website — CRT terminal, cyberpunk grid, paper magazine, chunky clay, mono newspaper, candy pills, and more. Not a recolor.</p>' +
+      '<p class="form-hint">Full website packs — plus <strong>Sweetheart</strong>, a special soft garden theme.</p>' +
       '<p class="form-hint">Current: <strong id="themes-current-label">—</strong></p>' +
       '<div id="themes-grid" class="themes-grid"></div>' +
       "</div>";
@@ -232,7 +240,7 @@
       if (!groups[t.group]) groups[t.group] = [];
       groups[t.group].push(t);
     });
-    var order = ["Original", "Nature", "Neon", "Dev", "Soft", "Pro"];
+    var order = ["Special", "Original", "Nature", "Neon", "Dev", "Soft", "Pro"];
     var html = "";
     order.forEach(function (g) {
       if (!groups[g]) return;
@@ -301,5 +309,5 @@
   window.__applyDashboardTheme = applyTheme;
   window.__dashboardThemes = THEMES;
   window.__openThemes = openThemesSection;
-  console.log("[theme-boot] v14 — " + THEMES.length + " insane themes");
+  console.log("[theme-boot] v15 — " + THEMES.length + " themes incl. Sweetheart");
 })();
