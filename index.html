@@ -6,7 +6,6 @@
 <title>Loading dashboard…</title>
 <link rel="icon" href="/amazon-favicon.svg?v=2" type="image/svg+xml">
 <style id="nav-boot-critical">
-/* Early mobile-safe hamburger so something shows even before JS */
 #nav-hamburger{
   position:fixed!important;top:max(12px,env(safe-area-inset-top))!important;
   left:max(12px,env(safe-area-inset-left))!important;z-index:2147483000!important;
@@ -86,8 +85,7 @@ body.drawer-nav-only .navigation,body.drawer-nav-only.mode-mobile .navigation,bo
       l.href = href;
       document.head.appendChild(l);
     }
-    // Order matters: mobile-fix after drawer so drawer wins
-    loadCss("/nav-drawer.css?v=5");
+    loadCss("/nav-drawer.css?v=6");
     loadCss("/mobile-fix.css?v=5");
     await loadScript("/features-ui.js?v=9");
     await loadScript("/features-config.js?v=18");
@@ -118,7 +116,7 @@ body.drawer-nav-only .navigation,body.drawer-nav-only.mode-mobile .navigation,bo
     await loadScript("/sv-ux-polish.js?v=3");
     await loadScript("/sv-phase0.js?v=2");
     await loadScript("/theme-boot.js?v=13");
-    await loadScript("/nav-drawer.js?v=5");
+    await loadScript("/nav-drawer.js?v=6");
     await loadScript("/sv-themes-expand.js?v=2");
   } catch (e) {
     document.body.innerHTML =
