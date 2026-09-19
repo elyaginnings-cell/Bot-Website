@@ -1,60 +1,61 @@
 /* ============================================================
-   SWEETHEART — special theme made for her ♡
-   Sunflowers · hearts · stars · soft nature · kawaii pastels
-   snow sparkles · journal/scrapbook cards · berry accents
+   SWEETHEART v2 — for Paisley ♡
+   Higher contrast text + denser emoji layer + scrapbook cards
    ============================================================ */
 
-@import url("https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@500;600;700;800&family=Caveat:wght@500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@600;700;800&family=Caveat:wght@600;700&display=swap");
 
 body.theme-sweetheart {
-  --sw-cream: #fff8f0;
-  --sw-peach: #ffe8d6;
-  --sw-pink: #ffc2d4;
-  --sw-rose: #ff8fab;
-  --sw-gold: #f4c430;
-  --sw-sun: #ffcc33;
-  --sw-leaf: #7cb342;
-  --sw-sky: #b8e0ff;
-  --sw-snow: #f0f7ff;
-  --sw-berry: #c2185b;
-  --sw-ink: #4a2c3a;
-  --sw-muted: #9a6b7c;
+  --sw-ink: #2d1520;
+  --sw-ink-soft: #3d2230;
+  --sw-muted: #5c3a48;
+  --sw-label: #7a3048;
+  --sw-cream: #fffaf5;
+  --sw-card: #ffffff;
+  --sw-pink: #ff8fab;
+  --sw-rose: #e85a8c;
+  --sw-gold: #e6a800;
+  --sw-sun: #f5c518;
+  --sw-berry: #b0104a;
 
   background:
-    radial-gradient(circle at 12% 8%, rgba(255, 204, 51, 0.35) 0%, transparent 28%),
-    radial-gradient(circle at 88% 12%, rgba(255, 143, 171, 0.28) 0%, transparent 30%),
-    radial-gradient(circle at 70% 85%, rgba(184, 224, 255, 0.35) 0%, transparent 32%),
-    radial-gradient(circle at 20% 90%, rgba(124, 179, 66, 0.18) 0%, transparent 28%),
-    linear-gradient(165deg, #fff5eb 0%, #ffe4f0 40%, #e8f4ff 75%, #fff8e7 100%) !important;
+    radial-gradient(circle at 10% 6%, rgba(245, 197, 24, 0.4) 0%, transparent 26%),
+    radial-gradient(circle at 90% 10%, rgba(255, 143, 171, 0.32) 0%, transparent 28%),
+    radial-gradient(circle at 75% 88%, rgba(160, 210, 255, 0.3) 0%, transparent 30%),
+    radial-gradient(circle at 18% 92%, rgba(120, 180, 80, 0.2) 0%, transparent 26%),
+    linear-gradient(165deg, #fff6ec 0%, #ffe8f2 42%, #e8f3ff 78%, #fff6e0 100%) !important;
   color: var(--sw-ink) !important;
   font-family: "Nunito", system-ui, sans-serif !important;
+  font-weight: 600 !important;
   min-height: 100vh;
 }
 
-/* floating hearts + stars + soft petals (decorative layer) */
+/* dense floating emoji wallpaper (her likes) */
 body.theme-sweetheart::before {
-  content: "♡  ★  🌻  ♡  ★  🌸  ♡  ★  ✨  ♡  ★  🌻  ♡  ★  ❄️  ♡  ★  🍓";
+  content:
+    "🌻 ❤️ ⭐ 🐱 ❄️ 📖 ✍️ 🍓 🫐 🍕 🍔 🍜 🌮 🧀 🍫 🍬 🪱 🍪 🪼 🧽 ✨ 🐻 🐰 🌸 📔 ☀️ 🎵 🎤 ☀️ 🌺 🌈 ☀️ 🐿️ 🐼 🦊 🍪 🧁 🍰 🍪 🎨 ✏️ 📚 🌻 ❤️ ⭐ 🐱 ❄️ 📖 ✍️ 🍓 🫐 🍕 🍫 🍬 🪱 🪼 ✨ 🐻 🐰 🎵 🎤 🌻 ❤️ ⭐";
   position: fixed;
-  inset: 0;
+  inset: -20px;
   z-index: 0;
   pointer-events: none;
-  font-size: 18px;
-  line-height: 3.2;
-  letter-spacing: 2.4em;
-  word-spacing: 1.6em;
-  opacity: 0.14;
+  font-size: 22px;
+  line-height: 2.6;
+  letter-spacing: 0.55em;
+  word-spacing: 0.35em;
+  opacity: 0.22;
   overflow: hidden;
-  padding: 12px;
-  color: #c2185b;
-  animation: sw-drift 80s linear infinite;
+  padding: 8px 12px;
+  user-select: none;
+  animation: sw-drift 90s linear infinite;
 }
 
 @keyframes sw-drift {
-  0% { transform: translateY(0); }
-  100% { transform: translateY(-40px); }
+  0% { transform: translateY(0) translateX(0); }
+  50% { transform: translateY(-24px) translateX(8px); }
+  100% { transform: translateY(0) translateX(0); }
 }
 
-/* soft snow sparkles */
+/* bright snow / star sparkles */
 body.theme-sweetheart::after {
   content: "";
   position: fixed;
@@ -62,22 +63,23 @@ body.theme-sweetheart::after {
   z-index: 0;
   pointer-events: none;
   background-image:
-    radial-gradient(2px 2px at 10% 20%, rgba(255, 255, 255, 0.9), transparent),
-    radial-gradient(2px 2px at 30% 60%, rgba(255, 255, 255, 0.7), transparent),
-    radial-gradient(1.5px 1.5px at 50% 15%, rgba(255, 255, 255, 0.85), transparent),
-    radial-gradient(2px 2px at 70% 40%, rgba(255, 255, 255, 0.75), transparent),
-    radial-gradient(1.5px 1.5px at 90% 70%, rgba(255, 255, 255, 0.8), transparent),
-    radial-gradient(2px 2px at 15% 85%, rgba(255, 204, 51, 0.5), transparent),
-    radial-gradient(2px 2px at 55% 90%, rgba(255, 143, 171, 0.45), transparent),
-    radial-gradient(1.5px 1.5px at 80% 25%, rgba(184, 224, 255, 0.7), transparent);
+    radial-gradient(2.5px 2.5px at 8% 18%, #fff 40%, transparent 70%),
+    radial-gradient(2px 2px at 22% 55%, #fff 40%, transparent 70%),
+    radial-gradient(2px 2px at 40% 12%, #ffe566 50%, transparent 70%),
+    radial-gradient(2.5px 2.5px at 58% 48%, #fff 40%, transparent 70%),
+    radial-gradient(2px 2px at 72% 22%, #ffb3c8 50%, transparent 70%),
+    radial-gradient(2px 2px at 88% 68%, #fff 40%, transparent 70%),
+    radial-gradient(2.5px 2.5px at 15% 82%, #fff 40%, transparent 70%),
+    radial-gradient(2px 2px at 48% 90%, #ffe566 50%, transparent 70%),
+    radial-gradient(2px 2px at 95% 35%, #fff 40%, transparent 70%);
   background-size: 100% 100%;
-  opacity: 0.85;
-  animation: sw-sparkle 6s ease-in-out infinite alternate;
+  opacity: 0.9;
+  animation: sw-sparkle 5s ease-in-out infinite alternate;
 }
 
 @keyframes sw-sparkle {
-  0% { opacity: 0.55; }
-  100% { opacity: 0.95; }
+  0% { opacity: 0.65; }
+  100% { opacity: 1; }
 }
 
 body.theme-sweetheart #app,
@@ -87,7 +89,7 @@ body.theme-sweetheart .content {
   z-index: 1;
 }
 
-/* scrapbook / journal cards */
+/* high-contrast cards */
 body.theme-sweetheart .card,
 body.theme-sweetheart .form-card,
 body.theme-sweetheart .header.card,
@@ -96,207 +98,258 @@ body.theme-sweetheart .stat-card,
 body.theme-sweetheart .quick-card,
 body.theme-sweetheart .hero.card {
   border-radius: 22px !important;
-  border: 2px solid rgba(255, 143, 171, 0.55) !important;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 248, 240, 0.98) 100%) !important;
+  border: 2px solid #f0a0b8 !important;
+  background: #ffffff !important;
   box-shadow:
-    0 10px 28px rgba(194, 24, 91, 0.1),
-    0 2px 0 rgba(255, 204, 51, 0.35),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.8) !important;
+    0 8px 24px rgba(176, 16, 74, 0.12),
+    0 2px 0 #f5c518 !important;
   color: var(--sw-ink) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
 
 body.theme-sweetheart .header.card {
-  border-color: rgba(255, 204, 51, 0.55) !important;
-  background:
-    linear-gradient(135deg, #fff9f0 0%, #ffe8f0 50%, #eaf6ff 100%) !important;
+  border-color: #f5c518 !important;
+  background: linear-gradient(135deg, #ffffff 0%, #fff5f8 55%, #f0f8ff 100%) !important;
+}
+
+/* ALL text dark & bold enough to read */
+body.theme-sweetheart,
+body.theme-sweetheart p,
+body.theme-sweetheart span,
+body.theme-sweetheart li,
+body.theme-sweetheart label,
+body.theme-sweetheart .form-hint,
+body.theme-sweetheart .header p,
+body.theme-sweetheart .content,
+body.theme-sweetheart .main,
+body.theme-sweetheart .card,
+body.theme-sweetheart .form-card {
+  color: var(--sw-ink) !important;
+}
+
+body.theme-sweetheart .form-hint,
+body.theme-sweetheart .header p,
+body.theme-sweetheart .muted,
+body.theme-sweetheart small {
+  color: var(--sw-muted) !important;
+  font-weight: 600 !important;
 }
 
 body.theme-sweetheart h1,
 body.theme-sweetheart h2,
-body.theme-sweetheart .header h1 {
+body.theme-sweetheart h3,
+body.theme-sweetheart .header h1,
+body.theme-sweetheart .hero h2,
+body.theme-sweetheart .form-card h2 {
   font-family: "Fredoka", "Nunito", system-ui, sans-serif !important;
   font-weight: 700 !important;
   color: var(--sw-berry) !important;
-  letter-spacing: 0.01em !important;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
 body.theme-sweetheart .eyebrow,
 body.theme-sweetheart .subhead {
   font-family: "Fredoka", system-ui, sans-serif !important;
-  color: #d4a017 !important;
-  letter-spacing: 0.12em !important;
+  color: #9a6a00 !important;
+  letter-spacing: 0.1em !important;
   text-transform: uppercase !important;
   font-size: 11px !important;
-  font-weight: 600 !important;
+  font-weight: 700 !important;
 }
 
-body.theme-sweetheart p,
-body.theme-sweetheart .form-hint,
-body.theme-sweetheart label,
-body.theme-sweetheart .header p {
-  color: var(--sw-muted) !important;
-  font-family: "Nunito", system-ui, sans-serif !important;
+body.theme-sweetheart strong,
+body.theme-sweetheart b {
+  color: var(--sw-ink) !important;
+  font-weight: 800 !important;
 }
 
-/* soft kawaii buttons — sunflower gold + rose */
+body.theme-sweetheart a {
+  color: var(--sw-berry) !important;
+  font-weight: 700 !important;
+}
+
+/* emoji strip under page titles */
+body.theme-sweetheart .header h1::after {
+  content: "  🌻 ❤️ ⭐";
+  font-size: 0.75em;
+  letter-spacing: 0.05em;
+}
+
+body.theme-sweetheart #themes h2::after,
+body.theme-sweetheart .hero h2::after {
+  content: "  ♡ 🌻";
+}
+
+/* buttons */
 body.theme-sweetheart .button,
 body.theme-sweetheart button.button,
 body.theme-sweetheart .btn {
   border-radius: 999px !important;
-  border: 2px solid rgba(255, 143, 171, 0.65) !important;
-  background: linear-gradient(135deg, #ffcc33 0%, #ff8fab 100%) !important;
-  color: #4a2c3a !important;
+  border: 2px solid #e85a8c !important;
+  background: linear-gradient(135deg, #f5c518 0%, #ff8fab 100%) !important;
+  color: #2d1520 !important;
   font-family: "Fredoka", system-ui, sans-serif !important;
-  font-weight: 600 !important;
-  box-shadow: 0 6px 18px rgba(255, 143, 171, 0.35) !important;
-  text-shadow: none !important;
+  font-weight: 700 !important;
+  box-shadow: 0 6px 16px rgba(232, 90, 140, 0.35) !important;
 }
 
-body.theme-sweetheart .button:hover,
-body.theme-sweetheart button.button:hover {
+body.theme-sweetheart .button:hover {
+  filter: brightness(1.06);
   transform: translateY(-1px);
-  box-shadow: 0 10px 24px rgba(255, 143, 171, 0.45) !important;
-  filter: brightness(1.05);
 }
 
 body.theme-sweetheart input,
 body.theme-sweetheart select,
 body.theme-sweetheart textarea {
   border-radius: 16px !important;
-  border: 2px solid rgba(255, 194, 212, 0.9) !important;
-  background: #fffefb !important;
+  border: 2px solid #f0a0b8 !important;
+  background: #ffffff !important;
   color: var(--sw-ink) !important;
   font-family: "Nunito", system-ui, sans-serif !important;
-  box-shadow: inset 0 2px 6px rgba(255, 143, 171, 0.08) !important;
+  font-weight: 600 !important;
+}
+
+body.theme-sweetheart input::placeholder,
+body.theme-sweetheart textarea::placeholder {
+  color: #8a6070 !important;
+  opacity: 1 !important;
 }
 
 body.theme-sweetheart input:focus,
 body.theme-sweetheart select:focus,
 body.theme-sweetheart textarea:focus {
-  border-color: #ff8fab !important;
+  border-color: #e85a8c !important;
   outline: none !important;
-  box-shadow: 0 0 0 3px rgba(255, 204, 51, 0.35) !important;
+  box-shadow: 0 0 0 3px rgba(245, 197, 24, 0.45) !important;
 }
 
-/* journal-style handwriting accents on special titles */
-body.theme-sweetheart .hero h2::after,
-body.theme-sweetheart #themes h2::after {
-  content: "  ♡";
-  color: #ff8fab;
-}
-
-/* stats / quick cards — little “stickers” */
+/* sticker-style stats */
 body.theme-sweetheart .stat-card,
 body.theme-sweetheart .quick-card {
   border-radius: 18px !important;
-  border: 2px dashed rgba(255, 143, 171, 0.5) !important;
+  border: 2px dashed #e85a8c !important;
   background: #fffefb !important;
-  transform: rotate(-0.4deg);
 }
 
 body.theme-sweetheart .stat-card:nth-child(even),
 body.theme-sweetheart .quick-card:nth-child(even) {
-  transform: rotate(0.5deg);
   border-style: solid !important;
-  border-color: rgba(255, 204, 51, 0.55) !important;
+  border-color: #f5c518 !important;
 }
 
-/* hamburger — soft heart button */
+body.theme-sweetheart .stat-card strong,
+body.theme-sweetheart .quick-card strong,
+body.theme-sweetheart .stat-card span,
+body.theme-sweetheart .quick-card span {
+  color: var(--sw-ink) !important;
+}
+
+/* hamburger */
 body.theme-sweetheart #nav-hamburger {
   border-radius: 18px !important;
-  border: 2px solid rgba(255, 143, 171, 0.7) !important;
-  background: linear-gradient(145deg, #fff8f0, #ffe4f0) !important;
-  box-shadow: 0 8px 22px rgba(255, 143, 171, 0.3) !important;
+  border: 2px solid #e85a8c !important;
+  background: linear-gradient(145deg, #ffffff, #ffe8f0) !important;
+  box-shadow: 0 8px 20px rgba(232, 90, 140, 0.3) !important;
 }
 
 body.theme-sweetheart #nav-hamburger span {
-  background: #c2185b !important;
+  background: #b0104a !important;
 }
 
-/* drawer — soft scrapbook panel */
+/* drawer */
 body.theme-sweetheart #nav-drawer {
-  background:
-    linear-gradient(180deg, #fff9f5 0%, #ffeef5 50%, #eef6ff 100%) !important;
-  border-right: 3px solid rgba(255, 204, 51, 0.55) !important;
-  box-shadow: 12px 0 40px rgba(194, 24, 91, 0.12) !important;
+  background: linear-gradient(180deg, #ffffff 0%, #fff5f8 45%, #f0f7ff 100%) !important;
+  border-right: 3px solid #f5c518 !important;
+  box-shadow: 12px 0 36px rgba(176, 16, 74, 0.12) !important;
 }
 
 body.theme-sweetheart #nav-drawer-header strong,
 body.theme-sweetheart #nav-bot-title {
-  color: #c2185b !important;
+  color: #b0104a !important;
   font-family: "Fredoka", system-ui, sans-serif !important;
+  font-weight: 700 !important;
 }
 
 body.theme-sweetheart #nav-drawer-header span {
-  color: #9a6b7c !important;
+  color: #5c3a48 !important;
+  font-weight: 600 !important;
 }
 
 body.theme-sweetheart #nav-drawer-header .brand-icon {
-  background: linear-gradient(135deg, #ffcc33, #ff8fab) !important;
-  border: 2px solid rgba(255, 255, 255, 0.8) !important;
+  background: linear-gradient(135deg, #f5c518, #ff8fab) !important;
+  border: 2px solid #fff !important;
   border-radius: 14px !important;
+  box-shadow: 0 4px 12px rgba(232, 90, 140, 0.3) !important;
 }
 
 body.theme-sweetheart .nav-drawer-group .ndg-label {
-  color: #d4a017 !important;
+  color: #9a6a00 !important;
   font-family: "Fredoka", system-ui, sans-serif !important;
+  font-weight: 700 !important;
 }
 
 body.theme-sweetheart .nav-drawer-group .ndg-chevron {
-  color: #ff8fab !important;
+  color: #e85a8c !important;
 }
 
 body.theme-sweetheart #nav-drawer-list button.nav-drawer-item {
   border-radius: 999px !important;
-  color: #4a2c3a !important;
+  color: #2d1520 !important;
   font-family: "Nunito", system-ui, sans-serif !important;
+  font-weight: 700 !important;
   border: 2px solid transparent !important;
 }
 
 body.theme-sweetheart #nav-drawer-list button.nav-drawer-item:hover {
-  background: rgba(255, 194, 212, 0.45) !important;
-  border-color: rgba(255, 143, 171, 0.4) !important;
+  background: #ffe4ee !important;
+  border-color: #f0a0b8 !important;
 }
 
 body.theme-sweetheart #nav-drawer-list button.nav-drawer-item.active {
-  background: linear-gradient(135deg, #ffcc33, #ff8fab) !important;
-  color: #4a2c3a !important;
+  background: linear-gradient(135deg, #f5c518, #ff8fab) !important;
+  color: #2d1520 !important;
   border-color: transparent !important;
-  box-shadow: 0 6px 16px rgba(255, 143, 171, 0.35) !important;
+  box-shadow: 0 6px 14px rgba(232, 90, 140, 0.35) !important;
+}
+
+/* Paisley footer */
+body.theme-sweetheart #nav-drawer-footer {
+  color: #b0104a !important;
+  font-family: "Caveat", cursive !important;
+  font-size: 18px !important;
   font-weight: 700 !important;
+  text-align: center !important;
+  line-height: 1.35 !important;
 }
 
 body.theme-sweetheart #nav-drawer-footer {
-  color: #9a6b7c !important;
-  font-family: "Caveat", cursive !important;
-  font-size: 14px !important;
+  /* JS may set text; CSS also forces readable color */
 }
 
-body.theme-sweetheart #nav-drawer-footer::before {
-  content: "♡ made with sunflowers & stars  ";
-}
-
-/* theme FAB soft */
 body.theme-sweetheart #theme-fab {
-  background: linear-gradient(135deg, #ffcc33, #ff8fab) !important;
+  background: linear-gradient(135deg, #f5c518, #ff8fab) !important;
   border: 2px solid #fff !important;
-  box-shadow: 0 8px 24px rgba(255, 143, 171, 0.45) !important;
+  box-shadow: 0 8px 22px rgba(232, 90, 140, 0.45) !important;
 }
 
-/* toggles / misc */
 body.theme-sweetheart .toggle span {
+  color: var(--sw-ink) !important;
+  font-weight: 600 !important;
+}
+
+/* theme picker cards on this theme */
+body.theme-sweetheart .theme-card-name,
+body.theme-sweetheart .theme-card-blurb {
   color: var(--sw-ink) !important;
 }
 
-/* mobile */
 @media (max-width: 960px) {
   body.theme-sweetheart::before {
-    font-size: 14px;
-    letter-spacing: 1.4em;
-    opacity: 0.12;
+    font-size: 16px;
+    letter-spacing: 0.35em;
+    opacity: 0.18;
+    line-height: 2.4;
   }
 
   body.theme-sweetheart .card,
@@ -305,8 +358,7 @@ body.theme-sweetheart .toggle span {
     border-radius: 18px !important;
   }
 
-  body.theme-sweetheart .stat-card,
-  body.theme-sweetheart .quick-card {
-    transform: none;
+  body.theme-sweetheart #nav-drawer-footer {
+    font-size: 16px !important;
   }
 }
