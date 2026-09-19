@@ -1,51 +1,51 @@
 /**
- * Dashboard themes v13 — radical packs (Server View has separate themes)
+ * Dashboard themes v14 — insane structural packs
  */
 (function () {
   "use strict";
-  if (window.__themeBootV13) return;
-  window.__themeBootV13 = true;
+  if (window.__themeBootV14) return;
+  window.__themeBootV14 = true;
 
   var THEMES = [
     { id: "default", name: "Default", emoji: "💜", blurb: "Original neon violet", group: "Original" },
-    { id: "mocha", name: "Mocha", emoji: "☕", blurb: "Warm coffee shop", group: "Original" },
+    { id: "mocha", name: "Mocha", emoji: "☕", blurb: "Warm coffee house", group: "Original" },
     { id: "neon", name: "Neon", emoji: "💖", blurb: "Pink / cyan glow", group: "Original" },
     { id: "midnight", name: "Midnight", emoji: "🌙", blurb: "Cool night blue", group: "Original" },
     { id: "sakura", name: "Sakura", emoji: "🌸", blurb: "Soft cherry blossom", group: "Original" },
-    { id: "sunflower", name: "Sunflower", emoji: "🌻", blurb: "Golden yellow", group: "Original" },
-    { id: "bloodmoon", name: "Bloodmoon", emoji: "🩸", blurb: "Deep crimson", group: "Original" },
-    { id: "terminal", name: "Terminal", emoji: "💻", blurb: "CRT scanlines + mono", group: "Original" },
-    { id: "ocean", name: "Ocean", emoji: "🌊", blurb: "Deep sea waves", group: "Nature" },
-    { id: "forest", name: "Forest", emoji: "🌲", blurb: "Moss & canopy", group: "Nature" },
+    { id: "sunflower", name: "Sunflower", emoji: "🌻", blurb: "Golden garden", group: "Original" },
+    { id: "bloodmoon", name: "Bloodmoon", emoji: "🩸", blurb: "Crimson horror UI", group: "Original" },
+    { id: "terminal", name: "Terminal", emoji: "💻", blurb: "CRT scanlines + mono console", group: "Original" },
+    { id: "ocean", name: "Ocean", emoji: "🌊", blurb: "Deep sea dashboard", group: "Nature" },
+    { id: "forest", name: "Forest", emoji: "🌲", blurb: "Moss canopy UI", group: "Nature" },
     { id: "mint", name: "Mint", emoji: "🍃", blurb: "Fresh soft green", group: "Nature" },
     { id: "bamboo", name: "Bamboo", emoji: "🎋", blurb: "Lime grove", group: "Nature" },
-    { id: "arctic", name: "Arctic", emoji: "🧊", blurb: "Ice & frost", group: "Nature" },
-    { id: "aurora", name: "Aurora", emoji: "🌌", blurb: "Glow blobs", group: "Nature" },
-    { id: "cyberpunk", name: "Cyberpunk", emoji: "🤖", blurb: "Cut corners + grid", group: "Neon" },
-    { id: "synthwave", name: "Synthwave", emoji: "🕹️", blurb: "Retro grid", group: "Neon" },
-    { id: "vaporwave", name: "Vaporwave", emoji: "🌴", blurb: "80s gradient edge", group: "Neon" },
+    { id: "arctic", name: "Arctic", emoji: "🧊", blurb: "Light ice product site", group: "Nature" },
+    { id: "aurora", name: "Aurora", emoji: "🌌", blurb: "Northern glow blobs", group: "Nature" },
+    { id: "cyberpunk", name: "Cyberpunk", emoji: "🤖", blurb: "Angled chrome + neon grid", group: "Neon" },
+    { id: "synthwave", name: "Synthwave", emoji: "🕹️", blurb: "80s perspective grid", group: "Neon" },
+    { id: "vaporwave", name: "Vaporwave", emoji: "🌴", blurb: "Double-border aesthetic", group: "Neon" },
     { id: "lava", name: "Lava", emoji: "🌋", blurb: "Molten bottom glow", group: "Neon" },
-    { id: "candy", name: "Candy", emoji: "🍬", blurb: "Pill buttons", group: "Neon" },
-    { id: "nord", name: "Nord", emoji: "❄️", blurb: "Flat pro slate", group: "Dev" },
+    { id: "candy", name: "Candy", emoji: "🍬", blurb: "Pastel pill product", group: "Neon" },
+    { id: "nord", name: "Nord", emoji: "❄️", blurb: "Flat pro IDE slate", group: "Dev" },
     { id: "dracula", name: "Dracula", emoji: "🧛", blurb: "Editor purple", group: "Dev" },
-    { id: "catppuccin", name: "Catppuccin", emoji: "🐱", blurb: "Soft mocha", group: "Dev" },
+    { id: "catppuccin", name: "Catppuccin", emoji: "🐱", blurb: "Soft mocha code", group: "Dev" },
     { id: "gruvbox", name: "Gruvbox", emoji: "🐻", blurb: "Warm retro code", group: "Dev" },
     { id: "tokyonight", name: "Tokyo Night", emoji: "🌃", blurb: "Soft city blues", group: "Dev" },
-    { id: "solarized", name: "Solarized", emoji: "☀️", blurb: "Classic terminal", group: "Dev" },
-    { id: "rosegold", name: "Rose Gold", emoji: "✨", blurb: "Pill elegant", group: "Soft" },
+    { id: "solarized", name: "Solarized", emoji: "☀️", blurb: "Classic terminal tones", group: "Dev" },
+    { id: "rosegold", name: "Rose Gold", emoji: "✨", blurb: "Luxury serif dark", group: "Soft" },
     { id: "amethyst", name: "Amethyst", emoji: "🔮", blurb: "Royal purple", group: "Soft" },
-    { id: "coral", name: "Coral", emoji: "🪸", blurb: "Pill soft rose", group: "Soft" },
-    { id: "honey", name: "Honey", emoji: "🍯", blurb: "Golden amber", group: "Soft" },
-    { id: "icecream", name: "Ice Cream", emoji: "🍦", blurb: "Super rounded", group: "Soft" },
-    { id: "clay", name: "Clay", emoji: "🧱", blurb: "Chunky offset shadow", group: "Soft" },
+    { id: "coral", name: "Coral", emoji: "🪸", blurb: "Soft rose pills", group: "Soft" },
+    { id: "honey", name: "Honey", emoji: "🍯", blurb: "Golden amber site", group: "Soft" },
+    { id: "icecream", name: "Ice Cream", emoji: "🍦", blurb: "Super-rounded dessert UI", group: "Soft" },
+    { id: "clay", name: "Clay", emoji: "🧱", blurb: "Chunky offset-shadow toy UI", group: "Soft" },
     { id: "emerald", name: "Emerald", emoji: "💎", blurb: "Luxury green", group: "Pro" },
     { id: "coffee", name: "Coffeehouse", emoji: "🫘", blurb: "Espresso & cream", group: "Pro" },
-    { id: "paper", name: "Paper", emoji: "📄", blurb: "Light ink page", group: "Pro" },
+    { id: "paper", name: "Paper", emoji: "📄", blurb: "Editorial magazine", group: "Pro" },
     { id: "slate", name: "Slate", emoji: "🪨", blurb: "Flat gray pro", group: "Pro" },
-    { id: "obsidian", name: "Obsidian", emoji: "⬛", blurb: "Hard minimal", group: "Pro" },
+    { id: "obsidian", name: "Obsidian", emoji: "⬛", blurb: "Hard minimal black", group: "Pro" },
     { id: "steel", name: "Steel", emoji: "🛡️", blurb: "Flat metal", group: "Pro" },
-    { id: "sunset", name: "Sunset", emoji: "🌇", blurb: "Orange dusk", group: "Pro" },
-    { id: "mono", name: "Mono", emoji: "⬛", blurb: "Brutalist zero radius", group: "Pro" },
+    { id: "sunset", name: "Sunset", emoji: "🌇", blurb: "Dusk gradient site", group: "Pro" },
+    { id: "mono", name: "Mono", emoji: "⬛", blurb: "Brutalist newspaper zero-radius", group: "Pro" }
   ];
 
   var ALL_IDS = THEMES.map(function (t) { return t.id; });
@@ -63,7 +63,8 @@
     ensure("themes-packs-css", "/themes-packs.css?v=7");
     ensure("themes-force-base-css", "/themes-force-base.css?v=9");
     ensure("themes-force-struct-css", "/themes-force-struct.css?v=10");
-    ensure("themes-radical-css", "/themes-radical.css?v=1");
+    ensure("themes-radical-css", "/themes-radical.css?v=2");
+    ensure("themes-insane-css", "/themes-insane.css?v=1");
   }
 
   function applyTheme(name) {
@@ -104,7 +105,7 @@
     var title = document.getElementById("page-title");
     if (title) title.textContent = "Themes";
     var desc = document.getElementById("page-description");
-    if (desc) desc.textContent = "Pick a look for the whole dashboard.";
+    if (desc) desc.textContent = "Each theme is a different website — fonts, shape, chrome, everything.";
     renderCards();
   }
 
@@ -214,7 +215,7 @@
       '<div class="card form-card wide">' +
       '<span class="eyebrow">APPEARANCE</span>' +
       "<h2>Dashboard themes</h2>" +
-      '<p class="form-hint">Each pack is a different product — CRT terminal, cyberpunk grid, light paper, chunky clay, pure mono, pill candy, etc. Not just a recolor.</p>' +
+      '<p class="form-hint">Each pack is a different website — CRT terminal, cyberpunk grid, paper magazine, chunky clay, mono newspaper, candy pills, and more. Not a recolor.</p>' +
       '<p class="form-hint">Current: <strong id="themes-current-label">—</strong></p>' +
       '<div id="themes-grid" class="themes-grid"></div>' +
       "</div>";
@@ -300,5 +301,5 @@
   window.__applyDashboardTheme = applyTheme;
   window.__dashboardThemes = THEMES;
   window.__openThemes = openThemesSection;
-  console.log("[theme-boot] v13 — " + THEMES.length + " dashboard themes");
+  console.log("[theme-boot] v14 — " + THEMES.length + " insane themes");
 })();
