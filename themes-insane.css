@@ -1,0 +1,1080 @@
+/* ============================================================
+   THEMES INSANE v1 — each theme = a different website
+   Structural overrides: body bg, fonts, radius, buttons, cards,
+   inputs, header, hamburger, drawer, mobile
+   ============================================================ */
+
+@import url("https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=JetBrains+Mono:wght@400;600;700&family=Orbitron:wght@500;700&family=Press+Start+2P&family=Space+Grotesk:wght@400;600;700&family=Syne:wght@600;700;800&family=Playfair+Display:wght@600;700&family=Nunito:wght@500;700;800&family=IBM+Plex+Sans:wght@400;600&family=Courier+Prime:wght@400;700&display=swap");
+
+/* ---------- shared helpers under themed body ---------- */
+body[class*="theme-"] .card,
+body[class*="theme-"] .form-card,
+body[class*="theme-"] .header.card,
+body[class*="theme-"] .server-bar.card,
+body[class*="theme-"] .stat-card,
+body[class*="theme-"] .quick-card,
+body[class*="theme-"] .hero.card {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* ============================================================
+   TERMINAL — pure CRT console
+   ============================================================ */
+body.theme-terminal {
+  background: #020402 !important;
+  color: #39ff14 !important;
+  font-family: "JetBrains Mono", "Courier Prime", ui-monospace, monospace !important;
+  letter-spacing: -0.02em !important;
+}
+body.theme-terminal::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 99990;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0 2px,
+    rgba(0, 0, 0, 0.22) 2px 4px
+  );
+  mix-blend-mode: multiply;
+}
+body.theme-terminal::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 99991;
+  background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.55) 100%);
+}
+body.theme-terminal .card,
+body.theme-terminal .form-card,
+body.theme-terminal .header.card,
+body.theme-terminal .server-bar.card,
+body.theme-terminal .stat-card,
+body.theme-terminal .quick-card,
+body.theme-terminal .hero.card {
+  border-radius: 0 !important;
+  border: 1px solid #39ff14 !important;
+  background: #050a05 !important;
+  box-shadow: none !important;
+  color: #b8f5b8 !important;
+}
+body.theme-terminal h1,
+body.theme-terminal h2,
+body.theme-terminal .eyebrow,
+body.theme-terminal .header h1 {
+  font-family: inherit !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.16em !important;
+  color: #39ff14 !important;
+  font-weight: 700 !important;
+  text-shadow: 0 0 8px rgba(57, 255, 20, 0.45);
+}
+body.theme-terminal .button,
+body.theme-terminal button.button,
+body.theme-terminal .btn {
+  border-radius: 0 !important;
+  background: transparent !important;
+  border: 1px solid #39ff14 !important;
+  color: #39ff14 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.12em !important;
+  box-shadow: none !important;
+  font-family: inherit !important;
+}
+body.theme-terminal .button:hover {
+  background: #39ff14 !important;
+  color: #020402 !important;
+}
+body.theme-terminal input,
+body.theme-terminal select,
+body.theme-terminal textarea {
+  border-radius: 0 !important;
+  border: 1px solid #1a4a1a !important;
+  background: #030603 !important;
+  color: #c8f5c8 !important;
+  font-family: inherit !important;
+}
+body.theme-terminal #nav-hamburger {
+  border-radius: 0 !important;
+  border: 2px solid #39ff14 !important;
+  background: #030603 !important;
+}
+body.theme-terminal #nav-hamburger span { background: #39ff14 !important; }
+body.theme-terminal #nav-drawer {
+  border-radius: 0 !important;
+  border-right: 2px solid #39ff14 !important;
+  background: #030603 !important;
+}
+body.theme-terminal .nav-drawer-group .ndg-label { color: #39ff14 !important; font-family: inherit !important; }
+body.theme-terminal #nav-drawer-list button.nav-drawer-item {
+  border-radius: 0 !important;
+  font-family: inherit !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+  font-size: 12px !important;
+}
+body.theme-terminal #nav-drawer-list button.nav-drawer-item.active {
+  background: #39ff14 !important;
+  color: #020402 !important;
+}
+
+/* ============================================================
+   MONO — brutalist black/white newspaper
+   ============================================================ */
+body.theme-mono {
+  background: #000 !important;
+  color: #fff !important;
+  font-family: "Courier Prime", "Courier New", monospace !important;
+}
+body.theme-mono .card,
+body.theme-mono .form-card,
+body.theme-mono .header.card,
+body.theme-mono .server-bar.card,
+body.theme-mono .stat-card,
+body.theme-mono .quick-card,
+body.theme-mono .hero.card {
+  border-radius: 0 !important;
+  border: 2px solid #fff !important;
+  background: #0a0a0a !important;
+  box-shadow: 8px 8px 0 #fff !important;
+  color: #fff !important;
+}
+body.theme-mono h1,
+body.theme-mono h2,
+body.theme-mono .header h1 {
+  font-family: inherit !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.2em !important;
+  font-weight: 700 !important;
+  color: #fff !important;
+}
+body.theme-mono .button {
+  border-radius: 0 !important;
+  background: #fff !important;
+  color: #000 !important;
+  border: 2px solid #fff !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.14em !important;
+  font-weight: 700 !important;
+  box-shadow: 4px 4px 0 #666 !important;
+}
+body.theme-mono .button:hover {
+  background: #000 !important;
+  color: #fff !important;
+}
+body.theme-mono input,
+body.theme-mono select,
+body.theme-mono textarea {
+  border-radius: 0 !important;
+  border: 2px solid #fff !important;
+  background: #000 !important;
+  color: #fff !important;
+  font-family: inherit !important;
+}
+body.theme-mono #nav-hamburger {
+  border-radius: 0 !important;
+  border: 2px solid #fff !important;
+  background: #000 !important;
+}
+body.theme-mono #nav-hamburger span { background: #fff !important; }
+body.theme-mono #nav-drawer {
+  border-radius: 0 !important;
+  border-right: 3px solid #fff !important;
+  background: #000 !important;
+}
+body.theme-mono #nav-drawer-list button.nav-drawer-item {
+  border-radius: 0 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.1em !important;
+  font-size: 12px !important;
+}
+body.theme-mono #nav-drawer-list button.nav-drawer-item.active {
+  background: #fff !important;
+  color: #000 !important;
+}
+
+/* ============================================================
+   CYBERPUNK — angled chrome + neon grid
+   ============================================================ */
+body.theme-cyberpunk {
+  background:
+    linear-gradient(rgba(250, 204, 21, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(236, 72, 153, 0.05) 1px, transparent 1px),
+    #050508 !important;
+  background-size: 32px 32px, 32px 32px, auto !important;
+  color: #f5f0ff !important;
+  font-family: "Orbitron", "Space Grotesk", system-ui, sans-serif !important;
+}
+body.theme-cyberpunk .card,
+body.theme-cyberpunk .form-card,
+body.theme-cyberpunk .header.card,
+body.theme-cyberpunk .server-bar.card,
+body.theme-cyberpunk .stat-card,
+body.theme-cyberpunk .quick-card,
+body.theme-cyberpunk .hero.card {
+  border-radius: 0 !important;
+  border: 1px solid #facc15 !important;
+  border-left: 4px solid #ec4899 !important;
+  background: #0a0a12 !important;
+  box-shadow: 8px 8px 0 rgba(236, 72, 153, 0.25) !important;
+  clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%);
+}
+body.theme-cyberpunk h1,
+body.theme-cyberpunk h2,
+body.theme-cyberpunk .header h1 {
+  font-family: "Orbitron", sans-serif !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+  color: #facc15 !important;
+  text-shadow: 0 0 12px rgba(250, 204, 21, 0.5);
+}
+body.theme-cyberpunk .button {
+  border-radius: 0 !important;
+  background: #ec4899 !important;
+  color: #fff !important;
+  border: 2px solid #facc15 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.1em !important;
+  font-family: inherit !important;
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+  box-shadow: 4px 4px 0 #facc15 !important;
+}
+body.theme-cyberpunk input,
+body.theme-cyberpunk select,
+body.theme-cyberpunk textarea {
+  border-radius: 0 !important;
+  border: 1px solid #facc15 !important;
+  background: #08080e !important;
+  color: #f5f0ff !important;
+  font-family: inherit !important;
+}
+body.theme-cyberpunk #nav-hamburger {
+  border-radius: 0 !important;
+  border: 2px solid #facc15 !important;
+  background: #08080e !important;
+}
+body.theme-cyberpunk #nav-hamburger span { background: #facc15 !important; }
+body.theme-cyberpunk #nav-drawer {
+  border-radius: 0 !important;
+  border-right: 3px solid #ec4899 !important;
+  background: #050508 !important;
+}
+body.theme-cyberpunk #nav-drawer-list button.nav-drawer-item.active {
+  background: #ec4899 !important;
+  color: #fff !important;
+  border-radius: 0 !important;
+}
+
+/* ============================================================
+   PAPER — light editorial magazine
+   ============================================================ */
+body.theme-paper {
+  background: #f4f0e6 !important;
+  color: #1a1610 !important;
+  font-family: "Playfair Display", Georgia, serif !important;
+}
+body.theme-paper .card,
+body.theme-paper .form-card,
+body.theme-paper .header.card,
+body.theme-paper .server-bar.card,
+body.theme-paper .stat-card,
+body.theme-paper .quick-card,
+body.theme-paper .hero.card {
+  border-radius: 2px !important;
+  border: 1px solid #d4cbb8 !important;
+  background: #fffdf8 !important;
+  box-shadow: 0 2px 0 #e8e0d0 !important;
+  color: #1a1610 !important;
+}
+body.theme-paper h1,
+body.theme-paper h2,
+body.theme-paper .header h1 {
+  font-family: "Playfair Display", Georgia, serif !important;
+  font-weight: 700 !important;
+  color: #1a1610 !important;
+  letter-spacing: -0.02em !important;
+}
+body.theme-paper .button {
+  border-radius: 2px !important;
+  background: #1a1610 !important;
+  color: #fffdf8 !important;
+  border: none !important;
+  font-family: "IBM Plex Sans", system-ui, sans-serif !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.1em !important;
+  font-size: 12px !important;
+  box-shadow: none !important;
+}
+body.theme-paper input,
+body.theme-paper select,
+body.theme-paper textarea {
+  border-radius: 2px !important;
+  border: 1px solid #c9bfa8 !important;
+  background: #fff !important;
+  color: #1a1610 !important;
+  font-family: "IBM Plex Sans", system-ui, sans-serif !important;
+}
+body.theme-paper p,
+body.theme-paper .form-hint,
+body.theme-paper label,
+body.theme-paper .eyebrow {
+  font-family: "IBM Plex Sans", system-ui, sans-serif !important;
+}
+body.theme-paper #nav-hamburger {
+  border-radius: 2px !important;
+  border: 1px solid #c9bfa8 !important;
+  background: #fffdf8 !important;
+}
+body.theme-paper #nav-hamburger span { background: #1a1610 !important; }
+body.theme-paper #nav-drawer {
+  background: #faf6ee !important;
+  border-right: 1px solid #d4cbb8 !important;
+}
+body.theme-paper .nav-drawer-group .ndg-label { color: #8b6914 !important; }
+body.theme-paper #nav-drawer-list button.nav-drawer-item { color: #1a1610 !important; }
+body.theme-paper #nav-drawer-list button.nav-drawer-item.active {
+  background: #1a1610 !important;
+  color: #fffdf8 !important;
+}
+
+/* ============================================================
+   CLAY — chunky playful neumorph
+   ============================================================ */
+body.theme-clay {
+  background: #e8dcc8 !important;
+  color: #3d2e1a !important;
+  font-family: "Fredoka", "Nunito", system-ui, sans-serif !important;
+}
+body.theme-clay .card,
+body.theme-clay .form-card,
+body.theme-clay .header.card,
+body.theme-clay .server-bar.card,
+body.theme-clay .stat-card,
+body.theme-clay .quick-card,
+body.theme-clay .hero.card {
+  border-radius: 28px !important;
+  border: 3px solid #3d2e1a !important;
+  background: #f5ebe0 !important;
+  box-shadow: 6px 6px 0 #3d2e1a !important;
+  color: #3d2e1a !important;
+}
+body.theme-clay h1,
+body.theme-clay h2 {
+  font-family: "Fredoka", sans-serif !important;
+  font-weight: 700 !important;
+  color: #3d2e1a !important;
+}
+body.theme-clay .button {
+  border-radius: 999px !important;
+  background: #f59e0b !important;
+  color: #3d2e1a !important;
+  border: 3px solid #3d2e1a !important;
+  box-shadow: 4px 4px 0 #3d2e1a !important;
+  font-weight: 700 !important;
+  font-family: inherit !important;
+}
+body.theme-clay .button:hover {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 #3d2e1a !important;
+}
+body.theme-clay input,
+body.theme-clay select,
+body.theme-clay textarea {
+  border-radius: 18px !important;
+  border: 3px solid #3d2e1a !important;
+  background: #fff8f0 !important;
+  color: #3d2e1a !important;
+  font-family: inherit !important;
+}
+body.theme-clay #nav-hamburger {
+  border-radius: 16px !important;
+  border: 3px solid #3d2e1a !important;
+  background: #f5ebe0 !important;
+  box-shadow: 4px 4px 0 #3d2e1a !important;
+}
+body.theme-clay #nav-hamburger span { background: #3d2e1a !important; }
+body.theme-clay #nav-drawer {
+  background: #f5ebe0 !important;
+  border-right: 3px solid #3d2e1a !important;
+}
+body.theme-clay #nav-drawer-list button.nav-drawer-item {
+  border-radius: 16px !important;
+  color: #3d2e1a !important;
+  border: 2px solid transparent !important;
+}
+body.theme-clay #nav-drawer-list button.nav-drawer-item.active {
+  background: #f59e0b !important;
+  border-color: #3d2e1a !important;
+  color: #3d2e1a !important;
+  box-shadow: 3px 3px 0 #3d2e1a !important;
+}
+
+/* ============================================================
+   CANDY — pastel pills
+   ============================================================ */
+body.theme-candy {
+  background: linear-gradient(160deg, #ffe4f3 0%, #e8f4ff 50%, #fff0d6 100%) !important;
+  color: #5b2a4a !important;
+  font-family: "Nunito", system-ui, sans-serif !important;
+}
+body.theme-candy .card,
+body.theme-candy .form-card,
+body.theme-candy .header.card,
+body.theme-candy .server-bar.card,
+body.theme-candy .stat-card,
+body.theme-candy .quick-card,
+body.theme-candy .hero.card {
+  border-radius: 32px !important;
+  border: none !important;
+  background: rgba(255, 255, 255, 0.85) !important;
+  box-shadow: 0 12px 40px rgba(236, 72, 153, 0.15) !important;
+  color: #5b2a4a !important;
+}
+body.theme-candy .button {
+  border-radius: 999px !important;
+  background: linear-gradient(135deg, #f472b6, #a78bfa) !important;
+  color: #fff !important;
+  border: none !important;
+  box-shadow: 0 8px 20px rgba(244, 114, 182, 0.4) !important;
+  font-weight: 700 !important;
+}
+body.theme-candy input,
+body.theme-candy select,
+body.theme-candy textarea {
+  border-radius: 999px !important;
+  border: 2px solid #fbcfe8 !important;
+  background: #fff !important;
+  color: #5b2a4a !important;
+}
+body.theme-candy #nav-hamburger {
+  border-radius: 999px !important;
+  border: none !important;
+  background: linear-gradient(135deg, #f472b6, #a78bfa) !important;
+  box-shadow: 0 8px 24px rgba(244, 114, 182, 0.45) !important;
+}
+body.theme-candy #nav-hamburger span { background: #fff !important; }
+body.theme-candy #nav-drawer {
+  background: #fff5fb !important;
+  border-right: none !important;
+  border-radius: 0 28px 28px 0 !important;
+}
+body.theme-candy #nav-drawer-list button.nav-drawer-item {
+  border-radius: 999px !important;
+  color: #5b2a4a !important;
+}
+body.theme-candy #nav-drawer-list button.nav-drawer-item.active {
+  background: linear-gradient(135deg, #f472b6, #a78bfa) !important;
+  color: #fff !important;
+}
+
+/* ============================================================
+   SYNTHWAVE / VAPORWAVE
+   ============================================================ */
+body.theme-synthwave {
+  background:
+    linear-gradient(180deg, #1a0533 0%, #2d0b4e 40%, #0c0220 100%) !important;
+  color: #f5d0fe !important;
+  font-family: "Syne", "Space Grotesk", system-ui, sans-serif !important;
+}
+body.theme-synthwave::before {
+  content: "";
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 40vh;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 40px,
+      rgba(236, 72, 153, 0.15) 40px,
+      rgba(236, 72, 153, 0.15) 41px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 28px,
+      rgba(34, 211, 238, 0.12) 28px,
+      rgba(34, 211, 238, 0.12) 29px
+    );
+  transform: perspective(200px) rotateX(60deg);
+  transform-origin: bottom;
+  opacity: 0.7;
+}
+body.theme-synthwave .card,
+body.theme-synthwave .form-card,
+body.theme-synthwave .header.card {
+  border-radius: 4px !important;
+  border: 1px solid #ec4899 !important;
+  background: rgba(20, 8, 40, 0.92) !important;
+  box-shadow: 0 0 24px rgba(236, 72, 153, 0.25), inset 0 0 40px rgba(34, 211, 238, 0.05) !important;
+}
+body.theme-synthwave h1,
+body.theme-synthwave h2 {
+  font-family: "Syne", sans-serif !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.12em !important;
+  background: linear-gradient(90deg, #ec4899, #22d3ee);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent !important;
+}
+body.theme-synthwave .button {
+  border-radius: 4px !important;
+  background: linear-gradient(90deg, #ec4899, #8b5cf6) !important;
+  border: 1px solid #22d3ee !important;
+  color: #fff !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.1em !important;
+  box-shadow: 0 0 16px rgba(236, 72, 153, 0.5) !important;
+}
+body.theme-synthwave #nav-hamburger {
+  border-radius: 4px !important;
+  border: 1px solid #22d3ee !important;
+  background: #1a0533 !important;
+}
+body.theme-synthwave #nav-hamburger span { background: #ec4899 !important; }
+body.theme-synthwave #nav-drawer {
+  background: #120428 !important;
+  border-right: 2px solid #ec4899 !important;
+}
+
+body.theme-vaporwave {
+  background: linear-gradient(135deg, #2b1055 0%, #7597de 45%, #ff71ce 100%) !important;
+  color: #fff !important;
+  font-family: "Space Grotesk", system-ui, sans-serif !important;
+}
+body.theme-vaporwave .card,
+body.theme-vaporwave .form-card,
+body.theme-vaporwave .header.card {
+  border-radius: 0 !important;
+  border: 3px double #fff !important;
+  background: rgba(20, 10, 50, 0.75) !important;
+  box-shadow: 12px 12px 0 rgba(255, 113, 206, 0.35) !important;
+}
+body.theme-vaporwave .button {
+  border-radius: 0 !important;
+  background: #01cdfe !important;
+  color: #2b1055 !important;
+  border: 2px solid #fff !important;
+  text-transform: uppercase !important;
+  font-weight: 700 !important;
+}
+body.theme-vaporwave #nav-hamburger {
+  border-radius: 0 !important;
+  border: 2px solid #fff !important;
+  background: #2b1055 !important;
+}
+body.theme-vaporwave #nav-hamburger span { background: #01cdfe !important; }
+
+/* ============================================================
+   ICE CREAM / HONEY / ROSEGOLD — soft rounded worlds
+   ============================================================ */
+body.theme-icecream {
+  background: #fff5f7 !important;
+  color: #5c3d4a !important;
+  font-family: "Fredoka", system-ui, sans-serif !important;
+}
+body.theme-icecream .card,
+body.theme-icecream .form-card,
+body.theme-icecream .header.card {
+  border-radius: 40px !important;
+  border: none !important;
+  background: #ffffff !important;
+  box-shadow: 0 16px 48px rgba(251, 113, 133, 0.12) !important;
+}
+body.theme-icecream .button {
+  border-radius: 999px !important;
+  background: #fda4af !important;
+  color: #fff !important;
+  border: none !important;
+  font-weight: 700 !important;
+}
+body.theme-icecream #nav-hamburger {
+  border-radius: 999px !important;
+  background: #fda4af !important;
+  border: none !important;
+}
+body.theme-icecream #nav-hamburger span { background: #fff !important; }
+body.theme-icecream #nav-drawer {
+  background: #fff5f7 !important;
+  border-radius: 0 32px 32px 0 !important;
+}
+body.theme-icecream #nav-drawer-list button.nav-drawer-item.active {
+  background: #fda4af !important;
+  border-radius: 999px !important;
+}
+
+body.theme-honey {
+  background: #fff8e7 !important;
+  color: #5c3d0a !important;
+  font-family: "Nunito", system-ui, sans-serif !important;
+}
+body.theme-honey .card,
+body.theme-honey .form-card,
+body.theme-honey .header.card {
+  border-radius: 20px !important;
+  border: 2px solid #f59e0b !important;
+  background: #fffbeb !important;
+  box-shadow: 0 8px 24px rgba(245, 158, 11, 0.15) !important;
+}
+body.theme-honey .button {
+  border-radius: 14px !important;
+  background: #f59e0b !important;
+  color: #fff !important;
+  border: none !important;
+  font-weight: 800 !important;
+}
+body.theme-honey #nav-hamburger {
+  border: 2px solid #f59e0b !important;
+  background: #fffbeb !important;
+}
+body.theme-honey #nav-hamburger span { background: #b45309 !important; }
+
+body.theme-rosegold {
+  background: linear-gradient(160deg, #1a1216 0%, #2a1a22 100%) !important;
+  color: #f8e7e0 !important;
+  font-family: "Playfair Display", Georgia, serif !important;
+}
+body.theme-rosegold .card,
+body.theme-rosegold .form-card,
+body.theme-rosegold .header.card {
+  border-radius: 18px !important;
+  border: 1px solid rgba(232, 180, 160, 0.35) !important;
+  background: rgba(40, 24, 32, 0.95) !important;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4) !important;
+}
+body.theme-rosegold .button {
+  border-radius: 999px !important;
+  background: linear-gradient(135deg, #e8b4a0, #c9a0a0) !important;
+  color: #1a1216 !important;
+  border: none !important;
+  font-family: "IBM Plex Sans", sans-serif !important;
+  font-weight: 600 !important;
+}
+body.theme-rosegold #nav-hamburger {
+  border: 1px solid rgba(232, 180, 160, 0.5) !important;
+  background: #2a1a22 !important;
+}
+body.theme-rosegold #nav-hamburger span { background: #e8b4a0 !important; }
+
+/* ============================================================
+   OBSIDIAN / STEEL / NORD — hard pro tools
+   ============================================================ */
+body.theme-obsidian {
+  background: #050505 !important;
+  color: #e5e5e5 !important;
+  font-family: "IBM Plex Sans", system-ui, sans-serif !important;
+}
+body.theme-obsidian .card,
+body.theme-obsidian .form-card,
+body.theme-obsidian .header.card {
+  border-radius: 6px !important;
+  border: 1px solid #222 !important;
+  background: #0c0c0c !important;
+  box-shadow: none !important;
+}
+body.theme-obsidian .button {
+  border-radius: 4px !important;
+  background: #fff !important;
+  color: #000 !important;
+  border: none !important;
+  font-weight: 600 !important;
+  box-shadow: none !important;
+}
+body.theme-obsidian input,
+body.theme-obsidian select,
+body.theme-obsidian textarea {
+  border-radius: 4px !important;
+  border: 1px solid #333 !important;
+  background: #000 !important;
+  color: #e5e5e5 !important;
+}
+body.theme-obsidian #nav-hamburger {
+  border-radius: 6px !important;
+  border: 1px solid #333 !important;
+  background: #0c0c0c !important;
+}
+body.theme-obsidian #nav-hamburger span { background: #fff !important; }
+body.theme-obsidian #nav-drawer { background: #050505 !important; border-right: 1px solid #222 !important; }
+body.theme-obsidian #nav-drawer-list button.nav-drawer-item.active {
+  background: #fff !important;
+  color: #000 !important;
+  border-radius: 4px !important;
+}
+
+body.theme-nord {
+  background: #2e3440 !important;
+  color: #eceff4 !important;
+  font-family: "IBM Plex Sans", system-ui, sans-serif !important;
+}
+body.theme-nord .card,
+body.theme-nord .form-card,
+body.theme-nord .header.card {
+  border-radius: 4px !important;
+  border: 1px solid #4c566a !important;
+  background: #3b4252 !important;
+  box-shadow: none !important;
+}
+body.theme-nord .button {
+  border-radius: 4px !important;
+  background: #88c0d0 !important;
+  color: #2e3440 !important;
+  border: none !important;
+  font-weight: 600 !important;
+}
+body.theme-nord #nav-hamburger {
+  border-radius: 4px !important;
+  border: 1px solid #4c566a !important;
+  background: #3b4252 !important;
+}
+body.theme-nord #nav-hamburger span { background: #88c0d0 !important; }
+body.theme-nord #nav-drawer { background: #2e3440 !important; border-right: 1px solid #4c566a !important; }
+body.theme-nord #nav-drawer-list button.nav-drawer-item.active {
+  background: #88c0d0 !important;
+  color: #2e3440 !important;
+  border-radius: 4px !important;
+}
+
+/* ============================================================
+   FOREST / OCEAN / ARCTIC / AURORA — nature worlds
+   ============================================================ */
+body.theme-forest {
+  background:
+    radial-gradient(ellipse at 20% 0%, rgba(34, 197, 94, 0.15), transparent 50%),
+    #0a140c !important;
+  color: #d1fae5 !important;
+  font-family: "Nunito", system-ui, sans-serif !important;
+}
+body.theme-forest .card,
+body.theme-forest .form-card,
+body.theme-forest .header.card {
+  border-radius: 16px !important;
+  border: 1px solid rgba(34, 197, 94, 0.35) !important;
+  background: rgba(10, 28, 16, 0.95) !important;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35) !important;
+}
+body.theme-forest .button {
+  border-radius: 12px !important;
+  background: #22c55e !important;
+  color: #052e16 !important;
+  border: none !important;
+  font-weight: 700 !important;
+}
+body.theme-forest #nav-hamburger {
+  border: 1px solid rgba(34, 197, 94, 0.5) !important;
+  background: #0a1c10 !important;
+}
+body.theme-forest #nav-hamburger span { background: #4ade80 !important; }
+body.theme-forest #nav-drawer { background: #07120a !important; border-right: 1px solid rgba(34, 197, 94, 0.3) !important; }
+body.theme-forest #nav-drawer-list button.nav-drawer-item.active {
+  background: #22c55e !important;
+  color: #052e16 !important;
+}
+
+body.theme-ocean {
+  background:
+    radial-gradient(ellipse at 80% 0%, rgba(14, 165, 233, 0.2), transparent 45%),
+    #020b16 !important;
+  color: #e0f2fe !important;
+  font-family: "Space Grotesk", system-ui, sans-serif !important;
+}
+body.theme-ocean .card,
+body.theme-ocean .form-card,
+body.theme-ocean .header.card {
+  border-radius: 20px !important;
+  border: 1px solid rgba(56, 189, 248, 0.3) !important;
+  background: rgba(8, 24, 40, 0.95) !important;
+  box-shadow: 0 16px 48px rgba(2, 20, 40, 0.5) !important;
+}
+body.theme-ocean .button {
+  border-radius: 14px !important;
+  background: linear-gradient(135deg, #0ea5e9, #0284c7) !important;
+  color: #fff !important;
+  border: none !important;
+}
+body.theme-ocean #nav-hamburger {
+  border: 1px solid rgba(56, 189, 248, 0.45) !important;
+  background: #071828 !important;
+}
+body.theme-ocean #nav-hamburger span { background: #38bdf8 !important; }
+body.theme-ocean #nav-drawer { background: #020b16 !important; border-right: 1px solid rgba(56, 189, 248, 0.25) !important; }
+body.theme-ocean #nav-drawer-list button.nav-drawer-item.active {
+  background: #0ea5e9 !important;
+  color: #fff !important;
+}
+
+body.theme-arctic {
+  background: #e8f4fc !important;
+  color: #0c4a6e !important;
+  font-family: "IBM Plex Sans", system-ui, sans-serif !important;
+}
+body.theme-arctic .card,
+body.theme-arctic .form-card,
+body.theme-arctic .header.card {
+  border-radius: 12px !important;
+  border: 1px solid #bae6fd !important;
+  background: #ffffff !important;
+  box-shadow: 0 8px 28px rgba(14, 165, 233, 0.1) !important;
+  color: #0c4a6e !important;
+}
+body.theme-arctic .button {
+  border-radius: 10px !important;
+  background: #0ea5e9 !important;
+  color: #fff !important;
+  border: none !important;
+}
+body.theme-arctic #nav-hamburger {
+  border: 1px solid #7dd3fc !important;
+  background: #fff !important;
+}
+body.theme-arctic #nav-hamburger span { background: #0284c7 !important; }
+body.theme-arctic #nav-drawer { background: #f0f9ff !important; border-right: 1px solid #bae6fd !important; }
+body.theme-arctic #nav-drawer-list button.nav-drawer-item { color: #0c4a6e !important; }
+body.theme-arctic #nav-drawer-list button.nav-drawer-item.active {
+  background: #0ea5e9 !important;
+  color: #fff !important;
+}
+
+body.theme-aurora {
+  background:
+    radial-gradient(ellipse at 10% 20%, rgba(52, 211, 153, 0.25), transparent 40%),
+    radial-gradient(ellipse at 90% 10%, rgba(167, 139, 250, 0.25), transparent 40%),
+    radial-gradient(ellipse at 50% 90%, rgba(56, 189, 248, 0.2), transparent 40%),
+    #060a14 !important;
+  color: #e2e8f0 !important;
+  font-family: "Space Grotesk", system-ui, sans-serif !important;
+}
+body.theme-aurora .card,
+body.theme-aurora .form-card,
+body.theme-aurora .header.card {
+  border-radius: 22px !important;
+  border: 1px solid rgba(167, 139, 250, 0.3) !important;
+  background: rgba(10, 14, 28, 0.85) !important;
+  box-shadow: 0 0 40px rgba(52, 211, 153, 0.08) !important;
+}
+body.theme-aurora .button {
+  border-radius: 14px !important;
+  background: linear-gradient(135deg, #34d399, #a78bfa) !important;
+  color: #0a0e1c !important;
+  border: none !important;
+  font-weight: 700 !important;
+}
+body.theme-aurora #nav-hamburger {
+  border: 1px solid rgba(167, 139, 250, 0.45) !important;
+  background: rgba(10, 14, 28, 0.95) !important;
+}
+body.theme-aurora #nav-hamburger span { background: #a78bfa !important; }
+
+/* ============================================================
+   LAVA / BLOODMOON / SUNSET — heat
+   ============================================================ */
+body.theme-lava {
+  background:
+    radial-gradient(ellipse at 50% 120%, rgba(249, 115, 22, 0.35), transparent 50%),
+    #120605 !important;
+  color: #ffedd5 !important;
+  font-family: "Syne", system-ui, sans-serif !important;
+}
+body.theme-lava .card,
+body.theme-lava .form-card,
+body.theme-lava .header.card {
+  border-radius: 12px !important;
+  border: 1px solid rgba(249, 115, 22, 0.4) !important;
+  background: #1a0a06 !important;
+  box-shadow: 0 0 32px rgba(249, 115, 22, 0.12) !important;
+}
+body.theme-lava .button {
+  border-radius: 10px !important;
+  background: linear-gradient(135deg, #f97316, #dc2626) !important;
+  color: #fff !important;
+  border: none !important;
+  font-weight: 700 !important;
+  box-shadow: 0 8px 24px rgba(249, 115, 22, 0.4) !important;
+}
+body.theme-lava #nav-hamburger {
+  border: 1px solid rgba(249, 115, 22, 0.5) !important;
+  background: #1a0a06 !important;
+}
+body.theme-lava #nav-hamburger span { background: #fb923c !important; }
+body.theme-lava #nav-drawer { background: #0e0503 !important; border-right: 1px solid rgba(249, 115, 22, 0.3) !important; }
+body.theme-lava #nav-drawer-list button.nav-drawer-item.active {
+  background: linear-gradient(135deg, #f97316, #dc2626) !important;
+  color: #fff !important;
+}
+
+body.theme-bloodmoon {
+  background: #0c0406 !important;
+  color: #fecaca !important;
+  font-family: "Syne", system-ui, sans-serif !important;
+}
+body.theme-bloodmoon .card,
+body.theme-bloodmoon .form-card,
+body.theme-bloodmoon .header.card {
+  border-radius: 8px !important;
+  border: 1px solid #7f1d1d !important;
+  background: #16080a !important;
+  box-shadow: 0 0 40px rgba(127, 29, 29, 0.25) !important;
+}
+body.theme-bloodmoon .button {
+  border-radius: 6px !important;
+  background: #991b1b !important;
+  color: #fff !important;
+  border: 1px solid #fecaca !important;
+}
+body.theme-bloodmoon #nav-hamburger {
+  border: 1px solid #7f1d1d !important;
+  background: #16080a !important;
+}
+body.theme-bloodmoon #nav-hamburger span { background: #f87171 !important; }
+
+body.theme-sunset {
+  background: linear-gradient(180deg, #1e1030 0%, #4a1942 40%, #b45309 100%) !important;
+  color: #fff7ed !important;
+  font-family: "Nunito", system-ui, sans-serif !important;
+}
+body.theme-sunset .card,
+body.theme-sunset .form-card,
+body.theme-sunset .header.card {
+  border-radius: 18px !important;
+  border: 1px solid rgba(251, 146, 60, 0.35) !important;
+  background: rgba(30, 16, 40, 0.85) !important;
+}
+body.theme-sunset .button {
+  border-radius: 12px !important;
+  background: linear-gradient(135deg, #fb923c, #ec4899) !important;
+  color: #fff !important;
+  border: none !important;
+  font-weight: 700 !important;
+}
+body.theme-sunset #nav-hamburger {
+  border: 1px solid rgba(251, 146, 60, 0.5) !important;
+  background: rgba(30, 16, 40, 0.95) !important;
+}
+body.theme-sunset #nav-hamburger span { background: #fb923c !important; }
+
+/* ============================================================
+   SUNFLOWER / SAKURA / MOCHA — cozy
+   ============================================================ */
+body.theme-sunflower {
+  background:
+    radial-gradient(circle at 10% 10%, rgba(250, 204, 21, 0.2), transparent 40%),
+    #1a1408 !important;
+  color: #fef9c3 !important;
+  font-family: "Fredoka", system-ui, sans-serif !important;
+}
+body.theme-sunflower .card,
+body.theme-sunflower .form-card,
+body.theme-sunflower .header.card {
+  border-radius: 24px !important;
+  border: 2px solid rgba(250, 204, 21, 0.4) !important;
+  background: rgba(30, 22, 8, 0.95) !important;
+  box-shadow: 0 12px 40px rgba(250, 204, 21, 0.1) !important;
+}
+body.theme-sunflower .button {
+  border-radius: 999px !important;
+  background: #facc15 !important;
+  color: #422006 !important;
+  border: none !important;
+  font-weight: 700 !important;
+}
+body.theme-sunflower #nav-hamburger {
+  border-radius: 16px !important;
+  border: 2px solid #facc15 !important;
+  background: #1a1408 !important;
+}
+body.theme-sunflower #nav-hamburger span { background: #facc15 !important; }
+body.theme-sunflower #nav-drawer { background: #120e06 !important; border-right: 2px solid rgba(250, 204, 21, 0.3) !important; }
+body.theme-sunflower #nav-drawer-list button.nav-drawer-item.active {
+  background: #facc15 !important;
+  color: #422006 !important;
+  border-radius: 999px !important;
+}
+
+body.theme-sakura {
+  background: linear-gradient(160deg, #1a0f14 0%, #2a1520 100%) !important;
+  color: #fce7f3 !important;
+  font-family: "Nunito", system-ui, sans-serif !important;
+}
+body.theme-sakura .card,
+body.theme-sakura .form-card,
+body.theme-sakura .header.card {
+  border-radius: 20px !important;
+  border: 1px solid rgba(244, 114, 182, 0.3) !important;
+  background: rgba(36, 18, 28, 0.95) !important;
+}
+body.theme-sakura .button {
+  border-radius: 999px !important;
+  background: #f9a8d4 !important;
+  color: #500724 !important;
+  border: none !important;
+  font-weight: 700 !important;
+}
+body.theme-sakura #nav-hamburger {
+  border-radius: 14px !important;
+  border: 1px solid rgba(244, 114, 182, 0.45) !important;
+  background: #24121c !important;
+}
+body.theme-sakura #nav-hamburger span { background: #f9a8d4 !important; }
+
+body.theme-mocha,
+body.theme-coffee {
+  background: #1c1410 !important;
+  color: #f5e6d3 !important;
+  font-family: "Nunito", system-ui, sans-serif !important;
+}
+body.theme-mocha .card,
+body.theme-mocha .form-card,
+body.theme-mocha .header.card,
+body.theme-coffee .card,
+body.theme-coffee .form-card,
+body.theme-coffee .header.card {
+  border-radius: 16px !important;
+  border: 1px solid rgba(180, 130, 90, 0.35) !important;
+  background: #261c16 !important;
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.35) !important;
+}
+body.theme-mocha .button,
+body.theme-coffee .button {
+  border-radius: 12px !important;
+  background: #c4a484 !important;
+  color: #1c1410 !important;
+  border: none !important;
+  font-weight: 700 !important;
+}
+body.theme-mocha #nav-hamburger,
+body.theme-coffee #nav-hamburger {
+  border: 1px solid rgba(180, 130, 90, 0.45) !important;
+  background: #261c16 !important;
+}
+body.theme-mocha #nav-hamburger span,
+body.theme-coffee #nav-hamburger span { background: #c4a484 !important; }
+
+/* ============================================================
+   Mobile: themes still own the whole chrome
+   ============================================================ */
+@media (max-width: 960px) {
+  body[class*="theme-"] .card,
+  body[class*="theme-"] .form-card,
+  body[class*="theme-"] .header.card {
+    max-width: 100% !important;
+  }
+  body.theme-terminal .card,
+  body.theme-mono .card,
+  body.theme-cyberpunk .card {
+    box-shadow: none !important;
+  }
+  body.theme-clay .card {
+    box-shadow: 4px 4px 0 #3d2e1a !important;
+  }
+  body.theme-candy .card,
+  body.theme-icecream .card {
+    border-radius: 24px !important;
+  }
+}
