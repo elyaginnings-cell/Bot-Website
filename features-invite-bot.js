@@ -1,11 +1,13 @@
 /**
- * Settings → Invite bot (v2)
- * Force-injects into #settings even if other scripts rewrite the page.
+ * Settings → Invite bot (v3)
+ * - Document-level click handlers (buttons always work)
+ * - Generic invite works even when server list is empty
+ * - Clear message when Discord OAuth session is missing
  */
 (function () {
   "use strict";
-  if (window.__inviteBotUiV2) return;
-  window.__inviteBotUiV2 = true;
+  if (window.__inviteBotUiV3) return;
+  window.__inviteBotUiV3 = true;
 
   function $(id) {
     return document.getElementById(id);
@@ -24,16 +26,26 @@
     return "https://cdn.discordapp.com/embed/avatars/0.png";
   }
 
+  function buildGenericInvite(clientId) {
+    if (!clientId) return null;
+    var params = new URLSearchParams({
+      client_id: String(clientId),
+      permissions: "8",
+      scope: "bot applications.commands",
+    });
+    return "https://discord.com/oauth2/authorize?" + params.toString();
+  }
+
   var CARD_HTML =
     '<span class="eyebrow">INVITE BOT</span>' +
     "<h2>Add bot to a server</h2>" +
-    '<p class="form-hint">Pick a server you own or can manage. Discord opens so you can confirm the invite.</p>' +
+    '<p class="form-hint">Pick a server you manage, or use the generic invite and choose the server on Discord.</p>' +
     '<div id="invite-bot-status" class="form-hint" style="margin-bottom:10px"></div>' +
     '<div id="invite-bot-list" style="display:flex;flex-direction:column;gap:8px;max-height:320px;overflow:auto"></div>' +
     '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px">' +
     '<button type="button" class="button" id="invite-bot-refresh">Refresh servers</button>' +
     '<button type="button" class="button secondary" id="invite-bot-generic">Open generic invite</button>' +
-    '<a class="button secondary" id="invite-bot-relogin" href="/api/login" style="display:none;text-decoration:none;align-items:center">Log in with Discord</a>' +
+    '<a class="button secondary" id="invite-bot-relogin" href="/api/login" style="display:none;text-decoration:none;align-items:center;justify-content:center">Log in with Discord</a>' +
     "</div>";
 
   function ensureCard() {
@@ -42,14 +54,14 @@
 
     var card = $("invite-bot-card");
     if (card && section.contains(card)) {
-      // ensure inner structure still present
-      if (!$("invite-bot-list")) card.innerHTML = CARD_HTML;
+      if (!$("invite-bot-list") || !$("invite-bot-refresh")) {
+        card.innerHTML = CARD_HTML;
+      }
       return card;
     }
 
-    // Remove orphans elsewhere
     document.querySelectorAll("#invite-bot-card").forEach(function (el) {
-      if (el !== card) el.remove();
+      el.remove();
     });
 
     card = document.createElement("div");
@@ -74,24 +86,35 @@
     var relogin = $("invite-bot-relogin");
     if (!list) return;
 
+    if (data.clientId) {
+      window.__inviteBotClientId = data.clientId;
+    }
+    if (data.genericInvite) {
+      window.__inviteBotGeneric = data.genericInvite;
+    } else if (data.clientId) {
+      window.__inviteBotGeneric = buildGenericInvite(data.clientId);
+    }
+
     if (data.needsDiscord) {
       list.innerHTML =
-        '<p class="form-hint">' +
-        (data.message ||
-          "Log in with Discord to see servers you can invite the bot to.") +
+        '<p class="form-hint" style="line-height:1.5">' +
+        "<strong>Discord login required</strong> to list servers you can manage.<br>" +
+        (data.message
+          ? String(data.message).replace(/</g, "<") + "<br><br>"
+          : "") +
+        'Click <strong>Log in with Discord</strong> below, then come back to Settings.<br>' +
+        "Or use <strong>Open generic invite</strong> and pick the server on Discord." +
         "</p>";
       if (relogin) relogin.style.display = "inline-flex";
-      window.__inviteBotGeneric = data.genericInvite || null;
       return;
     }
 
     if (relogin) relogin.style.display = "none";
-    window.__inviteBotGeneric = data.genericInvite || null;
 
     var guilds = data.guilds || [];
     if (!guilds.length) {
       list.innerHTML =
-        '<p class="form-hint">No servers found where you have <strong>Administrator</strong> or <strong>Manage Server</strong>.</p>';
+        '<p class="form-hint">No servers found where you have <strong>Administrator</strong> or <strong>Manage Server</strong>. Use <strong>Open generic invite</strong> instead.</p>';
       return;
     }
 
@@ -101,6 +124,14 @@
           ? '<span style="font-size:11px;opacity:.75;margin-left:6px">Already in server</span>'
           : '<span style="font-size:11px;color:#4ade80;margin-left:6px">Not in server</span>';
         var owner = g.owner ? " · Owner" : "";
+        var url =
+          g.inviteUrl ||
+          (window.__inviteBotClientId
+            ? buildGenericInvite(window.__inviteBotClientId) + 
+              "&guild_id=" +
+              encodeURIComponent(g.id) +
+              "&disable_guild_select=true"
+            : "");
         return (
           '<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;border:1px solid rgba(128,128,128,.28);background:rgba(0,0,0,.1)">' +
           '<img src="' +
@@ -116,7 +147,7 @@
           owner +
           "</div></div>" +
           '<button type="button" class="button" data-invite-url="' +
-          String(g.inviteUrl || "").replace(/"/g, """) +
+          String(url || "").replace(/"/g, """) +
           '">' +
           (g.botInServer ? "Re-invite" : "Invite") +
           "</button></div>"
@@ -127,7 +158,6 @@
 
   async function load() {
     ensureCard();
-    bind();
     setStatus("Loading servers…", true);
     try {
       var res = await fetch("/api/invite-bot?t=" + Date.now(), {
@@ -137,15 +167,26 @@
       var data = await res.json().catch(function () {
         return {};
       });
-      if (!res.ok) {
-        setStatus(data.error || "Could not load servers.", false);
+
+      if (res.status === 401) {
+        setStatus("Not logged in — refresh the page or log in again.", false);
         var list = $("invite-bot-list");
-        if (list && !list.innerHTML) {
+        if (list) {
           list.innerHTML =
-            '<p class="form-hint">API error. If this is a new deploy, wait a minute for Vercel, then refresh.</p>';
+            '<p class="form-hint">Your session expired. Refresh or log in, then try again.</p>';
         }
+        var relogin = $("invite-bot-relogin");
+        if (relogin) relogin.style.display = "inline-flex";
         return;
       }
+
+      if (!res.ok) {
+        setStatus(data.error || "Could not load servers.", false);
+        // Still allow generic if client id returned
+        if (data.clientId || data.genericInvite) renderGuilds(data);
+        return;
+      }
+
       renderGuilds(data);
       if (data.ok) {
         setStatus(
@@ -153,116 +194,126 @@
           true
         );
       } else {
-        setStatus(data.message || "", data.needsDiscord ? false : true);
+        setStatus(data.message || "Use generic invite or log in with Discord.", false);
       }
     } catch (e) {
       setStatus("Network error loading servers.", false);
     }
   }
 
-  function bind() {
-    ensureCard();
-    var list = $("invite-bot-list");
-    if (list && !list.dataset.bound) {
-      list.dataset.bound = "1";
-      list.addEventListener("click", function (e) {
-        var btn = e.target.closest("[data-invite-url]");
-        if (!btn) return;
-        var url = btn.getAttribute("data-invite-url");
-        if (url) window.open(url, "_blank", "noopener,noreferrer");
-      });
+  function openInvite(url) {
+    if (!url) {
+      setStatus("Invite link not ready yet — click Refresh first.", false);
+      return;
     }
-    var refresh = $("invite-bot-refresh");
-    if (refresh && !refresh.dataset.bound) {
-      refresh.dataset.bound = "1";
-      refresh.addEventListener("click", function () {
-        load();
-      });
-    }
-    var generic = $("invite-bot-generic");
-    if (generic && !generic.dataset.bound) {
-      generic.dataset.bound = "1";
-      generic.addEventListener("click", function () {
-        if (window.__inviteBotGeneric) {
-          window.open(window.__inviteBotGeneric, "_blank", "noopener,noreferrer");
-        } else {
-          load().then(function () {
-            if (window.__inviteBotGeneric) {
-              window.open(window.__inviteBotGeneric, "_blank", "noopener,noreferrer");
-            } else setStatus("Invite link not ready yet.", false);
-          });
-        }
-      });
-    }
+    window.open(url, "_blank", "noopener,noreferrer");
   }
 
-  function bootOnce() {
-    ensureCard();
-    bind();
+  // One global click handler — survives DOM rebuilds
+  if (!window.__inviteBotClickBound) {
+    window.__inviteBotClickBound = true;
+    document.addEventListener(
+      "click",
+      function (e) {
+        var t = e.target;
+        if (!t || !t.closest) return;
+
+        // Per-server invite
+        var inv = t.closest("[data-invite-url]");
+        if (inv && inv.closest("#invite-bot-card")) {
+          e.preventDefault();
+          openInvite(inv.getAttribute("data-invite-url"));
+          return;
+        }
+
+        if (t.closest("#invite-bot-refresh")) {
+          e.preventDefault();
+          load();
+          return;
+        }
+
+        if (t.closest("#invite-bot-generic")) {
+          e.preventDefault();
+          var url =
+            window.__inviteBotGeneric ||
+            buildGenericInvite(window.__inviteBotClientId);
+          if (url) {
+            openInvite(url);
+          } else {
+            // Load once then open
+            load().then(function () {
+              var u =
+                window.__inviteBotGeneric ||
+                buildGenericInvite(window.__inviteBotClientId);
+              openInvite(u);
+            });
+          }
+          return;
+        }
+
+        // Opening settings tab
+        if (t.closest('[data-tab="settings"]')) {
+          setTimeout(function () {
+            ensureCard();
+            load();
+          }, 50);
+        }
+      },
+      true
+    );
   }
 
   function wrapShowSection() {
-    if (typeof window.showSection !== "function" || window.showSection.__inviteBotV2)
+    if (typeof window.showSection !== "function" || window.showSection.__inviteBotV3)
       return;
     var orig = window.showSection;
     window.showSection = function (tab) {
       var r = orig.apply(this, arguments);
       if (String(tab) === "settings") {
-        setTimeout(bootOnce, 20);
-        setTimeout(load, 80);
-        setTimeout(load, 400);
+        setTimeout(function () {
+          ensureCard();
+          load();
+        }, 40);
+        setTimeout(load, 300);
       }
       return r;
     };
-    window.showSection.__inviteBotV2 = true;
+    window.showSection.__inviteBotV3 = true;
   }
 
-  document.addEventListener(
-    "click",
-    function (e) {
-      var t =
-        e.target &&
-        e.target.closest &&
-        e.target.closest('[data-tab="settings"]');
-      if (t) {
-        setTimeout(bootOnce, 20);
-        setTimeout(load, 60);
-        setTimeout(load, 300);
-      }
-    },
-    true
-  );
-
-  // Keep card alive if something wipes settings
   try {
     var obs = new MutationObserver(function () {
       var section = $("settings");
       if (!section) return;
       if (!$("invite-bot-card") || !section.contains($("invite-bot-card"))) {
         ensureCard();
-        bind();
       }
     });
     function watch() {
       var root = document.querySelector(".content") || document.body;
-      if (!root || root.__inviteObs) return;
-      root.__inviteObs = true;
+      if (!root || root.__inviteObsV3) return;
+      root.__inviteObsV3 = true;
       obs.observe(root, { childList: true, subtree: true });
     }
     watch();
     setTimeout(watch, 1500);
   } catch (_) {}
 
-  [0, 200, 800, 2000, 5000, 10000].forEach(function (ms) {
+  [0, 300, 1000, 2500, 6000].forEach(function (ms) {
     setTimeout(function () {
       wrapShowSection();
-      bootOnce();
+      ensureCard();
       var sec = $("settings");
-      if (sec && (sec.classList.contains("active") || sec.style.display !== "none")) {
+      if (
+        sec &&
+        (sec.classList.contains("active") ||
+          sec.classList.contains("visible") ||
+          getComputedStyle(sec).display !== "none")
+      ) {
         load();
       }
     }, ms);
   });
 
-  console.log("[invite-bot] v2 ready");
+  console.log("[invite-bot] v3 ready");
 })();
