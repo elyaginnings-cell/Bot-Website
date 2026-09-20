@@ -1,1 +1,1 @@
-PLACEHOLDER_WILL_FAIL
+(function(){if(window.__featuresTicketsV5Load)return;window.__featuresTicketsV5Load=true;var N=5;Promise.all(Array.from({length:N},function(_,i){return fetch("/tv5-"+i+".b64?v=5").then(function(r){if(!r.ok)throw new Error(r.status);return r.text();});})).then(function(a){var s=document.createElement("script");s.textContent=atob(a.join(""));document.head.appendChild(s);console.log("[features-tickets] v5 ok");}).catch(function(e){console.error("[features-tickets]",e);});})();
