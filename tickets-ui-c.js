@@ -96,6 +96,31 @@
   }
   window.__ticketSaveNow = saveTickets;
 
+  function addTicketType() {
+    try {
+      harvestCatsFromDom();
+      if (!draftCats || !draftCats.length) draftCats = cloneCats(DEFAULT_CATS);
+      if (draftCats.length >= 25) { setStatus("Max 25 ticket types.", false); return; }
+      var n = draftCats.length + 1;
+      draftCats.push(normalizeCat({
+        id: "type" + n,
+        label: "New type " + n,
+        emoji: "🎫",
+        aiEnabled: true,
+        questions: [],
+        escalateRoleIds: [],
+        escalateUserIds: []
+      }, draftCats.length));
+      renderCats();
+      setStatus("Added ticket type (" + draftCats.length + " total). Remember to Save.", true);
+      var list = $("ticket-cats-list");
+      if (list) list.scrollTop = list.scrollHeight;
+    } catch (err) {
+      console.error("[tickets] add type", err);
+      setStatus("Could not add type: " + (err && err.message ? err.message : err), false);
+    }
+  }
+
   function bindGlobal() {
     var addStaff = $("add-ticket-staff");
     if (addStaff && !addStaff.__tv6) {
@@ -114,15 +139,11 @@
       }, true);
     }
     var addCat = $("ticket-add-cat");
-    if (addCat && !addCat.__tv6) {
-      addCat.__tv6 = true;
-      addCat.addEventListener("click", function () {
-        harvestCatsFromDom();
-        if (!draftCats) draftCats = [];
-        if (draftCats.length >= 25) { setStatus("Max 25 ticket types.", false); return; }
-        draftCats.push(normalizeCat({ id: "type" + (draftCats.length + 1), label: "New type", emoji: "🎫", aiEnabled: true, questions: [], escalateRoleIds: [], escalateUserIds: [] }, draftCats.length));
-        renderCats();
-      });
+    if (addCat) {
+      addCat.onclick = function (e) {
+        if (e) { e.preventDefault(); e.stopPropagation(); }
+        addTicketType();
+      };
     }
     var saveBtn = $("save-tickets");
     if (saveBtn) {
@@ -134,11 +155,22 @@
     }
   }
 
+  if (!window.__ticketsAddTypeDelegated) {
+    window.__ticketsAddTypeDelegated = true;
+    document.addEventListener("click", function (e) {
+      var t = e.target && e.target.closest && e.target.closest("#ticket-add-cat");
+      if (!t) return;
+      e.preventDefault();
+      e.stopPropagation();
+      addTicketType();
+    }, true);
+  }
+
   function mount(force) {
     var section = $("tickets");
     if (!section) return false;
     var already = section.querySelector('[data-tickets-panel="v6"]');
-    if (already && !force) { fillGlobalSelects(); return true; }
+    if (already && !force) { fillGlobalSelects(); bindGlobal(); return true; }
     section.innerHTML = panelHtml();
     mounted = true;
     applyFromConfig();
@@ -148,7 +180,14 @@
 
   function onTicketsTab() {
     mount(false);
-    setTimeout(function () { fillGlobalSelects(); renderCats(); }, 50);
+    setTimeout(function () {
+      fillGlobalSelects();
+      if (!draftCats || !draftCats.length) {
+        try { applyFromConfig(); } catch (_) {}
+      }
+      renderCats();
+      bindGlobal();
+    }, 50);
   }
 
   function wrapShowSection() {
