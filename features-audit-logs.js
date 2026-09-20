@@ -1,17 +1,17 @@
 /**
- * Audit logs settings — pick a channel for each log type.
- * systems | ai | moderation | config
+ * Audit log settings — lives in the existing #logs tab (not a new tab).
+ * systems | ai | moderation | config (+ optional default channel)
  */
 (function () {
   "use strict";
-  if (window.__featuresAuditLogsV1) return;
-  window.__featuresAuditLogsV1 = true;
+  if (window.__featuresAuditLogsV2) return;
+  window.__featuresAuditLogsV2 = true;
 
   var TYPES = [
     {
       key: "systems",
       label: "System toggles",
-      hint: "When AI / economy / other systems are turned on or off"
+      hint: "AI / economy / other systems turned on or off"
     },
     {
       key: "ai",
@@ -20,13 +20,13 @@
     },
     {
       key: "moderation",
-      label: "Moderation actions",
-      hint: "Warn / kick / ban / timeout done through the Coffee Shop bot"
+      label: "Moderation (bot actions)",
+      hint: "Warn / kick / ban / timeout done through Coffee Shop"
     },
     {
       key: "config",
       label: "Other config",
-      hint: "Reserved for future important config changes"
+      hint: "Reserved for more config events later"
     }
   ];
 
@@ -35,96 +35,149 @@
   }
 
   function channels() {
-    return window.dashboardChannels || window.channelsList || [];
+    try {
+      if (typeof channelsCache !== "undefined" && channelsCache && channelsCache.length)
+        return channelsCache;
+    } catch (_) {}
+    try {
+      if (window.syncGlobals) window.syncGlobals();
+    } catch (_) {}
+    return (
+      window.channelsCache ||
+      window.__channels ||
+      window.dashboardChannels ||
+      []
+    );
   }
 
-  function channelOptions(selected) {
+  function fillSelect(el, selected, noneLabel) {
+    if (!el) return;
     var list = channels();
-    var opts =
-      '<option value="">— None (don’t log this type) —</option>';
-    if (!list.length) {
-      opts +=
-        '<option value="" disabled>Load the dashboard once so channels appear</option>';
-    }
-    list.forEach(function (c) {
-      var id = String(c.id || c.value || "");
-      var name = c.name || c.label || id;
-      opts +=
+    var cur = selected != null && selected !== "" ? String(selected) : el.value || "";
+    var html =
+      '<option value="">' +
+      (noneLabel || "— None —") +
+      "</option>";
+    var filtered = list.filter(function (x) {
+      if (!x) return false;
+      var t = x.type;
+      return (
+        t === 0 ||
+        t === 5 ||
+        t == null ||
+        t === "GUILD_TEXT" ||
+        t === "GUILD_ANNOUNCEMENT" ||
+        String(t) === "0" ||
+        String(t) === "5"
+      );
+    });
+    if (!filtered.length) filtered = list;
+    filtered.forEach(function (x) {
+      html +=
         '<option value="' +
-        id +
-        '"' +
-        (String(selected || "") === id ? " selected" : "") +
-        ">#" +
-        String(name).replace(/</g, "<") +
+        String(x.id) +
+        '">#' +
+        String(x.name || x.id).replace(/</g, "<") +
         "</option>";
     });
-    return opts;
-  }
-
-  function ensureSection() {
-    var content = document.querySelector(".content");
-    if (!content) return false;
-    if ($("audit-logs")) return true;
-
-    var html =
-      '<section id="audit-logs" class="page-section"><div class="card form-card wide">' +
-      '<span class="eyebrow">AUDIT LOGS</span>' +
-      "<h2>Coffee Shop logs</h2>" +
-      '<p class="form-hint">Staff / config / moderation only — normal member commands are <strong>not</strong> logged. Pick where each type goes (or leave blank to skip).</p>' +
-      '<label class="toggle" style="margin-bottom:12px">' +
-      '<input type="checkbox" id="audit-enabled" checked> <span><strong>Enable audit logs</strong></span></label>' +
-      '<div class="input-group" style="margin-bottom:14px">' +
-      "<label>Default channel (used if a type has no channel)</label>" +
-      '<select id="audit-default-channel"></select></div>' +
-      '<div id="audit-type-list"></div>' +
-      '<div style="margin-top:1rem;display:flex;gap:8px;flex-wrap:wrap">' +
-      '<button class="button" type="button" id="save-audit-logs">Save log channels</button>' +
-      "</div>" +
-      '<p class="form-hint" id="audit-logs-status"></p>' +
-      "</div></section>";
-
-    var wrap = document.createElement("div");
-    wrap.innerHTML = html;
-    while (wrap.firstChild) content.appendChild(wrap.firstChild);
-    return true;
+    el.innerHTML = html;
+    if (cur) el.value = cur;
   }
 
   function getCfg() {
     var c = (window.currentConfig || {}).auditLog || {};
+    var legacy =
+      (window.currentConfig || {}).dashboardLogChannelId ||
+      (window.currentConfig || {}).logChannelId ||
+      "";
     return {
       enabled: c.enabled !== false,
-      defaultChannelId: c.defaultChannelId || "",
+      defaultChannelId: c.defaultChannelId || legacy || "",
       channels: c.channels || {}
     };
   }
 
-  function render() {
-    ensureSection();
+  function ensurePanel() {
+    var section = $("logs");
+    if (!section) return null;
+
+    // Remove the separate audit-logs section if an older build added it
+    var orphan = $("audit-logs");
+    if (orphan && orphan !== section) orphan.remove();
+    document.querySelectorAll('[data-tab="audit-logs"]').forEach(function (el) {
+      el.remove();
+    });
+
+    var host = $("audit-log-panel");
+    if (host && section.contains(host)) return host;
+
+    host = document.createElement("div");
+    host.id = "audit-log-panel";
+    host.style.marginTop = "20px";
+    host.innerHTML =
+      '<div style="border-top:1px solid rgba(128,128,128,.25);padding-top:16px;margin-top:8px">' +
+      "<h2 style=\"margin:0 0 6px\">Coffee Shop audit logs</h2>" +
+      '<p class="form-hint">Staff / config / moderation only — normal member commands are not logged. Set a channel per type (or use the default above).</p>' +
+      '<label class="toggle" style="margin:10px 0;display:flex;align-items:center;gap:8px">' +
+      '<input type="checkbox" id="audit-enabled" checked> <span><strong>Enable audit logs</strong></span></label>' +
+      '<div id="audit-type-list"></div>' +
+      "</div>";
+
+    // Prefer after existing log card content
+    var card = section.querySelector(".card, .form-card") || section;
+    card.appendChild(host);
+
+    // Retitle / clarify the original single channel as default
+    var h2 = card.querySelector("h2");
+    if (h2 && /dashboard logs/i.test(h2.textContent || "")) {
+      h2.textContent = "Log channels";
+    }
+    var lab = card.querySelector('label[for="dashboard-log-channel"]');
+    if (lab) lab.textContent = "Default log channel (fallback)";
+
+    return host;
+  }
+
+  function renderTypes() {
+    ensurePanel();
     var cfg = getCfg();
     var en = $("audit-enabled");
     if (en) en.checked = cfg.enabled !== false;
-    var def = $("audit-default-channel");
-    if (def) def.innerHTML = channelOptions(cfg.defaultChannelId);
 
     var list = $("audit-type-list");
     if (!list) return;
+
     list.innerHTML = TYPES.map(function (t) {
-      var sel = (cfg.channels && cfg.channels[t.key]) || "";
       return (
-        '<div class="input-group" style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid rgba(128,128,128,.15)">' +
-        "<label><strong>" +
+        '<div class="input-group" style="margin-bottom:12px">' +
+        "<label for=\"audit-ch-" +
+        t.key +
+        '\"><strong>' +
         t.label +
         "</strong></label>" +
-        '<p class="form-hint" style="margin:4px 0 8px">' +
+        '<p class="form-hint" style="margin:2px 0 6px">' +
         t.hint +
         "</p>" +
-        '<select data-audit-type="' +
+        '<select id="audit-ch-' +
         t.key +
-        '">' +
-        channelOptions(sel) +
-        "</select></div>"
+        '" data-audit-type="' +
+        t.key +
+        '"></select></div>'
       );
     }).join("");
+
+    TYPES.forEach(function (t) {
+      var el = $("audit-ch-" + t.key);
+      fillSelect(
+        el,
+        (cfg.channels && cfg.channels[t.key]) || "",
+        "— Use default / none —"
+      );
+    });
+
+    // Fill original default select too
+    var def = $("dashboard-log-channel");
+    if (def) fillSelect(def, cfg.defaultChannelId, "Select a channel…");
   }
 
   function collect() {
@@ -133,17 +186,16 @@
       var k = sel.getAttribute("data-audit-type");
       channels[k] = sel.value || null;
     });
+    var defEl = $("dashboard-log-channel");
     return {
       enabled: $("audit-enabled") ? $("audit-enabled").checked : true,
-      defaultChannelId: $("audit-default-channel")
-        ? $("audit-default-channel").value || null
-        : null,
+      defaultChannelId: defEl && defEl.value ? defEl.value : null,
       channels: channels
     };
   }
 
   function setStatus(msg, ok) {
-    var el = $("audit-logs-status");
+    var el = $("logs-status");
     if (!el) return;
     el.textContent = msg || "";
     el.style.color = ok === false ? "#f87171" : ok ? "#4ade80" : "";
@@ -160,45 +212,62 @@
       await window.saveConfig({ auditLog: auditLog });
       if (!window.currentConfig) window.currentConfig = {};
       window.currentConfig.auditLog = auditLog;
-      setStatus("✅ Log channels saved. Bot will use them after the next config push.", true);
+      setStatus("✅ Log channels saved.", true);
     } catch (e) {
       setStatus("❌ " + (e && e.message ? e.message : "Save failed"), false);
     }
   }
 
+  async function testLog() {
+    setStatus(
+      "Test: after the bot redeploys, flip any system toggle (or change AI settings) — you should see an embed in the channel you set for that type.",
+      true
+    );
+  }
+
   function bind() {
-    var btn = $("save-audit-logs");
-    if (btn && !btn.__bound) {
-      btn.__bound = true;
-      btn.addEventListener("click", function (e) {
+    var saveBtn = $("save-logs");
+    if (saveBtn && !saveBtn.__auditBound) {
+      saveBtn.__auditBound = true;
+      saveBtn.addEventListener("click", function (e) {
         e.preventDefault();
+        e.stopPropagation();
         save();
+      });
+    }
+    var testBtn = $("test-log");
+    if (testBtn && !testBtn.__auditBound) {
+      testBtn.__auditBound = true;
+      testBtn.addEventListener("click", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        testLog();
       });
     }
   }
 
-  function ensureDrawerLink() {
-    var drawer = document.getElementById("nav-drawer");
-    if (!drawer) return;
-    if (drawer.querySelector('[data-tab="audit-logs"]')) return;
-    var a = document.createElement("button");
-    a.type = "button";
-    a.className = "nav-drawer-item";
-    a.setAttribute("data-tab", "audit-logs");
-    a.textContent = "📋 Audit logs";
-    a.addEventListener("click", function () {
-      if (typeof window.showSection === "function") window.showSection("audit-logs");
-      render();
-      bind();
-    });
-    drawer.appendChild(a);
+  function mount() {
+    if (!$("logs")) return;
+    ensurePanel();
+    renderTypes();
+    bind();
   }
 
-  // Re-render when channels load
-  var origSet =
-    window.setDashboardChannels ||
-    window.setChannels ||
-    null;
+  function wrapShowSection() {
+    if (typeof window.showSection !== "function" || window.showSection.__auditLogsV2)
+      return;
+    var orig = window.showSection;
+    window.showSection = function (tab) {
+      var r = orig.apply(this, arguments);
+      if (String(tab) === "logs") {
+        setTimeout(mount, 30);
+        setTimeout(mount, 200);
+        setTimeout(mount, 800);
+      }
+      return r;
+    };
+    window.showSection.__auditLogsV2 = true;
+  }
 
   document.addEventListener(
     "click",
@@ -206,25 +275,41 @@
       var t =
         e.target &&
         e.target.closest &&
-        e.target.closest('[data-tab="audit-logs"]');
+        e.target.closest('[data-tab="logs"], [data-section-link="logs"]');
       if (t) {
-        setTimeout(function () {
-          render();
-          bind();
-        }, 40);
+        setTimeout(mount, 40);
+        setTimeout(mount, 300);
       }
     },
     true
   );
 
-  [0, 500, 1500, 4000, 8000].forEach(function (ms) {
+  // When channel list loads later, refresh dropdowns
+  try {
+    var obs = new MutationObserver(function () {
+      if ($("logs") && $("logs").classList.contains("active")) {
+        clearTimeout(window.__auditLogFillT);
+        window.__auditLogFillT = setTimeout(function () {
+          renderTypes();
+          bind();
+        }, 100);
+      }
+    });
     setTimeout(function () {
-      ensureSection();
-      render();
-      bind();
-      ensureDrawerLink();
+      var root = document.querySelector(".content") || document.body;
+      if (root && !root.__auditLogObs) {
+        root.__auditLogObs = true;
+        obs.observe(root, { childList: true, subtree: true });
+      }
+    }, 1000);
+  } catch (_) {}
+
+  [0, 400, 1200, 3000, 7000].forEach(function (ms) {
+    setTimeout(function () {
+      wrapShowSection();
+      mount();
     }, ms);
   });
 
-  console.log("[features-audit-logs] v1 ready");
+  console.log("[features-audit-logs] v2 — inside Logs tab");
 })();
