@@ -1,19 +1,18 @@
 /**
- * Settings → Invite bot to a server you manage.
- * Lists Discord guilds where you have Administrator or Manage Server,
- * then opens Discord's official invite URL (pre-selected guild).
+ * Settings → Invite bot (v2)
+ * Force-injects into #settings even if other scripts rewrite the page.
  */
 (function () {
   "use strict";
-  if (window.__inviteBotUiV1) return;
-  window.__inviteBotUiV1 = true;
+  if (window.__inviteBotUiV2) return;
+  window.__inviteBotUiV2 = true;
 
   function $(id) {
     return document.getElementById(id);
   }
 
   function iconUrl(g) {
-    if (g.icon) {
+    if (g && g.icon) {
       return (
         "https://cdn.discordapp.com/icons/" +
         g.id +
@@ -25,27 +24,40 @@
     return "https://cdn.discordapp.com/embed/avatars/0.png";
   }
 
+  var CARD_HTML =
+    '<span class="eyebrow">INVITE BOT</span>' +
+    "<h2>Add bot to a server</h2>" +
+    '<p class="form-hint">Pick a server you own or can manage. Discord opens so you can confirm the invite.</p>' +
+    '<div id="invite-bot-status" class="form-hint" style="margin-bottom:10px"></div>' +
+    '<div id="invite-bot-list" style="display:flex;flex-direction:column;gap:8px;max-height:320px;overflow:auto"></div>' +
+    '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px">' +
+    '<button type="button" class="button" id="invite-bot-refresh">Refresh servers</button>' +
+    '<button type="button" class="button secondary" id="invite-bot-generic">Open generic invite</button>' +
+    '<a class="button secondary" id="invite-bot-relogin" href="/api/login" style="display:none;text-decoration:none;align-items:center">Log in with Discord</a>' +
+    "</div>";
+
   function ensureCard() {
     var section = $("settings");
     if (!section) return null;
-    if ($("invite-bot-card")) return $("invite-bot-card");
 
-    var card = document.createElement("div");
+    var card = $("invite-bot-card");
+    if (card && section.contains(card)) {
+      // ensure inner structure still present
+      if (!$("invite-bot-list")) card.innerHTML = CARD_HTML;
+      return card;
+    }
+
+    // Remove orphans elsewhere
+    document.querySelectorAll("#invite-bot-card").forEach(function (el) {
+      if (el !== card) el.remove();
+    });
+
+    card = document.createElement("div");
     card.className = "card form-card wide";
     card.id = "invite-bot-card";
+    card.setAttribute("data-invite-bot", "1");
     card.style.marginTop = "16px";
-    card.innerHTML =
-      '<span class="eyebrow">INVITE BOT</span>' +
-      "<h2>Add bot to a server</h2>" +
-      '<p class="form-hint">Pick a server you own or can manage. Discord will open so you can confirm the invite.</p>' +
-      '<div id="invite-bot-status" class="form-hint" style="margin-bottom:10px"></div>' +
-      '<div id="invite-bot-list" style="display:flex;flex-direction:column;gap:8px;max-height:320px;overflow:auto"></div>' +
-      '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px">' +
-      '<button type="button" class="button" id="invite-bot-refresh">Refresh servers</button>' +
-      '<button type="button" class="button secondary" id="invite-bot-generic">Open generic invite</button>' +
-      '<a class="button secondary" id="invite-bot-relogin" href="/api/login" style="display:none;text-decoration:none">Log in with Discord</a>' +
-      "</div>";
-
+    card.innerHTML = CARD_HTML;
     section.appendChild(card);
     return card;
   }
@@ -105,9 +117,7 @@
           "</div></div>" +
           '<button type="button" class="button" data-invite-url="' +
           String(g.inviteUrl || "").replace(/"/g, """) +
-          '"' +
-          (g.botInServer ? ' style="opacity:.9"' : "") +
-          ">" +
+          '">' +
           (g.botInServer ? "Re-invite" : "Invite") +
           "</button></div>"
         );
@@ -117,9 +127,10 @@
 
   async function load() {
     ensureCard();
+    bind();
     setStatus("Loading servers…", true);
     try {
-      var res = await fetch("/api/invite-bot", {
+      var res = await fetch("/api/invite-bot?t=" + Date.now(), {
         credentials: "include",
         cache: "no-store",
       });
@@ -128,14 +139,17 @@
       });
       if (!res.ok) {
         setStatus(data.error || "Could not load servers.", false);
+        var list = $("invite-bot-list");
+        if (list && !list.innerHTML) {
+          list.innerHTML =
+            '<p class="form-hint">API error. If this is a new deploy, wait a minute for Vercel, then refresh.</p>';
+        }
         return;
       }
       renderGuilds(data);
       if (data.ok) {
         setStatus(
-          "Showing " +
-            (data.guilds || []).length +
-            " server(s) you can manage.",
+          "Showing " + (data.guilds || []).length + " server(s) you can manage.",
           true
         );
       } else {
@@ -155,14 +169,15 @@
         var btn = e.target.closest("[data-invite-url]");
         if (!btn) return;
         var url = btn.getAttribute("data-invite-url");
-        if (!url) return;
-        window.open(url, "_blank", "noopener,noreferrer");
+        if (url) window.open(url, "_blank", "noopener,noreferrer");
       });
     }
     var refresh = $("invite-bot-refresh");
     if (refresh && !refresh.dataset.bound) {
       refresh.dataset.bound = "1";
-      refresh.addEventListener("click", load);
+      refresh.addEventListener("click", function () {
+        load();
+      });
     }
     var generic = $("invite-bot-generic");
     if (generic && !generic.dataset.bound) {
@@ -173,59 +188,81 @@
         } else {
           load().then(function () {
             if (window.__inviteBotGeneric) {
-              window.open(
-                window.__inviteBotGeneric,
-                "_blank",
-                "noopener,noreferrer"
-              );
-            } else {
-              setStatus("Invite link not ready yet.", false);
-            }
+              window.open(window.__inviteBotGeneric, "_blank", "noopener,noreferrer");
+            } else setStatus("Invite link not ready yet.", false);
           });
         }
       });
     }
   }
 
-  function onShow() {
-    if (typeof window.showSection !== "function" || window.showSection.__inviteBot) {
+  function bootOnce() {
+    ensureCard();
+    bind();
+  }
+
+  function wrapShowSection() {
+    if (typeof window.showSection !== "function" || window.showSection.__inviteBotV2)
       return;
-    }
     var orig = window.showSection;
     window.showSection = function (tab) {
       var r = orig.apply(this, arguments);
       if (String(tab) === "settings") {
-        setTimeout(function () {
-          bind();
-          load();
-        }, 40);
+        setTimeout(bootOnce, 20);
+        setTimeout(load, 80);
+        setTimeout(load, 400);
       }
       return r;
     };
-    window.showSection.__inviteBot = true;
+    window.showSection.__inviteBotV2 = true;
   }
 
   document.addEventListener(
     "click",
     function (e) {
-      var t = e.target && e.target.closest && e.target.closest('[data-tab="settings"]');
+      var t =
+        e.target &&
+        e.target.closest &&
+        e.target.closest('[data-tab="settings"]');
       if (t) {
-        setTimeout(function () {
-          bind();
-          load();
-        }, 50);
+        setTimeout(bootOnce, 20);
+        setTimeout(load, 60);
+        setTimeout(load, 300);
       }
     },
     true
   );
 
-  [0, 500, 1500, 4000].forEach(function (ms) {
+  // Keep card alive if something wipes settings
+  try {
+    var obs = new MutationObserver(function () {
+      var section = $("settings");
+      if (!section) return;
+      if (!$("invite-bot-card") || !section.contains($("invite-bot-card"))) {
+        ensureCard();
+        bind();
+      }
+    });
+    function watch() {
+      var root = document.querySelector(".content") || document.body;
+      if (!root || root.__inviteObs) return;
+      root.__inviteObs = true;
+      obs.observe(root, { childList: true, subtree: true });
+    }
+    watch();
+    setTimeout(watch, 1500);
+  } catch (_) {}
+
+  [0, 200, 800, 2000, 5000, 10000].forEach(function (ms) {
     setTimeout(function () {
-      onShow();
-      bind();
-      if ($("settings") && $("settings").classList.contains("active")) load();
+      wrapShowSection();
+      bootOnce();
+      var sec = $("settings");
+      if (sec && (sec.classList.contains("active") || sec.style.display !== "none")) {
+        load();
+      }
     }, ms);
   });
 
-  console.log("[invite-bot] settings panel ready");
+  console.log("[invite-bot] v2 ready");
 })();
