@@ -77,6 +77,7 @@ function buildFullPushBody(mirrored) {
     "activityCheck",
     "systems",
     "auditLog",
+    "logging",
   ];
   const out = {};
   for (const k of keys) {
@@ -190,6 +191,7 @@ export default async function handler(req, res) {
           "activityCheck",
           "systems",
           "auditLog",
+          "logging",
         ];
         let needsResave = false;
         for (const k of extraKeys) {
@@ -229,13 +231,23 @@ export default async function handler(req, res) {
                 body.activityCheck,
                 mirrored.activityCheck || {}
               );
-            } else if (k === "systems" || k === "auditLog") {
-              mirrored[k] = { ...(mirrored[k] || {}), ...body[k] };
+            } else if (k === "logging") {
+              mirrored.logging = { ...(mirrored.logging || {}), ...body.logging };
+              if (body.logging.replaceCategories && body.logging.categories) {
+                mirrored.logging.categories = body.logging.categories;
+              }
+              if (body.logging.replaceEvents && body.logging.events) {
+                mirrored.logging.events = body.logging.events;
+              }
             } else {
               mirrored[k] = { ...(mirrored[k] || {}), ...body[k] };
             }
             needsResave = true;
           }
+        }
+        if (body.dashboardLogChannelId !== undefined) {
+          mirrored.dashboardLogChannelId = body.dashboardLogChannelId || null;
+          needsResave = true;
         }
         if (needsResave) {
           await saveGuildConfig(guildId, mirrored);
@@ -288,6 +300,7 @@ export default async function handler(req, res) {
         "verification",
         "systems",
         "auditLog",
+        "logging",
       ]
         .filter((k) => pushBody[k] != null)
         .join(", ");
@@ -296,10 +309,10 @@ export default async function handler(req, res) {
       if (!botOk) {
         if (secretMismatch) {
           warning =
-            "Saved to website Postgres, but live bot push got 401. Set the SAME DASHBOARD_API_SECRET on Vercel and Railway. If both share DATABASE_URL, the bot will pick up this config within ~90 seconds.";
+            "Saved to website Postgres, but live bot push got 401. Set the SAME DASHBOARD_API_SECRET on Vercel and Railway.";
         } else {
           warning =
-            "Saved on the website (Postgres). Live bot push failed — if both share the same DATABASE_URL the bot rehydrates every ~90s. Also check BOT_API_URL points at Railway.";
+            "Saved on the website (Postgres). Live bot push failed — check BOT_API_URL / Railway.";
         }
       }
 
