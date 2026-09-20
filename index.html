@@ -58,12 +58,11 @@ body.nav-drawer-open #nav-drawer-backdrop{pointer-events:auto!important;}
       '<option value="terminal">Terminal</option>' +
       '<option value="garden">Garden</option>';
 
-    // Inject Invite Bot card into Settings section (before </section> of settings)
     var INVITE_CARD =
       '<div class="card form-card wide" id="invite-bot-card" data-invite-bot="1" style="margin-top:16px">' +
       '<span class="eyebrow">INVITE BOT</span>' +
       '<h2>Add bot to a server</h2>' +
-      '<p class="form-hint">Pick a server you own or can manage. Discord opens so you can confirm the invite.</p>' +
+      '<p class="form-hint">Pick a server you manage, or use the generic invite and choose the server on Discord.</p>' +
       '<div id="invite-bot-status" class="form-hint" style="margin-bottom:10px"></div>' +
       '<div id="invite-bot-list" style="display:flex;flex-direction:column;gap:8px;max-height:320px;overflow:auto"></div>' +
       '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px">' +
@@ -86,23 +85,18 @@ body.nav-drawer-open #nav-drawer-backdrop{pointer-events:auto!important;}
         '<select id="sv-theme">' + SV_THEME_OPTIONS + '</select>'
       );
 
-    // Insert invite card before settings section closes (first occurrence after id=settings)
     if (html.indexOf("invite-bot-card") === -1) {
       html = html.replace(
         /(<section[^>]*id="settings"[^>]*>[\s\S]*?id="presence-status"[\s\S]*?<\/p>\s*<\/div>)\s*<\/section>/,
         "$1\n" + INVITE_CARD + "\n</section>"
       );
     }
-    // Fallback: if regex missed, append before </section> after settings
     if (html.indexOf("invite-bot-card") === -1) {
       var sIdx = html.indexOf('id="settings"');
       if (sIdx >= 0) {
         var closeIdx = html.indexOf("</section>", sIdx);
         if (closeIdx >= 0) {
-          html =
-            html.slice(0, closeIdx) +
-            INVITE_CARD +
-            html.slice(closeIdx);
+          html = html.slice(0, closeIdx) + INVITE_CARD + html.slice(closeIdx);
         }
       }
     }
@@ -147,7 +141,7 @@ body.nav-drawer-open #nav-drawer-backdrop{pointer-events:auto!important;}
     await loadScript("/app-selects-fix.js?v=3");
     await loadScript("/sr-panels.js?v=2");
     await loadScript("/features-selfroles-v3.js?v=1");
-    await loadScript("/features-invite-bot.js?v=2");
+    await loadScript("/features-invite-bot.js?v=3");
     await loadScript("/sv-members-load.js?v=37");
     await loadScript("/sv-manage.js?v=3");
     await loadScript("/sv-stable.js?v=7");
