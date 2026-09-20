@@ -19,9 +19,7 @@
   var mounted = false;
 
   function $(id) { return document.getElementById(id); }
-  function esc(s) {
-    return String(s == null ? "" : s).replace(/&/g, "&").replace(/"/g, """).replace(/</g, "<").replace(/>/g, ">");
-  }
+  function esc(s) { return String(s == null ? "" : s).replace(/&/g, "&").replace(/"/g, """).replace(/</g, "<").replace(/>/g, ">"); }
   function syncCaches() { try { if (typeof window.syncGlobals === "function") window.syncGlobals(); } catch (_) {} }
   function roles() { syncCaches(); return window.rolesCache || []; }
   function channels() { syncCaches(); return window.channelsCache || []; }
