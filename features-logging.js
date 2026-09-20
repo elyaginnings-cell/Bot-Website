@@ -1,10 +1,14 @@
 /**
- * Central logging — config + browse inside existing #logs section
+ * Central logging UI — owns the entire #logs section.
+ * Replaces old dashboard-log / audit-log panels.
  */
 (function () {
   "use strict";
-  if (window.__featuresLoggingV1) return;
-  window.__featuresLoggingV1 = true;
+  if (window.__featuresLoggingV2) return;
+  window.__featuresLoggingV2 = true;
+  // Stop older audit-log panel from fighting this tab
+  window.__featuresAuditLogsV3 = true;
+  window.__featuresAuditLogsV1 = true;
 
   var CATS = [
     "moderation",
@@ -31,34 +35,69 @@
       if (typeof channelsCache !== "undefined" && channelsCache && channelsCache.length)
         return channelsCache;
     } catch (_) {}
-    return window.channelsCache || window.__channels || [];
+    try {
+      if (window.syncGlobals) window.syncGlobals();
+    } catch (_) {}
+    return window.channelsCache || window.__channels || window.dashboardChannels || [];
+  }
+
+  function guildId() {
+    var g =
+      window.selectedGuildId ||
+      window.currentGuildId ||
+      window.activeGuildId ||
+      (window.currentGuild && (window.currentGuild.id || window.currentGuild)) ||
+      "";
+    if (!g) {
+      try {
+        g = localStorage.getItem("selectedGuildId") || localStorage.getItem("guildId") || "";
+      } catch (_) {}
+    }
+    if (!g && window.location && window.location.search) {
+      try {
+        g = new URLSearchParams(window.location.search).get("guildId") || "";
+      } catch (_) {}
+    }
+    return String(g || "");
   }
 
   function fillChannelSelect(el, selected, placeholder) {
-    if (!el) return;
+    if (!el || el.tagName !== "SELECT") return;
     if (el === document.activeElement) return;
     var list = channels().filter(function (x) {
       if (!x) return false;
       var t = x.type;
-      return t === 0 || t === 5 || t == null || String(t) === "0" || String(t) === "5";
+      return (
+        t === 0 ||
+        t === 5 ||
+        t == null ||
+        t === "GUILD_TEXT" ||
+        t === "GUILD_ANNOUNCEMENT" ||
+        String(t) === "0" ||
+        String(t) === "5"
+      );
     });
     if (!list.length) list = channels();
-    var cur = el.value || selected || "";
-    if (el.options.length > 1 && list.length && el.options.length - 1 >= Math.min(list.length, 3)) {
-      if (!el.value && selected) el.value = String(selected);
+    var cur = el.value || (selected ? String(selected) : "") || "";
+    // Rebuild when empty or channel list grew a lot
+    var need =
+      el.options.length <= 1 ||
+      (list.length > 0 && el.options.length - 1 < Math.min(list.length, 3));
+    if (!need) {
+      if (!el.value && cur) el.value = cur;
       return;
     }
-    var html = '<option value="">' + (placeholder || "— None —") + "</option>";
+    var html =
+      '<option value="">' + (placeholder || "— None —") + "</option>";
     list.forEach(function (x) {
-      html +=
-        '<option value="' +
-        String(x.id) +
-        '">#' +
-        String(x.name || x.id).replace(/</g, "<") +
-        "</option>";
+      var name = String(x.name || x.id)
+        .replace(/&/g, "&")
+        .replace(/</g, "<")
+        .replace(/>/g, ">");
+      html += '<option value="' + String(x.id) + '">#' + name + "</option>";
     });
     el.innerHTML = html;
-    if (cur) el.value = String(cur);
+    if (cur) el.value = cur;
   }
 
   function getLoggingCfg() {
@@ -78,69 +117,8 @@
     };
   }
 
-  function ensurePanel() {
-    var section = $("logs");
-    if (!section) return null;
-    var host = $("central-logging-panel");
-    if (host) return host;
-
-    host = document.createElement("div");
-    host.id = "central-logging-panel";
-    host.innerHTML =
-      '<div class="card form-card wide" style="margin-top:12px">' +
-      '<span class="eyebrow">CENTRAL LOGGING</span>' +
-      "<h2>Log settings</h2>" +
-      '<p class="form-hint">Postgres is the source of truth. Discord is optional output. Unknown events inherit defaults.</p>' +
-      '<label class="toggle" style="display:flex;gap:8px;align-items:center;margin:8px 0">' +
-      '<input type="checkbox" id="log-enabled" checked> <span><strong>Enable logging</strong></span></label>' +
-      '<label class="toggle" style="display:flex;gap:8px;align-items:center;margin:8px 0">' +
-      '<input type="checkbox" id="log-default-db" checked> <span>Database logging (default)</span></label>' +
-      '<label class="toggle" style="display:flex;gap:8px;align-items:center;margin:8px 0">' +
-      '<input type="checkbox" id="log-default-discord" checked> <span>Discord logging (default)</span></label>' +
-      '<div class="input-group"><label>Default log channel</label>' +
-      '<select id="log-default-channel"></select></div>' +
-      '<div class="input-group"><label>Message content retention (days)</label>' +
-      '<input type="number" id="log-retention" min="1" max="365" value="30"></div>' +
-      "<h3 style=\"margin-top:18px\">Category channels (optional)</h3>" +
-      '<p class="form-hint">Override Discord destination by category. Leave blank to use default.</p>' +
-      '<div id="log-cat-channels"></div>' +
-      '<button type="button" class="button" id="log-save-config" style="margin-top:12px">Save log settings</button>' +
-      '<p class="form-hint" id="log-config-status"></p>' +
-      "</div>" +
-      '<div class="card form-card wide" style="margin-top:16px">' +
-      '<span class="eyebrow">LOG BROWSER</span>' +
-      "<h2>Recent logs</h2>" +
-      '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px">' +
-      '<input id="log-search" placeholder="Search…" style="flex:1;min-width:140px">' +
-      '<select id="log-filter-cat"><option value="">All categories</option></select>' +
-      '<button type="button" class="button" id="log-refresh">Refresh</button>' +
-      "</div>" +
-      '<div id="log-list" style="display:flex;flex-direction:column;gap:8px;max-height:420px;overflow:auto"></div>' +
-      '<div id="log-detail" style="margin-top:12px;display:none"></div>' +
-      '<p class="form-hint" id="log-browse-status"></p>' +
-      "</div>";
-
-    var card = section.querySelector(".card") || section;
-    // Hide old single-channel form noise under new panel
-    card.appendChild(host);
-    return host;
-  }
-
-  function renderCatChannels() {
-    var box = $("log-cat-channels");
-    if (!box) return;
-    var cfg = getLoggingCfg();
-    if (box.dataset.built === "1") {
-      CATS.forEach(function (cat) {
-        fillChannelSelect(
-          $("log-cat-" + cat),
-          (cfg.categories[cat] && cfg.categories[cat].channelId) || "",
-          "— Default —"
-        );
-      });
-      return;
-    }
-    box.innerHTML = CATS.map(function (cat) {
+  function sectionHtml() {
+    var catRows = CATS.map(function (cat) {
       return (
         '<div class="input-group" style="margin-bottom:8px">' +
         "<label>" +
@@ -153,7 +131,91 @@
         '"></select></div>'
       );
     }).join("");
-    box.dataset.built = "1";
+
+    var filterOpts = CATS.map(function (c) {
+      return '<option value="' + c + '">' + c + "</option>";
+    }).join("");
+
+    return (
+      '<div class="card form-card wide" id="central-logging-root">' +
+      '<span class="eyebrow">LOGS</span>' +
+      "<h2>Central logging</h2>" +
+      '<p class="form-hint">Postgres stores every event. Discord posts are optional and routed by category or the default channel below.</p>' +
+      '<label class="toggle" style="display:flex;gap:8px;align-items:center;margin:8px 0">' +
+      '<input type="checkbox" id="log-enabled" checked> <span><strong>Enable logging</strong></span></label>' +
+      '<label class="toggle" style="display:flex;gap:8px;align-items:center;margin:8px 0">' +
+      '<input type="checkbox" id="log-default-db" checked> <span>Save to database (default)</span></label>' +
+      '<label class="toggle" style="display:flex;gap:8px;align-items:center;margin:8px 0">' +
+      '<input type="checkbox" id="log-default-discord" checked> <span>Post to Discord (default)</span></label>' +
+      '<div class="input-group"><label for="log-default-channel">Default log channel</label>' +
+      '<select id="log-default-channel"></select></div>' +
+      '<div class="input-group"><label for="log-retention">Message content retention (days)</label>' +
+      '<input type="number" id="log-retention" min="1" max="365" value="30"></div>' +
+      '<h3 style="margin-top:18px">Category channels</h3>' +
+      '<p class="form-hint">Optional. Blank = use default channel.</p>' +
+      '<div id="log-cat-channels">' +
+      catRows +
+      "</div>" +
+      '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px">' +
+      '<button type="button" class="button" id="log-save-config">Save log settings</button>' +
+      "</div>" +
+      '<p class="form-hint" id="log-config-status"></p>' +
+      "</div>" +
+      '<div class="card form-card wide" style="margin-top:16px" id="central-logging-browser">' +
+      '<span class="eyebrow">BROWSER</span>' +
+      "<h2>Recent events</h2>" +
+      '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px">' +
+      '<input id="log-search" placeholder="Search…" style="flex:1;min-width:140px">' +
+      '<select id="log-filter-cat"><option value="">All categories</option>' +
+      filterOpts +
+      "</select>" +
+      '<button type="button" class="button" id="log-refresh">Refresh</button>' +
+      "</div>" +
+      '<div id="log-list" style="display:flex;flex-direction:column;gap:8px;max-height:420px;overflow:auto"></div>' +
+      '<div id="log-detail" style="margin-top:12px;display:none"></div>' +
+      '<p class="form-hint" id="log-browse-status"></p>' +
+      "</div>"
+    );
+  }
+
+  function ensurePanel() {
+    var section = $("logs");
+    if (!section) return false;
+
+    // Remove competing panels
+    ["audit-log-panel", "audit-logs"].forEach(function (id) {
+      var el = $(id);
+      if (el) el.remove();
+    });
+
+    if ($("central-logging-root")) return true;
+
+    // Replace entire section content so old single-channel form is gone
+    section.innerHTML = sectionHtml();
+    section.classList.add("page-section");
+    return true;
+  }
+
+  function fillConfigForm() {
+    if (!$("log-default-channel")) return;
+    var cfg = getLoggingCfg();
+    if ($("log-enabled") && document.activeElement !== $("log-enabled"))
+      $("log-enabled").checked = cfg.enabled;
+    if ($("log-default-db") && document.activeElement !== $("log-default-db"))
+      $("log-default-db").checked = cfg.defaultDatabase;
+    if (
+      $("log-default-discord") &&
+      document.activeElement !== $("log-default-discord")
+    )
+      $("log-default-discord").checked = cfg.defaultDiscord;
+    if ($("log-retention") && document.activeElement !== $("log-retention"))
+      $("log-retention").value = cfg.messageContentRetentionDays || 30;
+
+    fillChannelSelect(
+      $("log-default-channel"),
+      cfg.defaultChannelId,
+      "Select channel…"
+    );
     CATS.forEach(function (cat) {
       fillChannelSelect(
         $("log-cat-" + cat),
@@ -163,30 +225,6 @@
     });
   }
 
-  function fillConfigForm() {
-    var cfg = getLoggingCfg();
-    if ($("log-enabled")) $("log-enabled").checked = cfg.enabled;
-    if ($("log-default-db")) $("log-default-db").checked = cfg.defaultDatabase;
-    if ($("log-default-discord"))
-      $("log-default-discord").checked = cfg.defaultDiscord;
-    if ($("log-retention"))
-      $("log-retention").value = cfg.messageContentRetentionDays || 30;
-    fillChannelSelect($("log-default-channel"), cfg.defaultChannelId, "Select channel…");
-    // also fill legacy select if present
-    fillChannelSelect($("dashboard-log-channel"), cfg.defaultChannelId, "Select a channel…");
-    renderCatChannels();
-
-    var fc = $("log-filter-cat");
-    if (fc && fc.options.length <= 1) {
-      CATS.forEach(function (c) {
-        var o = document.createElement("option");
-        o.value = c;
-        o.textContent = c;
-        fc.appendChild(o);
-      });
-    }
-  }
-
   function collectConfig() {
     var categories = {};
     CATS.forEach(function (cat) {
@@ -194,10 +232,9 @@
       var ch = el && el.value ? el.value : null;
       if (ch) categories[cat] = { channelId: ch, database: true, discord: true };
     });
-    var def =
-      ($("log-default-channel") && $("log-default-channel").value) ||
-      ($("dashboard-log-channel") && $("dashboard-log-channel").value) ||
-      null;
+    var def = $("log-default-channel") && $("log-default-channel").value
+      ? $("log-default-channel").value
+      : null;
     return {
       enabled: $("log-enabled") ? $("log-enabled").checked : true,
       defaultDatabase: $("log-default-db") ? $("log-default-db").checked : true,
@@ -207,7 +244,10 @@
       defaultChannelId: def,
       messageContentRetentionDays: Math.max(
         1,
-        Math.min(365, Number($("log-retention") && $("log-retention").value) || 30)
+        Math.min(
+          365,
+          Number($("log-retention") && $("log-retention").value) || 30
+        )
       ),
       categories: categories,
       events: (getLoggingCfg().events) || {},
@@ -229,32 +269,37 @@
     el.style.color = ok === false ? "#f87171" : ok ? "#4ade80" : "";
   }
 
-  function guildId() {
-    return (
-      window.selectedGuildId ||
-      window.currentGuildId ||
-      (window.currentConfig && window.currentConfig.guildId) ||
-      localStorage.getItem("selectedGuildId") ||
-      ""
-    );
-  }
-
   async function saveConfig() {
     if (!window.saveConfig) {
-      setCfgStatus("Save not ready — refresh.", false);
+      setCfgStatus("Save not ready — refresh the page once.", false);
       return;
     }
     try {
       setCfgStatus("Saving…", true);
       var logging = collectConfig();
-      var payload = { logging: logging };
-      if (logging.defaultChannelId) {
-        payload.dashboardLogChannelId = logging.defaultChannelId;
+      if (!logging.defaultChannelId && logging.defaultDiscord) {
+        setCfgStatus(
+          "Pick a default log channel (or turn off Discord logging).",
+          false
+        );
+        return;
       }
-      await window.saveConfig(payload);
+      var payload = {
+        logging: logging,
+        dashboardLogChannelId: logging.defaultChannelId || null
+      };
+      var result = await window.saveConfig(payload);
       if (!window.currentConfig) window.currentConfig = {};
       window.currentConfig.logging = logging;
-      setCfgStatus("✅ Log settings saved (bot will apply on push).", true);
+      window.currentConfig.dashboardLogChannelId = logging.defaultChannelId;
+      var warn =
+        result && (result.warning || (result.data && result.data.warning));
+      if (warn) {
+        setCfgStatus("⚠ Saved, but: " + warn, false);
+      } else {
+        setCfgStatus("✅ Log settings saved.", true);
+      }
+      setTimeout(loadList, 500);
     } catch (e) {
       setCfgStatus("❌ " + (e && e.message ? e.message : "Save failed"), false);
     }
@@ -299,7 +344,7 @@
       var rows = data.rows || [];
       if (!rows.length) {
         list.innerHTML =
-          '<p class="form-hint">No logs yet. Save settings, then trigger an action (delete a message, toggle a system, etc.).</p>';
+          '<p class="form-hint">No events yet. Save settings, then delete a message or toggle a system.</p>';
         setBrowseStatus("0 events", true);
         return;
       }
@@ -322,9 +367,12 @@
           );
         })
         .join("");
-      setBrowseStatus(data.total + " total", true);
+      setBrowseStatus((data.total || rows.length) + " total", true);
     } catch (e) {
-      setBrowseStatus("❌ " + (e && e.message ? e.message : "Load failed"), false);
+      setBrowseStatus(
+        "❌ " + (e && e.message ? e.message : "Load failed"),
+        false
+      );
     }
   }
 
@@ -366,10 +414,10 @@
       }
       box.innerHTML =
         "<h3>" +
-        String(log.event_type) +
+        String(log.event_type || "") +
         "</h3>" +
         "<p>Log ID: <code>" +
-        log.id +
+        (log.id || "") +
         "</code></p>" +
         "<p>Actor: " +
         (log.actor_name || log.actor_id || "—") +
@@ -384,7 +432,7 @@
         (log.reason || "—") +
         "</p>" +
         "<p>Time: " +
-        log.created_at +
+        (log.created_at || "") +
         "</p>" +
         contentHtml;
     } catch (e) {
@@ -398,21 +446,9 @@
       save.__bound = true;
       save.addEventListener("click", function (e) {
         e.preventDefault();
+        e.stopPropagation();
         saveConfig();
       });
-    }
-    var oldSave = $("save-logs");
-    if (oldSave && !oldSave.__centralBound) {
-      oldSave.__centralBound = true;
-      oldSave.addEventListener(
-        "click",
-        function (e) {
-          e.preventDefault();
-          e.stopPropagation();
-          saveConfig();
-        },
-        true
-      );
     }
     var ref = $("log-refresh");
     if (ref && !ref.__bound) {
@@ -426,9 +462,24 @@
     if (list && !list.__bound) {
       list.__bound = true;
       list.addEventListener("click", function (e) {
-        var btn = e.target && e.target.closest && e.target.closest("[data-log-id]");
+        var btn =
+          e.target && e.target.closest && e.target.closest("[data-log-id]");
         if (btn) showDetail(btn.getAttribute("data-log-id"));
       });
+    }
+    var search = $("log-search");
+    if (search && !search.__bound) {
+      search.__bound = true;
+      var t;
+      search.addEventListener("input", function () {
+        clearTimeout(t);
+        t = setTimeout(loadList, 350);
+      });
+    }
+    var fc = $("log-filter-cat");
+    if (fc && !fc.__bound) {
+      fc.__bound = true;
+      fc.addEventListener("change", loadList);
     }
   }
 
@@ -439,6 +490,12 @@
     bind();
   }
 
+  function onLogsOpen() {
+    mount();
+    setTimeout(fillConfigForm, 200);
+    setTimeout(loadList, 300);
+  }
+
   document.addEventListener(
     "click",
     function (e) {
@@ -447,36 +504,40 @@
         e.target.closest &&
         e.target.closest('[data-tab="logs"], [data-section-link="logs"]');
       if (t) {
-        setTimeout(mount, 50);
-        setTimeout(function () {
-          mount();
-          loadList();
-        }, 400);
+        setTimeout(onLogsOpen, 40);
+        setTimeout(onLogsOpen, 400);
       }
     },
     true
   );
 
-  if (typeof window.showSection === "function" && !window.showSection.__loggingV1) {
+  function wrapShowSection() {
+    if (typeof window.showSection !== "function") return;
+    if (window.showSection.__loggingV2) return;
     var orig = window.showSection;
     window.showSection = function (tab) {
       var r = orig.apply(this, arguments);
-      if (String(tab) === "logs") {
-        setTimeout(mount, 40);
-        setTimeout(loadList, 200);
-      }
+      if (String(tab) === "logs") onLogsOpen();
       return r;
     };
-    window.showSection.__loggingV1 = true;
+    window.showSection.__loggingV2 = true;
   }
 
+  var lastCh = 0;
   setInterval(function () {
-    if (channels().length && $("log-default-channel")) fillConfigForm();
-  }, 2500);
+    var n = channels().length;
+    if (n && n !== lastCh) {
+      lastCh = n;
+      if ($("log-default-channel")) fillConfigForm();
+    }
+  }, 2000);
 
-  [0, 600, 2000, 5000].forEach(function (ms) {
-    setTimeout(mount, ms);
+  [0, 400, 1200, 3000, 6000].forEach(function (ms) {
+    setTimeout(function () {
+      wrapShowSection();
+      mount();
+    }, ms);
   });
 
-  console.log("[features-logging] v1 central logger UI");
+  console.log("[features-logging] v2 — full Logs tab");
 })();
