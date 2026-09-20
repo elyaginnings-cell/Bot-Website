@@ -9,6 +9,10 @@
 
   function upgrade() {
     try {
+      if (typeof window.__featuresTicketsV6Boot === "function") {
+        window.__featuresTicketsV6Boot(true);
+        return;
+      }
       if (typeof window.__featuresTicketsV3Boot === "function") {
         window.__featuresTicketsV3Boot(true);
         return;
