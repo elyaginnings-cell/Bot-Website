@@ -1,10 +1,11 @@
 /**
- * Tickets dashboard v2 — categories, questions, custom channel names
+ * Tickets dashboard v3 — force-replaces the old panel every open
+ * Categories, questions, naming, AI intro + escalate
  */
 (function () {
   "use strict";
-  if (window.__featuresTicketsV2) return;
-  window.__featuresTicketsV2 = true;
+  if (window.__featuresTicketsV3) return;
+  window.__featuresTicketsV3 = true;
 
   function $(id) {
     return document.getElementById(id);
@@ -43,28 +44,15 @@
   }
 
   function escapeAttr(s) {
-    return String(s || "")
-      .replace(/&/g, "&")
-      .replace(/"/g, """)
-      .replace(/</g, "<");
+    return String(s || "").replace(/&/g, "&").replace(/"/g, """).replace(/</g, "<");
   }
   function escapeHtml(s) {
-    return String(s || "")
-      .replace(/&/g, "&")
-      .replace(/</g, "<");
+    return String(s || "").replace(/&/g, "&").replace(/</g, "<");
   }
 
   function defaultCategories() {
     return [
-      {
-        id: "general",
-        label: "General Support",
-        emoji: "🛠️",
-        aiEnabled: true,
-        aiInstructions: "",
-        description: "",
-        questions: []
-      },
+      { id: "general", label: "General Support", emoji: "🛠️", aiEnabled: true, aiInstructions: "", description: "", questions: [] },
       {
         id: "report",
         label: "Report a User",
@@ -81,8 +69,63 @@
   }
 
   var draftCats = defaultCategories();
+  var DEFAULT_INTRO =
+    "Hello! I'm the **AI support assistant** for this server. " +
+    "I can help with a lot of common questions right here in this ticket.\n\n" +
+    "If this is something you don't think I can handle, just say **human** " +
+    "(or **yes** if I already offered) and I'll ping a staff representative for you.";
 
-  function ensureSection() {
+  function panelHtml() {
+    return (
+      '<div class="card form-card wide" data-tickets-panel="v3">' +
+      '<span class="eyebrow">TICKETS</span>' +
+      "<h2>Support tickets</h2>" +
+      '<p class="form-hint">Build categories, questions, and channel names. Save, then run <code>/ticket-panel</code> in Discord.</p>' +
+      '<label class="toggle"><input type="checkbox" id="ticket-enabled" checked> <span>Enabled</span></label>' +
+      "<h3 class=\"subhead\">Channels & staff</h3>" +
+      '<div class="config-grid">' +
+      '<div class="input-group"><label>Discord category (parent)</label><select id="ticket-category-id"><option value="">Select…</option></select></div>' +
+      '<div class="input-group"><label>Or paste category ID</label><input id="ticket-category-manual" type="text" placeholder="Snowflake ID"></div>' +
+      '<div class="input-group"><label>Transcript channel</label><select id="ticket-transcript-channel"><option value="">None</option></select></div>' +
+      '<div class="input-group"><label>Max open / user</label><input id="ticket-max-open" type="number" min="1" max="10" value="1"></div>' +
+      "</div>" +
+      '<div class="input-group"><label>Staff / support roles (see tickets + get pinged for human handoff)</label>' +
+      '<div class="inline-row"><select id="ticket-staff-role"><option value="">Select…</option></select> <button class="button" id="add-ticket-staff" type="button">Add</button></div></div>' +
+      '<div id="ticket-staff-list" class="level-roles-list"></div>' +
+      "<h3 class=\"subhead\">Channel naming</h3>" +
+      '<p class="form-hint">Tokens: <code>{category}</code> <code>{label}</code> <code>{user}</code> <code>{n}</code> <code>{id}</code></p>' +
+      '<div class="input-group"><label>Naming format</label><input id="ticket-naming" type="text" maxlength="80" placeholder="{category}-{user}-{n}"></div>' +
+      "<h3 class=\"subhead\">Panel look</h3>" +
+      '<div class="config-grid">' +
+      '<div class="input-group"><label>Panel title</label><input id="ticket-panel-title" type="text" maxlength="120"></div>' +
+      '<div class="input-group"><label>Panel color (hex)</label><input id="ticket-panel-color" type="text" placeholder="#5865F2"></div>' +
+      "</div>" +
+      '<div class="input-group"><label>Panel description</label><textarea id="ticket-panel-desc" rows="3" maxlength="2000"></textarea></div>' +
+      '<div class="input-group"><label>Welcome message (embed)</label><textarea id="ticket-welcome" rows="2" maxlength="1500"></textarea></div>' +
+      "<h3 class=\"subhead\">Your categories</h3>" +
+      '<p class="form-hint">Add your own. Each can have up to 5 questions (modal form when opened).</p>' +
+      '<div id="ticket-cats-list"></div>' +
+      '<button class="button" type="button" id="ticket-cat-add" style="margin-top:8px">+ Add category</button>' +
+      "<h3 class=\"subhead\">AI ticket agent</h3>" +
+      '<label class="toggle"><input type="checkbox" id="ticket-ai-enabled"> <span>AI handles tickets</span></label>' +
+      '<label class="toggle"><input type="checkbox" id="ticket-ai-no-mention" checked> <span>Reply without @mention</span></label>' +
+      '<label class="toggle"><input type="checkbox" id="ticket-ai-ignore-staff" checked> <span>Ignore staff messages</span></label>' +
+      '<div class="input-group"><label>AI intro (sent automatically when a ticket opens)</label>' +
+      '<textarea id="ticket-ai-intro" rows="4" maxlength="1800"></textarea></div>' +
+      '<div class="input-group"><label>AI system instructions</label><textarea id="ticket-ai-prompt" rows="3" maxlength="2000"></textarea></div>' +
+      '<div class="input-group"><label>Escalate keywords</label><input id="ticket-ai-keywords" type="text" placeholder="human, representative, staff please"></div>' +
+      '<div class="input-group"><label>Message when escalating to staff</label><input id="ticket-ai-escalate-msg" type="text" maxlength="400"></div>' +
+      '<div class="input-group"><label>Extra escalate role</label><div class="inline-row"><select id="ticket-ai-esc-role"><option value="">Select…</option></select> <button class="button" type="button" id="ticket-ai-esc-role-add">Add</button></div></div>' +
+      '<div id="ticket-ai-esc-roles" class="level-roles-list"></div>' +
+      '<div class="input-group"><label>Extra escalate user ID</label><div class="inline-row"><input id="ticket-ai-esc-user" type="text" placeholder="User snowflake"> <button class="button" type="button" id="ticket-ai-esc-user-add">Add</button></div></div>' +
+      '<div id="ticket-ai-esc-users" class="level-roles-list"></div>' +
+      '<button class="button" id="save-tickets" type="button" style="margin-top:12px">Save Ticket Settings</button>' +
+      '<p class="form-hint" id="ticket-status"></p>' +
+      "</div>"
+    );
+  }
+
+  function ensureSection(force) {
     var content =
       document.querySelector(".content") ||
       document.querySelector("main .content") ||
@@ -96,54 +139,11 @@
     }
     if (!sec) return false;
 
-    if (sec.getAttribute("data-tickets-v2") === "1") return true;
-    sec.setAttribute("data-tickets-v2", "1");
-
-    sec.innerHTML =
-      '<div class="card form-card wide">' +
-      '<span class="eyebrow">TICKETS</span>' +
-      "<h2>Support tickets</h2>" +
-      '<p class="form-hint">Build your own categories, questions, and channel names. After saving, run <code>/ticket-panel</code> in Discord.</p>' +
-      '<label class="toggle"><input type="checkbox" id="ticket-enabled" checked> <span>Enabled</span></label>' +
-      "<h3 class=\"subhead\">Channels & staff</h3>" +
-      '<div class="config-grid">' +
-      '<div class="input-group"><label>Discord category (parent)</label><select id="ticket-category-id"><option value="">Select…</option></select></div>' +
-      '<div class="input-group"><label>Or paste category ID</label><input id="ticket-category-manual" type="text" placeholder="Snowflake ID"></div>' +
-      '<div class="input-group"><label>Transcript channel</label><select id="ticket-transcript-channel"><option value="">None</option></select></div>' +
-      '<div class="input-group"><label>Max open / user</label><input id="ticket-max-open" type="number" min="1" max="10" value="1"></div>' +
-      "</div>" +
-      '<div class="input-group"><label>Staff roles</label><div class="inline-row"><select id="ticket-staff-role"><option value="">Select…</option></select> <button class="button" id="add-ticket-staff" type="button">Add</button></div></div>' +
-      '<div id="ticket-staff-list" class="level-roles-list"></div>' +
-      "<h3 class=\"subhead\">Channel naming</h3>" +
-      '<p class="form-hint">Use tokens: <code>{category}</code> <code>{label}</code> <code>{user}</code> <code>{n}</code> <code>{id}</code> — e.g. <code>{category}-{user}-{n}</code> or <code>{label}-{user}</code></p>' +
-      '<div class="input-group"><label>Naming format</label><input id="ticket-naming" type="text" maxlength="80" placeholder="{category}-{user}-{n}"></div>' +
-      "<h3 class=\"subhead\">Panel look</h3>" +
-      '<div class="config-grid">' +
-      '<div class="input-group"><label>Panel title</label><input id="ticket-panel-title" type="text" maxlength="120"></div>' +
-      '<div class="input-group"><label>Panel color (hex)</label><input id="ticket-panel-color" type="text" placeholder="#5865F2"></div>' +
-      "</div>" +
-      '<div class="input-group"><label>Panel description</label><textarea id="ticket-panel-desc" rows="3" maxlength="2000"></textarea></div>' +
-      '<div class="input-group"><label>Welcome message</label><textarea id="ticket-welcome" rows="2" maxlength="1500"></textarea></div>' +
-      "<h3 class=\"subhead\">Your categories</h3>" +
-      '<p class="form-hint">Add categories yourself. Each can have up to 5 intake questions (shown as a form when someone opens that category).</p>' +
-      '<div id="ticket-cats-list"></div>' +
-      '<button class="button" type="button" id="ticket-cat-add" style="margin-top:8px">+ Add category</button>' +
-      "<h3 class=\"subhead\">AI ticket agent</h3>" +
-      '<label class="toggle"><input type="checkbox" id="ticket-ai-enabled"> <span>AI handles tickets</span></label>' +
-      '<label class="toggle"><input type="checkbox" id="ticket-ai-no-mention" checked> <span>Reply without @mention</span></label>' +
-      '<label class="toggle"><input type="checkbox" id="ticket-ai-ignore-staff" checked> <span>Ignore staff messages</span></label>' +
-      '<div class="input-group"><label>AI system instructions</label><textarea id="ticket-ai-prompt" rows="3" maxlength="2000"></textarea></div>' +
-      '<div class="input-group"><label>Escalate keywords</label><input id="ticket-ai-keywords" type="text" placeholder="human, manager, escalate"></div>' +
-      '<div class="input-group"><label>Escalate message</label><input id="ticket-ai-escalate-msg" type="text" maxlength="400"></div>' +
-      '<div class="input-group"><label>Escalate role</label><div class="inline-row"><select id="ticket-ai-esc-role"><option value="">Select…</option></select> <button class="button" type="button" id="ticket-ai-esc-role-add">Add</button></div></div>' +
-      '<div id="ticket-ai-esc-roles" class="level-roles-list"></div>' +
-      '<div class="input-group"><label>Escalate user ID</label><div class="inline-row"><input id="ticket-ai-esc-user" type="text" placeholder="User snowflake"> <button class="button" type="button" id="ticket-ai-esc-user-add">Add</button></div></div>' +
-      '<div id="ticket-ai-esc-users" class="level-roles-list"></div>' +
-      '<button class="button" id="save-tickets" type="button" style="margin-top:12px">Save Ticket Settings</button>' +
-      '<p class="form-hint" id="ticket-status"></p>' +
-      "</div>";
-
-    wire();
+    var hasV3 = sec.querySelector('[data-tickets-panel="v3"]');
+    if (force || !hasV3) {
+      sec.innerHTML = panelHtml();
+      wire();
+    }
     return true;
   }
 
@@ -177,102 +177,90 @@
     fill($("ticket-ai-esc-role"), roles(), "Select…", true);
   }
 
-  function renderStaff() {
-    var list = $("ticket-staff-list");
+  function renderList(listId, ids, labelFn, rmAttr, onRm) {
+    var list = $(listId);
     if (!list) return;
-    var ids = window.__ticketStaffIds || [];
-    var rl = roles();
     if (!ids.length) {
-      list.innerHTML = '<p class="form-hint">No staff roles yet.</p>';
+      list.innerHTML = '<p class="form-hint">None yet.</p>';
       return;
     }
     list.innerHTML = ids
-      .map(function (rid) {
-        var r = rl.find(function (x) {
-          return String(x.id) === String(rid);
-        });
+      .map(function (id) {
         return (
           '<div class="level-role-row">' +
-          (r ? r.name : rid) +
-          ' <button type="button" data-rm-staff="' +
-          rid +
+          labelFn(id) +
+          ' <button type="button" ' +
+          rmAttr +
+          '="' +
+          id +
           '">Remove</button></div>'
         );
       })
       .join("");
-    list.querySelectorAll("[data-rm-staff]").forEach(function (btn) {
+    list.querySelectorAll("[" + rmAttr + "]").forEach(function (btn) {
       btn.addEventListener("click", function () {
-        var rid = btn.getAttribute("data-rm-staff");
+        onRm(btn.getAttribute(rmAttr));
+      });
+    });
+  }
+
+  function renderStaff() {
+    var rl = roles();
+    renderList(
+      "ticket-staff-list",
+      window.__ticketStaffIds || [],
+      function (rid) {
+        var r = rl.find(function (x) {
+          return String(x.id) === String(rid);
+        });
+        return r ? r.name : rid;
+      },
+      "data-rm-staff",
+      function (rid) {
         window.__ticketStaffIds = (window.__ticketStaffIds || []).filter(function (x) {
           return String(x) !== String(rid);
         });
         renderStaff();
-      });
-    });
+      }
+    );
   }
 
   function renderEscRoles() {
-    var list = $("ticket-ai-esc-roles");
-    if (!list) return;
-    var ids = window.__ticketEscRoles || [];
     var rl = roles();
-    if (!ids.length) {
-      list.innerHTML = '<p class="form-hint">None — falls back to staff roles.</p>';
-      return;
-    }
-    list.innerHTML = ids
-      .map(function (rid) {
+    renderList(
+      "ticket-ai-esc-roles",
+      window.__ticketEscRoles || [],
+      function (rid) {
         var r = rl.find(function (x) {
           return String(x.id) === String(rid);
         });
-        return (
-          '<div class="level-role-row">' +
-          (r ? r.name : rid) +
-          ' <button type="button" data-rm-esc="' +
-          rid +
-          '">Remove</button></div>'
-        );
-      })
-      .join("");
-    list.querySelectorAll("[data-rm-esc]").forEach(function (btn) {
-      btn.addEventListener("click", function () {
-        var rid = btn.getAttribute("data-rm-esc");
+        return r ? r.name : rid;
+      },
+      "data-rm-esc",
+      function (rid) {
         window.__ticketEscRoles = (window.__ticketEscRoles || []).filter(function (x) {
           return String(x) !== String(rid);
         });
         renderEscRoles();
-      });
-    });
+      }
+    );
   }
 
   function renderEscUsers() {
-    var list = $("ticket-ai-esc-users");
-    if (!list) return;
-    var ids = window.__ticketEscUsers || [];
-    if (!ids.length) {
-      list.innerHTML = '<p class="form-hint">No specific users.</p>';
-      return;
-    }
-    list.innerHTML = ids
-      .map(function (uid) {
-        return (
-          '<div class="level-role-row">' +
-          uid +
-          ' <button type="button" data-rm-escu="' +
-          uid +
-          '">Remove</button></div>'
-        );
-      })
-      .join("");
-    list.querySelectorAll("[data-rm-escu]").forEach(function (btn) {
-      btn.addEventListener("click", function () {
-        var uid = btn.getAttribute("data-rm-escu");
+    renderList(
+      "ticket-ai-esc-users",
+      window.__ticketEscUsers || [],
+      function (uid) {
+        return uid;
+      },
+      "data-rm-escu",
+      function (uid) {
         window.__ticketEscUsers = (window.__ticketEscUsers || []).filter(function (x) {
           return String(x) !== String(uid);
         });
         renderEscUsers();
-      });
-    });
+      }
+    );
   }
 
   function renderCats() {
@@ -379,9 +367,7 @@
       btn.addEventListener("click", function () {
         syncCatsFromDom();
         var parts = btn.getAttribute("data-rm-q").split(":");
-        var ci = parseInt(parts[0], 10);
-        var qi = parseInt(parts[1], 10);
-        draftCats[ci].questions.splice(qi, 1);
+        draftCats[parseInt(parts[0], 10)].questions.splice(parseInt(parts[1], 10), 1);
         renderCats();
       });
     });
@@ -393,9 +379,7 @@
     var next = [];
     list.querySelectorAll("[data-cat-i]").forEach(function (card) {
       var get = function (f) {
-        var el = card.querySelector(':scope > .config-grid [data-f="' + f + '"], :scope > .input-group [data-f="' + f + '"], [data-f="' + f + '"]');
-        // simpler: any data-f in card but not inside data-q-i
-        el = null;
+        var el = null;
         card.querySelectorAll("[data-f]").forEach(function (node) {
           if (node.closest("[data-q-i]")) return;
           if (node.getAttribute("data-f") === f) el = node;
@@ -486,15 +470,16 @@
     if ($("ticket-ai-enabled")) $("ticket-ai-enabled").checked = !!ai.enabled;
     if ($("ticket-ai-no-mention")) $("ticket-ai-no-mention").checked = ai.respondWithoutMention !== false;
     if ($("ticket-ai-ignore-staff")) $("ticket-ai-ignore-staff").checked = ai.ignoreStaffMessages !== false;
+    if ($("ticket-ai-intro")) $("ticket-ai-intro").value = ai.introMessage || DEFAULT_INTRO;
     if ($("ticket-ai-prompt"))
       $("ticket-ai-prompt").value =
         ai.systemPrompt ||
-        "You are a helpful Discord support agent. Be concise. If you cannot help, end with ESCALATE: reason.";
+        "You are a helpful Discord support agent. Be concise. Remind them they can say human for staff.";
     if ($("ticket-ai-keywords"))
-      $("ticket-ai-keywords").value = (ai.autoEscalateKeywords || ["human", "manager", "escalate"]).join(", ");
+      $("ticket-ai-keywords").value = (ai.autoEscalateKeywords || ["human", "representative", "staff please"]).join(", ");
     if ($("ticket-ai-escalate-msg"))
       $("ticket-ai-escalate-msg").value =
-        ai.escalateMessage || "I've looped in the team for this one — they'll take it from here.";
+        ai.escalateMessage || "Got it — connecting you with a human representative now.";
 
     window.__ticketEscRoles = Array.isArray(ai.escalateRoleIds) ? ai.escalateRoleIds.map(String) : [];
     window.__ticketEscUsers = Array.isArray(ai.escalateUserIds) ? ai.escalateUserIds.map(String) : [];
@@ -548,11 +533,12 @@
             enabled: $("ticket-ai-enabled") ? $("ticket-ai-enabled").checked : false,
             respondWithoutMention: $("ticket-ai-no-mention") ? $("ticket-ai-no-mention").checked : true,
             ignoreStaffMessages: $("ticket-ai-ignore-staff") ? $("ticket-ai-ignore-staff").checked : true,
+            introMessage: ($("ticket-ai-intro") && $("ticket-ai-intro").value) || DEFAULT_INTRO,
             systemPrompt: ($("ticket-ai-prompt") && $("ticket-ai-prompt").value) || "",
-            autoEscalateKeywords: keywords.length ? keywords : ["human", "manager", "escalate"],
+            autoEscalateKeywords: keywords.length ? keywords : ["human", "representative", "staff please"],
             escalateMessage:
               ($("ticket-ai-escalate-msg") && $("ticket-ai-escalate-msg").value) ||
-              "I've looped in the team for this one.",
+              "Got it — connecting you with a human representative now.",
             escalateRoleIds: window.__ticketEscRoles || [],
             escalateUserIds: window.__ticketEscUsers || []
           }
@@ -575,8 +561,8 @@
 
   function wire() {
     var addStaff = $("add-ticket-staff");
-    if (addStaff && !addStaff.__w2) {
-      addStaff.__w2 = true;
+    if (addStaff && !addStaff.__w3) {
+      addStaff.__w3 = true;
       addStaff.addEventListener("click", function () {
         var sel = $("ticket-staff-role");
         if (!sel || !sel.value) return;
@@ -586,8 +572,8 @@
       });
     }
     var addEscR = $("ticket-ai-esc-role-add");
-    if (addEscR && !addEscR.__w2) {
-      addEscR.__w2 = true;
+    if (addEscR && !addEscR.__w3) {
+      addEscR.__w3 = true;
       addEscR.addEventListener("click", function () {
         var sel = $("ticket-ai-esc-role");
         if (!sel || !sel.value) return;
@@ -597,8 +583,8 @@
       });
     }
     var addEscU = $("ticket-ai-esc-user-add");
-    if (addEscU && !addEscU.__w2) {
-      addEscU.__w2 = true;
+    if (addEscU && !addEscU.__w3) {
+      addEscU.__w3 = true;
       addEscU.addEventListener("click", function () {
         var inp = $("ticket-ai-esc-user");
         var v = inp && inp.value.trim();
@@ -610,8 +596,8 @@
       });
     }
     var addCat = $("ticket-cat-add");
-    if (addCat && !addCat.__w2) {
-      addCat.__w2 = true;
+    if (addCat && !addCat.__w3) {
+      addCat.__w3 = true;
       addCat.addEventListener("click", function () {
         syncCatsFromDom();
         draftCats.push({
@@ -630,34 +616,41 @@
       });
     }
     var saveBtn = $("save-tickets");
-    if (saveBtn && !saveBtn.__w2) {
-      saveBtn.__w2 = true;
-      saveBtn.addEventListener("click", function (e) {
+    if (saveBtn) {
+      // kill old listeners by cloning
+      var neo = saveBtn.cloneNode(true);
+      saveBtn.parentNode.replaceChild(neo, saveBtn);
+      neo.addEventListener("click", function (e) {
         e.preventDefault();
+        e.stopPropagation();
         save();
       });
     }
   }
 
-  function boot() {
-    if (!ensureSection()) return;
+  function boot(force) {
+    if (!ensureSection(!!force)) return;
     fillSelects();
     applyFromConfig();
     wire();
   }
 
-  [0, 300, 800, 2000, 4000].forEach(function (ms) {
-    setTimeout(boot, ms);
+  [0, 200, 600, 1500, 3000, 6000].forEach(function (ms) {
+    setTimeout(function () {
+      boot(true);
+    }, ms);
   });
 
   document.addEventListener(
     "click",
     function (e) {
       var t = e.target && e.target.closest && e.target.closest('[data-tab="tickets"]');
-      if (t) setTimeout(boot, 30);
+      if (t) setTimeout(function () {
+        boot(true);
+      }, 40);
     },
     true
   );
 
-  console.log("[features-tickets] v2 — naming + questions");
+  console.log("[features-tickets] v3 force panel + AI intro");
 })();
