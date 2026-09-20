@@ -5,6 +5,7 @@
     { "source": "/api/roles", "destination": "/api/channels?resource=roles" },
     { "source": "/api/presence", "destination": "/api/bot-status?resource=presence" },
     { "source": "/api/guild-meta", "destination": "/api/guilds?resource=meta" },
-    { "source": "/api/role-manage", "destination": "/api/channel-manage?resource=roles" }
+    { "source": "/api/role-manage", "destination": "/api/channel-manage?resource=roles" },
+    { "source": "/api/invite-bot", "destination": "/api/guilds?resource=invite" }
   ]
 }
