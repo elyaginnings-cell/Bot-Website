@@ -1,11 +1,11 @@
 /**
- * Per-tab system toggles v2 — EVERY page tab/section gets an On/Off switch.
- * Saves to config.systems[key]. Unknown tabs use their section id as the key.
+ * Per-tab system toggles v3 — every feature tab gets On/Off, except pure UI.
+ * Server View is never toggleable (dashboard chrome, not a bot system).
  */
 (function () {
   "use strict";
-  if (window.__featuresTabTogglesV2) return;
-  window.__featuresTabTogglesV2 = true;
+  if (window.__featuresTabTogglesV3) return;
+  window.__featuresTabTogglesV3 = true;
 
   /** Optional aliases: multiple tabs share one system key */
   var ALIAS = {
@@ -75,13 +75,23 @@
     suggestions: "Suggestions",
     invites: "Invites",
     logs: "Logs",
-    serverview: "Server View",
     overview: "Overview",
     settings: "Settings",
     themes: "Themes"
   };
 
-  /** Tabs that are pure UI — still get a toggle, but default stays on */
+  /** Never show a toggle on these (UI chrome / always available) */
+  var SKIP = {
+    serverview: true,
+    server: true,
+    "server-view": true,
+    overview: true,
+    home: true,
+    settings: true,
+    themes: true,
+    theme: true
+  };
+
   function systemKeyFor(tabId) {
     var id = String(tabId || "")
       .toLowerCase()
@@ -89,6 +99,17 @@
     if (!id) return null;
     if (ALIAS[id]) return ALIAS[id];
     return id;
+  }
+
+  function shouldSkip(tabId, sysKey) {
+    var id = String(tabId || "")
+      .toLowerCase()
+      .replace(/[^a-z0-9_-]/g, "");
+    if (SKIP[id] || SKIP[sysKey]) return true;
+    // Extra: any id containing server-view / serverview
+    if (id.indexOf("serverview") >= 0 || id.indexOf("server-view") >= 0) return true;
+    if (sysKey && String(sysKey).indexOf("serverview") >= 0) return true;
+    return false;
   }
 
   function prettyLabel(key, tabId) {
@@ -117,6 +138,21 @@
     systemsCfg()[key] = !!on;
   }
 
+  function stripSkippedToggles() {
+    document.querySelectorAll("[data-system-toggle]").forEach(function (el) {
+      var key = el.getAttribute("data-system-toggle") || "";
+      var tab = el.getAttribute("data-tab-for") || "";
+      if (shouldSkip(tab, key)) el.remove();
+    });
+    // Also strip if sitting inside #server-view
+    var sv = document.getElementById("server-view");
+    if (sv) {
+      sv.querySelectorAll("[data-system-toggle]").forEach(function (el) {
+        el.remove();
+      });
+    }
+  }
+
   function collectSections() {
     var found = [];
     var seen = {};
@@ -125,6 +161,7 @@
       if (!id || !el) return;
       var key = systemKeyFor(id);
       if (!key) return;
+      if (shouldSkip(id, key)) return;
       var mark = key + "::" + (el.id || id);
       if (seen[mark]) return;
       seen[mark] = true;
@@ -149,6 +186,7 @@
 
   function injectToggle(section, tabId, sysKey) {
     if (!section || !sysKey) return;
+    if (shouldSkip(tabId, sysKey)) return;
 
     var existing = section.querySelector('[data-system-toggle="' + sysKey + '"]');
     if (existing) {
@@ -211,6 +249,7 @@
   }
 
   async function saveSystem(key, on, section) {
+    if (shouldSkip(null, key)) return;
     if (!window.saveConfig) {
       setStatus(section, "Save not ready — refresh once.", false);
       return;
@@ -218,6 +257,8 @@
     try {
       var payload = { systems: Object.assign({}, systemsCfg()) };
       payload.systems[key] = !!on;
+      // Never persist serverview as off
+      delete payload.systems.serverview;
       await window.saveConfig(payload);
       window.currentConfig.systems = payload.systems;
       setStatus(
@@ -231,13 +272,14 @@
   }
 
   function scanAndInject() {
+    stripSkippedToggles();
     collectSections().forEach(function (item) {
       injectToggle(item.el, item.tabId, item.key);
     });
   }
 
   function wrapShowSection() {
-    if (typeof window.showSection !== "function" || window.showSection.__tabToggleV2) return;
+    if (typeof window.showSection !== "function" || window.showSection.__tabToggleV3) return;
     var orig = window.showSection;
     window.showSection = function (tab) {
       var r = orig.apply(this, arguments);
@@ -246,7 +288,7 @@
       setTimeout(scanAndInject, 500);
       return r;
     };
-    window.showSection.__tabToggleV2 = true;
+    window.showSection.__tabToggleV3 = true;
   }
 
   document.addEventListener(
@@ -262,7 +304,6 @@
     true
   );
 
-  // When tickets/other panels rewrite innerHTML, re-inject
   try {
     var obs = new MutationObserver(function () {
       clearTimeout(window.__tabToggleDebounce);
@@ -270,8 +311,8 @@
     });
     function watchContent() {
       var content = document.querySelector(".content") || document.body;
-      if (!content || content.__tabToggleObs) return;
-      content.__tabToggleObs = true;
+      if (!content || content.__tabToggleObsV3) return;
+      content.__tabToggleObsV3 = true;
       obs.observe(content, { childList: true, subtree: true });
     }
     watchContent();
@@ -285,5 +326,5 @@
     }, ms);
   });
 
-  console.log("[features-tab-toggles] v2 — all tabs");
+  console.log("[features-tab-toggles] v3 — no Server View toggle");
 })();
