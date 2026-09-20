@@ -14,7 +14,7 @@
     "      .split(\">\").join(\"&\" + \"gt;\");\n" +
     "  }";
 
-  var urls = ["/tickets-ui-a.js?v=10", "/tickets-ui-b.js?v=10", "/tickets-ui-c.js?v=10"];
+  var urls = ["/tickets-ui-a.js?v=11", "/tickets-ui-b.js?v=11", "/tickets-ui-c.js?v=11"];
 
   Promise.all(
     urls.map(function (u) {
@@ -38,7 +38,7 @@
         g.src = "/features-tickets-guard.js?v=2";
         document.body.appendChild(g);
       } catch (e) {}
-      console.log("[features-tickets] v10 panel loaded (esc patched)");
+      console.log("[features-tickets] v11 panel loaded (add type fixed)");
     })
     .catch(function (e) {
       console.error("[features-tickets]", e);
