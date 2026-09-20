@@ -1,23 +1,27 @@
 /**
- * Per-tab system toggles — inject an On/Off switch at the top of each feature tab.
- * Saves to config.systems[key] (same as the Systems page).
+ * Per-tab system toggles v2 — EVERY page tab/section gets an On/Off switch.
+ * Saves to config.systems[key]. Unknown tabs use their section id as the key.
  */
 (function () {
   "use strict";
-  if (window.__featuresTabTogglesV1) return;
-  window.__featuresTabTogglesV1 = true;
+  if (window.__featuresTabTogglesV2) return;
+  window.__featuresTabTogglesV2 = true;
 
-  /** tab id (section id / data-tab) → systems key */
-  var TAB_TO_SYSTEM = {
+  /** Optional aliases: multiple tabs share one system key */
+  var ALIAS = {
     aichat: "ai",
     ai: "ai",
     "ai-chat": "ai",
+    aistaff: "ai",
     automod: "automod",
+    moderation: "automod",
+    mod: "automod",
     tickets: "tickets",
     verification: "verification",
     verify: "verification",
     applications: "applications",
     application: "applications",
+    apply: "applications",
     fishing: "fishing",
     fish: "fishing",
     currency: "currency",
@@ -28,6 +32,7 @@
     loa: "loa",
     activitycheck: "activitycheck",
     activity: "activitycheck",
+    active: "activitycheck",
     help: "help",
     birthday: "birthday",
     bump: "bump",
@@ -36,31 +41,64 @@
     selfroles: "selfroles",
     selfrole: "selfroles",
     analytics: "analytics",
-    moderation: "automod",
-    mod: "automod"
+    suggestions: "suggestions",
+    suggest: "suggestions",
+    invites: "invites",
+    logs: "logs",
+    server: "serverview",
+    "server-view": "serverview",
+    serverview: "serverview",
+    overview: "overview",
+    home: "overview",
+    settings: "settings",
+    themes: "themes",
+    theme: "themes"
   };
 
   var LABELS = {
-    ai: "AI system",
-    automod: "Automod",
+    ai: "AI Chat / Staff",
+    automod: "Automod / Moderation",
     tickets: "Tickets",
     verification: "Verification",
     applications: "Applications",
     fishing: "Fishing",
-    currency: "Economy / Beans",
+    currency: "Economy / Beans / Shop / Leveling",
     loa: "LOA",
     activitycheck: "Activity Check",
     help: "Help",
     birthday: "Birthday",
     bump: "Bump",
     achievements: "Achievements",
-    qotd: "QOTD",
+    qotd: "Question of the Day",
     selfroles: "Self Roles",
-    analytics: "Analytics"
+    analytics: "Analytics",
+    suggestions: "Suggestions",
+    invites: "Invites",
+    logs: "Logs",
+    serverview: "Server View",
+    overview: "Overview",
+    settings: "Settings",
+    themes: "Themes"
   };
 
-  function $(id) {
-    return document.getElementById(id);
+  /** Tabs that are pure UI — still get a toggle, but default stays on */
+  function systemKeyFor(tabId) {
+    var id = String(tabId || "")
+      .toLowerCase()
+      .replace(/[^a-z0-9_-]/g, "");
+    if (!id) return null;
+    if (ALIAS[id]) return ALIAS[id];
+    return id;
+  }
+
+  function prettyLabel(key, tabId) {
+    if (LABELS[key]) return LABELS[key];
+    var raw = tabId || key;
+    return String(raw)
+      .replace(/[-_]/g, " ")
+      .replace(/\b\w/g, function (c) {
+        return c.toUpperCase();
+      });
   }
 
   function systemsCfg() {
@@ -79,12 +117,39 @@
     systemsCfg()[key] = !!on;
   }
 
-  function findSection(tabId) {
-    return $("" + tabId) || document.querySelector('section[id="' + tabId + '"]');
+  function collectSections() {
+    var found = [];
+    var seen = {};
+
+    function add(id, el) {
+      if (!id || !el) return;
+      var key = systemKeyFor(id);
+      if (!key) return;
+      var mark = key + "::" + (el.id || id);
+      if (seen[mark]) return;
+      seen[mark] = true;
+      found.push({ tabId: id, key: key, el: el });
+    }
+
+    document.querySelectorAll("section.page-section, .page-section, section[id]").forEach(function (sec) {
+      if (sec.id) add(sec.id, sec);
+    });
+
+    document.querySelectorAll("[data-tab]").forEach(function (btn) {
+      var tab = btn.getAttribute("data-tab");
+      if (!tab) return;
+      var sec =
+        document.getElementById(tab) ||
+        document.querySelector('section[id="' + tab + '"]');
+      if (sec) add(tab, sec);
+    });
+
+    return found;
   }
 
   function injectToggle(section, tabId, sysKey) {
     if (!section || !sysKey) return;
+
     var existing = section.querySelector('[data-system-toggle="' + sysKey + '"]');
     if (existing) {
       var inp = existing.querySelector('input[type="checkbox"]');
@@ -93,7 +158,9 @@
     }
 
     var card =
-      section.querySelector(".card, .form-card, .tickets-v3, [data-tickets-panel]") ||
+      section.querySelector(
+        ".card, .form-card, .tickets-v3, [data-tickets-panel], [data-tickets-host]"
+      ) ||
       section.firstElementChild ||
       section;
 
@@ -106,112 +173,80 @@
       "flex-wrap:wrap;margin:0 0 14px;padding:12px 14px;border-radius:12px;" +
       "border:1px solid rgba(128,128,128,.28);background:rgba(0,0,0,.12);";
 
-    var label = LABELS[sysKey] || sysKey;
+    var label = prettyLabel(sysKey, tabId);
     wrap.innerHTML =
-      "<div>" +
+      "<div style=\"min-width:140px;flex:1\">" +
       '<div style="font-weight:700;font-size:14px">System: ' +
       label +
       "</div>" +
-      '<p class="form-hint" style="margin:4px 0 0">Turn this whole feature on or off for the server.</p>' +
+      '<p class="form-hint" style="margin:4px 0 0">Off = this feature does nothing on the bot for this server.</p>' +
       "</div>" +
-      '<label class="toggle" style="margin:0;white-space:nowrap">' +
+      '<label class="toggle" style="margin:0;white-space:nowrap;flex-shrink:0">' +
       '<input type="checkbox" data-sys-key="' +
       sysKey +
       '"' +
       (isOn(sysKey) ? " checked" : "") +
-      "> <span>Enabled</span></label>";
+      "> <span>Enabled</span></label>" +
+      '<p class="form-hint" data-system-toggle-status style="width:100%;margin:0"></p>';
 
-    // Prefer after eyebrow/title
-    var eyebrow = card.querySelector(".eyebrow, h2");
-    if (eyebrow && eyebrow.parentNode === card) {
-      // insert after h2 if present
-      var h2 = card.querySelector("h2");
-      if (h2 && h2.nextSibling) card.insertBefore(wrap, h2.nextSibling);
-      else if (h2) h2.insertAdjacentElement("afterend", wrap);
-      else card.insertBefore(wrap, card.firstChild);
-    } else {
-      card.insertBefore(wrap, card.firstChild);
-    }
+    var h2 = card.querySelector("h2");
+    if (h2) h2.insertAdjacentElement("afterend", wrap);
+    else card.insertBefore(wrap, card.firstChild);
 
     var checkbox = wrap.querySelector('input[type="checkbox"]');
     if (checkbox) {
       checkbox.addEventListener("change", function () {
         setOn(sysKey, checkbox.checked);
-        saveSystem(sysKey, checkbox.checked);
+        saveSystem(sysKey, checkbox.checked, section);
       });
     }
   }
 
-  function setStatusNear(section, msg, ok) {
+  function setStatus(section, msg, ok) {
     if (!section) return;
     var el = section.querySelector("[data-system-toggle-status]");
-    if (!el) {
-      el = document.createElement("p");
-      el.className = "form-hint";
-      el.setAttribute("data-system-toggle-status", "1");
-      var box = section.querySelector("[data-system-toggle]");
-      if (box) box.appendChild(el);
-      else section.appendChild(el);
-    }
+    if (!el) return;
     el.textContent = msg || "";
     el.style.color = ok === false ? "#f87171" : ok ? "#4ade80" : "";
   }
 
-  async function saveSystem(key, on) {
+  async function saveSystem(key, on, section) {
     if (!window.saveConfig) {
-      setStatusNear(findSectionForKey(key), "Save not ready — refresh once.", false);
+      setStatus(section, "Save not ready — refresh once.", false);
       return;
     }
     try {
-      var payload = { systems: Object.assign({}, systemsCfg(), {}) };
+      var payload = { systems: Object.assign({}, systemsCfg()) };
       payload.systems[key] = !!on;
       await window.saveConfig(payload);
       window.currentConfig.systems = payload.systems;
-      setStatusNear(
-        findSectionForKey(key),
-        on ? "✅ " + (LABELS[key] || key) + " enabled" : "✅ " + (LABELS[key] || key) + " disabled",
+      setStatus(
+        section,
+        on ? "✅ Enabled & saved" : "✅ Disabled & saved",
         true
       );
     } catch (e) {
-      setStatusNear(
-        findSectionForKey(key),
-        "❌ " + (e && e.message ? e.message : "Save failed"),
-        false
-      );
+      setStatus(section, "❌ " + (e && e.message ? e.message : "Save failed"), false);
     }
   }
 
-  function findSectionForKey(key) {
-    var el = document.querySelector('[data-system-toggle="' + key + '"]');
-    return el ? el.closest(".page-section, section") : null;
-  }
-
   function scanAndInject() {
-    // By known section ids
-    Object.keys(TAB_TO_SYSTEM).forEach(function (tabId) {
-      var section = findSection(tabId);
-      if (section) injectToggle(section, tabId, TAB_TO_SYSTEM[tabId]);
-    });
-
-    // By data-tab links that have matching sections
-    document.querySelectorAll("[data-tab]").forEach(function (btn) {
-      var tab = btn.getAttribute("data-tab");
-      if (!tab || !TAB_TO_SYSTEM[tab]) return;
-      var section = findSection(tab);
-      if (section) injectToggle(section, tab, TAB_TO_SYSTEM[tab]);
+    collectSections().forEach(function (item) {
+      injectToggle(item.el, item.tabId, item.key);
     });
   }
 
-  function onShowSection() {
-    if (typeof window.showSection !== "function" || window.showSection.__tabToggleWrap) return;
+  function wrapShowSection() {
+    if (typeof window.showSection !== "function" || window.showSection.__tabToggleV2) return;
     var orig = window.showSection;
     window.showSection = function (tab) {
       var r = orig.apply(this, arguments);
-      setTimeout(scanAndInject, 30);
-      setTimeout(scanAndInject, 200);
+      setTimeout(scanAndInject, 20);
+      setTimeout(scanAndInject, 150);
+      setTimeout(scanAndInject, 500);
       return r;
     };
-    window.showSection.__tabToggleWrap = true;
+    window.showSection.__tabToggleV2 = true;
   }
 
   document.addEventListener(
@@ -219,19 +254,36 @@
     function (e) {
       var t = e.target && e.target.closest && e.target.closest("[data-tab]");
       if (t) {
-        setTimeout(scanAndInject, 40);
-        setTimeout(scanAndInject, 250);
+        setTimeout(scanAndInject, 30);
+        setTimeout(scanAndInject, 200);
+        setTimeout(scanAndInject, 600);
       }
     },
     true
   );
 
-  [0, 400, 1200, 3000, 7000].forEach(function (ms) {
+  // When tickets/other panels rewrite innerHTML, re-inject
+  try {
+    var obs = new MutationObserver(function () {
+      clearTimeout(window.__tabToggleDebounce);
+      window.__tabToggleDebounce = setTimeout(scanAndInject, 80);
+    });
+    function watchContent() {
+      var content = document.querySelector(".content") || document.body;
+      if (!content || content.__tabToggleObs) return;
+      content.__tabToggleObs = true;
+      obs.observe(content, { childList: true, subtree: true });
+    }
+    watchContent();
+    setTimeout(watchContent, 2000);
+  } catch (_) {}
+
+  [0, 300, 1000, 2500, 6000, 12000].forEach(function (ms) {
     setTimeout(function () {
-      onShowSection();
+      wrapShowSection();
       scanAndInject();
     }, ms);
   });
 
-  console.log("[features-tab-toggles] v1 ready");
+  console.log("[features-tab-toggles] v2 — all tabs");
 })();
