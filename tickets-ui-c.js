@@ -72,98 +72,63 @@
         escalateMessage: $("ticket-ai-escalate-msg")
           ? $("ticket-ai-escalate-msg").value || "Got it — connecting you with a human representative now."
           : "Got it — connecting you with a human representative now.",
-        autoEscalateKeywords: kws
-          .split(",")
-          .map(function (s) { return s.trim(); })
-          .filter(Boolean)
-          .slice(0, 40)
+        autoEscalateKeywords: kws.split(",").map(function (s) { return s.trim(); }).filter(Boolean).slice(0, 40)
       }
     };
   }
 
   async function saveTickets(ev) {
-    if (ev) {
-      ev.preventDefault();
-      ev.stopImmediatePropagation();
-    }
-    if (!window.saveConfig) {
-      setStatus("Dashboard save is not ready yet. Refresh once.", false);
-      return;
-    }
+    if (ev) { ev.preventDefault(); ev.stopImmediatePropagation(); }
+    if (!window.saveConfig) { setStatus("Dashboard save is not ready yet. Refresh once.", false); return; }
     try {
       setStatus("Saving…", true);
       window.__ticketsKeepDraft = true;
       var payload = collectPayload();
       var d = await window.saveConfig({ tickets: payload });
-      var msg =
-        d && d.savedToBot === false
-          ? "Saved on website. Bot offline — redeploy Railway, then /ticket-panel."
-          : "✅ Tickets saved. Run /ticket-panel in Discord to refresh the menu.";
+      var msg = d && d.savedToBot === false ? "Saved on website. Bot offline — redeploy Railway, then /ticket-panel." : "✅ Tickets saved. Run /ticket-panel in Discord to refresh the menu.";
       setStatus(msg, true);
-      if (window.currentConfig) {
-        window.currentConfig.tickets = Object.assign({}, window.currentConfig.tickets || {}, payload);
-      }
+      if (window.currentConfig) window.currentConfig.tickets = Object.assign({}, window.currentConfig.tickets || {}, payload);
       if (window.loadGuildData) await window.loadGuildData();
       applyFromConfig();
     } catch (err) {
       setStatus("❌ " + (err && err.message ? err.message : "Save failed"), false);
     }
   }
+  window.__ticketSaveNow = saveTickets;
 
   function bindGlobal() {
     var addStaff = $("add-ticket-staff");
     if (addStaff && !addStaff.__tv6) {
       addStaff.__tv6 = true;
-      addStaff.addEventListener(
-        "click",
-        function (e) {
-          e.preventDefault();
-          e.stopImmediatePropagation();
-          var sel = $("ticket-staff-role");
-          var rid = sel && sel.value;
-          if (!rid) return;
-          if (!window.currentConfig) window.currentConfig = {};
-          if (!window.currentConfig.tickets) window.currentConfig.tickets = {};
-          var cur = window.currentConfig.tickets.staffRoleIds || [];
-          if (cur.map(String).indexOf(String(rid)) < 0) cur = cur.concat([rid]);
-          window.currentConfig.tickets.staffRoleIds = cur;
-          renderStaff(cur);
-        },
-        true
-      );
+      addStaff.addEventListener("click", function (e) {
+        e.preventDefault(); e.stopImmediatePropagation();
+        var sel = $("ticket-staff-role");
+        var rid = sel && sel.value;
+        if (!rid) return;
+        if (!window.currentConfig) window.currentConfig = {};
+        if (!window.currentConfig.tickets) window.currentConfig.tickets = {};
+        var cur = window.currentConfig.tickets.staffRoleIds || [];
+        if (cur.map(String).indexOf(String(rid)) < 0) cur = cur.concat([rid]);
+        window.currentConfig.tickets.staffRoleIds = cur;
+        renderStaff(cur);
+      }, true);
     }
-
     var addCat = $("ticket-add-cat");
     if (addCat && !addCat.__tv6) {
       addCat.__tv6 = true;
       addCat.addEventListener("click", function () {
         harvestCatsFromDom();
         if (!draftCats) draftCats = [];
-        if (draftCats.length >= 25) {
-          setStatus("Max 25 ticket types.", false);
-          return;
-        }
-        draftCats.push(
-          normalizeCat(
-            {
-              id: "type" + (draftCats.length + 1),
-              label: "New type",
-              emoji: "🎫",
-              aiEnabled: true,
-              questions: [],
-              escalateRoleIds: [],
-              escalateUserIds: []
-            },
-            draftCats.length
-          )
-        );
+        if (draftCats.length >= 25) { setStatus("Max 25 ticket types.", false); return; }
+        draftCats.push(normalizeCat({ id: "type" + (draftCats.length + 1), label: "New type", emoji: "🎫", aiEnabled: true, questions: [], escalateRoleIds: [], escalateUserIds: [] }, draftCats.length));
         renderCats();
       });
     }
-
     var saveBtn = $("save-tickets");
     if (saveBtn) {
       var fresh = saveBtn.cloneNode(true);
+      fresh.__p26 = 1;
+      fresh.__tv6owned = true;
       saveBtn.parentNode.replaceChild(fresh, saveBtn);
       fresh.addEventListener("click", saveTickets, true);
     }
@@ -173,10 +138,7 @@
     var section = $("tickets");
     if (!section) return false;
     var already = section.querySelector('[data-tickets-panel="v6"]');
-    if (already && !force) {
-      fillGlobalSelects();
-      return true;
-    }
+    if (already && !force) { fillGlobalSelects(); return true; }
     section.innerHTML = panelHtml();
     mounted = true;
     applyFromConfig();
@@ -186,10 +148,7 @@
 
   function onTicketsTab() {
     mount(false);
-    setTimeout(function () {
-      fillGlobalSelects();
-      renderCats();
-    }, 50);
+    setTimeout(function () { fillGlobalSelects(); renderCats(); }, 50);
   }
 
   function wrapShowSection() {
@@ -207,7 +166,7 @@
     wrapShowSection();
     var section = $("tickets");
     if (section) mount(!!force);
-    var active = document.querySelector('#tickets.page-section.active, #tickets.active');
+    var active = document.querySelector("#tickets.page-section.active, #tickets.active");
     if (active) onTicketsTab();
   }
 
@@ -215,25 +174,11 @@
   window.__featuresTicketsV5Boot = boot;
   window.__featuresTicketsV6Boot = boot;
 
-  document.addEventListener(
-    "click",
-    function (ev) {
-      var t = ev.target && ev.target.closest && ev.target.closest('[data-tab="tickets"]');
-      if (t) setTimeout(onTicketsTab, 40);
-    },
-    true
-  );
-  document.addEventListener("tickets:upgrade", function () {
-    setTimeout(function () {
-      boot(true);
-    }, 40);
-  });
-
-  [0, 400, 1200, 3000, 7000].forEach(function (ms) {
-    setTimeout(function () {
-      boot(false);
-    }, ms);
-  });
-
+  document.addEventListener("click", function (ev) {
+    var t = ev.target && ev.target.closest && ev.target.closest('[data-tab="tickets"]');
+    if (t) setTimeout(onTicketsTab, 40);
+  }, true);
+  document.addEventListener("tickets:upgrade", function () { setTimeout(function () { boot(true); }, 40); });
+  [0, 400, 1200, 3000, 7000].forEach(function (ms) { setTimeout(function () { boot(false); }, ms); });
   console.log("[features-tickets] v6 panel ready");
 })();
