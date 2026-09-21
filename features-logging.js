@@ -1,14 +1,14 @@
 /**
- * Central logging UI — owns the entire #logs section.
- * Replaces old dashboard-log / audit-log panels.
+ * Central logging UI — owns #logs completely.
+ * v3: re-inject if anything restores the old Dashboard logs form.
  */
 (function () {
   "use strict";
-  if (window.__featuresLoggingV2) return;
+  if (window.__featuresLoggingV3) return;
+  window.__featuresLoggingV3 = true;
   window.__featuresLoggingV2 = true;
-  // Stop older audit-log panel from fighting this tab
   window.__featuresAuditLogsV3 = true;
-  window.__featuresAuditLogsV1 = true;
+  window.__featuresAuditLogsV4 = true;
 
   var CATS = [
     "moderation",
@@ -50,12 +50,10 @@
       "";
     if (!g) {
       try {
-        g = localStorage.getItem("selectedGuildId") || localStorage.getItem("guildId") || "";
-      } catch (_) {}
-    }
-    if (!g && window.location && window.location.search) {
-      try {
-        g = new URLSearchParams(window.location.search).get("guildId") || "";
+        g =
+          localStorage.getItem("selectedGuildId") ||
+          localStorage.getItem("guildId") ||
+          "";
       } catch (_) {}
     }
     return String(g || "");
@@ -72,14 +70,12 @@
         t === 5 ||
         t == null ||
         t === "GUILD_TEXT" ||
-        t === "GUILD_ANNOUNCEMENT" ||
         String(t) === "0" ||
         String(t) === "5"
       );
     });
     if (!list.length) list = channels();
     var cur = el.value || (selected ? String(selected) : "") || "";
-    // Rebuild when empty or channel list grew a lot
     var need =
       el.options.length <= 1 ||
       (list.length > 0 && el.options.length - 1 < Math.min(list.length, 3));
@@ -87,8 +83,7 @@
       if (!el.value && cur) el.value = cur;
       return;
     }
-    var html =
-      '<option value="">' + (placeholder || "— None —") + "</option>";
+    var html = '<option value="">' + (placeholder || "— None —") + "</option>";
     list.forEach(function (x) {
       var name = String(x.name || x.id)
         .replace(/&/g, "&")
@@ -131,16 +126,15 @@
         '"></select></div>'
       );
     }).join("");
-
     var filterOpts = CATS.map(function (c) {
       return '<option value="' + c + '">' + c + "</option>";
     }).join("");
 
     return (
-      '<div class="card form-card wide" id="central-logging-root">' +
+      '<div class="card form-card wide" id="central-logging-root" data-central-logs="1">' +
       '<span class="eyebrow">LOGS</span>' +
       "<h2>Central logging</h2>" +
-      '<p class="form-hint">Postgres stores every event. Discord posts are optional and routed by category or the default channel below.</p>' +
+      '<p class="form-hint">Postgres is the source of truth. Discord output is optional and routed below.</p>' +
       '<label class="toggle" style="display:flex;gap:8px;align-items:center;margin:8px 0">' +
       '<input type="checkbox" id="log-enabled" checked> <span><strong>Enable logging</strong></span></label>' +
       '<label class="toggle" style="display:flex;gap:8px;align-items:center;margin:8px 0">' +
@@ -161,7 +155,7 @@
       "</div>" +
       '<p class="form-hint" id="log-config-status"></p>' +
       "</div>" +
-      '<div class="card form-card wide" style="margin-top:16px" id="central-logging-browser">' +
+      '<div class="card form-card wide" style="margin-top:16px" id="central-logging-browser" data-central-logs="1">' +
       '<span class="eyebrow">BROWSER</span>' +
       "<h2>Recent events</h2>" +
       '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px">' +
@@ -178,22 +172,34 @@
     );
   }
 
+  function needsReplace(section) {
+    if (!section) return false;
+    if (!$("central-logging-root")) return true;
+    // Old form came back
+    if ($("dashboard-log-channel") || $("save-logs") || $("audit-log-panel"))
+      return true;
+    var t = (section.textContent || "").toLowerCase();
+    if (t.indexOf("dashboard logs") !== -1 && t.indexOf("central logging") === -1)
+      return true;
+    return false;
+  }
+
   function ensurePanel() {
     var section = $("logs");
     if (!section) return false;
 
-    // Remove competing panels
     ["audit-log-panel", "audit-logs"].forEach(function (id) {
       var el = $(id);
       if (el) el.remove();
     });
 
-    if ($("central-logging-root")) return true;
-
-    // Replace entire section content so old single-channel form is gone
-    section.innerHTML = sectionHtml();
-    section.classList.add("page-section");
-    return true;
+    if (needsReplace(section)) {
+      section.innerHTML = sectionHtml();
+      section.classList.add("page-section");
+      // re-bind after wipe
+      window.__logUiBound = false;
+    }
+    return !!$("central-logging-root");
   }
 
   function fillConfigForm() {
@@ -232,9 +238,10 @@
       var ch = el && el.value ? el.value : null;
       if (ch) categories[cat] = { channelId: ch, database: true, discord: true };
     });
-    var def = $("log-default-channel") && $("log-default-channel").value
-      ? $("log-default-channel").value
-      : null;
+    var def =
+      $("log-default-channel") && $("log-default-channel").value
+        ? $("log-default-channel").value
+        : null;
     return {
       enabled: $("log-enabled") ? $("log-enabled").checked : true,
       defaultDatabase: $("log-default-db") ? $("log-default-db").checked : true,
@@ -271,7 +278,7 @@
 
   async function saveConfig() {
     if (!window.saveConfig) {
-      setCfgStatus("Save not ready — refresh the page once.", false);
+      setCfgStatus("Save not ready — refresh once.", false);
       return;
     }
     try {
@@ -294,12 +301,11 @@
       window.currentConfig.dashboardLogChannelId = logging.defaultChannelId;
       var warn =
         result && (result.warning || (result.data && result.data.warning));
-      if (warn) {
-        setCfgStatus("⚠ Saved, but: " + warn, false);
-      } else {
-        setCfgStatus("✅ Log settings saved.", true);
-      }
-      setTimeout(loadList, 500);
+      setCfgStatus(
+        warn ? "⚠ Saved, but: " + warn : "✅ Log settings saved.",
+        !warn
+      );
+      setTimeout(loadList, 400);
     } catch (e) {
       setCfgStatus("❌ " + (e && e.message ? e.message : "Save failed"), false);
     }
@@ -410,7 +416,7 @@
         }
       } else if (log.message_id) {
         contentHtml =
-          '<p class="form-hint">Message content expired or was not stored (retention policy).</p>';
+          '<p class="form-hint">Message content expired or was not stored.</p>';
       }
       box.innerHTML =
         "<h3>" +
@@ -441,22 +447,26 @@
   }
 
   function bind() {
+    if (window.__logUiBound && $("log-save-config") && $("log-save-config").__bound)
+      return;
+    window.__logUiBound = true;
+
     var save = $("log-save-config");
-    if (save && !save.__bound) {
+    if (save) {
       save.__bound = true;
-      save.addEventListener("click", function (e) {
+      save.onclick = function (e) {
         e.preventDefault();
         e.stopPropagation();
         saveConfig();
-      });
+      };
     }
     var ref = $("log-refresh");
-    if (ref && !ref.__bound) {
+    if (ref) {
       ref.__bound = true;
-      ref.addEventListener("click", function (e) {
+      ref.onclick = function (e) {
         e.preventDefault();
         loadList();
-      });
+      };
     }
     var list = $("log-list");
     if (list && !list.__bound) {
@@ -484,28 +494,40 @@
   }
 
   function mount() {
-    if (!$("logs")) return;
-    ensurePanel();
+    if (!$("logs")) return false;
+    var ok = ensurePanel();
+    if (!ok) return false;
     fillConfigForm();
     bind();
+    return true;
   }
 
   function onLogsOpen() {
     mount();
-    setTimeout(fillConfigForm, 200);
-    setTimeout(loadList, 300);
+    setTimeout(function () {
+      mount();
+      fillConfigForm();
+      loadList();
+    }, 150);
+    setTimeout(mount, 500);
   }
 
+  // Any nav click that mentions logs
   document.addEventListener(
     "click",
     function (e) {
-      var t =
-        e.target &&
-        e.target.closest &&
-        e.target.closest('[data-tab="logs"], [data-section-link="logs"]');
-      if (t) {
-        setTimeout(onLogsOpen, 40);
-        setTimeout(onLogsOpen, 400);
+      var t = e.target && e.target.closest && e.target.closest("a, button, [data-tab], [data-section-link], .nav-item, .drawer-link");
+      if (!t) return;
+      var tab =
+        t.getAttribute("data-tab") ||
+        t.getAttribute("data-section-link") ||
+        t.getAttribute("href") ||
+        t.textContent ||
+        "";
+      if (/logs/i.test(String(tab))) {
+        setTimeout(onLogsOpen, 30);
+        setTimeout(onLogsOpen, 250);
+        setTimeout(onLogsOpen, 800);
       }
     },
     true
@@ -513,31 +535,51 @@
 
   function wrapShowSection() {
     if (typeof window.showSection !== "function") return;
-    if (window.showSection.__loggingV2) return;
+    if (window.showSection.__loggingV3) return;
     var orig = window.showSection;
     window.showSection = function (tab) {
       var r = orig.apply(this, arguments);
-      if (String(tab) === "logs") onLogsOpen();
+      if (String(tab).toLowerCase() === "logs") onLogsOpen();
       return r;
     };
-    window.showSection.__loggingV2 = true;
+    window.showSection.__loggingV3 = true;
+  }
+
+  // If old form is restored, put ours back
+  var obsTimer = null;
+  function watch() {
+    var section = $("logs");
+    if (!section || section.__logObs) return;
+    section.__logObs = true;
+    var mo = new MutationObserver(function () {
+      if (obsTimer) return;
+      obsTimer = setTimeout(function () {
+        obsTimer = null;
+        if (needsReplace($("logs"))) mount();
+      }, 80);
+    });
+    mo.observe(section, { childList: true, subtree: true });
   }
 
   var lastCh = 0;
   setInterval(function () {
+    wrapShowSection();
+    watch();
+    if (needsReplace($("logs"))) mount();
     var n = channels().length;
     if (n && n !== lastCh) {
       lastCh = n;
-      if ($("log-default-channel")) fillConfigForm();
+      fillConfigForm();
     }
-  }, 2000);
+  }, 1500);
 
-  [0, 400, 1200, 3000, 6000].forEach(function (ms) {
+  [0, 300, 800, 1500, 3000, 6000, 10000].forEach(function (ms) {
     setTimeout(function () {
       wrapShowSection();
+      watch();
       mount();
     }, ms);
   });
 
-  console.log("[features-logging] v2 — full Logs tab");
+  console.log("[features-logging] v3 — forced Logs tab");
 })();
