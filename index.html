@@ -10,7 +10,7 @@
   position:fixed!important;top:max(12px,env(safe-area-inset-top))!important;
   left:max(12px,env(safe-area-inset-left))!important;z-index:2147483000!important;
   width:48px!important;height:48px!important;border-radius:14px!important;
-  border:1px solid rgba(255,77,240,.5)!important;
+  border:1px solid rgba(88,101,242,.5)!important;
   background:rgba(18,8,28,.96)!important;
   display:flex!important;flex-direction:column!important;align-items:center!important;
   justify-content:center!important;gap:5px!important;padding:0!important;
@@ -71,7 +71,6 @@ body.nav-drawer-open #nav-drawer-backdrop{pointer-events:auto!important;}
       '<a class="button secondary" id="invite-bot-relogin" href="/api/login" style="display:none;text-decoration:none;align-items:center">Log in with Discord</a>' +
       '</div></div>';
 
-    // Pre-seed Logs section so old Dashboard logs form never flashes as the only UI
     var LOGS_SECTION =
       '<section id="logs" class="page-section">' +
       '<div class="card form-card wide" id="central-logging-root" data-central-logs="1">' +
@@ -144,6 +143,7 @@ body.nav-drawer-open #nav-drawer-backdrop{pointer-events:auto!important;}
     await loadScript("/features-ui-patch.js?v=13");
     await loadScript("/features-config-patch.js?v=31");
     await loadScript("/features-automod-staff.js?v=4");
+    await loadScript("/features-security-upgrade.js?v=1");
     await loadScript("/features-sudo-operator.js?v=1");
     await loadScript("/features-ai-chat.js?v=1");
     await loadScript("/features-ai-ignore-roles.js?v=1");
