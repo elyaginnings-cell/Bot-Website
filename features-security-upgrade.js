@@ -1,17 +1,10 @@
 /**
- * Dashboard security upgrade UI
- * - High Staff / Security alert role
- * - Malicious confidence threshold & timeout
- * - Message cleanup window
- * - Newly-verified monitoring duration
- * - AI security classifier toggles
- * - No auto-ban policy note
- *
- * Extends existing Automod / Verification panels without replacing them.
+ * Dashboard security upgrade UI (hardened save)
  */
 (function () {
   "use strict";
-  if (window.__featuresSecurityUpgrade) return;
+  if (window.__featuresSecurityUpgradeV2) return;
+  window.__featuresSecurityUpgradeV2 = true;
   window.__featuresSecurityUpgrade = true;
 
   function $(id) {
@@ -65,6 +58,65 @@
     if (cur) sel.value = cur;
   }
 
+  function getSelectedGuildId() {
+    try {
+      if (window.selectedServer && window.selectedServer.id) return String(window.selectedServer.id);
+    } catch (_) {}
+    try {
+      if (typeof selectedServer !== "undefined" && selectedServer && selectedServer.id)
+        return String(selectedServer.id);
+    } catch (_) {}
+    try {
+      var raw = localStorage.getItem("selectedServer");
+      if (raw) {
+        var p = JSON.parse(raw);
+        if (p && p.id) return String(p.id);
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  /** Resolve saveConfig from window or fall back to direct API POST */
+  async function saveConfigSafe(body) {
+    var fn = null;
+    try {
+      if (typeof window.saveConfig === "function") fn = window.saveConfig;
+    } catch (_) {}
+    if (!fn) {
+      try {
+        if (typeof saveConfig === "function") {
+          fn = saveConfig;
+          window.saveConfig = saveConfig;
+        }
+      } catch (_) {}
+    }
+    if (fn) return fn(body);
+
+    var guildId = getSelectedGuildId();
+    if (!guildId) throw new Error("Select a server first (top of the dashboard).");
+
+    var response = await fetch("/api/config?guildId=" + encodeURIComponent(guildId), {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    var data = await response.json().catch(function () {
+      return {};
+    });
+    if (!response.ok) {
+      var detail = data.detail ? " — " + data.detail : "";
+      throw new Error((data.error || "Save failed (HTTP " + response.status + ")") + detail);
+    }
+    if (data.config) {
+      try {
+        window.currentConfig = data.config;
+        if (typeof currentConfig !== "undefined") currentConfig = data.config;
+      } catch (_) {}
+    }
+    return data;
+  }
+
   var SECURITY_HTML =
     '<div id="automod-security-block" class="card form-card wide" style="margin-top:1.25rem;border:1px solid rgba(239,68,68,0.25)">' +
     '<span class="eyebrow">SECURITY</span>' +
@@ -105,31 +157,18 @@
 
   function injectVerifyMonitor() {
     if ($("verify-monitor-mins")) return true;
-    var verifySec = $("verification") || $("verify");
-    if (!verifySec) {
-      // Try find verify-channel near verification form
-      var vch = $("verify-channel");
-      if (!vch) return false;
-      var parent = vch.closest(".card") || vch.closest(".form-card") || vch.parentElement;
-      if (!parent) return false;
-      var div = document.createElement("div");
-      div.className = "input-group";
-      div.innerHTML =
-        '<label>Newly-verified monitor (minutes)</label>' +
-        '<input type="number" id="verify-monitor-mins" min="0" max="10080" value="30">' +
-        '<p class="form-hint">Higher Automod scrutiny for this many minutes after verify. Invisible to members.</p>';
-      parent.appendChild(div);
-      return true;
-    }
-    var card = verifySec.querySelector(".card") || verifySec;
+    var vch = $("verify-channel");
+    if (!vch) return false;
+    var parent = vch.closest(".card") || vch.closest(".form-card") || vch.parentElement;
+    if (!parent) return false;
     var div = document.createElement("div");
     div.className = "input-group";
     div.style.marginTop = "0.75rem";
     div.innerHTML =
       '<label>Newly-verified monitor (minutes)</label>' +
       '<input type="number" id="verify-monitor-mins" min="0" max="10080" value="30">' +
-      '<p class="form-hint">Higher Automod scrutiny after verification. Does not change the member experience.</p>';
-    card.appendChild(div);
+      '<p class="form-hint">Higher Automod scrutiny for this many minutes after verify. Invisible to members.</p>';
+    parent.appendChild(div);
     return true;
   }
 
@@ -143,6 +182,9 @@
     injectVerifyMonitor();
     fillSelects();
     var c = window.currentConfig || {};
+    try {
+      if (!c.automod && typeof currentConfig !== "undefined" && currentConfig) c = currentConfig;
+    } catch (_) {}
     var am = c.automod || {};
     var v = c.verification || {};
 
@@ -177,26 +219,41 @@
     el.style.color = ok === false ? "#f87171" : ok ? "#4ade80" : "";
   }
 
+  function readTimeoutDuration() {
+    var el = $("sec-timeout-duration");
+    if (!el) return "1h";
+    var v = el.value;
+    if (v == null) return "1h";
+    v = String(v).trim();
+    return v || "1h";
+  }
+
   async function saveSecurity() {
     try {
       setStatus("Saving…", true);
+      if (!getSelectedGuildId()) {
+        throw new Error("Select a server first (choose a guild at the top of the dashboard).");
+      }
+
       var threshold = Number($("sec-malicious-threshold") && $("sec-malicious-threshold").value);
       if (Number.isNaN(threshold)) threshold = 0.75;
       threshold = Math.min(1, Math.max(0.5, threshold));
       var cleanupMins = Number($("sec-cleanup-minutes") && $("sec-cleanup-minutes").value);
       if (Number.isNaN(cleanupMins) || cleanupMins < 1) cleanupMins = 15;
-      var monMins = Number(
+      var monRaw =
         ($("sec-newly-verified-mins") && $("sec-newly-verified-mins").value) ||
-          ($("verify-monitor-mins") && $("verify-monitor-mins").value)
-      );
+        ($("verify-monitor-mins") && $("verify-monitor-mins").value);
+      var monMins = Number(monRaw);
       if (Number.isNaN(monMins) || monMins < 0) monMins = 30;
 
       var highStaff =
         $("sec-high-staff-role") && $("sec-high-staff-role").value
-          ? $("sec-high-staff-role").value
+          ? String($("sec-high-staff-role").value)
           : null;
       var secLog =
-        $("sec-security-log") && $("sec-security-log").value ? $("sec-security-log").value : null;
+        $("sec-security-log") && $("sec-security-log").value
+          ? String($("sec-security-log").value)
+          : null;
 
       var payload = {
         automod: {
@@ -206,8 +263,7 @@
           securityAlertRoleId: highStaff,
           securityLogChannelId: secLog,
           maliciousConfidenceThreshold: threshold,
-          maliciousTimeoutDuration:
-            ($("sec-timeout-duration") && $("sec-timeout-duration").value.trim()) || "1h",
+          maliciousTimeoutDuration: readTimeoutDuration(),
           cleanupMessageWindowMs: cleanupMins * 60 * 1000,
           newlyVerifiedMonitorMinutes: monMins,
         },
@@ -216,17 +272,25 @@
         },
       };
 
-      var d = await window.saveConfig(payload);
-      setStatus(
-        d && d.savedToBot === false
-          ? "Saved on website. Bot offline — redeploy Railway to sync."
-          : "✅ Security settings saved.",
-        true
-      );
-      if (window.loadGuildData) await window.loadGuildData();
-      else applyFromConfig();
+      var d = await saveConfigSafe(payload);
+      var msg = "✅ Security settings saved.";
+      if (d && d.savedToBot === false) {
+        msg =
+          "✅ Saved on website. Bot did not sync — redeploy Railway or check DASHBOARD_API_SECRET.";
+      }
+      if (d && d.warning) msg = "⚠️ " + d.warning;
+      setStatus(msg, !(d && d.savedToBot === false && !d.warning));
+      if (d && d.savedToBot === false) setStatus(msg, true);
+
+      if (typeof window.loadGuildData === "function") {
+        try {
+          await window.loadGuildData();
+        } catch (_) {}
+      }
+      applyFromConfig();
     } catch (e) {
-      setStatus("❌ " + (e.message || "Failed"), false);
+      console.error("[security-ui] save:", e);
+      setStatus("❌ " + (e && e.message ? e.message : "Failed"), false);
     }
   }
 
@@ -234,7 +298,10 @@
     var btn = $("save-security");
     if (btn && !btn.__secBound) {
       btn.__secBound = 1;
-      btn.addEventListener("click", saveSecurity);
+      btn.addEventListener("click", function (ev) {
+        if (ev && ev.preventDefault) ev.preventDefault();
+        saveSecurity();
+      });
     }
   }
 
@@ -249,7 +316,6 @@
     }
   }
 
-  // Re-apply when guild config loads
   var origLoad = window.loadGuildData;
   if (typeof origLoad === "function" && !window.__secLoadWrapped) {
     window.__secLoadWrapped = true;
@@ -265,23 +331,24 @@
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", function () {
-      setTimeout(boot, 800);
-      setTimeout(boot, 2500);
+      setTimeout(boot, 500);
+      setTimeout(boot, 1500);
+      setTimeout(boot, 4000);
     });
   } else {
-    setTimeout(boot, 800);
-    setTimeout(boot, 2500);
+    setTimeout(boot, 500);
+    setTimeout(boot, 1500);
+    setTimeout(boot, 4000);
   }
 
-  // When user opens Automod tab
   document.addEventListener(
     "click",
     function (e) {
       var t = e.target && e.target.closest && e.target.closest('[data-tab="automod"]');
-      if (t) setTimeout(boot, 100);
+      if (t) setTimeout(boot, 150);
     },
     true
   );
 
-  console.log("[dashboard] security upgrade UI loaded");
+  console.log("[dashboard] security upgrade UI v2 loaded");
 })();
