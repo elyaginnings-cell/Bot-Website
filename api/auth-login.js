@@ -5,7 +5,7 @@ import {
   validateCredentials,
   verifyPassword,
 } from "../lib/accounts.js";
-import { setSessionCookies } from "../lib/session.js";
+import { clearSessionCookies, setSessionCookies } from "../lib/session.js";
 import {
   isStaffEmail,
   isStaffDiscordId,
@@ -34,7 +34,65 @@ function isSignupRequest(req) {
   return action === "signup" || url.includes("/signup") || url.includes("action=signup");
 }
 
+function isLogoutRequest(req) {
+  const url = String(req.url || "");
+  const action = String(req.query?.action || "");
+  return action === "logout" || url.includes("/logout") || url.includes("action=logout");
+}
+
+function isDiscordOAuthRequest(req) {
+  const url = String(req.url || "");
+  const action = String(req.query?.action || "");
+  // GET /api/login or explicit oauth action — Discord authorize redirect
+  return (
+    req.method === "GET" &&
+    (action === "login" ||
+      action === "oauth" ||
+      action === "link" ||
+      url.includes("/api/login") ||
+      (!action && !isLogoutRequest(req) && !isSignupRequest(req)))
+  );
+}
+
+function handleDiscordOAuthRedirect(req, res) {
+  const clientId = process.env.DISCORD_CLIENT_ID;
+  const redirectUri = process.env.DISCORD_REDIRECT_URI;
+
+  if (!clientId || !redirectUri) {
+    return res.status(500).send("Discord OAuth is not configured.");
+  }
+
+  const state = req.query?.state === "link" || req.query?.action === "link" ? "link" : "login";
+
+  const params = new URLSearchParams({
+    client_id: clientId,
+    response_type: "code",
+    redirect_uri: redirectUri,
+    scope: "identify email guilds",
+    state,
+  });
+
+  return res.redirect(
+    302,
+    `https://discord.com/oauth2/authorize?${params.toString()}`
+  );
+}
+
 export default async function handler(req, res) {
+  // Logout (was /api/login?action=logout via rewrite)
+  if (isLogoutRequest(req)) {
+    clearSessionCookies(res);
+    return res.redirect(302, "/");
+  }
+
+  // Discord OAuth start (was /api/login.js)
+  if (req.method === "GET" || isDiscordOAuthRequest(req)) {
+    // Only treat pure GET (no POST body path) as OAuth; POST stays password login
+    if (req.method === "GET") {
+      return handleDiscordOAuthRedirect(req, res);
+    }
+  }
+
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
