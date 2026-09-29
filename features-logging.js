@@ -23,7 +23,8 @@
     "bot",
     "invite",
     "qotd",
-    "verification"
+    "verification",
+    "security"
   ];
 
   function $(id) {
@@ -106,6 +107,7 @@
       defaultDatabase: c.defaultDatabase !== false,
       defaultDiscord: c.defaultDiscord !== false,
       defaultChannelId: c.defaultChannelId || legacy || "",
+      securityChannelId: c.securityChannelId || "",
       messageContentRetentionDays: c.messageContentRetentionDays || 30,
       categories: c.categories || {},
       events: c.events || {}
@@ -222,6 +224,11 @@
       cfg.defaultChannelId,
       "Select channel…"
     );
+    fillChannelSelect(
+      $("log-security-channel"),
+      cfg.securityChannelId,
+      "Select security channel…"
+    );
     CATS.forEach(function (cat) {
       fillChannelSelect(
         $("log-cat-" + cat),
@@ -249,6 +256,7 @@
         ? $("log-default-discord").checked
         : true,
       defaultChannelId: def,
+      securityChannelId: $("log-security-channel") && $("log-security-channel").value ? $("log-security-channel").value : null,
       messageContentRetentionDays: Math.max(
         1,
         Math.min(
