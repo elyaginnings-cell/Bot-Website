@@ -180,6 +180,10 @@
   function needsReplace(section) {
     if (!section) return false;
     if (!$("central-logging-root")) return true;
+    // The index page intentionally ships a tiny boot placeholder with the
+    // same root id. It is NOT the real logging UI. Replace it when the
+    // actual controls have not been mounted yet.
+    if (!$("log-default-channel") || !$("log-save-config") || !$("log-list")) return true;
     // Old form came back
     if ($("dashboard-log-channel") || $("save-logs") || $("audit-log-panel"))
       return true;
