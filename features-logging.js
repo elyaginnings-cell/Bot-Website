@@ -145,6 +145,9 @@
       '<input type="checkbox" id="log-default-discord" checked> <span>Post to Discord (default)</span></label>' +
       '<div class="input-group"><label for="log-default-channel">Default log channel</label>' +
       '<select id="log-default-channel"></select></div>' +
+      '<div class="input-group"><label for="log-security-channel">Security / verification log channel</label>' +
+      '<select id="log-security-channel"></select>' +
+      '<p class="form-hint">Automod, malicious-content containment, and verification security events use this channel unless a more specific category or event channel is set.</p></div>' +
       '<div class="input-group"><label for="log-retention">Message content retention (days)</label>' +
       '<input type="number" id="log-retention" min="1" max="365" value="30"></div>' +
       '<h3 style="margin-top:18px">Category channels</h3>' +
