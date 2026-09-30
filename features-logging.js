@@ -24,7 +24,15 @@
     "invite",
     "qotd",
     "verification",
-    "security"
+    "security",
+    "channel",
+    "role",
+    "guild",
+    "emoji",
+    "sticker",
+    "event",
+    "integration",
+    "voice"
   ];
 
   function $(id) {
