@@ -2,7 +2,12 @@ import {
   linkDiscordToAccount,
   upsertDiscordAccount,
 } from "../lib/accounts.js";
-import { readSession, setSessionCookies } from "../lib/session.js";
+import {
+  consumeOAuthState,
+  getCookie,
+  readSession,
+  setSessionCookies,
+} from "../lib/session.js";
 import {
   isStaffDiscordId,
   isStaffEmail,
@@ -33,11 +38,20 @@ export default async function handler(req, res) {
   }
 
   const code = req.query?.code;
-  const state = req.query?.state || "";
-  const isLink = state === "link";
+  const state = String(req.query?.state || "");
 
-  if (!code) {
-    return res.status(400).send("Missing authorization code.");
+  if (!code || !state) {
+    return res.status(400).send("Missing authorization code or state.");
+  }
+
+  const rawStateCookie = getCookie(req, "oauth_state") || "";
+  const separator = rawStateCookie.indexOf(":");
+  const purpose =
+    separator > 0 ? rawStateCookie.slice(0, separator) : "";
+  const isLink = purpose === "link";
+
+  if (!consumeOAuthState(req, res, state, isLink ? "link" : "login")) {
+    return res.status(400).send("Invalid or expired OAuth state.");
   }
 
   try {
@@ -125,6 +139,12 @@ export default async function handler(req, res) {
         }
 
         console.error("Link Discord error:", err);
+      }
+
+      if (!account) {
+        return res.status(401).send(
+          "Your dashboard session expired. Log in again before linking Discord."
+        );
       }
     }
 
