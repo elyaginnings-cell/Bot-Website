@@ -28,7 +28,7 @@ body.nav-drawer-open #nav-drawer-backdrop{pointer-events:auto!important;}
 <script>
 (async function () {
   try {
-    var url = "https://raw.githubusercontent.com/elyaginnings-cell/Bot-Website/147232bd5d52eb2ba98a5e5277445508e2c8e705/index.html";
+    var url = "https://raw.githubusercontent.com/elyaginnings-cell/Bot-Website/main/index.html";
     var res = await fetch(url + "?t=" + Date.now());
     if (!res.ok) throw new Error("HTTP " + res.status);
     var html = await res.text();
@@ -150,7 +150,7 @@ body.nav-drawer-open #nav-drawer-backdrop{pointer-events:auto!important;}
     await loadScript("/features-systems.js?v=1");
     await loadScript("/features-tab-toggles.js?v=3");
     await loadScript("/features-audit-logs.js?v=4");
-    await loadScript("/features-logging.js?v=3");
+    await loadScript("/features-logging.js?v=4");
     await loadScript("/features-loa.js?v=3");
     await loadScript("/features-activitycheck.js?v=3");
     await loadScript("/features-tickets.js?v=13");
