@@ -1,3 +1,5 @@
+import crypto from "crypto";
+
 import {
   createAccount,
   findByEmail,
@@ -5,7 +7,12 @@ import {
   validateCredentials,
   verifyPassword,
 } from "../lib/accounts.js";
-import { clearSessionCookies, setSessionCookies } from "../lib/session.js";
+import {
+  clearSessionCookies,
+  readSession,
+  setOAuthStateCookie,
+  setSessionCookies,
+} from "../lib/session.js";
 import {
   isStaffEmail,
   isStaffDiscordId,
@@ -62,7 +69,23 @@ function handleDiscordOAuthRedirect(req, res) {
     return res.status(500).send("Discord OAuth is not configured.");
   }
 
-  const state = req.query?.state === "link" || req.query?.action === "link" ? "link" : "login";
+  const requestedLink =
+    req.query?.state === "link" || req.query?.action === "link";
+  const purpose = requestedLink ? "link" : "login";
+
+  if (purpose === "link") {
+    try {
+      const session = readSession(req);
+      if (!session?.accountId || session.staff !== true) {
+        return res.status(401).send("You must be logged in to link Discord.");
+      }
+    } catch {
+      return res.status(401).send("You must be logged in to link Discord.");
+    }
+  }
+
+  const state = crypto.randomBytes(32).toString("hex");
+  setOAuthStateCookie(res, state, purpose);
 
   const params = new URLSearchParams({
     client_id: clientId,
