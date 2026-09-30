@@ -1,3 +1,4 @@
+import { findById } from "../lib/accounts.js";
 import { requireAnySession } from "../lib/requireAuth.js";
 
 export const config = {
@@ -283,8 +284,9 @@ export default async function handler(req, res) {
       return await handleMediaProxy(req, res);
     }
 
+    let session;
     try {
-      requireAnySession(req);
+      session = requireAnySession(req);
     } catch (err) {
       return res.status(err.status || 401).json({ error: err.message || "Not authenticated" });
     }
@@ -325,6 +327,22 @@ export default async function handler(req, res) {
       if (!guildId || !body.userId) {
         return res.status(400).json({ error: "Missing guildId or userId" });
       }
+      const account = session.accountId
+        ? await findById(session.accountId)
+        : null;
+      const moderatorId = session.discordId || account?.discord_id || null;
+      const moderatorTag =
+        account?.global_name ||
+        account?.username ||
+        (account?.email ? account.email.split("@")[0] : null) ||
+        (moderatorId ? `Discord User ${moderatorId}` : "Dashboard");
+
+      if (!moderatorId) {
+        return res.status(403).json({
+          error: "Connect your Discord account before performing moderation actions.",
+        });
+      }
+
       const response = await fetch(`${RAILWAY_API}/api/guild/${guildId}/punish`, {
         method: "POST",
         headers: {
@@ -338,8 +356,8 @@ export default async function handler(req, res) {
           duration: body.duration,
           evidence: body.evidence || null,
           channelId: channelId && channelId !== "punish" ? channelId : null,
-          moderatorTag: body.moderatorTag || "Dashboard",
-          moderatorId: body.moderatorId || null,
+          moderatorTag,
+          moderatorId,
         }),
       });
       const data = await response.json().catch(() => ({}));
