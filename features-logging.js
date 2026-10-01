@@ -68,24 +68,6 @@
     return String(g || "");
   }
 
-  function fillRoleSelect(el, selected, placeholder) {
-    if (!el || el.tagName !== "SELECT") return;
-    var list = [];
-    try {
-      list = (window.rolesCache || window.roles || []).filter(function (r) {
-        return r && !r.managed;
-      });
-    } catch (_) {}
-    var cur = el.value || (selected ? String(selected) : "") || "";
-    var html = '<option value="">' + (placeholder || "— None —") + "</option>";
-    list.forEach(function (r) {
-      var name = String(r.name || r.id).replace(/</g, "&lt;").replace(/>/g, "&gt;");
-      html += '<option value="' + String(r.id) + '">@' + name + "</option>";
-    });
-    el.innerHTML = html;
-    if (cur) el.value = cur;
-  }
-
   function fillChannelSelect(el, selected, placeholder) {
     if (!el || el.tagName !== "SELECT") return;
     if (el === document.activeElement) return;
@@ -175,8 +157,8 @@
       '<div class="input-group"><label for="log-security-channel">Security / verification log channel</label>' +
       '<select id="log-security-channel"></select>' +
       '<p class="form-hint">Automod, malicious-content containment, and verification security events use this channel unless a more specific category or event channel is set.</p></div>' +
-      '<div class="input-group"><label for="log-security-role">Security alert role</label>' +
-      '<select id="log-security-role"></select>' +
+      '<div class="input-group"><label for="log-security-role">Security alert role ID</label>' +
+      '<input id="log-security-role" placeholder="Paste the role ID" inputmode="numeric">' +
       '<p class="form-hint">Only genuinely security-sensitive server changes ping this role. Normal joins, role changes, messages, and routine edits do not.</p></div>' +
       '<div class="input-group"><label for="log-retention">Message content retention (days)</label>' +
       '<input type="number" id="log-retention" min="1" max="365" value="30"></div>' +
@@ -266,11 +248,8 @@
       cfg.securityChannelId,
       "Select security channel…"
     );
-    fillRoleSelect(
-      $("log-security-role"),
-      cfg.securityAlertRoleId,
-      "Select security alert role…"
-    );
+    if ($("log-security-role") && document.activeElement !== $("log-security-role"))
+      $("log-security-role").value = cfg.securityAlertRoleId || "";
     CATS.forEach(function (cat) {
       fillChannelSelect(
         $("log-cat-" + cat),
