@@ -68,6 +68,24 @@
     return String(g || "");
   }
 
+  function fillRoleSelect(el, selected, placeholder) {
+    if (!el || el.tagName !== "SELECT") return;
+    var list = [];
+    try {
+      list = (window.rolesCache || window.roles || []).filter(function (r) {
+        return r && !r.managed;
+      });
+    } catch (_) {}
+    var cur = el.value || (selected ? String(selected) : "") || "";
+    var html = '<option value="">' + (placeholder || "— None —") + "</option>";
+    list.forEach(function (r) {
+      var name = String(r.name || r.id).replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      html += '<option value="' + String(r.id) + '">@' + name + "</option>";
+    });
+    el.innerHTML = html;
+    if (cur) el.value = cur;
+  }
+
   function fillChannelSelect(el, selected, placeholder) {
     if (!el || el.tagName !== "SELECT") return;
     if (el === document.activeElement) return;
@@ -116,6 +134,7 @@
       defaultDiscord: c.defaultDiscord !== false,
       defaultChannelId: c.defaultChannelId || legacy || "",
       securityChannelId: c.securityChannelId || "",
+      securityAlertRoleId: c.securityAlertRoleId || "",
       messageContentRetentionDays: c.messageContentRetentionDays || 30,
       categories: c.categories || {},
       events: c.events || {}
@@ -156,6 +175,9 @@
       '<div class="input-group"><label for="log-security-channel">Security / verification log channel</label>' +
       '<select id="log-security-channel"></select>' +
       '<p class="form-hint">Automod, malicious-content containment, and verification security events use this channel unless a more specific category or event channel is set.</p></div>' +
+      '<div class="input-group"><label for="log-security-role">Security alert role</label>' +
+      '<select id="log-security-role"></select>' +
+      '<p class="form-hint">Only genuinely security-sensitive server changes ping this role. Normal joins, role changes, messages, and routine edits do not.</p></div>' +
       '<div class="input-group"><label for="log-retention">Message content retention (days)</label>' +
       '<input type="number" id="log-retention" min="1" max="365" value="30"></div>' +
       '<h3 style="margin-top:18px">Category channels</h3>' +
@@ -244,6 +266,11 @@
       cfg.securityChannelId,
       "Select security channel…"
     );
+    fillRoleSelect(
+      $("log-security-role"),
+      cfg.securityAlertRoleId,
+      "Select security alert role…"
+    );
     CATS.forEach(function (cat) {
       fillChannelSelect(
         $("log-cat-" + cat),
@@ -272,6 +299,7 @@
         : true,
       defaultChannelId: def,
       securityChannelId: $("log-security-channel") && $("log-security-channel").value ? $("log-security-channel").value : null,
+      securityAlertRoleId: $("log-security-role") && $("log-security-role").value ? $("log-security-role").value : null,
       messageContentRetentionDays: Math.max(
         1,
         Math.min(
