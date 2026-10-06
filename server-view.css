@@ -3242,3 +3242,15 @@ body.server-view-open .mobile-menu-toggle {
     max-width: 100% !important;
   }
 }
+
+
+/* Server View is the Discord-style surface; hide its theme/settings palette. */
+#server-view #sv-settings-btn,
+#server-view .sv-settings-btn,
+#server-view [data-sv-settings],
+#server-view [aria-label="Theme"],
+#server-view [title="Theme"] {
+  display:none !important;
+  visibility:hidden !important;
+  pointer-events:none !important;
+}
