@@ -2961,3 +2961,98 @@ body.server-view-open .mobile-menu-toggle {
     margin-right: 0 !important;
   }
 }
+
+
+/* ═══════════════════════════════════════════════════════════
+   SERVER VIEW — SIDEBAR COLLAPSE + MESSAGE DENSITY
+   ═══════════════════════════════════════════════════════════ */
+
+/* On desktop/tablet, closing the channel tab actually gives the chat
+   the freed column instead of merely hiding content inside it. */
+@media (min-width: 769px) {
+  #server-view .sv-body {
+    display: grid !important;
+    grid-template-columns: 278px minmax(0, 1fr) !important;
+    min-width: 0 !important;
+    transition: grid-template-columns .24s cubic-bezier(.2,.8,.2,1) !important;
+  }
+
+  #server-view.drawer-collapsed .sv-body {
+    grid-template-columns: 0 minmax(0, 1fr) !important;
+  }
+
+  #server-view.drawer-collapsed .sv-channels {
+    width: 278px !important;
+    min-width: 278px !important;
+    transform: translateX(-100%) !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    overflow: hidden !important;
+  }
+
+  #server-view .sv-chat {
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+}
+
+/* Mobile already overlays the drawer; collapsed means the chat is
+   completely unobstructed. */
+@media (max-width: 768px) {
+  #server-view.drawer-collapsed .sv-channels {
+    transform: translateX(-105%) !important;
+    pointer-events: none !important;
+  }
+}
+
+/* Tighter Discord-like message rhythm. */
+#server-view .sv-messages {
+  gap: 0 !important;
+  padding-top: 10px !important;
+  padding-bottom: 14px !important;
+}
+
+#server-view .sv-msg {
+  padding-top: 3px !important;
+  padding-bottom: 3px !important;
+  margin: 0 !important;
+  min-height: 0 !important;
+  line-height: 1.32 !important;
+}
+
+#server-view .sv-msg:not(.grouped) {
+  margin-top: 8px !important;
+}
+
+#server-view .sv-msg.grouped {
+  padding-top: 1px !important;
+  padding-bottom: 1px !important;
+}
+
+#server-view .sv-msg-content {
+  line-height: 1.35 !important;
+}
+
+#server-view .sv-msg-meta {
+  line-height: 1.2 !important;
+}
+
+#server-view .sv-av-wrap {
+  margin-top: 1px !important;
+}
+
+@media (max-width: 768px) {
+  #server-view .sv-messages {
+    padding-top: 7px !important;
+    padding-bottom: 10px !important;
+  }
+
+  #server-view .sv-msg {
+    padding-top: 2px !important;
+    padding-bottom: 2px !important;
+  }
+
+  #server-view .sv-msg:not(.grouped) {
+    margin-top: 6px !important;
+  }
+}
