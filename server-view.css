@@ -2084,3 +2084,349 @@ body.server-view-open {
   outline: 2px solid var(--sv-brand);
   outline-offset: 2px;
 }
+
+/* ═══════════════════════════════════════════════════════════
+   SERVER VIEW — VISUAL POLISH v6
+   Appearance-only layer. No behavior or data changes.
+   ═══════════════════════════════════════════════════════════ */
+
+#server-view {
+  --sv-shadow-soft: 0 4px 18px rgba(0, 0, 0, .20);
+  --sv-shadow-float: 0 12px 32px rgba(0, 0, 0, .30);
+}
+
+/* Cleaner hierarchy + subtle depth */
+#server-view .sv-topbar {
+  min-height: 52px;
+  padding: 6px 14px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.025), transparent 70%),
+    var(--sv-bg-secondary);
+  border-bottom-color: rgba(0,0,0,.34);
+}
+
+#server-view .sv-back,
+#server-view .sv-icon-btn,
+#server-view .sv-menu-btn,
+#server-view .sv-refresh {
+  border-radius: 8px;
+}
+
+#server-view .sv-back:hover,
+#server-view .sv-icon-btn:hover,
+#server-view .sv-menu-btn:hover,
+#server-view .sv-refresh:hover {
+  background: var(--sv-bg-modifier-hover);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.035);
+}
+
+/* Server/channel rail */
+#server-view .sv-channels {
+  width: 248px;
+  box-shadow:
+    inset -1px 0 0 rgba(0,0,0,.24),
+    3px 0 12px rgba(0,0,0,.08);
+}
+
+#server-view .sv-channels-head {
+  min-height: 52px;
+  padding: 0 14px;
+  background: linear-gradient(180deg, rgba(255,255,255,.018), transparent);
+}
+
+#server-view .sv-channel-list {
+  padding: 10px 8px 18px;
+}
+
+#server-view .sv-cat {
+  padding: 18px 10px 5px;
+  font-size: 11px;
+  letter-spacing: .035em;
+}
+
+#server-view .sv-ch {
+  min-height: 38px;
+  margin-bottom: 2px;
+  padding: 8px 10px;
+  border-radius: 7px;
+  font-size: 15px;
+}
+
+#server-view .sv-ch.active {
+  box-shadow: inset 2px 0 0 var(--sv-brand);
+}
+
+#server-view .sv-ch .sv-hash {
+  width: 22px;
+}
+
+/* Main chat header */
+#server-view .sv-chat-head {
+  min-height: 52px;
+  padding: 0 16px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.018), transparent),
+    var(--sv-bg-primary);
+  border-bottom-color: rgba(0,0,0,.28);
+}
+
+#server-view .sv-chat-head-left {
+  gap: 8px;
+}
+
+#server-view .sv-chat-head .sv-hash-big {
+  font-size: 24px;
+}
+
+#server-view #sv-channel-title {
+  font-size: 16px;
+}
+
+/* Message list: calmer spacing and better hover states */
+#server-view .sv-messages {
+  padding-top: 10px;
+  padding-bottom: 14px;
+  scrollbar-width: thin;
+}
+
+#server-view .sv-msg {
+  position: relative;
+  padding: 4px 16px;
+  margin: 1px 0;
+  border-radius: 6px;
+  transition:
+    background-color .12s ease,
+    box-shadow .12s ease;
+}
+
+#server-view .sv-msg:hover {
+  background: rgba(79,84,92,.13);
+}
+
+#server-view .sv-msg + .sv-msg {
+  margin-top: 1px;
+}
+
+#server-view .sv-msg:first-child {
+  margin-top: 0;
+}
+
+#server-view .sv-avatar,
+#server-view .sv-msg-avatar,
+#server-view .sv-member-av {
+  border-radius: 50%;
+}
+
+#server-view .sv-msg-author {
+  font-weight: 650;
+}
+
+#server-view .sv-msg-time {
+  font-size: 11px;
+  opacity: .72;
+}
+
+#server-view .sv-msg-content {
+  color: var(--sv-text);
+  line-height: 1.45;
+}
+
+#server-view .sv-msg-actions {
+  border-radius: 8px;
+  box-shadow: var(--sv-shadow-soft);
+  backdrop-filter: blur(8px);
+}
+
+/* Links and mentions feel more like a real client */
+#server-view a {
+  text-underline-offset: 2px;
+}
+
+#server-view .sv-mention {
+  border-radius: 4px;
+  padding: 0 2px;
+  font-weight: 500;
+}
+
+#server-view .sv-mention:hover {
+  background: var(--sv-mention-hover);
+}
+
+/* Embeds / attachments */
+#server-view .sv-embed,
+#server-view .sv-file {
+  border-radius: 6px;
+  box-shadow: 0 1px 0 rgba(255,255,255,.025);
+}
+
+#server-view .sv-attachment-image,
+#server-view .sv-img {
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,.18);
+}
+
+#server-view .sv-reactions {
+  gap: 5px;
+}
+
+#server-view .sv-reaction {
+  min-height: 26px;
+  border-radius: 7px;
+  padding: 3px 7px;
+  transition: background-color .12s ease, border-color .12s ease;
+}
+
+#server-view .sv-reaction:hover {
+  border-color: rgba(255,255,255,.12);
+  background: var(--sv-bg-modifier-hover);
+}
+
+/* Member panel */
+#server-view #sv-member-list {
+  padding: 8px 8px 18px;
+}
+
+#server-view #sv-member-list .sv-ml-group {
+  margin: 16px 8px 5px;
+  font-size: 10px;
+  letter-spacing: .055em;
+}
+
+#server-view #sv-member-list .sv-member-row {
+  min-height: 42px;
+  margin: 1px 0;
+  padding: 5px 8px;
+  border-radius: 7px;
+  transition: background-color .12s ease;
+}
+
+#server-view #sv-member-list .sv-member-row:hover {
+  background: var(--sv-bg-modifier-hover);
+}
+
+#server-view #sv-member-list .sv-member-name {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+#server-view #sv-member-list .sv-bot-badge {
+  margin-left: 5px;
+  border-radius: 3px;
+  padding: 1px 4px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .03em;
+}
+
+#server-view #sv-member-list .sv-status {
+  width: 9px;
+  height: 9px;
+  border-width: 2px;
+}
+
+/* Composer */
+#server-view .sv-composer-wrap {
+  padding: 8px 14px calc(10px + var(--sv-safe-bottom));
+  background:
+    linear-gradient(180deg, transparent, rgba(0,0,0,.08)),
+    var(--sv-bg-primary);
+}
+
+#server-view .sv-composer {
+  min-height: 48px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,.055);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.018);
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+
+#server-view .sv-composer:focus-within {
+  border-color: rgba(88,101,242,.55);
+  box-shadow:
+    0 0 0 2px rgba(88,101,242,.10),
+    inset 0 1px 0 rgba(255,255,255,.02);
+}
+
+#server-view .sv-send-btn {
+  border-radius: 8px;
+  font-weight: 650;
+  transition: transform .1s ease, background-color .12s ease;
+}
+
+#server-view .sv-send-btn:active {
+  transform: translateY(1px);
+}
+
+/* Settings / popovers */
+#server-view .sv-settings-panel {
+  border-radius: 12px;
+  border-color: rgba(255,255,255,.08);
+  box-shadow: var(--sv-shadow-float);
+  backdrop-filter: blur(14px);
+}
+
+#server-view .sv-toast {
+  border-radius: 10px;
+  box-shadow: var(--sv-shadow-float);
+  backdrop-filter: blur(12px);
+}
+
+/* Scrollbars */
+#server-view .sv-channel-list::-webkit-scrollbar,
+#server-view .sv-messages::-webkit-scrollbar {
+  width: 10px;
+}
+
+#server-view .sv-channel-list::-webkit-scrollbar-thumb,
+#server-view .sv-messages::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,.42);
+  border: 3px solid transparent;
+  background-clip: padding-box;
+}
+
+#server-view .sv-channel-list::-webkit-scrollbar-thumb:hover,
+#server-view .sv-messages::-webkit-scrollbar-thumb:hover {
+  background: rgba(0,0,0,.58);
+  border: 3px solid transparent;
+  background-clip: padding-box;
+}
+
+/* Mobile: preserve the tighter Discord-like feel */
+@media (max-width: 768px) {
+  #server-view .sv-topbar,
+  #server-view .sv-chat-head {
+    min-height: 50px;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  #server-view .sv-msg {
+    padding: 5px 10px;
+    border-radius: 4px;
+  }
+
+  #server-view .sv-messages {
+    padding-top: 6px;
+  }
+
+  #server-view .sv-composer-wrap {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  #server-view .sv-member-row {
+    border-radius: 6px;
+  }
+}
+
+/* Respect accessibility settings */
+@media (prefers-reduced-motion: reduce) {
+  #server-view .sv-msg,
+  #server-view .sv-ch,
+  #server-view .sv-member-row,
+  #server-view .sv-reaction,
+  #server-view .sv-composer,
+  #server-view .sv-send-btn {
+    transition: none !important;
+  }
+}
