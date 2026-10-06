@@ -17,7 +17,7 @@
       .replace(/&/g, AMP)
       .replace(/</g, LT)
       .replace(/>/g, GT)
-      .replace(/"/g, "\\\"");
+      .replace(/"/g, "&quot;");
   }
 
   function roleById(id) {
