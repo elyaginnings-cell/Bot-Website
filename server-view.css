@@ -3056,3 +3056,189 @@ body.server-view-open .mobile-menu-toggle {
     margin-top: 6px !important;
   }
 }
+
+
+/* ═══════════════════════════════════════════════════════════
+   SERVER VIEW — MOBILE MESSAGE FLOW SAFETY
+   Keep every message in normal document flow.  This intentionally
+   overrides any dashboard/global/mobile rules that can collapse
+   message heights or let media/text visually overlap.
+   ═══════════════════════════════════════════════════════════ */
+
+#server-view .sv-messages {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  justify-content: flex-start !important;
+  position: relative !important;
+  min-height: 0 !important;
+  height: auto !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
+#server-view .sv-msg {
+  position: relative !important;
+  display: flex !important;
+  flex: 0 0 auto !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+  float: none !important;
+  clear: both !important;
+  transform: none !important;
+}
+
+#server-view .sv-msg-body {
+  position: relative !important;
+  display: block !important;
+  flex: 1 1 auto !important;
+  width: auto !important;
+  height: auto !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: none !important;
+  overflow: visible !important;
+  float: none !important;
+  clear: both !important;
+  box-sizing: border-box !important;
+}
+
+#server-view .sv-msg-meta {
+  position: relative !important;
+  display: flex !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+  box-sizing: border-box !important;
+}
+
+#server-view .sv-msg-content {
+  position: relative !important;
+  display: block !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow-wrap: anywhere !important;
+  white-space: pre-wrap !important;
+  box-sizing: border-box !important;
+}
+
+#server-view .sv-msg-content img,
+#server-view .sv-msg-content video,
+#server-view .sv-msg-content iframe {
+  max-width: 100% !important;
+  height: auto !important;
+}
+
+#server-view .sv-attachment-image-btn,
+#server-view .sv-attachment-image,
+#server-view .sv-attachment-video,
+#server-view .sv-embed,
+#server-view .sv-embed-image,
+#server-view .sv-embed-thumb {
+  position: relative !important;
+  float: none !important;
+  clear: both !important;
+  box-sizing: border-box !important;
+}
+
+#server-view .sv-attachment-image-btn {
+  display: block !important;
+  width: fit-content !important;
+  max-width: 100% !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow: hidden !important;
+}
+
+#server-view .sv-attachment-image,
+#server-view .sv-embed-image,
+#server-view .sv-embed-thumb {
+  display: block !important;
+  width: auto !important;
+  max-width: 100% !important;
+  height: auto !important;
+  max-height: 520px !important;
+  object-fit: contain !important;
+}
+
+@media (max-width: 768px) {
+  #server-view .sv-messages {
+    padding: 8px 0 12px !important;
+  }
+
+  #server-view .sv-msg {
+    gap: 10px !important;
+    padding: 5px 10px !important;
+    margin: 0 !important;
+    line-height: 1.35 !important;
+  }
+
+  #server-view .sv-msg:not(.grouped) {
+    margin-top: 9px !important;
+  }
+
+  #server-view .sv-msg.grouped {
+    margin-top: 0 !important;
+    padding-top: 2px !important;
+    padding-bottom: 2px !important;
+  }
+
+  #server-view .sv-av-wrap {
+    flex: 0 0 38px !important;
+    width: 38px !important;
+    height: 38px !important;
+    margin-right: 9px !important;
+  }
+
+  #server-view .sv-av {
+    width: 38px !important;
+    height: 38px !important;
+  }
+
+  #server-view .sv-msg-body {
+    padding-right: 34px !important;
+  }
+
+  #server-view .sv-msg-meta {
+    gap: 7px !important;
+    margin-bottom: 2px !important;
+    line-height: 1.2 !important;
+  }
+
+  #server-view .sv-msg-content {
+    font-size: 15px !important;
+    line-height: 1.4 !important;
+  }
+
+  #server-view .sv-attachment-image-btn {
+    width: fit-content !important;
+    max-width: 100% !important;
+    margin-top: 8px !important;
+  }
+
+  #server-view .sv-attachment-image,
+  #server-view .sv-embed-image,
+  #server-view .sv-embed-thumb {
+    max-width: 100% !important;
+    max-height: min(52vh, 420px) !important;
+    width: auto !important;
+    height: auto !important;
+  }
+
+  #server-view .sv-embed {
+    max-width: 100% !important;
+    margin-top: 7px !important;
+  }
+
+  #server-view .sv-reply-preview {
+    max-width: 100% !important;
+  }
+}
