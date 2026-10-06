@@ -3254,3 +3254,21 @@ body.server-view-open .mobile-menu-toggle {
   visibility:hidden !important;
   pointer-events:none !important;
 }
+
+/* Server View must not expose the main dashboard navigation hamburger.
+   The smaller #sv-menu-btn is the Server View channel drawer control. */
+body.server-view-open #nav-hamburger,
+body.server-view-open .nav-hamburger,
+body.server-view-open [data-nav-hamburger] {
+  display:none !important;
+  visibility:hidden !important;
+  pointer-events:none !important;
+}
+
+/* The Discord-style view has no theme/palette control. */
+body.server-view-open #server-view #sv-settings-btn,
+body.server-view-open #server-view .sv-settings-btn {
+  display:none !important;
+  visibility:hidden !important;
+  pointer-events:none !important;
+}
