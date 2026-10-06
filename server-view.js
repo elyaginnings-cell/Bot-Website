@@ -180,7 +180,7 @@
       var previous = index > 0 ? messages[index - 1] : null;
       var grouped = previous && previous.author && message.author && previous.author.id && message.author.id && previous.author.id === message.author.id && !message.reference && message.createdTimestamp - previous.createdTimestamp < 7 * 60 * 1000;
       var pingedMe = messageMentionsCurrentUser(message);
-      html += renderMessage(message, grouped);
+      html += renderMessage(message, grouped, pingedMe);
     });
     container.innerHTML = html;
     lastMessages = messages.slice();
@@ -188,7 +188,7 @@
     messages.forEach(function (message) { if (message && message.id) knownIds[message.id] = true; });
     if (shouldScroll) container.scrollTop = container.scrollHeight;
   }
-  function renderMessage(message, grouped) {
+  function renderMessage(message, grouped, pingedMe) {
     var author = message.author || {};
     var authorName = author.displayName || author.globalName || author.username || "Unknown";
     var avatarUrl = typeof author.avatar === "string" ? author.avatar.trim() : "";
