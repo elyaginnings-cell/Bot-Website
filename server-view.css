@@ -3272,3 +3272,32 @@ body.server-view-open #server-view .sv-settings-btn {
   visibility:hidden !important;
   pointer-events:none !important;
 }
+
+/* Discord-style notification / ping treatment */
+#server-view .sv-msg.mention-me {
+  background: rgba(250,166,26,.075) !important;
+  box-shadow: inset 3px 0 0 #faa61a !important;
+}
+
+#server-view .sv-msg.mention-me:hover {
+  background: rgba(250,166,26,.12) !important;
+}
+
+#server-view .sv-msg.mention-me .sv-mention-user,
+#server-view .sv-msg.mention-me .sv-mention-role,
+#server-view .sv-msg.mention-me .sv-mention-everyone {
+  background: rgba(250,166,26,.24) !important;
+  color: #ffcf70 !important;
+  font-weight: 600 !important;
+}
+
+#server-view .sv-mention-everyone {
+  background: rgba(250,166,26,.2);
+  color: #f0b232;
+}
+
+#server-view .sv-edited {
+  color: var(--sv-text-muted);
+  font-size: 10px;
+  font-weight: 400;
+}
