@@ -179,6 +179,7 @@
     messages.forEach(function (message, index) {
       var previous = index > 0 ? messages[index - 1] : null;
       var grouped = previous && previous.author && message.author && previous.author.id && message.author.id && previous.author.id === message.author.id && !message.reference && message.createdTimestamp - previous.createdTimestamp < 7 * 60 * 1000;
+      var pingedMe = messageMentionsCurrentUser(message);
       html += renderMessage(message, grouped);
     });
     container.innerHTML = html;
@@ -206,7 +207,8 @@
     var replyBtn = message.id ? '<button type="button" class="sv-reply-btn" data-reply-id="' + esc(message.id) + '" title="Reply">Reply</button>' : "";
     var punishBtn = authorId && !author.bot ? '<button type="button" class="sv-punish-btn" data-punish-user="' + esc(authorId) + '" data-punish-name="' + esc(authorName) + '" data-punish-msg="' + esc(message.id || "") + '" title="Warn, mute, or ban">Punish</button>' : "";
     var actions = (replyBtn || punishBtn) ? '<div class="sv-msg-actions">' + replyBtn + punishBtn + "</div>" : "";
-    return '<article class="sv-msg' + (grouped ? " grouped" : "") + '" data-message-id="' + esc(message.id || "") + '" data-author-id="' + esc(authorId) + '"><div class="sv-av-wrap">' + avatar + '</div><div class="sv-msg-body"><div class="sv-msg-meta"><span class="sv-author">' + esc(authorName) + '</span>' + botBadge + '<time class="sv-time">' + esc(timestamp) + '</time>' + actions + '</div>' + reply + '<div class="sv-msg-content">' + content + '</div>' + attachments + embeds + components + '</div></article>';
+    var edited = message.editedTimestamp ? '<span class="sv-edited" title="Edited"> (edited)</span>' : "";
+    return '<article class="sv-msg' + (grouped ? " grouped" : "") + (pingedMe ? " mention-me" : "") + '" data-message-id="' + esc(message.id || "") + '" data-author-id="' + esc(authorId) + '"><div class="sv-av-wrap">' + avatar + '</div><div class="sv-msg-body"><div class="sv-msg-meta"><span class="sv-author">' + esc(authorName) + '</span>' + botBadge + '<time class="sv-time">' + esc(timestamp) + '</time>' + edited + actions + '</div>' + reply + '<div class="sv-msg-content">' + content + '</div>' + attachments + embeds + components + '</div></article>';
   }
   function renderComponents(rows) {
     if (!Array.isArray(rows) || !rows.length) return "";
@@ -236,6 +238,21 @@
     var replyName = reference.authorName || reference.username || "Reply";
     var replyContent = reference.content || "";
     return '<div class="sv-reply-preview"><span class="sv-reply-line"></span><span class="sv-reply-text"><strong>' + esc(replyName) + '</strong>' + (replyContent ? " " + esc(truncate(replyContent, 100)) : "") + '</span></div>';
+  }
+  function messageMentionsCurrentUser(message) {
+    if (!message) return false;
+    var content = String(message.content || "");
+    if (message.mentionEveryone === true || message.mention_everyone === true || /@(everyone|here)\b/.test(content)) return true;
+    var me = "";
+    try {
+      if (window.__svMe && window.__svMe.id) me = String(window.__svMe.id);
+      else if (window.currentUser && window.currentUser.id) me = String(window.currentUser.id);
+      else if (window.userCache && window.userCache.id) me = String(window.userCache.id);
+    } catch (e) {}
+    if (!me) return false;
+    var users = message.mentions && message.mentions.users;
+    if (users && (users[me] || users[String(me)])) return true;
+    return content.indexOf("<@" + me + ">") !== -1 || content.indexOf("<@!" + me + ">") !== -1;
   }
   function formatRichText(content, mentions) {
     if (!content) return "";
@@ -292,6 +309,9 @@
       var ext = anim ? "gif" : "png";
       var src = "https://cdn.discordapp.com/emojis/" + id + "." + ext + "?size=48&quality=lossless";
       return ph('<img class="sv-emoji" src="' + src + '" alt=":' + esc(name) + ':" title=":' + esc(name) + ':" loading="lazy" referrerpolicy="no-referrer">');
+    });
+    raw = raw.replace(/@(everyone|here)\b/g, function (_, kind) {
+      return ph('<span class="sv-mention sv-mention-everyone">@' + kind + '</span>');
     });
     raw = raw.replace(/<@!?(\d+)>/g, function (_, id) {
       return ph('<span class="sv-mention sv-mention-user">@' + esc(userLabel(id)) + "</span>");
