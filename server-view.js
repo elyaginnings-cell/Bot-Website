@@ -524,3 +524,30 @@
   function boot() { bind(); }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot); else boot();
 })();
+
+
+// Keep the Discord view focused on Discord features; its theme/settings palette is hidden.
+(function hideServerViewThemeControl() {
+  function hide() {
+    var view = document.getElementById("server-view");
+    if (!view) return;
+    [
+      "#sv-settings-btn",
+      ".sv-settings-btn",
+      "[data-sv-settings]",
+      "[aria-label=\"Theme\"]",
+      "[title=\"Theme\"]"
+    ].forEach(function (selector) {
+      view.querySelectorAll(selector).forEach(function (el) {
+        el.hidden = true;
+        el.style.setProperty("display", "none", "important");
+      });
+    });
+    var panel = document.getElementById("sv-settings-panel");
+    if (panel) panel.hidden = true;
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", hide);
+  else hide();
+  var observer = new MutationObserver(hide);
+  observer.observe(document.documentElement, { childList: true, subtree: true });
+})();
