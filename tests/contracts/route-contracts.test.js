@@ -55,7 +55,7 @@ test("new shell uses current read endpoints and does not save config on boot", a
 
 test("new config route uses existing schema without automatic DDL", async () => {
   const db = await read("../../lib/db.js");
-  const route = await read("../../api/dashboard-config.js");
+  const route = await read("../../api/config.js");
   assert.match(db, /export async function queryExistingSchema/);
   assert.match(route, /queryExistingSchema\(/);
   assert.doesNotMatch(route, /ensureSchema|CREATE TABLE|ALTER TABLE|TRUNCATE|DROP TABLE/);
