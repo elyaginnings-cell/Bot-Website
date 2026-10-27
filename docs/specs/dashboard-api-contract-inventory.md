@@ -53,13 +53,13 @@ This is a starting list, not a complete feature sign-off. Before the new shell r
 
 - Added `dashboard-v2.html`, `dashboard-v2.css`, and `dashboard-v2.js` on `rebuild/dashboard-v1`.
 - The shell calls the existing `/api/guilds` endpoint with same-origin credentials. It intentionally does not call `/api/bot-status`, whose DB health probe uses the legacy query helper that can initialize schema.
-- It does not call the legacy `/api/config` route. The new `/api/dashboard-config` GET is read-only and uses no-DDL database access. Nothing is saved during initial load.
+- It uses the `mode=readonly` branch inside the existing `/api/config` function for read-only, no-DDL database access, and `mode=compat` for explicit partial updates. Nothing is saved during initial load.
 - Feature pages are intentionally marked as not connected until the exact legacy configuration contracts are mapped. This prevents placeholder controls from accidentally writing empty data.
 - The production entry point has not been changed.
 
 ## Initial editable settings and known limitations
 
-The new shell currently has editable controls for existing mapped fields: automod enabled, warning/log channel IDs, leveling enabled and channels, currency/shop enabled, saved community feature enable flags, staff applications/LOA/activity-check flags, and logging/audit-log flags. Self-role data is shown as read-only counts until a dedicated editor can preserve every nested ID and message/channel reference. This is intentionally safer than shipping a partial self-role editor that might erase saved role menus.
+The new shell currently has editable controls for existing mapped fields: automod enabled, warning/dashboard-log channel pickers, leveling enabled and level-up/invite-leaderboard channel pickers, currency/shop enabled, saved community feature enable flags, staff applications/LOA/activity-check flags, and logging/audit-log flags. Self-role data is shown as read-only counts until a dedicated editor can preserve every nested ID and message/channel reference. This is intentionally safer than shipping a partial self-role editor that might erase saved role menus.
 
 A save merges only the changed fields into the existing JSON object, writes the existing `bot_state` row using a parameterized UPDATE, then attempts to sync the allowlisted config fields to the existing Railway API. If no row exists, the endpoint refuses to create one from defaults. If bot sync fails after the database update, the UI reports the warning rather than pretending both systems were updated.
 
