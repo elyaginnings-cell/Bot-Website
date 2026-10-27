@@ -169,7 +169,6 @@ export default async function handler(req, res) {
       });
     }
 
-    const guildId = req.query?.guildId;
     if (!guildId) {
       return res.status(400).json({ error: "Missing guildId" });
     }
