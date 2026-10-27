@@ -228,7 +228,7 @@ async function saveFeatureConfig() {
   button.textContent = "Saving…";
   $("config-status").textContent = "Saving to existing storage and syncing the bot…";
   try {
-    const result = await requestJson(`/api/config?guildId=${encodeURIComponent(state.guildId)}&mode=readonly&mode=compat`, {
+    const result = await requestJson(`/api/config?guildId=${encodeURIComponent(state.guildId)}&mode=compat`, {
       method: "POST",
       body: JSON.stringify(patch)
     });
