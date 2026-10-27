@@ -45,7 +45,19 @@
     grid-template-columns: minmax(0, 1fr) !important;
   }
   #sr-v3-root .sr-toolbar { align-items: stretch; }
+  #sr-v3-root .sr-role-picker>summary { padding: 13px 12px; }
+  #sr-v3-root .sr-role-picker-content { padding: 0 8px 10px; }
   #sr-v3-root .sr-search { flex: 1 1 100%; min-width: 0; }
+  #sr-v3-root .sr-cat-head { grid-template-columns: 54px minmax(0, 1fr); gap: 8px; }
+  #sr-v3-root .sr-cat-head>[data-cat-emoji] { grid-column: 1; grid-row: 1; }
+  #sr-v3-root .sr-cat-head>[data-cat-name] { grid-column: 2; grid-row: 1; }
+  #sr-v3-root .sr-cat-head>[data-cat-mode] { grid-column: 1 / -1; grid-row: 2; }
+  #sr-v3-root .sr-cat-head>[data-add-to] { grid-column: 1 / -1; grid-row: 3; }
+  #sr-v3-root .sr-cat-head>[data-del-cat] { grid-column: 1 / -1; grid-row: 4; }
+  #sr-v3-root .sr-cat-head > button { width: 100%; }
+  #sr-v3-root .sr-roles-row { display: grid; grid-template-columns: minmax(0, 1fr); }
+  #sr-v3-root .sr-tag { justify-content: space-between; border-radius: 10px; padding: 8px 10px; min-width: 0; }
+  #sr-v3-root .sr-tag > span { min-width: 0; }
   #sr-v3-root .sr-role-grid {
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 145px), 1fr));
     max-height: min(42vh, 320px);
