@@ -202,7 +202,7 @@ async function loadFeatureConfig() {
   $("save-config-button").hidden = true;
   $("config-status").textContent = "Reading existing saved configuration";
   try {
-    const result = await requestJson(`/api/dashboard-config?guildId=${encodeURIComponent(state.guildId)}`);
+    const result = await requestJson(`/api/config?guildId=${encodeURIComponent(state.guildId)}&mode=readonly`);
     if (token !== state.loadToken) return;
     state.config = result.config && typeof result.config === "object" ? result.config : null;
     state.configLoadedFor = state.guildId;
@@ -228,7 +228,7 @@ async function saveFeatureConfig() {
   button.textContent = "Saving…";
   $("config-status").textContent = "Saving to existing storage and syncing the bot…";
   try {
-    const result = await requestJson(`/api/dashboard-config?guildId=${encodeURIComponent(state.guildId)}`, {
+    const result = await requestJson(`/api/config?guildId=${encodeURIComponent(state.guildId)}&mode=readonly&mode=compat`, {
       method: "POST",
       body: JSON.stringify(patch)
     });
