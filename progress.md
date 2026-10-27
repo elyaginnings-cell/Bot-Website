@@ -11,6 +11,8 @@ Plan: `docs/plans/2026-10-27-discord-dashboard-rebuild.md`
 - Added `dashboard-v2.html`, `dashboard-v2.css`, and `dashboard-v2.js` on the isolated branch `rebuild/dashboard-v1`.
 - Added one grouped responsive navigation system, mobile drawer, selected-server picker, overview cards, and accessible setting controls.
 - Added mapped controls for moderation, AI assistant, detailed leveling and currency settings, shop toggle, community features, staff features, and logging. Mirrored legacy top-level flags are saved alongside nested feature flags.
+- Added guild-scoped channel dropdowns for warning, dashboard-log, level-up, and invite-leaderboard channels. If a saved channel is unavailable, its ID remains visible/selectable instead of being silently discarded; if channel lookup fails, the UI falls back to a text field.
+- Tightened missing-config protection: an empty JSON object is treated as no usable config, and the safe write path refuses to update it.
 - Self-role data is intentionally read-only until a complete editor can preserve nested IDs and references.
 - The new shell has not replaced the existing root/login page.
 
@@ -25,6 +27,7 @@ Plan: `docs/plans/2026-10-27-discord-dashboard-rebuild.md`
 ## Task 4: Feature pages
 - The first pass of mapped settings controls is connected to the safe compatibility modes.
 - Not yet complete: full inventory of every legacy control, shop item editor, complete self-role editor, live logs/server view, full feature parity, and end-to-end tests.
+- Vercel successfully built the isolated branch after the channel-picker and empty-config safety changes. This confirms deployment build, not browser or end-to-end behavior.
 
 ## Task 5: Release readiness
 - Not started. Production entry point remains untouched, and no production deployment or merge has been performed.
