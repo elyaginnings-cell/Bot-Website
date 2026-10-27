@@ -1,0 +1,83 @@
+/* Mobile-first clarity and accessible touch targets for the Coffee Shop dashboard. */
+:root {
+  --dash-focus: #b78cff;
+  --dash-surface: rgba(255,255,255,.045);
+  --dash-border: rgba(190,160,255,.22);
+}
+:where(button, a, input, select, textarea, [role="button"], .sr-chip):focus-visible {
+  outline: 3px solid var(--dash-focus) !important;
+  outline-offset: 2px !important;
+}
+@media (max-width: 720px) {
+  html { -webkit-text-size-adjust: 100%; }
+  body { padding-bottom: max(16px, env(safe-area-inset-bottom)); }
+  #app, .app, .main, .content, .page-section, .form-card, .card {
+    box-sizing: border-box;
+    min-width: 0;
+    max-width: 100%;
+  }
+  .page-section { scroll-margin-top: 72px; }
+  :where(button, .button, a.button, input[type="submit"]) {
+    min-height: 44px;
+    max-width: 100%;
+    white-space: normal;
+    line-height: 1.25;
+    touch-action: manipulation;
+  }
+  :where(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    min-height: 44px;
+    font-size: 16px;
+  }
+  :where(.form-actions, .actions, .button-row, .sr-toolbar, .sr-cat-head) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: stretch;
+  }
+  :where(.form-actions, .actions, .button-row) > * {
+    flex: 1 1 140px;
+    min-width: 0;
+  }
+  :where(.config-grid, .quick-grid, .level-role-form) {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+  #sr-v3-root .sr-toolbar { align-items: stretch; }
+  #sr-v3-root .sr-search { flex: 1 1 100%; min-width: 0; }
+  #sr-v3-root .sr-role-grid {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 145px), 1fr));
+    max-height: min(42vh, 320px);
+    overscroll-behavior: contain;
+  }
+  #sr-v3-root .sr-chip {
+    min-height: 44px;
+    overflow-wrap: anywhere;
+    align-items: center;
+  }
+  #sr-v3-root .sr-cat { padding: 12px; }
+  #sr-v3-root .sr-cat-head > input[data-cat-name] {
+    flex: 1 1 100% !important;
+    min-width: 0 !important;
+  }
+  #sr-v3-root .sr-cat-head > select,
+  #sr-v3-root .sr-cat-head > button {
+    flex: 1 1 130px;
+    min-width: 0;
+    min-height: 44px;
+  }
+  #sr-v3-root .sr-roles-row { overflow-wrap: anywhere; }
+  #sr-v3-root .sr-tag { max-width: 100%; }
+  #sr-v3-root .sr-tag > span { overflow-wrap: anywhere; }
+  #sr-v3-root .sr-tag button { min-width: 36px; min-height: 36px; }
+  .nav-drawer, #nav-drawer { max-width: min(88vw, 360px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
