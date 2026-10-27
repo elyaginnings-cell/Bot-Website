@@ -146,7 +146,7 @@ export default async function handler(req, res) {
         warning = "Saved to existing storage, but DASHBOARD_API_SECRET is not configured; the bot was not updated.";
       } else {
         try {
-          const response = await fetch(`${RAILWAY_API.replace(/\\/$/, "")}/api/guild/${encodeURIComponent(guildId)}/config`, {
+          const response = await fetch(`${RAILWAY_API.endsWith("/") ? RAILWAY_API.slice(0, -1) : RAILWAY_API}/api/guild/${encodeURIComponent(guildId)}/config`, {
             method: "POST",
             headers: { Authorization: `Bearer ${secret}`, "Content-Type": "application/json" },
             body: JSON.stringify(botConfigPayload(merged)),
