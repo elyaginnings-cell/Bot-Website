@@ -70,5 +70,5 @@ test("dashboard navigation labels are unique and point to registered pages", asy
   const ids = [...html.matchAll(/data-page="([^"]+)"/g)].map((match) => match[1]);
   assert.ok(ids.length > 0, "navigation should contain pages");
   assert.equal(new Set(ids).size, ids.length, "navigation page IDs should be unique");
-  for (const id of ids) assert.ok(app.includes(`${id}: {`), `missing page registry entry for ${id}`);
+  for (const id of ids) assert.ok(app.includes(`${id}: {`) || app.includes(`"${id}": {`), `missing page registry entry for ${id}`);
 });
