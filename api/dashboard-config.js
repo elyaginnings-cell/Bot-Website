@@ -1,41 +1,14 @@
 import { requireAnySession } from "../lib/requireAuth.js";
 import { queryExistingSchema } from "../lib/db.js";
+import { mergePreservingUnknown, botConfigPayload } from "../lib/dashboardConfigMerge.js";
 
 const RAILWAY_API = (process.env.BOT_API_URL || "https://discord-bot-production-1488.up.railway.app").replace(/\/$/, "");
-const CONFIG_KEYS = [
-  "warnChannelId", "inviteLeaderboardChannelId", "dashboardLogChannelId", "levelUpChannelId",
-  "levelingEnabled", "currencyEnabled", "shopEnabled", "leveling", "currency", "shop", "birthday",
-  "selfRoles", "levelRoles", "bump", "verification", "suggestions", "tickets", "qotd", "analytics",
-  "ai", "automod", "applications", "loa", "activityCheck", "systems", "auditLog", "logging"
-];
-
 function readBody(req) {
   if (req.body && typeof req.body === "object") return req.body;
   if (typeof req.body === "string") {
     try { return JSON.parse(req.body); } catch { return {}; }
   }
   return {};
-}
-
-function mergePreservingUnknown(current, patch) {
-  const next = { ...current };
-  for (const [key, value] of Object.entries(patch)) {
-    if (value && typeof value === "object" && !Array.isArray(value)) {
-      const oldValue = current[key] && typeof current[key] === "object" && !Array.isArray(current[key]) ? current[key] : {};
-      next[key] = mergePreservingUnknown(oldValue, value);
-    } else {
-      next[key] = value;
-    }
-  }
-  return next;
-}
-
-function botConfigPayload(config) {
-  const payload = {};
-  for (const key of CONFIG_KEYS) {
-    if (config[key] !== undefined) payload[key] = config[key];
-  }
-  return payload;
 }
 
 async function loadExistingConfig(guildId) {
