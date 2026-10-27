@@ -167,9 +167,24 @@
       "#sr-v3-root .sr-empty{opacity:.65;font-size:13px}" +
       "#sr-v3-root .sr-template-box{border:1px solid rgba(183,140,255,.3);border-radius:12px;padding:12px;margin:10px 0 14px;background:rgba(183,140,255,.06)}" +
       "#sr-v3-root .sr-template-box strong{display:block;margin-bottom:5px}" +
+      "#sr-v3-root .sr-role-picker{border:1px solid rgba(183,140,255,.28);border-radius:14px;margin:0 0 18px;overflow:hidden;background:rgba(0,0,0,.08)}" +
+      "#sr-v3-root .sr-role-picker>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;list-style:none;cursor:pointer;padding:14px 16px;min-height:54px}" +
+      "#sr-v3-root .sr-role-picker>summary::-webkit-details-marker{display:none}" +
+      "#sr-v3-root .sr-role-picker>summary strong,#sr-v3-root .sr-role-picker>summary small{display:block}" +
+      "#sr-v3-root .sr-role-picker>summary small{opacity:.68;margin-top:3px;font-size:12px}" +
+      "#sr-v3-root .sr-picker-chevron{font-size:22px;transition:transform .18s ease}" +
+      "#sr-v3-root .sr-role-picker[open] .sr-picker-chevron{transform:rotate(180deg)}" +
+      "#sr-v3-root .sr-role-picker-content{padding:0 12px 12px}" +
+      "#sr-v3-root .sr-cat-head{display:grid;grid-template-columns:58px minmax(0,1fr) minmax(130px,.8fr);align-items:center}" +
+      "#sr-v3-root .sr-cat-head>[data-cat-emoji]{width:100%!important;min-width:0}" +
+      "#sr-v3-root .sr-cat-head>[data-cat-name]{width:100%;min-width:0!important}" +
+      "#sr-v3-root .sr-cat-head>[data-cat-mode]{width:100%;min-width:0}" +
+      "#sr-v3-root .sr-cat-head>[data-add-to],#sr-v3-root .sr-cat-head>[data-del-cat]{min-width:0;white-space:normal}" +
       "#sr-v3-root #sr-v3-template-source{flex:1;min-width:180px;max-width:100%;padding:10px;border-radius:10px;border:1px solid rgba(128,128,128,.35);background:rgba(0,0,0,.15);color:inherit}" +
       "</style>" +
-      '<h3 class="subhead">Pick roles (multi-select)</h3>' +
+      '<details class="sr-role-picker" id="sr-v3-role-picker" open>' +
+      '<summary><span><strong>Choose roles</strong><small>Search and select roles to add to a category</small></span><span class="sr-picker-chevron" aria-hidden="true">⌄</span></summary>' +
+      '<div class="sr-role-picker-content">' +
       '<div class="sr-toolbar">' +
       '<input class="sr-search" id="sr-v3-search" type="search" placeholder="Search roles…" autocomplete="off">' +
       '<button type="button" class="button" id="sr-v3-select-all">Select visible</button>' +
@@ -177,6 +192,7 @@
       "</div>" +
       '<div class="sr-role-grid" id="sr-v3-role-grid"></div>' +
       '<p class="form-hint" id="sr-v3-pick-count">0 roles selected</p>' +
+      '</div></details>' +
       '<h3 class="subhead">Categories</h3>' +
       '<p class="form-hint">Add a category, then dump the selected roles into it. Mode: multi = pick many, single = one role only.</p>' +
       '<div class="sr-template-box">' +
@@ -204,6 +220,10 @@
     if (saveBtn) saveBtn.textContent = "Save Self Roles";
 
     bind();
+    var rolePicker = $("sr-v3-role-picker");
+    if (rolePicker && window.matchMedia && window.matchMedia("(max-width: 720px)").matches) {
+      rolePicker.open = false;
+    }
     renderAll();
     loadTemplateGuilds();
     return true;
