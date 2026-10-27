@@ -165,6 +165,9 @@
       "#sr-v3-root .sr-tag button{border:0;background:transparent;color:inherit;cursor:pointer;opacity:.7;padding:0 2px;font-size:14px}" +
       "#sr-v3-root .sr-tag button:hover{opacity:1}" +
       "#sr-v3-root .sr-empty{opacity:.65;font-size:13px}" +
+      "#sr-v3-root .sr-template-box{border:1px solid rgba(183,140,255,.3);border-radius:12px;padding:12px;margin:10px 0 14px;background:rgba(183,140,255,.06)}" +
+      "#sr-v3-root .sr-template-box strong{display:block;margin-bottom:5px}" +
+      "#sr-v3-root #sr-v3-template-source{flex:1;min-width:180px;max-width:100%;padding:10px;border-radius:10px;border:1px solid rgba(128,128,128,.35);background:rgba(0,0,0,.15);color:inherit}" +
       "</style>" +
       '<h3 class="subhead">Pick roles (multi-select)</h3>' +
       '<div class="sr-toolbar">' +
@@ -176,6 +179,13 @@
       '<p class="form-hint" id="sr-v3-pick-count">0 roles selected</p>' +
       '<h3 class="subhead">Categories</h3>' +
       '<p class="form-hint">Add a category, then dump the selected roles into it. Mode: multi = pick many, single = one role only.</p>' +
+      '<div class="sr-template-box">' +
+      '<strong>Copy a layout from another server</strong>' +
+      '<p class="form-hint">Copies category names and panel layout only. Roles and channels stay server-specific and must be set up here.</p>' +
+      '<div class="sr-toolbar">' +
+      '<select id="sr-v3-template-source" aria-label="Source server"><option value="">Loading servers…</option></select>' +
+      '<button type="button" class="button" id="sr-v3-copy-template">Copy layout</button>' +
+      '</div></div>' +
       '<div id="sr-v3-cats"></div>' +
       '<div class="sr-toolbar" style="margin-top:8px">' +
       '<input id="sr-v3-new-name" type="text" maxlength="100" placeholder="New category name (e.g. Colors)" style="flex:1;min-width:160px;padding:10px 12px;border-radius:10px;border:1px solid rgba(128,128,128,.35);background:rgba(0,0,0,.15);color:inherit">' +
@@ -195,6 +205,7 @@
 
     bind();
     renderAll();
+    loadTemplateGuilds();
     return true;
   }
 
@@ -407,12 +418,179 @@
     renderCats();
   }
 
+  async function loadTemplateGuilds() {
+    var select = $("sr-v3-template-source");
+    if (!select) return;
+    select.replaceChildren();
+    var loading = document.createElement("option");
+    loading.value = "";
+    loading.textContent = "Loading servers…";
+    select.appendChild(loading);
+    try {
+      var response = await fetch("/api/guilds", { credentials: "include", cache: "no-store" });
+      var data = await response.json().catch(function () { return {}; });
+      if (!response.ok) throw new Error(data.error || "Could not load servers.");
+      var targetId = String((window.selectedServer && window.selectedServer.id) || "");
+      var guilds = (Array.isArray(data.guilds) ? data.guilds : []).filter(function (g) {
+        return g && g.id && String(g.id) !== targetId;
+      });
+      select.replaceChildren();
+      var first = document.createElement("option");
+      first.value = "";
+      first.textContent = guilds.length ? "Choose a source server…" : "No other servers available";
+      select.appendChild(first);
+      guilds.forEach(function (guild) {
+        var option = document.createElement("option");
+        option.value = String(guild.id);
+        option.textContent = String(guild.name || "Unknown server");
+        select.appendChild(option);
+      });
+    } catch (error) {
+      select.replaceChildren();
+      var option = document.createElement("option");
+      option.value = "";
+      option.textContent = "Could not load servers — refresh and retry";
+      select.appendChild(option);
+      console.warn("[selfroles] template server list:", error.message);
+    }
+  }
+
+  async function copyLayoutFromServer() {
+    var select = $("sr-v3-template-source");
+    var button = $("sr-v3-copy-template");
+    var target = window.selectedServer;
+    var sourceId = select && select.value;
+    if (!target || !target.id) {
+      setStatus("Select the destination server first.", false);
+      return;
+    }
+    if (!sourceId) {
+      setStatus("Choose a source server first.", false);
+      return;
+    }
+    if (String(sourceId) === String(target.id)) {
+      setStatus("Choose a different server to copy from.", false);
+      return;
+    }
+    if (!window.confirm("Replace this server’s self-role categories and panels with a copy of the selected server’s layout? Role IDs and channel/message IDs will NOT be copied.")) return;
+
+    if (button) button.disabled = true;
+    setStatus("Loading source layout…", true);
+    try {
+      var response = await fetch("/api/config?guildId=" + encodeURIComponent(sourceId), {
+        credentials: "include",
+        cache: "no-store"
+      });
+      var data = await response.json().catch(function () { return {}; });
+      if (!response.ok) throw new Error(data.error || "Could not load source configuration.");
+      var source = data.config && data.config.selfRoles;
+      if (!source || !Array.isArray(source.categories)) {
+        throw new Error("The source server has no self-role layout to copy.");
+      }
+
+      var categoryIds = {};
+      var childIds = {};
+      source.categories.forEach(function (category) {
+        categoryIds[String(category.id)] = newId();
+        (Array.isArray(category.children) ? category.children : []).forEach(function (child) {
+          childIds[String(category.id) + ":" + String(child.id)] = newId();
+        });
+      });
+
+      var categories = source.categories.map(function (category) {
+        var oldChildren = Array.isArray(category.children) ? category.children : [];
+        if (!oldChildren.length) {
+          oldChildren = [{
+            id: String(category.id) + "-default",
+            name: category.name || "Roles",
+            emoji: category.emoji || "✨",
+            description: category.description || "",
+            mode: category.mode === "single" ? "single" : "multi"
+          }];
+          childIds[String(category.id) + ":" + String(oldChildren[0].id)] = newId();
+        }
+        return {
+          id: categoryIds[String(category.id)],
+          name: String(category.name || "Category").slice(0, 100),
+          emoji: String(category.emoji || "✨").slice(0, 16),
+          description: String(category.description || "").slice(0, 500),
+          children: oldChildren.map(function (child) {
+            return {
+              id: childIds[String(category.id) + ":" + String(child.id)] || newId(),
+              name: String(child.name || category.name || "Roles").slice(0, 100),
+              emoji: String(child.emoji || category.emoji || "✨").slice(0, 16),
+              description: String(child.description || "").slice(0, 500),
+              mode: child.mode === "single" ? "single" : "multi",
+              roles: []
+            };
+          })
+        };
+      });
+
+      var panels = (Array.isArray(source.panels) ? source.panels : []).map(function (panel) {
+        var includes = Array.isArray(panel.includes) ? panel.includes : [];
+        if (!includes.length && Array.isArray(panel.categoryIds)) {
+          includes = panel.categoryIds.map(function (id) { return { type: "cat", id: String(id) }; });
+        }
+        var mappedIncludes = includes.map(function (item) {
+          if (item && (item.type === "sub" || item.subId)) {
+            var oldCat = String(item.catId || "");
+            var oldSub = String(item.subId || "");
+            var mappedSub = childIds[oldCat + ":" + oldSub];
+            return mappedSub ? { type: "sub", catId: categoryIds[oldCat], subId: mappedSub } : null;
+          }
+          var oldId = String((item && (item.id || item.catId)) || "");
+          return categoryIds[oldId] ? { type: "cat", id: categoryIds[oldId] } : null;
+        }).filter(Boolean);
+        return {
+          id: newId(),
+          name: String(panel.name || "Panel").slice(0, 80),
+          channelId: null,
+          messageId: null,
+          buttonLabel: String(panel.buttonLabel || "Add roles").slice(0, 80),
+          removeButtonLabel: String(panel.removeButtonLabel || "Remove roles").slice(0, 80),
+          embedTitle: String(panel.embedTitle || panel.name || "Self Roles").slice(0, 256),
+          embedDescription: String(panel.embedDescription || "").slice(0, 2000),
+          categoryIds: mappedIncludes.filter(function (item) { return item.type === "cat"; }).map(function (item) { return item.id; }),
+          includes: mappedIncludes
+        };
+      });
+
+      var current = (window.currentConfig && window.currentConfig.selfRoles) || {};
+      var next = Object.assign({}, current, {
+        channelId: null,
+        messageId: null,
+        categories: categories,
+        panels: panels
+      });
+      if (typeof window.saveConfig !== "function") throw new Error("Save is not ready yet. Refresh and try again.");
+      var saved = await window.saveConfig({ selfRoles: next });
+      if (saved && saved.config && saved.config.selfRoles) {
+        window.currentConfig.selfRoles = saved.config.selfRoles;
+      } else {
+        window.currentConfig = window.currentConfig || {};
+        window.currentConfig.selfRoles = next;
+      }
+      renderAll();
+      setStatus("Layout copied. Add this server’s roles and choose channels for each panel, then save Self Roles.", true);
+    } catch (error) {
+      setStatus(error.message || "Could not copy the layout.", false);
+    } finally {
+      if (button) button.disabled = false;
+    }
+  }
+
   function bind() {
     var root = $("sr-v3-root");
     if (!root || root.dataset.bound) return;
     root.dataset.bound = "1";
 
     root.addEventListener("click", function (e) {
+      var copyButton = e.target.closest("#sr-v3-copy-template");
+      if (copyButton) {
+        copyLayoutFromServer();
+        return;
+      }
       var chip = e.target.closest(".sr-chip");
       if (chip && chip.getAttribute("data-role-id")) {
         var id = chip.getAttribute("data-role-id");
