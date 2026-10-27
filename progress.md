@@ -10,7 +10,7 @@ Plan: `docs/plans/2026-10-27-discord-dashboard-rebuild.md`
 ## Task 2: Responsive frontend shell
 - Added `dashboard-v2.html`, `dashboard-v2.css`, and `dashboard-v2.js` on the isolated branch `rebuild/dashboard-v1`.
 - Added one grouped responsive navigation system, mobile drawer, selected-server picker, overview cards, and accessible setting controls.
-- Added mapped controls for moderation, AI assistant, activity/levels, currency/shop toggles, community features, staff features, and logging.
+- Added mapped controls for moderation, AI assistant, detailed leveling and currency settings, shop toggle, community features, staff features, and logging. Mirrored legacy top-level flags are saved alongside nested feature flags.
 - Self-role data is intentionally read-only until a complete editor can preserve nested IDs and references.
 - The new shell has not replaced the existing root/login page.
 
@@ -19,7 +19,7 @@ Plan: `docs/plans/2026-10-27-discord-dashboard-rebuild.md`
 - Added `lib/dashboardConfigMerge.js` to preserve unrelated and unknown config keys during explicit partial updates.
 - Added `mode=readonly` and `mode=compat` to the existing `api/config.js` function. This avoids exceeding the Vercel Hobby plan's serverless-function limit.
 - Safe GET does not write or create a missing config row. Safe POST updates only an existing row and refuses to synthesize defaults.
-- Both safe modes verify that the requested guild exists in the bot API's guild list before reading or writing.
+- Both safe modes verify that the requested guild exists in the bot API's guild list before reading or writing. These modes live in the existing `api/config.js` function to stay under the Vercel Hobby limit.
 - Manually exercised the safe GET and partial-merge POST branches with mocked database and bot clients; verified read-only GET uses SELECT only, guild access rejects an unknown guild, and unrelated/self-role fields survive a partial update. This is not an end-to-end production test.
 
 ## Task 4: Feature pages
