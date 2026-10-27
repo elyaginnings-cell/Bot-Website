@@ -23,7 +23,7 @@ const pageFields = {
     { path: ["ai", "moderatorAssistEnabled"], label: "Moderator assistance", description: "Use the saved moderator-assist setting.", type: "toggle" }
   ],
   activity: [
-    { path: ["levelingEnabled"], label: "Leveling", description: "Enable the existing leveling feature.", type: "toggle" },
+    { path: ["leveling", "enabled"], mirrorPath: ["levelingEnabled"], defaultValue: true, label: "Leveling", description: "Enable the existing leveling feature.", type: "toggle" },
     { path: ["leveling", "levelUpMessages"], label: "Level-up messages", description: "Show messages when a member levels up.", type: "toggle" },
     { path: ["leveling", "beansEnabled"], label: "Beans on level-up", description: "Award the configured currency on level-up.", type: "toggle" },
     { path: ["leveling", "xpMin"], label: "Minimum XP", description: "Minimum XP awarded for a message.", type: "number", min: 1, max: 100000, step: 1 },
@@ -36,7 +36,7 @@ const pageFields = {
     { path: ["inviteLeaderboardChannelId"], label: "Invite leaderboard channel ID", description: "Channel used for invite leaderboard output.", type: "text" }
   ],
   economy: [
-    { path: ["currencyEnabled"], label: "Beans / currency", description: "Enable the existing currency feature.", type: "toggle" },
+    { path: ["currency", "enabled"], mirrorPath: ["currencyEnabled"], defaultValue: true, label: "Beans / currency", description: "Enable the existing currency feature.", type: "toggle" },
     { path: ["currency", "currencyName"], label: "Currency name", description: "Name displayed for your existing currency.", type: "text" },
     { path: ["currency", "currencyEmoji"], label: "Currency emoji", description: "Emoji displayed for your existing currency.", type: "text" },
     { path: ["currency", "dailyMin"], label: "Daily minimum", description: "Minimum daily reward.", type: "number", min: 0, max: 1000000, step: 1 },
@@ -51,7 +51,7 @@ const pageFields = {
     { path: ["currency", "chatCoinMin"], label: "Chat reward minimum", description: "Minimum chat reward.", type: "number", min: 0, max: 1000000, step: 1 },
     { path: ["currency", "chatCoinMax"], label: "Chat reward maximum", description: "Maximum chat reward.", type: "number", min: 0, max: 1000000, step: 1 },
     { path: ["currency", "chatCoinCooldownSeconds"], label: "Chat reward cooldown (seconds)", description: "Cooldown between chat rewards.", type: "number", min: 0, max: 86400, step: 1 },
-    { path: ["shopEnabled"], label: "Shop", description: "Enable the existing shop feature.", type: "toggle" }
+    { path: ["shop", "enabled"], mirrorPath: ["shopEnabled"], defaultValue: true, label: "Shop", description: "Enable the existing shop feature.", type: "toggle" }
   ],
   community: [
     { path: ["birthday", "enabled"], label: "Birthdays", description: "Use the saved birthday feature settings.", type: "toggle" },
@@ -204,7 +204,7 @@ function renderFeaturePage() {
     const current = getAt(state.config, field.path);
     const id = `setting-${page}-${index}`;
     if (field.type === "toggle") {
-      const checked = current === true || current === 1 || current === "true";
+      const checked = current === undefined ? field.defaultValue === true : (current === true || current === 1 || current === "true");
       return `<label class="setting-row" for="${id}"><span class="setting-copy"><strong>${escapeHtml(field.label)}</strong><small>${escapeHtml(field.description)}</small></span><span class="toggle-control"><input id="${id}" type="checkbox" data-setting-index="${index}" ${checked ? "checked" : ""}><span class="toggle-track"></span></span></label>`;
     }
     const inputType = field.type === "number" ? "number" : "text";
@@ -219,7 +219,8 @@ function renderFeaturePage() {
     if (field.type === "toggle") value = input.checked;
     else if (field.type === "number") value = input.value.trim() === "" ? null : Number(input.value);
     else value = input.value.trim() || null;
-    const original = getAt(state.config, field.path);
+    const originalRaw = getAt(state.config, field.path);
+    const original = originalRaw === undefined && field.defaultValue !== undefined ? field.defaultValue : originalRaw;
     const normalizedOriginal = field.type === "toggle" ? (original === true || original === 1 || original === "true") : (original ?? null);
     if (value === normalizedOriginal) state.dirty.delete(input.dataset.settingIndex);
     else state.dirty.set(input.dataset.settingIndex, { field, value });
@@ -258,7 +259,10 @@ async function loadFeatureConfig() {
 async function saveFeatureConfig() {
   if (state.saving || !state.guildId || !state.config || !state.dirty.size) return;
   const patch = {};
-  for (const { field, value } of state.dirty.values()) mergePatch(patch, buildPatch(field.path, value));
+  for (const { field, value } of state.dirty.values()) {
+    mergePatch(patch, buildPatch(field.path, value));
+    if (field.mirrorPath) mergePatch(patch, buildPatch(field.mirrorPath, value));
+  }
   state.saving = true;
   const button = $("save-config-button");
   button.disabled = true;
