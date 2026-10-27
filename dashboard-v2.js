@@ -148,6 +148,10 @@ function renderFeaturePage() {
   saveButton.hidden = true;
   saveButton.disabled = true;
   status.textContent = "";
+  if (!state.config || typeof state.config !== "object") {
+    host.innerHTML = '<div class="empty-state"><strong>No saved configuration was found.</strong><p>To protect your data, this page will not create a default config or save over an empty object.</p></div>';
+    return;
+  }
   if (page === "self-roles") {
     const categories = Array.isArray(state.config?.selfRoles?.categories) ? state.config.selfRoles.categories : [];
     const categoryCount = categories.length;
