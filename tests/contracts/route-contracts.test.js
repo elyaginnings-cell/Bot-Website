@@ -64,6 +64,8 @@ test("new config route uses existing schema without automatic DDL", async () => 
   assert.match(route, /if \(req\.method === "GET"\)/);
   assert.match(route, /No saved configuration exists/);
   assert.match(route, /Refusing to create a replacement from empty defaults/);
+  assert.match(route, /async function assertGuildAccess/);
+  assert.equal((route.match(/await assertGuildAccess\(guildId\)/g) || []).length, 2, "both safe read and write modes must validate guild access");
 });
 
 test("dashboard navigation labels are unique and point to registered pages", async () => {
