@@ -52,6 +52,18 @@ test("new shell uses current read endpoints and does not save config on boot", a
   assert.match(app, /credentials:\s*"same-origin"/);
 });
 
+
+test("new config route uses existing schema without automatic DDL", async () => {
+  const db = await read("../../lib/db.js");
+  const route = await read("../../api/dashboard-config.js");
+  assert.match(db, /export async function queryExistingSchema/);
+  assert.match(route, /queryExistingSchema\(/);
+  assert.doesNotMatch(route, /ensureSchema|CREATE TABLE|ALTER TABLE|TRUNCATE|DROP TABLE/);
+  assert.match(route, /if \(req\.method === "GET"\)/);
+  assert.match(route, /No saved configuration exists/);
+  assert.match(route, /Refusing to create a replacement from empty defaults/);
+});
+
 test("dashboard navigation labels are unique and point to registered pages", async () => {
   const html = await read("../../dashboard-v2.html");
   const app = await read("../../dashboard-v2.js");
