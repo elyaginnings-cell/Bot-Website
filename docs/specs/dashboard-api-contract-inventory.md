@@ -36,7 +36,10 @@ Source: `vercel.json`.
 | `api/guilds.js` | Authenticates request, calls Railway `/api/guilds`, returns `{ guilds }`; separate metadata and invite branches exist | `BOT_API_URL`, `DASHBOARD_API_SECRET`, Discord bot token for relevant branches. |
 | `api/channels.js` | Authenticates request and calls Railway `/api/guild/:guildId/channels` or `/roles` | `guildId`, `DASHBOARD_API_SECRET`; keep guild-scoped requests isolated. |
 | `api/bot-status.js` | Authenticates request; checks website DB health and Railway status; presence GET/POST is handled on same route | `BOT_API_URL`, `DASHBOARD_API_SECRET`, database URL. |
-| `api/config.js` | GET loads mirrored config and may fetch bot config; POST merges config and pushes to Railway | `guildId`, existing `lib/guildConfig.js` semantics, `DASHBOARD_API_SECRET`. GET has possible write side effects when recovering from missing mirrored config. |
+| `api/config.js` | Legacy GET may fetch bot config and write a missing mirror; POST merges and pushes config | `guildId`, existing `lib/guildConfig.js` semantics, `DASHBOARD_API_SECRET`. Avoid using this GET in the new UI because it can write during a read. |
+| `api/dashboard-config.js` (new) | GET reads an existing `bot_state` row using a no-DDL query; POST merges an explicit patch into an existing row and attempts a Railway sync | Uses `queryExistingSchema`; does not create tables, migrate schema, create missing config rows, or save on GET. POST refuses when no existing config row exists. |
+| `lib/dashboardConfigMerge.js` (new) | Pure partial merge and allowlisted bot payload helper | Preserves unknown keys and unrelated nested settings; arrays change only when explicitly included in the patch. |
+| `lib/db.js` | Existing `query()` still uses the legacy schema-initialization path; new `queryExistingSchema()` runs a query against the already-provisioned schema only | New dashboard config route uses the no-DDL helper. Existing login code remains unchanged. |
 | `lib/accounts.js` | Account CRUD and Discord identity linking against existing `accounts` table; password hashing uses bcrypt | Preserve current column names and account records. |
 | `lib/guildConfig.js` | Guild config key convention is `guild_config:<guildId>`; merge/normalization supports nested feature objects and self-role structures | Do not alter schema or normalize/rewrite records on read. Partial writes must preserve unknown and unrelated keys. |
 
@@ -49,7 +52,15 @@ This is a starting list, not a complete feature sign-off. Before the new shell r
 ## First isolated shell deliverable
 
 - Added `dashboard-v2.html`, `dashboard-v2.css`, and `dashboard-v2.js` on `rebuild/dashboard-v1`.
-- The shell calls the existing read-oriented `/api/guilds` and `/api/bot-status` endpoints with same-origin credentials.
-- It does not call `/api/config` or save settings during initial load.
+- The shell calls the existing `/api/guilds` endpoint with same-origin credentials. It intentionally does not call `/api/bot-status`, whose DB health probe uses the legacy query helper that can initialize schema.
+- It does not call the legacy `/api/config` route. The new `/api/dashboard-config` GET is read-only and uses no-DDL database access. Nothing is saved during initial load.
 - Feature pages are intentionally marked as not connected until the exact legacy configuration contracts are mapped. This prevents placeholder controls from accidentally writing empty data.
 - The production entry point has not been changed.
+
+## Initial editable settings and known limitations
+
+The new shell currently has editable controls for existing mapped fields: automod enabled, warning/log channel IDs, leveling enabled and channels, currency/shop enabled, saved community feature enable flags, staff applications/LOA/activity-check flags, and logging/audit-log flags. Self-role data is shown as read-only counts until a dedicated editor can preserve every nested ID and message/channel reference. This is intentionally safer than shipping a partial self-role editor that might erase saved role menus.
+
+A save merges only the changed fields into the existing JSON object, writes the existing `bot_state` row using a parameterized UPDATE, then attempts to sync the allowlisted config fields to the existing Railway API. If no row exists, the endpoint refuses to create one from defaults. If bot sync fails after the database update, the UI reports the warning rather than pretending both systems were updated.
+
+Automated tests were added for route aliases, auth/session invariants, no-DDL route design, navigation registry coverage, and partial merge preservation. A GitHub Actions workflow runs these with Node's built-in test runner. The tests still need a completed CI run before claiming they pass.
