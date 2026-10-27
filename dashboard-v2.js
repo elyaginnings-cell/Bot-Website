@@ -12,8 +12,8 @@ const pageMeta = {
 const pageFields = {
   moderation: [
     { path: ["automod", "enabled"], label: "Auto moderation", description: "Enable the existing automod configuration.", type: "toggle" },
-    { path: ["warnChannelId"], label: "Warning channel ID", description: "Discord channel ID used for warning logs.", type: "text" },
-    { path: ["dashboardLogChannelId"], label: "Dashboard log channel ID", description: "Discord channel ID for dashboard-related logs.", type: "text" }
+    { path: ["warnChannelId"], label: "Warning channel", description: "Discord channel used for warning logs.", type: "channel" },
+    { path: ["dashboardLogChannelId"], label: "Dashboard log channel", description: "Discord channel for dashboard-related logs.", type: "channel" }
   ],
   ai: [
     { path: ["ai", "enabled"], label: "AI assistant", description: "Enable AI responses using the saved bot configuration.", type: "toggle" },
@@ -32,8 +32,8 @@ const pageFields = {
     { path: ["leveling", "beansBase"], label: "Base level-up reward", description: "Base currency reward for leveling up.", type: "number", min: 0, max: 1000000, step: 1 },
     { path: ["leveling", "beansLinear"], label: "Linear reward factor", description: "Linear component of the level-up reward formula.", type: "number", min: 0, max: 1000000, step: 1 },
     { path: ["leveling", "beansQuadratic"], label: "Quadratic reward factor", description: "Quadratic component of the level-up reward formula.", type: "number", min: 0, max: 1000000, step: 1 },
-    { path: ["levelUpChannelId"], label: "Level-up channel ID", description: "Channel where level-up notices are sent.", type: "text" },
-    { path: ["inviteLeaderboardChannelId"], label: "Invite leaderboard channel ID", description: "Channel used for invite leaderboard output.", type: "text" }
+    { path: ["levelUpChannelId"], label: "Level-up channel", description: "Channel where level-up notices are sent.", type: "channel" },
+    { path: ["inviteLeaderboardChannelId"], label: "Invite leaderboard channel", description: "Channel used for invite leaderboard output.", type: "channel" }
   ],
   economy: [
     { path: ["currency", "enabled"], mirrorPath: ["currencyEnabled"], defaultValue: true, label: "Beans / currency", description: "Enable the existing currency feature.", type: "toggle" },
@@ -75,6 +75,9 @@ const $ = (id) => document.getElementById(id);
 const state = {
   page: "overview",
   guilds: [],
+  channels: [],
+  channelsLoadedFor: "",
+  channelsLoadFailed: false,
   guildId: sessionStorage.getItem("dashboard-v2-guild") || "",
   config: null,
   configLoadedFor: "",
@@ -207,6 +210,18 @@ function renderFeaturePage() {
       const checked = current === undefined ? field.defaultValue === true : (current === true || current === 1 || current === "true");
       return `<label class="setting-row" for="${id}"><span class="setting-copy"><strong>${escapeHtml(field.label)}</strong><small>${escapeHtml(field.description)}</small></span><span class="toggle-control"><input id="${id}" type="checkbox" data-setting-index="${index}" ${checked ? "checked" : ""}><span class="toggle-track"></span></span></label>`;
     }
+    if (field.type === "channel" && !state.channelsLoadFailed) {
+      const savedId = current == null ? "" : String(current);
+      const options = [`<option value="">Not configured</option>`];
+      if (savedId && !state.channels.some((channel) => String(channel.id) === savedId)) {
+        options.push(`<option value="${escapeHtml(savedId)}" selected>Saved channel unavailable · ${escapeHtml(savedId)}</option>`);
+      }
+      state.channels.forEach((channel) => {
+        const selected = String(channel.id) === savedId ? " selected" : "";
+        options.push(`<option value="${escapeHtml(channel.id)}"${selected}>#${escapeHtml(channel.name || channel.id)}</option>`);
+      });
+      return `<label class="setting-row text-setting" for="${id}"><span class="setting-copy"><strong>${escapeHtml(field.label)}</strong><small>${escapeHtml(field.description)}</small></span><select id="${id}" class="text-control" data-setting-index="${index}">${options.join("")}</select></label>`;
+    }
     const inputType = field.type === "number" ? "number" : "text";
     const numberAttrs = field.type === "number" ? `min="${field.min ?? 0}" max="${field.max ?? 1000000}" step="${field.step ?? 1}"` : "";
     return `<label class="setting-row text-setting" for="${id}"><span class="setting-copy"><strong>${escapeHtml(field.label)}</strong><small>${escapeHtml(field.description)}</small></span><input id="${id}" class="text-control" type="${inputType}" ${numberAttrs} autocomplete="off" spellcheck="false" data-setting-index="${index}" value="${escapeHtml(current ?? "")}" placeholder="Not configured"></label>`;
@@ -240,8 +255,22 @@ async function loadFeatureConfig() {
   $("save-config-button").hidden = true;
   $("config-status").textContent = "Reading existing saved configuration";
   try {
-    const result = await requestJson(`/api/config?guildId=${encodeURIComponent(state.guildId)}&mode=readonly`);
+    const [result, channelResult] = await Promise.all([
+      requestJson(`/api/config?guildId=${encodeURIComponent(state.guildId)}&mode=readonly`),
+      state.channelsLoadedFor === state.guildId
+        ? Promise.resolve({ channels: state.channels })
+        : requestJson(`/api/channels?guildId=${encodeURIComponent(state.guildId)}`).catch(() => ({ channels: null }))
+    ]);
     if (token !== state.loadToken) return;
+    if (channelResult.channels === null) {
+      state.channelsLoadFailed = true;
+      state.channels = [];
+      state.channelsLoadedFor = state.guildId;
+    } else if (Array.isArray(channelResult.channels)) {
+      state.channels = channelResult.channels.filter((channel) => channel && channel.id);
+      state.channelsLoadFailed = false;
+      state.channelsLoadedFor = state.guildId;
+    }
     state.config = result.config && typeof result.config === "object" ? result.config : null;
     state.configLoadedFor = state.guildId;
     renderFeaturePage();
@@ -375,6 +404,9 @@ $("guild-select").addEventListener("change", (event) => {
   state.guildId = event.target.value;
   state.config = null;
   state.configLoadedFor = "";
+  state.channels = [];
+  state.channelsLoadedFor = "";
+  state.channelsLoadFailed = false;
   state.dirty.clear();
   updateSelectedGuild();
   $("guild-eyebrow").textContent = state.guilds.find((guild) => String(guild.id) === state.guildId)?.name?.toUpperCase() || "COFFEE SHOP CONTROL ROOM";
