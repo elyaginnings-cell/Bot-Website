@@ -24,11 +24,33 @@ const pageFields = {
   ],
   activity: [
     { path: ["levelingEnabled"], label: "Leveling", description: "Enable the existing leveling feature.", type: "toggle" },
+    { path: ["leveling", "levelUpMessages"], label: "Level-up messages", description: "Show messages when a member levels up.", type: "toggle" },
+    { path: ["leveling", "beansEnabled"], label: "Beans on level-up", description: "Award the configured currency on level-up.", type: "toggle" },
+    { path: ["leveling", "xpMin"], label: "Minimum XP", description: "Minimum XP awarded for a message.", type: "number", min: 1, max: 100000, step: 1 },
+    { path: ["leveling", "xpMax"], label: "Maximum XP", description: "Maximum XP awarded for a message.", type: "number", min: 1, max: 100000, step: 1 },
+    { path: ["leveling", "xpCooldownSeconds"], label: "XP cooldown (seconds)", description: "Cooldown between XP awards.", type: "number", min: 5, max: 86400, step: 1 },
+    { path: ["leveling", "beansBase"], label: "Base level-up reward", description: "Base currency reward for leveling up.", type: "number", min: 0, max: 1000000, step: 1 },
+    { path: ["leveling", "beansLinear"], label: "Linear reward factor", description: "Linear component of the level-up reward formula.", type: "number", min: 0, max: 1000000, step: 1 },
+    { path: ["leveling", "beansQuadratic"], label: "Quadratic reward factor", description: "Quadratic component of the level-up reward formula.", type: "number", min: 0, max: 1000000, step: 1 },
     { path: ["levelUpChannelId"], label: "Level-up channel ID", description: "Channel where level-up notices are sent.", type: "text" },
     { path: ["inviteLeaderboardChannelId"], label: "Invite leaderboard channel ID", description: "Channel used for invite leaderboard output.", type: "text" }
   ],
   economy: [
     { path: ["currencyEnabled"], label: "Beans / currency", description: "Enable the existing currency feature.", type: "toggle" },
+    { path: ["currency", "currencyName"], label: "Currency name", description: "Name displayed for your existing currency.", type: "text" },
+    { path: ["currency", "currencyEmoji"], label: "Currency emoji", description: "Emoji displayed for your existing currency.", type: "text" },
+    { path: ["currency", "dailyMin"], label: "Daily minimum", description: "Minimum daily reward.", type: "number", min: 0, max: 1000000, step: 1 },
+    { path: ["currency", "dailyMax"], label: "Daily maximum", description: "Maximum daily reward.", type: "number", min: 0, max: 1000000, step: 1 },
+    { path: ["currency", "dailyStreakBonus"], label: "Daily streak bonus", description: "Bonus for maintaining a daily claim streak.", type: "number", min: 0, max: 1000000, step: 1 },
+    { path: ["currency", "dailyMaxStreak"], label: "Maximum daily streak", description: "Maximum streak counted by the daily system.", type: "number", min: 1, max: 3650, step: 1 },
+    { path: ["currency", "workMin"], label: "Work minimum", description: "Minimum work reward.", type: "number", min: 0, max: 1000000, step: 1 },
+    { path: ["currency", "workMax"], label: "Work maximum", description: "Maximum work reward.", type: "number", min: 0, max: 1000000, step: 1 },
+    { path: ["currency", "workCooldownMinutes"], label: "Work cooldown (minutes)", description: "Cooldown between work rewards.", type: "number", min: 0, max: 10080, step: 1 },
+    { path: ["currency", "chatCoinsEnabled"], label: "Chat rewards", description: "Award currency through the existing chat reward system.", type: "toggle" },
+    { path: ["currency", "chatCoinChance"], label: "Chat reward chance (%)", description: "Chance for an eligible message to earn currency.", type: "number", min: 0, max: 100, step: 1 },
+    { path: ["currency", "chatCoinMin"], label: "Chat reward minimum", description: "Minimum chat reward.", type: "number", min: 0, max: 1000000, step: 1 },
+    { path: ["currency", "chatCoinMax"], label: "Chat reward maximum", description: "Maximum chat reward.", type: "number", min: 0, max: 1000000, step: 1 },
+    { path: ["currency", "chatCoinCooldownSeconds"], label: "Chat reward cooldown (seconds)", description: "Cooldown between chat rewards.", type: "number", min: 0, max: 86400, step: 1 },
     { path: ["shopEnabled"], label: "Shop", description: "Enable the existing shop feature.", type: "toggle" }
   ],
   community: [
