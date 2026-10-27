@@ -47,8 +47,8 @@ test("guild configuration retains its existing key convention", async () => {
 test("new shell uses current read endpoints and does not save config on boot", async () => {
   const app = await read("../../dashboard-v2.js");
   assert.match(app, /requestJson\("\/api\/guilds"\)/);
-  assert.match(app, /requestJson\("\/api\/bot-status"\)/);
-  assert.doesNotMatch(app, /fetch\(["'`]\/api\/config/);
+  assert.doesNotMatch(app, /\/api\/bot-status/);
+  assert.doesNotMatch(app, /\/api\/config/);
   assert.match(app, /credentials:\s*"same-origin"/);
 });
 
