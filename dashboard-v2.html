@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#10091f">
+  <title>Coffee Shop · Dashboard</title>
+  <link rel="stylesheet" href="/dashboard-v2.css">
+  <script type="module" src="/dashboard-v2.js"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar" aria-label="Main navigation">
+      <a class="brand" href="#overview" aria-label="Coffee Shop dashboard home">
+        <span class="brand-mark">☕</span>
+        <span><strong>Coffee Shop</strong><small>Bot dashboard</small></span>
+      </a>
+      <div class="server-picker">
+        <label for="guild-select">YOUR SERVER</label>
+        <select id="guild-select" disabled><option>Loading servers…</option></select>
+      </div>
+      <nav class="nav-groups" aria-label="Dashboard pages">
+        <p class="nav-label">WORKSPACE</p>
+        <a class="nav-link active" href="#overview" data-page="overview"><span>◈</span> Overview</a>
+        <a class="nav-link" href="#moderation" data-page="moderation"><span>⚖</span> Moderation</a>
+        <a class="nav-link" href="#activity" data-page="activity"><span>↗</span> Activity & levels</a>
+        <p class="nav-label">COMMUNITY</p>
+        <a class="nav-link" href="#economy" data-page="economy"><span>☕</span> Economy & shop</a>
+        <a class="nav-link" href="#community" data-page="community"><span>✳</span> Community tools</a>
+        <a class="nav-link" href="#self-roles" data-page="self-roles"><span>♙</span> Self roles</a>
+        <p class="nav-label">MANAGE</p>
+        <a class="nav-link" href="#staff" data-page="staff"><span>♧</span> Staff tools</a>
+        <a class="nav-link" href="#settings" data-page="settings"><span>⚙</span> Settings</a>
+      </nav>
+      <div class="sidebar-footer"><span class="status-dot" id="sidebar-status-dot"></span><span id="sidebar-status">Checking bot status…</span></div>
+    </aside>
+    <div class="mobile-scrim" id="mobile-scrim" hidden></div>
+    <main class="main-area">
+      <header class="topbar">
+        <button class="icon-button menu-button" id="menu-button" aria-label="Open navigation" aria-expanded="false">☰</button>
+        <div class="breadcrumbs"><span>Workspace</span><span class="crumb-slash">/</span><strong id="topbar-title">Overview</strong></div>
+        <div class="topbar-right"><span class="status-pill"><i id="bot-status-dot"></i><span id="bot-status-text">Checking connection</span></span><button class="quiet-button" id="refresh-button">↻ <span>Refresh</span></button></div>
+      </header>
+      <section class="page-wrap">
+        <div class="page-heading"><div><p class="eyebrow" id="guild-eyebrow">COFFEE SHOP CONTROL ROOM</p><h1 id="page-heading">Your server, at a glance.</h1><p class="subheading" id="page-description">A clearer home for your Discord community tools.</p></div><div class="heading-actions"><span class="server-chip" id="selected-server">Loading server…</span></div></div>
+        <div id="notice" class="notice" role="status" hidden></div>
+        <section id="overview-page" class="page-content" data-page-content="overview">
+          <div class="stats-grid">
+            <article class="stat-card"><div class="stat-top"><span>Bot connection</span><span class="stat-icon violet">⌁</span></div><strong id="stat-bot">Checking…</strong><p id="stat-bot-detail">Contacting your bot service</p></article>
+            <article class="stat-card"><div class="stat-top"><span>Selected server</span><span class="stat-icon pink">⌂</span></div><strong id="stat-server">—</strong><p id="stat-server-detail">Choose a server above</p></article>
+            <article class="stat-card"><div class="stat-top"><span>Dashboard session</span><span class="stat-icon blue">◉</span></div><strong id="stat-session">Checking…</strong><p id="stat-session-detail">Using existing sign-in</p></article>
+          </div>
+          <div class="section-heading"><div><h2>Jump back in</h2><p>Open a workspace to manage that part of your server.</p></div></div>
+          <div class="quick-grid">
+            <a class="quick-card" href="#moderation"><span class="quick-icon">⚖</span><span><strong>Moderation</strong><small>Review moderation settings</small></span><span class="arrow">↗</span></a>
+            <a class="quick-card" href="#economy"><span class="quick-icon">☕</span><span><strong>Economy & shop</strong><small>Manage beans and shop features</small></span><span class="arrow">↗</span></a>
+            <a class="quick-card" href="#community"><span class="quick-icon">✳</span><span><strong>Community tools</strong><small>Configure community features</small></span><span class="arrow">↗</span></a>
+            <a class="quick-card" href="#self-roles"><span class="quick-icon">♙</span><span><strong>Self roles</strong><small>Manage role menus carefully</small></span><span class="arrow">↗</span></a>
+          </div>
+          <div class="info-panel"><div class="info-symbol">✦</div><div><h3>Built around your existing setup</h3><p>This replacement dashboard uses the current sign-in and API routes. It does not create a new account system or change your database schema. Feature editors will be connected to their existing settings contracts before this interface replaces the current dashboard.</p></div></div>
+        </section>
+        <section id="feature-page" class="page-content" data-page-content="feature" hidden>
+          <div class="feature-intro"><span class="feature-symbol" id="feature-symbol">✦</span><div><h2 id="feature-title">Feature workspace</h2><p id="feature-summary">Feature details</p></div></div>
+          <div class="feature-status-card"><div><span class="eyebrow">INTEGRATION STATUS</span><h3 id="feature-state-title">Existing settings contract being mapped</h3><p id="feature-state-detail">This page is part of the new navigation. Its controls will only be enabled after they are connected to the existing API and verified to preserve saved configuration.</p></div><span class="status-pill neutral">Not connected yet</span></div>
+          <div class="feature-footnote"><span>ⓘ</span><p>Nothing on this page will overwrite your server settings. The old dashboard remains the source of truth until this page is connected and tested.</p></div>
+        </section>
+        <footer class="page-footer"><span>Coffee Shop Dashboard</span><span>Changes are only saved when you explicitly save them.</span></footer>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
