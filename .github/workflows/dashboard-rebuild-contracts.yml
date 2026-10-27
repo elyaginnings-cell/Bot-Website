@@ -1,0 +1,22 @@
+name: Dashboard rebuild contracts
+
+on:
+  push:
+    branches:
+      - rebuild/dashboard-v1
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  contract-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Run compatibility and config-merge tests
+        run: node --test tests/contracts/*.test.js tests/backend/*.test.js
