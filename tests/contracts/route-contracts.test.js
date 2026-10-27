@@ -48,7 +48,9 @@ test("new shell uses current read endpoints and does not save config on boot", a
   const app = await read("../../dashboard-v2.js");
   assert.match(app, /requestJson\("\/api\/guilds"\)/);
   assert.doesNotMatch(app, /\/api\/bot-status/);
-  assert.doesNotMatch(app, /\/api\/config/);
+  assert.match(app, /mode=readonly/);
+  assert.match(app, /mode=compat/);
+  assert.doesNotMatch(app, /\/api\/dashboard-config/);
   assert.match(app, /credentials:\s*"same-origin"/);
 });
 
