@@ -207,7 +207,9 @@ function renderFeaturePage() {
       const checked = current === true || current === 1 || current === "true";
       return `<label class="setting-row" for="${id}"><span class="setting-copy"><strong>${escapeHtml(field.label)}</strong><small>${escapeHtml(field.description)}</small></span><span class="toggle-control"><input id="${id}" type="checkbox" data-setting-index="${index}" ${checked ? "checked" : ""}><span class="toggle-track"></span></span></label>`;
     }
-    return `<label class="setting-row text-setting" for="${id}"><span class="setting-copy"><strong>${escapeHtml(field.label)}</strong><small>${escapeHtml(field.description)}</small></span><input id="${id}" class="text-control" type="text" autocomplete="off" spellcheck="false" data-setting-index="${index}" value="${escapeHtml(current ?? "")}" placeholder="Not configured"></label>`;
+    const inputType = field.type === "number" ? "number" : "text";
+    const numberAttrs = field.type === "number" ? `min="${field.min ?? 0}" max="${field.max ?? 1000000}" step="${field.step ?? 1}"` : "";
+    return `<label class="setting-row text-setting" for="${id}"><span class="setting-copy"><strong>${escapeHtml(field.label)}</strong><small>${escapeHtml(field.description)}</small></span><input id="${id}" class="text-control" type="${inputType}" ${numberAttrs} autocomplete="off" spellcheck="false" data-setting-index="${index}" value="${escapeHtml(current ?? "")}" placeholder="Not configured"></label>`;
   }).join("");
   host.append(form);
   saveButton.hidden = false;
@@ -215,6 +217,7 @@ function renderFeaturePage() {
     const field = fields[Number(input.dataset.settingIndex)];
     let value;
     if (field.type === "toggle") value = input.checked;
+    else if (field.type === "number") value = input.value.trim() === "" ? null : Number(input.value);
     else value = input.value.trim() || null;
     const original = getAt(state.config, field.path);
     const normalizedOriginal = field.type === "toggle" ? (original === true || original === 1 || original === "true") : (original ?? null);
