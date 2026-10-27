@@ -1,6 +1,7 @@
 const pageMeta = {
   overview: { title: "Overview", heading: "Your server, at a glance.", description: "A clearer home for your Discord community tools.", symbol: "◈", summary: "A quick view of your bot and selected server." },
   moderation: { title: "Moderation", heading: "Keep your community safe.", description: "Moderation tools and policy controls.", symbol: "⚖", summary: "Moderation and logging settings." },
+  ai: { title: "AI assistant", heading: "Tune your community assistant.", description: "Manage how the bot AI responds.", symbol: "✧", summary: "Existing AI response settings." },
   activity: { title: "Activity & levels", heading: "Make activity feel rewarding.", description: "Leveling, invites, and member activity.", symbol: "↗", summary: "Leveling and invite tracking settings." },
   economy: { title: "Economy & shop", heading: "Your community economy.", description: "Beans, rewards, and shop settings.", symbol: "☕", summary: "Currency and shop settings." },
   community: { title: "Community tools", heading: "Bring your community together.", description: "Community features in one place.", symbol: "✳", summary: "Welcome, verification, tickets, suggestions, QOTD, and bump." },
@@ -13,6 +14,13 @@ const pageFields = {
     { path: ["automod", "enabled"], label: "Auto moderation", description: "Enable the existing automod configuration.", type: "toggle" },
     { path: ["warnChannelId"], label: "Warning channel ID", description: "Discord channel ID used for warning logs.", type: "text" },
     { path: ["dashboardLogChannelId"], label: "Dashboard log channel ID", description: "Discord channel ID for dashboard-related logs.", type: "text" }
+  ],
+  ai: [
+    { path: ["ai", "enabled"], label: "AI assistant", description: "Enable AI responses using the saved bot configuration.", type: "toggle" },
+    { path: ["ai", "mentionAlwaysRespond"], label: "Always respond to mentions", description: "Respond whenever the assistant is mentioned.", type: "toggle" },
+    { path: ["ai", "replyAlwaysRespond"], label: "Always respond to replies", description: "Respond to replies directed at the assistant.", type: "toggle" },
+    { path: ["ai", "automodEnabled"], label: "AI moderation assistance", description: "Use the saved AI moderation-assist setting.", type: "toggle" },
+    { path: ["ai", "moderatorAssistEnabled"], label: "Moderator assistance", description: "Use the saved moderator-assist setting.", type: "toggle" }
   ],
   activity: [
     { path: ["levelingEnabled"], label: "Leveling", description: "Enable the existing leveling feature.", type: "toggle" },
