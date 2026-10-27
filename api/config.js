@@ -133,7 +133,7 @@ export default async function handler(req, res) {
         [`guild_config:${guildId}`]
       );
       const value = result.rows[0]?.value;
-      const config = value && typeof value === "object" && !Array.isArray(value) ? value : null;
+      const config = value && typeof value === "object" && !Array.isArray(value) && Object.keys(value).length > 0 ? value : null;
       return res.status(200).json({ config, source: config ? "postgres-read-only" : "empty", found: Boolean(config) });
     }
 
@@ -154,7 +154,7 @@ export default async function handler(req, res) {
         [`guild_config:${guildId}`]
       );
       const currentValue = currentResult.rows[0]?.value;
-      if (!currentValue || typeof currentValue !== "object" || Array.isArray(currentValue)) {
+      if (!currentValue || typeof currentValue !== "object" || Array.isArray(currentValue) || Object.keys(currentValue).length === 0) {
         return res.status(409).json({
           error: "No saved configuration exists for this server. Refusing to create a replacement from empty defaults.",
           code: "CONFIG_NOT_FOUND"
