@@ -88,6 +88,31 @@ function buildFullPushBody(mirrored) {
   return out;
 }
 
+async function assertGuildAccess(guildId) {
+  const secret = process.env.DASHBOARD_API_SECRET;
+  if (!secret) {
+    const error = new Error("Missing DASHBOARD_API_SECRET on Vercel.");
+    error.status = 500;
+    throw error;
+  }
+  const base = RAILWAY_API.endsWith("/") ? RAILWAY_API.slice(0, -1) : RAILWAY_API;
+  const response = await fetch(`${base}/api/guilds`, {
+    headers: { Authorization: `Bearer ${secret}` },
+    cache: "no-store"
+  });
+  if (!response.ok) {
+    const error = new Error("Could not verify server access with the bot API.");
+    error.status = 502;
+    throw error;
+  }
+  const data = await response.json().catch(() => ({}));
+  const guilds = Array.isArray(data.guilds) ? data.guilds : [];
+  if (!guilds.some((guild) => String(guild.id) === String(guildId))) {
+    const error = new Error("This server is not available to the dashboard.");
+    error.status = 403;
+    throw error;
+  }
+}
 export default async function handler(req, res) {
   try {
     try {
@@ -102,6 +127,7 @@ export default async function handler(req, res) {
     // New dashboard GET path: strictly read-only and does not run schema initialization.
     if (mode === "readonly" && req.method === "GET") {
       if (!guildId) return res.status(400).json({ error: "Missing guildId" });
+      await assertGuildAccess(guildId);
       const result = await queryExistingSchema(
         "SELECT value FROM bot_state WHERE key = $1",
         [`guild_config:${guildId}`]
@@ -114,6 +140,7 @@ export default async function handler(req, res) {
     // New dashboard save path: update only an existing row and preserve every unrelated key.
     if (mode === "compat" && req.method === "POST") {
       if (!guildId) return res.status(400).json({ error: "Missing guildId" });
+      await assertGuildAccess(guildId);
       const body = req.body && typeof req.body === "object"
         ? req.body
         : typeof req.body === "string"
