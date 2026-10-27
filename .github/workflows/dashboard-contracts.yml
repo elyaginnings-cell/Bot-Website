@@ -1,0 +1,20 @@
+name: Dashboard contracts
+
+on:
+  push:
+    branches:
+      - rebuild/dashboard-v1
+  pull_request:
+    branches:
+      - rebuild/dashboard-v1
+
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run dashboard contract tests
+        run: node --test tests/contracts/*.test.js tests/backend/*.test.js
