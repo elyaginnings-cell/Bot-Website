@@ -95,20 +95,19 @@ async function loadDashboard() {
   $("refresh-button").disabled = true;
   $("refresh-button").textContent = "↻ Loading";
   try {
-    const [guildData, statusData] = await Promise.all([
-      requestJson("/api/guilds"),
-      requestJson("/api/bot-status")
-    ]);
+    // Boot uses only the existing guild-list API. The legacy bot-status endpoint
+    // runs a database health query through a helper that may initialize schema,
+    // so this replacement shell avoids that endpoint entirely.
+    const guildData = await requestJson("/api/guilds");
     state.guilds = Array.isArray(guildData.guilds) ? guildData.guilds : [];
-    state.status = statusData;
     renderGuildPicker();
-    const botOnline = Boolean(statusData.online || statusData.bot?.online || statusData.reachable);
-    setBotStatus(botOnline, botOnline ? "Reachable" : "Needs attention", statusData.botError || statusData.error || (botOnline ? "The bot service responded" : "The service could not confirm its status"));
+    setBotStatus(true, "API reachable", "The authenticated server-list request succeeded");
     $("stat-session").textContent = "Authorized";
     $("stat-session-detail").textContent = "Existing dashboard session accepted";
-    if (statusData.websitePostgresOk === false) $("stat-session-detail").textContent = "Signed in · database health needs attention";
-    if (!state.guilds.length) showNotice("Your session is working, but the server list is empty. Check that the bot is in a server and that the dashboard API is configured.");
-    if (statusData.error && !botOnline) showNotice(statusData.error);
+    if (!state.guilds.length) {
+      setBotStatus(false, "No servers", "The API responded but returned no manageable servers");
+      showNotice("Your session is working, but the server list is empty. Check that the bot is in a server and that the dashboard API is configured.");
+    }
     setPage(state.page);
   } catch (error) {
     if (error.auth) {
