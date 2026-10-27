@@ -50,6 +50,8 @@ test("new shell uses current read endpoints and does not save config on boot", a
   assert.doesNotMatch(app, /\/api\/bot-status/);
   assert.match(app, /mode=readonly/);
   assert.match(app, /mode=compat/);
+  assert.ok(app.includes("/api/channels?guildId="));
+  assert.ok(app.includes("Saved channel unavailable"));
   assert.doesNotMatch(app, /\/api\/dashboard-config/);
   assert.match(app, /credentials:\s*"same-origin"/);
 });
