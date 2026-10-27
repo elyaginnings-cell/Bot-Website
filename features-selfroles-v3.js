@@ -27,6 +27,12 @@
     return window.rolesCache || [];
   }
 
+  function escapeHtml(value) {
+    return String(value == null ? "" : value).replace(/[&<>"']/g, function (ch) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch];
+    });
+  }
+
   function roleName(id) {
     var r = getRoles().find(function (x) {
       return String(x.id) === String(id);
@@ -232,13 +238,13 @@
           '" data-role-id="' +
           String(r.id) +
           '" title="' +
-          String(r.name || "").replace(/"/g, "") +
+          escapeHtml(r.name || "") +
           '">' +
           '<span class="sr-dot" style="' +
           (col ? "background:" + col : "") +
           '"></span>' +
           "<span>" +
-          String(r.name || r.id).replace(/</g, "<") +
+          escapeHtml(r.name || r.id) +
           "</span></div>"
         );
       })
@@ -277,13 +283,13 @@
                   var label = (r.emoji ? r.emoji + " " : "") + (r.label || roleName(r.roleId));
                   return (
                     '<span class="sr-tag" title="' +
-                    String(r.roleId || "") +
+                    escapeHtml(r.roleId || "") +
                     '">' +
                     (col
                       ? '<span class="sr-dot" style="background:' + col + '"></span>'
                       : "") +
                     "<span>" +
-                    String(label).replace(/</g, "<") +
+                    escapeHtml(label) +
                     "</span>" +
                     '<button type="button" data-rm-ci="' +
                     ci +
@@ -304,12 +310,12 @@
           '<input data-cat-emoji="' +
           ci +
           '" value="' +
-          String(c.emoji || "✨").replace(/"/g, """) +
+          escapeHtml(c.emoji || "✨") +
           '" maxlength="16" style="width:52px" title="Emoji">' +
           '<input data-cat-name="' +
           ci +
           '" value="' +
-          String(c.name || "").replace(/"/g, """) +
+          escapeHtml(c.name || "") +
           '" maxlength="100" style="flex:1;min-width:120px" placeholder="Category name">' +
           '<select data-cat-mode="' +
           ci +
