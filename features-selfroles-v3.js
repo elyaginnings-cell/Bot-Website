@@ -805,7 +805,47 @@
     return data;
   }
 
+  function patchConfigRefresh() {
+    if (window.__selfRolesV3ConfigRefreshPatched) return;
+    window.__selfRolesV3ConfigRefreshPatched = true;
+
+    // The editor can be built before the selected server's async config request
+    // finishes. Refresh the role editor after that request completes so an early
+    // empty render never masks categories that were already saved.
+    var originalLoad = window.loadGuildData;
+    if (typeof originalLoad === "function") {
+      window.loadGuildData = function () {
+        var result;
+        try {
+          result = originalLoad.apply(this, arguments);
+        } catch (error) {
+          throw error;
+        }
+        return Promise.resolve(result).then(function (value) {
+          if (window.selectedServer && window.selectedServer.id && window.currentConfig) {
+            renderAll();
+          }
+          return value;
+        });
+      };
+    }
+
+    // Also cover code paths that apply a fetched config without calling
+    // loadGuildData directly.
+    var originalApply = window.applyConfigToForms;
+    if (typeof originalApply === "function") {
+      window.applyConfigToForms = function () {
+        var result = originalApply.apply(this, arguments);
+        if (window.selectedServer && window.selectedServer.id && window.currentConfig) {
+          renderAll();
+        }
+        return result;
+      };
+    }
+  }
+
   function boot() {
+    patchConfigRefresh();
     if (!$("selfroles")) {
       setTimeout(boot, 200);
       return;
