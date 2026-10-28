@@ -124,7 +124,29 @@
     });
   }
 
+  function ensureAcceptModeInfo() {
+    var section = $("applications");
+    if (!section || $("app-accept-mode-info")) return;
+    var card = section.querySelector(".card") || section;
+    var title = card.querySelector("h2");
+    var note = document.createElement("div");
+    note.id = "app-accept-mode-info";
+    note.style.cssText = "margin:14px 0;padding:16px 18px;border:1px solid rgba(168,85,247,.42);border-radius:14px;background:linear-gradient(135deg,rgba(124,58,237,.13),rgba(236,72,153,.08));";
+    note.innerHTML =
+      '<strong style="display:block;margin-bottom:6px">New: application acceptance choices</strong>' +
+      '<p style="margin:0 0 12px;line-height:1.55">When reviewers vote in Discord, they can choose <b>Accept as the configured position</b> (assigns its role and linked roles) or <b>Normal accept (no rank change)</b>. The existing Deny vote remains available.</p>' +
+      '<label for="app-accept-mode-preview" style="display:block;margin-bottom:6px;font-weight:600">Discord menu preview</label>' +
+      '<select id="app-accept-mode-preview" aria-label="Preview of application acceptance menu" style="max-width:100%;padding:9px 12px;border-radius:9px;border:1px solid rgba(168,85,247,.45);background:rgba(20,12,34,.92);color:inherit">' +
+      '<option value="rank">Accept as configured position</option>' +
+      '<option value="normal">Normal accept (no rank change)</option>' +
+      '</select>' +
+      '<small style="display:block;margin-top:8px;opacity:.78">Preview only — the actual voting controls appear on the application review message in Discord.</small>';
+    if (title && title.parentNode) title.parentNode.insertBefore(note, title.nextSibling);
+    else card.insertBefore(note, card.firstChild);
+  }
+
   function applyApp() {
+    ensureAcceptModeInfo();
     var c = window.currentConfig || {};
     var APP = c.applications || {};
     setCheck("app-enabled", APP.enabled !== false);
