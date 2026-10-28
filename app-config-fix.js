@@ -124,6 +124,101 @@
     });
   }
 
+
+  function esc(v) {
+    return String(v == null ? "" : v).replace(/[&<>"']/g, function (c) {
+      return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c];
+    });
+  }
+  function currentReviewGuildId() {
+    var params = new URLSearchParams(location.search);
+    var candidates = [
+      params.get("guildId"), params.get("guild"), window.currentGuildId,
+      window.selectedGuildId, window.activeGuildId, window.guildId,
+      window.currentGuild && window.currentGuild.id,
+      window.selectedGuild && window.selectedGuild.id,
+      window.currentConfig && (window.currentConfig.guildId || window.currentConfig.id)
+    ];
+    try {
+      Object.keys(window).filter(function (k) { return /guild.*id|selected.*guild|current.*guild/i.test(k); })
+        .forEach(function (k) { try { candidates.push(window[k]); } catch (_) {} });
+    } catch (_) {}
+    var dom = document.querySelector('[data-guild-id], #guild-select, #server-select, select[name="guildId"]');
+    if (dom) candidates.push(dom.getAttribute("data-guild-id"), dom.value);
+    for (var i = 0; i < candidates.length; i++) {
+      var v = candidates[i];
+      if (v && typeof v === "object") v = v.id || v.guildId;
+      if (/^\d{15,22}$/.test(String(v || ""))) return String(v);
+    }
+    return "";
+  }
+  var liveReviewData = null;
+  var liveReviewBusy = false;
+  function renderLiveReviews() {
+    var root = $("app-live-review-list");
+    var status = $("app-live-review-status");
+    if (!root) return;
+    var data = liveReviewData;
+    if (!data || !Array.isArray(data.applications)) {
+      root.innerHTML = '<div style="padding:18px;border:1px dashed rgba(168,85,247,.35);border-radius:12px;opacity:.8">Load the selected server to see pending applications.</div>';
+      return;
+    }
+    if (!data.applications.length) {
+      root.innerHTML = '<div style="padding:22px;border:1px dashed rgba(168,85,247,.35);border-radius:12px;text-align:center"><strong>No pending applications</strong><div style="opacity:.72;margin-top:5px">New submissions will appear here automatically.</div></div>';
+      return;
+    }
+    root.innerHTML = data.applications.map(function (app) {
+      var reviewers = Array.isArray(app.reviewerIds) ? app.reviewerIds : (data.reviewers || []).map(function (r) { return r.id; });
+      var votes = app.votes || {}, modes = app.acceptModes || {}, picked = app.acceptPositions || {};
+      var posNames = {};
+      (data.positions || []).forEach(function (p) { posNames[String(p.id)] = p.name; });
+      var statusRows = reviewers.map(function (id) {
+        var vote = votes[id];
+        var label = !vote ? "Not voted" : vote === "deny" ? "Deny" :
+          (modes[id] === "rank" ? "Accept as " + (posNames[String(picked[id])] || "configured position") : "Normal Accept");
+        var mark = !vote ? "◷" : vote === "deny" ? "✕" : "✓";
+        return '<div style="display:flex;gap:8px;align-items:flex-start;padding:7px 0;border-bottom:1px solid rgba(168,85,247,.12)"><span style="width:18px;opacity:.85">' + mark + '</span><span style="flex:1;min-width:0;overflow-wrap:anywhere"><strong>' + esc(id) + '</strong><span style="opacity:.8"> — ' + esc(label) + '</span></span></div>';
+      }).join("");
+      var answerRows = Object.entries(app.answers || {}).map(function (pair) {
+        return '<div style="margin-top:10px"><div style="font-size:12px;letter-spacing:.04em;text-transform:uppercase;opacity:.7;margin-bottom:3px">' + esc(pair[0]) + '</div><div style="white-space:pre-wrap;overflow-wrap:anywhere">' + esc(pair[1]) + '</div></div>';
+      }).join("");
+      var positionOptions = '<option value="">Choose configured position…</option>' + (data.positions || []).map(function (p) {
+        return '<option value="' + esc(p.id) + '">' + esc(p.name) + (String(p.id) === String(app.suggestedPositionId) ? ' · applicant suggestion' : '') + '</option>';
+      }).join("");
+      var created = app.createdAt ? new Date(app.createdAt).toLocaleString() : "Date unavailable";
+      return '<article style="border:1px solid rgba(168,85,247,.28);border-radius:16px;padding:16px;margin:12px 0;background:linear-gradient(145deg,rgba(124,58,237,.09),rgba(236,72,153,.035))">' +
+        '<div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;align-items:flex-start"><div><div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;opacity:.7">Pending application · ' + esc(app.id) + '</div><h3 style="margin:5px 0 3px;font-size:18px">Applicant <span style="font-family:monospace;font-size:14px;overflow-wrap:anywhere">' + esc(app.userId) + '</span></h3><div style="opacity:.78">Suggested position: <strong>' + esc(app.suggestedPosition) + '</strong> · ' + esc(created) + '</div></div>' +
+        (app.reviewUrl ? '<a href="' + esc(app.reviewUrl) + '" target="_blank" rel="noopener noreferrer" style="color:#d8b4fe">Open Discord review ↗</a>' : '') + '</div>' +
+        '<div style="margin-top:14px;padding:12px;border-radius:12px;background:rgba(8,5,18,.24)"><strong>Application answers</strong>' + (answerRows || '<div style="opacity:.7;margin-top:6px">No answers recorded.</div>') + '</div>' +
+        '<div style="margin-top:14px"><strong>Individual staff votes</strong><div style="margin-top:5px">' + (statusRows || '<div style="opacity:.7">No configured reviewers were found.</div>') + '</div></div>' +
+        '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:15px;align-items:center"><select data-review-position="' + esc(app.id) + '" style="min-width:210px;flex:1;padding:10px;border-radius:10px;border:1px solid rgba(168,85,247,.45);background:#160d25;color:inherit">' + positionOptions + '</select>' +
+        '<button type="button" data-review-vote="rank" data-review-app="' + esc(app.id) + '" style="padding:10px 13px;border:0;border-radius:10px;background:linear-gradient(135deg,#7c3aed,#c026d3);color:white;font-weight:700;cursor:pointer">Accept as position</button>' +
+        '<button type="button" data-review-vote="accept" data-review-app="' + esc(app.id) + '" style="padding:10px 13px;border:1px solid rgba(74,222,128,.4);border-radius:10px;background:rgba(22,101,52,.25);color:#bbf7d0;font-weight:700;cursor:pointer">Normal Accept</button>' +
+        '<button type="button" data-review-vote="deny" data-review-app="' + esc(app.id) + '" style="padding:10px 13px;border:1px solid rgba(248,113,113,.4);border-radius:10px;background:rgba(127,29,29,.25);color:#fecaca;font-weight:700;cursor:pointer">Deny</button></div></article>';
+    }).join("");
+    if (status && !liveReviewBusy) status.textContent = data.applications.length + " pending application" + (data.applications.length === 1 ? "" : "s") + " · votes sync with Discord";
+  }
+  async function loadLiveReviews() {
+    var status = $("app-live-review-status");
+    var root = $("app-live-review-list");
+    var guildId = currentReviewGuildId();
+    if (!guildId) {
+      if (status) status.textContent = "Open a server in the dashboard first. The selected server ID could not be detected.";
+      if (root) root.innerHTML = '<div style="padding:16px;border:1px dashed rgba(248,113,113,.35);border-radius:12px">Could not identify the selected server. Select a server in the dashboard and refresh this panel.</div>';
+      return;
+    }
+    if (status) status.textContent = "Loading live applications…";
+    try {
+      var res = await fetch("/api/config?resource=application-review&guildId=" + encodeURIComponent(guildId), { credentials: "same-origin", cache: "no-store" });
+      var data = await res.json().catch(function () { return {}; });
+      if (!res.ok) throw new Error(data.error || "Could not load applications (" + res.status + ")");
+      liveReviewData = data;
+      renderLiveReviews();
+    } catch (err) {
+      if (status) status.textContent = "Could not load live applications.";
+      if (root) root.innerHTML = '<div style="padding:16px;border:1px solid rgba(248,113,113,.35);border-radius:12px;color:#fecaca">' + esc(err.message || "Request failed") + '</div>';
+    }
+  }
   function ensureAcceptModeInfo() {
     var section = $("applications");
     if (!section || $("app-accept-mode-info")) return;
@@ -131,18 +226,52 @@
     var title = card.querySelector("h2");
     var note = document.createElement("div");
     note.id = "app-accept-mode-info";
-    note.style.cssText = "margin:14px 0;padding:16px 18px;border:1px solid rgba(168,85,247,.42);border-radius:14px;background:linear-gradient(135deg,rgba(124,58,237,.13),rgba(236,72,153,.08));";
+    note.style.cssText = "margin:14px 0;padding:18px;border:1px solid rgba(168,85,247,.42);border-radius:16px;background:linear-gradient(135deg,rgba(124,58,237,.13),rgba(236,72,153,.08));";
     note.innerHTML =
-      '<strong style="display:block;margin-bottom:6px">New: application acceptance choices</strong>' +
-      '<p style="margin:0 0 12px;line-height:1.55">When reviewers vote in Discord, they can choose <b>Accept as the configured position</b> (assigns its role and linked roles) or <b>Normal accept (no rank change)</b>. The existing Deny vote remains available.</p>' +
-      '<label for="app-accept-mode-preview" style="display:block;margin-bottom:6px;font-weight:600">Discord menu preview</label>' +
-      '<select id="app-accept-mode-preview" aria-label="Preview of application acceptance menu" style="max-width:100%;padding:9px 12px;border-radius:9px;border:1px solid rgba(168,85,247,.45);background:rgba(20,12,34,.92);color:inherit">' +
-      '<option value="rank">Accept as configured position</option>' +
-      '<option value="normal">Normal accept (no rank change)</option>' +
-      '</select>' +
-      '<small style="display:block;margin-top:8px;opacity:.78">Preview only — the actual voting controls appear on the application review message in Discord.</small>';
+      '<div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap"><div><strong style="display:block;font-size:18px;margin-bottom:5px">Live application review</strong><p style="margin:0;line-height:1.55;opacity:.82">Review real pending submissions here. Votes are checked against the configured Discord staff role and synced to the Discord review message. The applicant’s position remains a suggestion.</p></div><button type="button" id="app-live-review-refresh" style="padding:10px 14px;border:1px solid rgba(168,85,247,.45);border-radius:10px;background:rgba(124,58,237,.18);color:inherit;cursor:pointer;font-weight:700">Refresh applications ↻</button></div>' +
+      '<div id="app-live-review-status" role="status" style="margin:12px 0 8px;opacity:.78">Loading…</div>' +
+      '<div id="app-live-review-list"></div>';
     if (title && title.parentNode) title.parentNode.insertBefore(note, title.nextSibling);
     else card.insertBefore(note, card.firstChild);
+    var refresh = $("app-live-review-refresh");
+    if (refresh) refresh.addEventListener("click", loadLiveReviews);
+    if (!window.__appLiveReviewVoteBound) {
+      window.__appLiveReviewVoteBound = true;
+      section.addEventListener("click", async function (event) {
+        var button = event.target.closest("[data-review-vote]");
+        if (!button) return;
+        var guildId = currentReviewGuildId();
+        var appId = button.getAttribute("data-review-app");
+        var mode = button.getAttribute("data-review-vote");
+        var positionSelect = section.querySelector('[data-review-position="' + appId + '"]');
+        var positionId = positionSelect ? positionSelect.value : "";
+        if (mode === "rank" && !positionId) {
+          if ($("app-live-review-status")) $("app-live-review-status").textContent = "Choose a configured position first.";
+          return;
+        }
+        button.disabled = true;
+        var oldLabel = button.textContent;
+        button.textContent = "Submitting…";
+        liveReviewBusy = true;
+        try {
+          var response = await fetch("/api/config?resource=application-review&guildId=" + encodeURIComponent(guildId), {
+            method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ appId: appId, vote: mode === "deny" ? "deny" : "accept", positionId: mode === "rank" ? positionId : null })
+          });
+          var result = await response.json().catch(function () { return {}; });
+          if (!response.ok) throw new Error(result.error || "Vote failed");
+          if ($("app-live-review-status")) $("app-live-review-status").textContent = "Vote submitted. Refreshing status…";
+          await loadLiveReviews();
+        } catch (err) {
+          if ($("app-live-review-status")) $("app-live-review-status").textContent = err.message || "Vote failed";
+        } finally {
+          liveReviewBusy = false;
+          button.disabled = false;
+          button.textContent = oldLabel;
+        }
+      });
+    }
+    loadLiveReviews();
   }
 
   function applyApp() {
