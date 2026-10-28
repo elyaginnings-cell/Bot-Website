@@ -107,7 +107,7 @@ export default async function handler(req, res) {
       const reviewerId = String(session?.discordId || "").trim();
       if (!reviewerId) return res.status(401).json({ error: "Connect your Discord account to cast application votes." });
       const reviewGuildId = String(req.query?.guildId || "").trim();
-      if (!/^\\d{15,22}$/.test(reviewGuildId)) return res.status(400).json({ error: "Missing or invalid server ID." });
+      if (reviewGuildId.length < 15 || reviewGuildId.length > 22 || !reviewGuildId.split("").every((ch) => ch >= "0" && ch <= "9")) return res.status(400).json({ error: "Missing or invalid server ID." });
       if (req.method !== "GET" && req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
       const target = `${RAILWAY_API}/api/guild/${reviewGuildId}/applications`;
       const init = { headers: { Authorization: `Bearer ${dashboardSecret}`, "Cache-Control": "no-store" }, cache: "no-store" };
