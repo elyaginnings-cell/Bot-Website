@@ -135,7 +135,14 @@
       "#nav-drawer-header .brand-icon{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;background:linear-gradient(135deg,#ff4df0,#d63dff);flex-shrink:0;}",
       "#nav-drawer-header strong{display:block;font-size:15px;color:#f5e9ff;}",
       "#nav-drawer-header span{display:block;font-size:11px;color:rgba(245,233,255,.6);}",
+      "#nav-drawer-search-wrap{display:flex;align-items:center;gap:9px;min-height:44px;padding:0 11px;margin:0 0 10px;border:1px solid rgba(255,77,240,.24);border-radius:12px;background:rgba(255,255,255,.045);color:#c7addb;flex-shrink:0;}",
+      "#nav-drawer-search-wrap>span{font-size:23px;line-height:1;}",
+      "#nav-drawer-search{width:100%;min-width:0;border:0!important;outline:0!important;background:transparent!important;color:#fff!important;font:inherit;font-size:13px!important;box-shadow:none!important;padding:8px 0!important;}",
+      "#nav-drawer-search::placeholder{color:rgba(245,233,255,.45);}",
+      "#nav-drawer-search-wrap kbd{font-size:10px;padding:2px 5px;border:1px solid rgba(255,255,255,.14);border-radius:5px;color:rgba(245,233,255,.45);}",
+      "#nav-drawer-search-wrap:focus-within{border-color:#ff4df0;box-shadow:0 0 0 3px rgba(255,77,240,.12);}",
       "#nav-drawer-list{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:12px;}",
+      ".nav-drawer-empty{padding:20px 12px;text-align:center;color:rgba(245,233,255,.58);font-size:13px;line-height:1.5;}",
       ".nav-drawer-group{display:flex;align-items:center;gap:8px;width:100%;background:none;border:none;color:rgba(245,233,255,.55);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:10px 8px 6px;cursor:pointer;}",
       ".nav-drawer-group .ndg-chevron{margin-left:auto;font-size:9px;transition:transform .2s;}",
       ".nav-drawer-group.is-collapsed .ndg-chevron{transform:rotate(-90deg);}",
@@ -201,9 +208,31 @@
         '<div class="brand-icon">' + BOT_ICON + "</div>" +
         '<div><strong id="nav-bot-title">' + BOT_NAME + "</strong><span>" + BOT_SUB + "</span></div>" +
         "</button>" +
+        '<label id="nav-drawer-search-wrap" for="nav-drawer-search">' +
+        '<span aria-hidden="true">⌕</span>' +
+        '<input id="nav-drawer-search" type="search" placeholder="Find a page…" autocomplete="off" aria-label="Search dashboard pages">' +
+        '<kbd> / </kbd></label>' +
         '<div id="nav-drawer-list"></div>' +
-        '<div id="nav-drawer-footer">Tap a category name to collapse</div>';
+        '<div id="nav-drawer-footer">Search pages · tap a category to collapse</div>';
       document.body.appendChild(drawer);
+
+      var search = document.getElementById("nav-drawer-search");
+      if (search) {
+        search.addEventListener("input", function () { renderList(); });
+        search.addEventListener("keydown", function (e) {
+          if (e.key === "Enter") {
+            var first = document.querySelector("#nav-drawer-list .nav-drawer-item:not([hidden])");
+            if (first) first.click();
+          }
+          if (e.key === "Escape") {
+            if (search.value) {
+              search.value = "";
+              renderList();
+              e.stopPropagation();
+            } else close();
+          }
+        });
+      }
 
       var brand = document.getElementById("nav-drawer-header");
       if (brand) {
@@ -290,6 +319,14 @@
     var list = document.getElementById("nav-drawer-list");
     if (!list) return;
     var items = collectTabs();
+    var search = document.getElementById("nav-drawer-search");
+    var query = search ? String(search.value || "").trim().toLowerCase() : "";
+    if (query) {
+      items = items.filter(function (item) {
+        return (String(item.label || "") + " " + String(item.tab || "") + " " +
+          String((GROUP_META[item.group] || {}).label || "")).toLowerCase().indexOf(query) !== -1;
+      });
+    }
     list.innerHTML = "";
     var byGroup = {};
     items.forEach(function (item) {
@@ -304,7 +341,7 @@
       var groupItems = byGroup[gid];
       if (!groupItems || !groupItems.length) return;
       var meta = GROUP_META[gid] || { label: gid, icon: "•" };
-      var isCollapsed = !!collapsedMap[gid];
+      var isCollapsed = query ? false : !!collapsedMap[gid];
       if (groupItems.some(function (it) { return it.active; })) isCollapsed = false;
 
       var head = document.createElement("button");
@@ -355,6 +392,13 @@
       list.appendChild(head);
       list.appendChild(wrap);
     });
+
+    if (!items.length) {
+      var empty = document.createElement("div");
+      empty.className = "nav-drawer-empty";
+      empty.textContent = query ? 'No pages match "' + query + '". Try a shorter search.' : "No navigation pages are available yet.";
+      list.appendChild(empty);
+    }
   }
 
   function activateTab(item) {
