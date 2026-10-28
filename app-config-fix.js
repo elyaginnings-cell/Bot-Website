@@ -69,11 +69,53 @@
     });
     if (cur) el.value = cur;
   }
+  function ensureLinkedRoleSelect() {
+    var el = $("app-pos-linked");
+    if (!el) return;
+    if (el.tagName !== "SELECT") {
+      var select = document.createElement("select");
+      select.id = "app-pos-linked";
+      select.name = el.name || "app-pos-linked";
+      select.multiple = true;
+      select.size = 1;
+      select.setAttribute("aria-label", "Extra roles to grant with this position");
+      select.style.cssText = (el.getAttribute("style") || "") + ";min-height:42px;cursor:pointer";
+      select.innerHTML = '<option value="">Select extra role(s)…</option>';
+      el.parentNode.replaceChild(select, el);
+      el = select;
+    }
+    var rl = roles();
+    var current = Array.from(el.selectedOptions || []).map(function (o) { return o.value; });
+    var selected = current.length ? current : (el.dataset.savedRoleIds || "").split(",").filter(Boolean);
+    el.innerHTML = '<option value="" disabled>Select extra role(s)…</option>';
+    rl.forEach(function (x) {
+      var o = document.createElement("option");
+      o.value = String(x.id);
+      o.textContent = x.name || String(x.id);
+      o.selected = selected.indexOf(String(x.id)) !== -1;
+      el.appendChild(o);
+    });
+    if (!rl.length) {
+      var empty = document.createElement("option");
+      empty.value = "";
+      empty.textContent = "Roles unavailable — refresh server data";
+      el.appendChild(empty);
+    }
+    var hint = $("app-pos-linked-hint");
+    if (!hint) {
+      hint = document.createElement("small");
+      hint.id = "app-pos-linked-hint";
+      hint.textContent = "Optional. Select extra Discord roles to grant alongside the main position role.";
+      hint.style.cssText = "display:block;opacity:.7;margin-top:5px";
+      el.insertAdjacentElement("afterend", hint);
+    }
+  }
   function fillAppSelects(force) {
     fillChannel("app-review-channel", force);
     fillChannel("app-announce-channel", force);
     fillRole("app-review-role", force);
     fillRole("app-pos-role", force);
+    ensureLinkedRoleSelect();
   }
 
   function renderAppPositions() {
@@ -87,10 +129,13 @@
     }
     list.innerHTML = items.map(function (p, i) {
       var role = rl.find(function (x) { return String(x.id) === String(p.roleId); });
-      var linked = (p.linkedRoleIds || []).join(", ");
-      return '<div class="level-role-row"><strong>' + (p.name || "Position") +
-        '</strong> → ' + (role ? role.name : p.roleId) +
-        (linked ? ' (+ ' + linked + ')' : '') +
+      var linked = (p.linkedRoleIds || []).map(function (id) {
+        var extra = rl.find(function (x) { return String(x.id) === String(id); });
+        return extra ? extra.name : id;
+      });
+      return '<div class="level-role-row"><strong>' + esc(p.name || "Position") +
+        '</strong> → ' + esc(role ? role.name : p.roleId) +
+        (linked.length ? ' <span style="opacity:.75">+ ' + esc(linked.join(", ")) + '</span>' : '') +
         ' <button type="button" data-rm-pos="' + i + '">Remove</button></div>';
     }).join("");
     list.querySelectorAll("[data-rm-pos]").forEach(function (btn) {
@@ -322,8 +367,10 @@
     var name = $("app-pos-name") ? ($("app-pos-name").value || "").trim() : "";
     var roleId = $("app-pos-role") ? $("app-pos-role").value : "";
     if (!name || !roleId) return alert("Name and role are required");
-    var linkedRaw = $("app-pos-linked") ? ($("app-pos-linked").value || "").trim() : "";
-    var linked = linkedRaw ? linkedRaw.split(",").map(function (s) { return s.trim(); }).filter(Boolean) : [];
+    var linkedSelect = $("app-pos-linked");
+    var linked = linkedSelect && linkedSelect.tagName === "SELECT"
+      ? Array.from(linkedSelect.selectedOptions || []).map(function (o) { return String(o.value || ""); }).filter(Boolean)
+      : [];
     var desc = $("app-pos-desc") ? ($("app-pos-desc").value || "").trim() : "";
     if (!window.__appPositions) window.__appPositions = [];
     if (window.__appPositions.length >= 25) return alert("Max 25 positions");
@@ -335,7 +382,7 @@
       description: desc.slice(0, 100)
     });
     if ($("app-pos-name")) $("app-pos-name").value = "";
-    if ($("app-pos-linked")) $("app-pos-linked").value = "";
+    if ($("app-pos-linked")) Array.from($("app-pos-linked").options).forEach(function (o) { o.selected = false; });
     if ($("app-pos-desc")) $("app-pos-desc").value = "";
     renderAppPositions();
   }
