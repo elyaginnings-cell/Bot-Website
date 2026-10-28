@@ -1,4 +1,5 @@
 import { requireAnySession } from "../lib/requireAuth.js";
+import { readSession } from "../lib/session.js";
 import {
   loadGuildConfig,
   mergeGuildConfig,
@@ -99,6 +100,27 @@ export default async function handler(req, res) {
       return res.status(500).json({
         error: "Missing DASHBOARD_API_SECRET on Vercel — required to talk to the bot",
       });
+    }
+
+    if (String(req.query?.resource || "") === "application-review") {
+      const session = readSession(req);
+      const reviewerId = String(session?.discordId || "").trim();
+      if (!reviewerId) return res.status(401).json({ error: "Connect your Discord account to cast application votes." });
+      const reviewGuildId = String(req.query?.guildId || "").trim();
+      if (!/^\\d{15,22}$/.test(reviewGuildId)) return res.status(400).json({ error: "Missing or invalid server ID." });
+      if (req.method !== "GET" && req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
+      const target = `${RAILWAY_API}/api/guild/${reviewGuildId}/applications`;
+      const init = { headers: { Authorization: `Bearer ${dashboardSecret}`, "Cache-Control": "no-store" }, cache: "no-store" };
+      if (req.method === "POST") {
+        const voteBody = typeof req.body === "string" ? JSON.parse(req.body || "{}") : (req.body || {});
+        if (!voteBody.appId || !["accept", "deny"].includes(voteBody.vote)) return res.status(400).json({ error: "Choose an application and a valid vote." });
+        init.method = "POST";
+        init.headers["Content-Type"] = "application/json";
+        init.body = JSON.stringify({ reviewerId, appId: String(voteBody.appId), vote: String(voteBody.vote), positionId: voteBody.positionId ? String(voteBody.positionId) : null });
+      }
+      const reviewResponse = await fetch(target, init);
+      const reviewData = await reviewResponse.json().catch(() => ({}));
+      return res.status(reviewResponse.status).json(reviewData);
     }
 
     const guildId = req.query?.guildId;
