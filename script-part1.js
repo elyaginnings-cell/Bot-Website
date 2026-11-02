@@ -390,10 +390,13 @@ async function loadGuildData() {
       fetch(`/api/config?guildId=${encodeURIComponent(guildId)}`, { credentials: "include", cache: "no-store" }),
     ]);
 
+    if (!configRes.ok) {
+      throw new Error("Could not load this server's saved configuration. Saving is paused to protect its existing settings.");
+    }
     const [channelsData, rolesData, configData] = await Promise.all([
       channelsRes.ok ? channelsRes.json() : Promise.resolve({ channels: [] }),
       rolesRes.ok ? rolesRes.json() : Promise.resolve({ roles: [] }),
-      configRes.ok ? configRes.json() : Promise.resolve({ config: {} }),
+      configRes.json(),
     ]);
 
     // A fast server switch can finish requests out of order. Only the latest
@@ -412,8 +415,10 @@ async function loadGuildData() {
   } catch (e) {
     if (requestSequence === guildDataLoadSequence && String(selectedServer?.id || "") === guildId) {
       console.error(e);
-      window.guildConfigLoading = false;
-      window.dispatchEvent(new CustomEvent("dashboard:guild-load-error", { detail: { guildId } }));
+      // Keep saves locked when config failed to load; otherwise an empty UI
+      // could overwrite a server's existing configuration.
+      window.guildConfigLoading = true;
+      window.dispatchEvent(new CustomEvent("dashboard:guild-load-error", { detail: { guildId, message: e.message } }));
     }
   }
 }
