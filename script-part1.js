@@ -380,6 +380,7 @@ async function loadGuildData() {
   resetGuildConfigForms();
   fillChannelSelects();
   fillRoleSelects();
+  window.guildConfigLoading = true;
   window.dispatchEvent(new CustomEvent("dashboard:guild-loading", { detail: { guildId } }));
 
   try {
@@ -406,10 +407,12 @@ async function loadGuildData() {
     fillChannelSelects();
     fillRoleSelects();
     applyConfigToForms();
+    window.guildConfigLoading = false;
     window.dispatchEvent(new CustomEvent("dashboard:guild-loaded", { detail: { guildId } }));
   } catch (e) {
     if (requestSequence === guildDataLoadSequence && String(selectedServer?.id || "") === guildId) {
       console.error(e);
+      window.guildConfigLoading = false;
       window.dispatchEvent(new CustomEvent("dashboard:guild-load-error", { detail: { guildId } }));
     }
   }
