@@ -57,8 +57,10 @@ function formatLogResult(data, okMsg) {
 }
 
 async function saveConfig(body) {
-  if (!selectedServer?.id) throw new Error("Select a server first.");
-  const response = await fetch(`/api/config?guildId=${selectedServer.id}`, {
+  const guildId = String(selectedServer?.id || "");
+  if (!guildId) throw new Error("Select a server first.");
+  if (window.guildConfigLoading) throw new Error("This server is still loading. Wait for its settings to finish loading before saving.");
+  const response = await fetch(`/api/config?guildId=${encodeURIComponent(guildId)}`, {
     method: "POST",
     credentials: "include",
     headers: { "Content-Type": "application/json" },
@@ -69,8 +71,12 @@ async function saveConfig(body) {
     const detail = data.detail ? (" — " + data.detail) : "";
     throw new Error((data.error || "Save failed") + detail);
   }
-  if (data.config) currentConfig = data.config;
-  syncGlobals();
+  // A save for a previous server must never replace the currently selected
+  // server's in-memory configuration after a switch.
+  if (String(selectedServer?.id || "") === guildId && data.config) {
+    currentConfig = data.config;
+    syncGlobals();
+  }
   return data;
 }
 
