@@ -356,28 +356,61 @@ async function refreshSelectedServer() {
   } catch {}
 }
 
+let guildDataLoadSequence = 0;
+
+function resetGuildConfigForms() {
+  document.querySelectorAll("#app .page-section input, #app .page-section select, #app .page-section textarea").forEach((el) => {
+    if (el.type === "checkbox" || el.type === "radio") el.checked = !!el.defaultChecked;
+    else if (el.tagName === "SELECT") el.selectedIndex = 0;
+    else el.value = el.defaultValue || "";
+  });
+}
+
 async function loadGuildData() {
-  if (!selectedServer?.id) return;
+  const guildId = String(selectedServer?.id || "");
+  if (!guildId) return;
+  const requestSequence = ++guildDataLoadSequence;
+
+  // Never leave the previous server's roles/config visible while the next
+  // server is loading. Responses from older requests are ignored below.
+  channelsCache = [];
+  rolesCache = [];
+  currentConfig = {};
+  syncGlobals();
+  resetGuildConfigForms();
+  fillChannelSelects();
+  fillRoleSelects();
+  window.dispatchEvent(new CustomEvent("dashboard:guild-loading", { detail: { guildId } }));
+
   try {
     const [channelsRes, rolesRes, configRes] = await Promise.all([
-      fetch(`/api/channels?guildId=${selectedServer.id}`, { credentials: "include", cache: "no-store" }),
-      fetch(`/api/roles?guildId=${selectedServer.id}`, { credentials: "include", cache: "no-store" }),
-      fetch(`/api/config?guildId=${selectedServer.id}`, { credentials: "include", cache: "no-store" }),
+      fetch(`/api/channels?guildId=${encodeURIComponent(guildId)}`, { credentials: "include", cache: "no-store" }),
+      fetch(`/api/roles?guildId=${encodeURIComponent(guildId)}`, { credentials: "include", cache: "no-store" }),
+      fetch(`/api/config?guildId=${encodeURIComponent(guildId)}`, { credentials: "include", cache: "no-store" }),
     ]);
-    if (channelsRes.ok) {
-      channelsCache = (await channelsRes.json()).channels || [];
-      fillChannelSelects();
-    }
-    if (rolesRes.ok) {
-      rolesCache = (await rolesRes.json()).roles || [];
-      fillRoleSelects();
-    }
-    if (configRes.ok) {
-      currentConfig = (await configRes.json()).config || {};
-      applyConfigToForms();
-    }
+
+    const [channelsData, rolesData, configData] = await Promise.all([
+      channelsRes.ok ? channelsRes.json() : Promise.resolve({ channels: [] }),
+      rolesRes.ok ? rolesRes.json() : Promise.resolve({ roles: [] }),
+      configRes.ok ? configRes.json() : Promise.resolve({ config: {} }),
+    ]);
+
+    // A fast server switch can finish requests out of order. Only the latest
+    // selected guild is allowed to update shared dashboard state.
+    if (requestSequence !== guildDataLoadSequence || String(selectedServer?.id || "") !== guildId) return;
+
+    channelsCache = Array.isArray(channelsData.channels) ? channelsData.channels : [];
+    rolesCache = Array.isArray(rolesData.roles) ? rolesData.roles : [];
+    currentConfig = configData.config && typeof configData.config === "object" ? configData.config : {};
     syncGlobals();
+    fillChannelSelects();
+    fillRoleSelects();
+    applyConfigToForms();
+    window.dispatchEvent(new CustomEvent("dashboard:guild-loaded", { detail: { guildId } }));
   } catch (e) {
-    console.error(e);
+    if (requestSequence === guildDataLoadSequence && String(selectedServer?.id || "") === guildId) {
+      console.error(e);
+      window.dispatchEvent(new CustomEvent("dashboard:guild-load-error", { detail: { guildId } }));
+    }
   }
 }
