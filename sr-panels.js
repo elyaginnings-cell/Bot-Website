@@ -206,6 +206,7 @@
     draft = null;
   }
   async function persist(extraStatus) {
+    if (window.guildConfigLoading) throw new Error("This server is still loading. Wait before saving self roles.");
     readIntoSelected();
     if (draft && srPanelId === draft.id) commitDraft();
     var s = cfg();
@@ -263,6 +264,29 @@
       await persist("Panel deleted.");
     });
   }
+  // Panel editor state is separate from the role-category editor. Reset it
+  // explicitly on guild switches so cards, checkboxes, and drafts cannot leak.
+  window.addEventListener("dashboard:guild-loading", function () {
+    draft = null;
+    srPanelId = null;
+    ["sr-panel-cards", "sr-panel-cats"].forEach(function (id) {
+      var el = $(id);
+      if (el) el.innerHTML = "";
+    });
+    var editing = $("sr-panel-editing");
+    if (editing) editing.textContent = "Loading this server’s panels…";
+    ["sr-panel-name", "sr-channel", "sr-btn-label", "sr-btn-remove", "sr-embed-title", "sr-embed-desc"].forEach(function (id) {
+      var el = $(id);
+      if (el) el.value = "";
+    });
+  });
+
+  window.addEventListener("dashboard:guild-loaded", function () {
+    draft = null;
+    srPanelId = null;
+    try { applySelected(); } catch (e) { console.warn("[sr-panels] refresh after server load:", e); }
+  });
+
   function boot() {
     if (!injectFields()) { setTimeout(boot, 200); return; }
     try { applySelected(); bind(); } catch (e) { console.warn("[sr-panels]", e); }
