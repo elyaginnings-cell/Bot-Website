@@ -808,7 +808,19 @@
 
   window.addEventListener("dashboard:guild-loading", function () {
     selectedRoleIds = {};
+    var search = $("sr-v3-search");
+    if (search) search.value = "";
     renderAll();
+  });
+
+  // The loading event clears the previous server's UI. Re-render again only
+  // after the new server's config and Discord roles have both been installed.
+  window.addEventListener("dashboard:guild-loaded", function (event) {
+    selectedRoleIds = {};
+    var search = $("sr-v3-search");
+    if (search) search.value = "";
+    renderAll();
+    loadTemplateGuilds();
   });
 
   function boot() {
