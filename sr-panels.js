@@ -23,14 +23,6 @@
     if (!Array.isArray(s.categories)) s.categories = [];
     if (!Array.isArray(s.panels)) s.panels = [];
     s.panels.forEach(normalizePanel);
-    if (!s.panels.length) {
-      s.panels = [normalizePanel({
-        id: newId(), name: "Main panel", channelId: s.channelId || null, messageId: s.messageId || null,
-        buttonLabel: s.buttonLabel || "Add roles", removeButtonLabel: s.removeButtonLabel || "Remove roles",
-        embedTitle: s.embedTitle || "Self Roles", embedDescription: s.embedDescription || "",
-        categoryIds: s.categories.map(function (c) { return String(c.id); })
-      })];
-    }
     window.currentConfig.selfRoles = s;
     return s;
   }
@@ -180,7 +172,16 @@
   function applySelected() {
     var p = selected();
     var tag = $("sr-panel-editing");
-    if (!p) { if (tag) tag.textContent = "Create a panel to get started."; return; }
+    if (!p) {
+      if (tag) tag.textContent = "No panel configured for this server. Click Create panel to add one.";
+      ["sr-panel-name", "sr-channel", "sr-btn-label", "sr-btn-remove", "sr-embed-title", "sr-embed-desc"].forEach(function (id) {
+        var el = $(id);
+        if (el) el.value = "";
+      });
+      renderCards();
+      renderChecks();
+      return;
+    }
     if (tag) tag.textContent = p._draft ? "New panel — fill this in, then Save Self Roles to keep it." : "Editing \u201c" + (p.name || "Panel") + "\u201d";
     if ($("sr-panel-name")) $("sr-panel-name").value = p.name || "";
     if ($("sr-channel")) $("sr-channel").value = p.channelId || "";
