@@ -769,6 +769,7 @@
   }
 
   async function persist() {
+    if (window.guildConfigLoading) throw new Error("This server is still loading. Wait before saving self roles.");
     if (!window.saveConfig) throw new Error("Save not ready");
     setStatus("Saving…", true);
     var cfg = ensureCfg();
@@ -804,6 +805,11 @@
     setStatus(text, true);
     return data;
   }
+
+  window.addEventListener("dashboard:guild-loading", function () {
+    selectedRoleIds = {};
+    renderAll();
+  });
 
   function boot() {
     if (!$("selfroles")) {
