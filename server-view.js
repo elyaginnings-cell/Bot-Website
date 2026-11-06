@@ -186,74 +186,73 @@
   function renderMessages(messages, force) {
     var container = document.getElementById("sv-messages");
     if (!container) return;
+    if (!Array.isArray(messages)) messages = [];
+
+    var shouldScroll = !lastMessages.length && force ? true : isNearBottom(container);
     if (!messages.length) {
-      if (lastMessages.length || container.querySelector("article.sv-msg")) {
-        container.innerHTML = '<p class="sv-empty">No messages in this channel yet.</p>';
-        renderedMessageState = {};
-        lastMessages = [];
-        knownIds = {};
-      } else if (!container.children.length) {
-        container.innerHTML = '<p class="sv-empty">No messages in this channel yet.</p>';
-      }
+      container.innerHTML = '<p class="sv-empty">No messages in this channel yet.</p>';
+      renderedMessageState = {};
+      lastMessages = [];
+      knownIds = {};
       return;
     }
 
-    // Only the first load should force the initial scroll. Later updates keep
-    // the user's current position unless they were already near the bottom.
-    var shouldScroll = !lastMessages.length && force ? true : isNearBottom(container);
-    var html = "";
-    var nextStates = {};
-    messages.forEach(function (message, index) {
-      var previous = index > 0 ? messages[index - 1] : null;
-      var sameIdentity = previous && previous.author && message.author && previous.author.id === message.author.id && (previous.author.displayName || previous.author.username) === (message.author.displayName || message.author.username) && (previous.author.avatar || "") === (message.author.avatar || "");
-      var grouped = sameIdentity && !message.reference && message.createdTimestamp - previous.createdTimestamp < 7 * 60 * 1000;
-      var pingedMe = messageMentionsCurrentUser(message);
-      html += renderMessage(message, grouped, pingedMe);
-      if (message && message.id) nextStates[String(message.id)] = JSON.stringify(message);
-    });
-
-    // Reconcile by message ID. Unchanged articles stay mounted, so avatars,
-    // reaction chips, highlights, images and scroll position do not blink.
-    var staging = document.createElement("div");
-    staging.innerHTML = html;
+    // Keep the existing message elements in place. Only replace a message
+    // when its serialized Discord data changed; append genuinely new messages.
     var existing = {};
     Array.prototype.forEach.call(container.querySelectorAll("article.sv-msg[data-message-id]"), function (node) {
-      existing[String(node.getAttribute("data-message-id"))] = node;
+      var id = String(node.getAttribute("data-message-id") || "");
+      if (id) existing[id] = node;
     });
-    Array.prototype.forEach.call(container.children, function (child) {
+    Array.prototype.forEach.call(Array.prototype.slice.call(container.children), function (child) {
       if (!child.matches || !child.matches("article.sv-msg[data-message-id]")) child.remove();
     });
 
-    var desiredNodes = [];
+    var nextStates = {};
+    var nextIds = {};
     messages.forEach(function (message, index) {
-      var fresh = staging.children[index];
-      if (!fresh) return;
+      if (!message) return;
       var id = String(message.id || "");
-      var previous = existing[id];
-      var state = nextStates[id];
-      var node = previous && renderedMessageState[id] === state ? previous : fresh;
       var previousMessage = index > 0 ? messages[index - 1] : null;
-      var sameIdentity = previousMessage && previousMessage.author && message.author && previousMessage.author.id === message.author.id && (previousMessage.author.displayName || previousMessage.author.username) === (message.author.displayName || message.author.username) && (previousMessage.author.avatar || "") === (message.author.avatar || "");
-      var grouped = !!(sameIdentity && !message.reference && message.createdTimestamp - previousMessage.createdTimestamp < 7 * 60 * 1000);
-      node.classList.toggle("grouped", grouped);
-      node.classList.toggle("mention-me", messageMentionsCurrentUser(message));
-      if (previous && node !== previous && previous.parentNode) previous.parentNode.replaceChild(node, previous);
-      desiredNodes.push(node);
+      var sameIdentity = previousMessage && previousMessage.author && message.author &&
+        previousMessage.author.id === message.author.id &&
+        (previousMessage.author.displayName || previousMessage.author.username) === (message.author.displayName || message.author.username) &&
+        (previousMessage.author.avatar || "") === (message.author.avatar || "");
+      var grouped = !!(sameIdentity && !message.reference &&
+        Number(message.createdTimestamp || 0) - Number(previousMessage.createdTimestamp || 0) < 7 * 60 * 1000);
+      var pingedMe = messageMentionsCurrentUser(message);
+      var state = JSON.stringify(message);
+      var node = id && existing[id] && renderedMessageState[id] === state ? existing[id] : null;
+
+      if (!node) {
+        var staging = document.createElement("div");
+        staging.innerHTML = renderMessage(message, grouped, pingedMe);
+        node = staging.firstElementChild;
+        if (!node) return;
+        if (id && existing[id] && existing[id].parentNode === container) {
+          container.replaceChild(node, existing[id]);
+        } else {
+          container.appendChild(node);
+        }
+      }
+
+      if (id) {
+        nextStates[id] = state;
+        nextIds[id] = true;
+        delete existing[id];
+      }
     });
-    desiredNodes.forEach(function (node, index) {
-      var current = container.children[index] || null;
-      if (current !== node) container.insertBefore(node, current);
+
+    // Remove messages that disappeared from the server response.
+    Object.keys(existing).forEach(function (id) {
+      if (existing[id] && existing[id].parentNode === container) existing[id].remove();
     });
-    while (container.children.length > desiredNodes.length) {
-      container.lastElementChild.remove();
-    }
 
     renderedMessageState = nextStates;
     lastMessages = messages.slice();
     window.lastMessages = lastMessages;
     window.__svLastMessages = lastMessages;
-    knownIds = {};
-    messages.forEach(function (message) { if (message && message.id) knownIds[message.id] = true; });
+    knownIds = nextIds;
     if (shouldScroll) container.scrollTop = container.scrollHeight;
     if (typeof window.__svEnhanceMessages === "function") window.__svEnhanceMessages();
   }
