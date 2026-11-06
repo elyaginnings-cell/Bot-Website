@@ -107,6 +107,31 @@ export default async function handler(req, res) {
       if (!/^[0-9]{15,22}$/.test(emojiGuildId)) {
         return res.status(400).json({ error: "Missing or invalid server ID." });
       }
+      const emojiSession = readSession(req);
+      if (!emojiSession?.discordToken) {
+        return res.status(401).json({ error: "Reconnect Discord to manage server emojis." });
+      }
+      const userGuildsResponse = await fetch("https://discord.com/api/v10/users/@me/guilds", {
+        headers: { Authorization: `Bearer ${emojiSession.discordToken}` },
+        cache: "no-store",
+      });
+      if (!userGuildsResponse.ok) {
+        return res.status(401).json({ error: "Your Discord session expired. Log in with Discord again." });
+      }
+      const userGuilds = await userGuildsResponse.json();
+      const userGuild = Array.isArray(userGuilds)
+        ? userGuilds.find((guild) => String(guild.id) === emojiGuildId)
+        : null;
+      let canManageEmojiGuild = !!userGuild?.owner;
+      try {
+        const permissions = BigInt(userGuild?.permissions || "0");
+        canManageEmojiGuild = canManageEmojiGuild ||
+          (permissions & (1n << 3n)) === (1n << 3n) ||
+          (permissions & (1n << 5n)) === (1n << 5n);
+      } catch (_) {}
+      if (!canManageEmojiGuild) {
+        return res.status(403).json({ error: "You need Administrator or Manage Server permission in this server." });
+      }
       if (!["GET", "POST", "DELETE"].includes(req.method)) {
         return res.status(405).json({ error: "Method not allowed" });
       }
