@@ -170,11 +170,12 @@
       }
       if (!content) return;
       var name = ref.authorName || ref.username || "Reply";
-      textEl.innerHTML =
+      var nextHtml =
         "<strong>" +
         String(name).replace(/&/g, "&").replace(/</g, "<").replace(/>/g, ">") +
         "</strong> " +
         String(content).replace(/&/g, "&").replace(/</g, "<").replace(/>/g, ">").replace(/\n/g, " ");
+      if (textEl.innerHTML !== nextHtml) textEl.innerHTML = nextHtml;
     });
   }
 
