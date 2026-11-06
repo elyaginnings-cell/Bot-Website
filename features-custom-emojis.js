@@ -51,7 +51,7 @@
     })[char]);
   }
   function imageSource(item) {
-    return "data:" + item.contentType + ";base64," + item.imageData;
+    return "/api/config?resource=custom-emojis&imageId=" + encodeURIComponent(item.id);
   }
   function render() {
     const grid = $("custom-emoji-grid");
