@@ -11,6 +11,7 @@
   var lastMessages = [];
   var renderedMessageState = {};
   var loading = false;
+  var messageRequestId = 0;
   var sending = false;
   var bound = false;
   var replyTo = null;
@@ -82,6 +83,8 @@
     if (activeGuildId !== String(server.id)) {
       activeGuildId = String(server.id);
       activeChannelId = null;
+      messageRequestId++;
+      loading = false;
       window.__svActiveChannelId = null;
       knownIds = {};
       lastMessages = [];
@@ -148,6 +151,8 @@
   function selectChannel(channelId) {
     if (!channelId) return;
     activeChannelId = channelId;
+    messageRequestId++;
+    loading = false;
     window.__svActiveChannelId = channelId;
     var channel = getChannels().find(function (item) { return item.id === channelId; });
     var channelName = document.getElementById("sv-channel-title");
@@ -162,23 +167,32 @@
     closeDrawer(); knownIds = {}; lastMessages = []; renderedMessageState = {}; loadMessages(true);
   }
   async function loadMessages(force) {
-    if (loading || !activeChannelId) return;
+    if (!activeChannelId) return;
+    var requestChannelId = String(activeChannelId);
     var server = getServer();
     if (!server || !server.id) return;
+    var requestGuildId = String(server.id);
+    if (loading && !force) return;
+    var requestId = ++messageRequestId;
     loading = true;
     try {
-      var url = "/api/messages?guildId=" + encodeURIComponent(server.id) + "&channelId=" + encodeURIComponent(activeChannelId) + "&limit=50";
+      var url = "/api/messages?guildId=" + encodeURIComponent(requestGuildId) + "&channelId=" + encodeURIComponent(requestChannelId) + "&limit=50";
       var response = await fetch(url, { method: "GET", credentials: "include", cache: "no-store", headers: { "Accept": "application/json" } });
       if (!response.ok) throw new Error("Messages request failed: " + response.status);
       var data = await response.json();
       var messages = Array.isArray(data) ? data : Array.isArray(data.messages) ? data.messages : [];
+      if (requestId !== messageRequestId || requestChannelId !== String(activeChannelId) || requestGuildId !== String((getServer() || {}).id || "")) return;
       // Keep the Server View lightweight even if the API ignores its limit parameter.
       if (messages.length > 50) messages = messages.slice(-50);
       renderMessages(messages, !!force);
     } catch (error) {
-      console.error("Server View message loading failed:", error);
-      if (force) showMessageError("Unable to load messages.");
-    } finally { loading = false; }
+      if (requestId === messageRequestId) {
+        console.error("Server View message loading failed:", error);
+        if (force) showMessageError("Unable to load messages.");
+      }
+    } finally {
+      if (requestId === messageRequestId) loading = false;
+    }
   }
   function showMessageError(message) {
     var container = document.getElementById("sv-messages");
