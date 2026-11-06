@@ -213,9 +213,9 @@
         markMentions();
         enrichReplies();
       });
-      messageObserver.observe(messageRoot, { childList: true, subtree: true });
+      messageObserver.observe(messageRoot, { childList: true, subtree: false });
     }
-    console.log("[sv-core-fix] v3 online");
+    console.log("[sv-core-fix] v4 online");
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
   else boot();
