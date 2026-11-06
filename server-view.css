@@ -2533,6 +2533,7 @@ body.server-view-open {
 }
 
 #server-view .sv-mention:hover { background: rgba(255,77,240,.23); }
+#server-view .sv-mention-user.sv-mention-me { background: rgba(250,166,26,.24) !important; color: #ffcf70 !important; }
 
 #server-view .sv-embed {
   max-width: 680px;
