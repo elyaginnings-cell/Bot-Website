@@ -415,12 +415,14 @@
     injectCss();
     hookFetch();
     bindChannelClicks();
-    setInterval(function () {
-      bindChannelClicks();
-      paintChannels();
-    }, 1500);
-    setInterval(schedulePeeks, 12000);
-    setTimeout(schedulePeeks, 3000);
+    bindChannelClicks();
+    paintChannels();
+    // Unread state updates when message data arrives; no background message polling.
+    var channelList = document.getElementById("sv-channel-list");
+    if (channelList && window.MutationObserver) {
+      var channelObserver = new MutationObserver(paintChannels);
+      channelObserver.observe(channelList, { childList: true, subtree: true });
+    }
     console.log("[sv-unread] v1 ready");
   }
 
