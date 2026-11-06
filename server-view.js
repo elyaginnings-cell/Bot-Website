@@ -9,6 +9,7 @@
   var pollTimer = null;
   var knownIds = {};
   var lastMessages = [];
+  var renderedMessageState = {};
   var loading = false;
   var sending = false;
   var bound = false;
@@ -84,6 +85,7 @@
       window.__svActiveChannelId = null;
       knownIds = {};
       lastMessages = [];
+      renderedMessageState = {};
       var messageList = document.getElementById("sv-messages");
       if (messageList) messageList.innerHTML = '<p class="sv-empty">Choose a channel to view messages.</p>';
     }
@@ -157,7 +159,7 @@
     var send = document.getElementById("sv-send");
     if (input) { input.disabled = false; input.placeholder = "Message #" + (channel ? channel.name || "channel" : "channel"); input.focus(); }
     if (send) send.disabled = false;
-    closeDrawer(); knownIds = {}; lastMessages = []; loadMessages(true);
+    closeDrawer(); knownIds = {}; lastMessages = []; renderedMessageState = {}; loadMessages(true);
   }
   async function loadMessages(force) {
     if (loading || !activeChannelId) return;
@@ -184,21 +186,68 @@
   function renderMessages(messages, force) {
     var container = document.getElementById("sv-messages");
     if (!container) return;
-    if (!messages.length) { container.innerHTML = '<p class="sv-empty">No messages in this channel yet.</p>'; return; }
-    var shouldScroll = force || isNearBottom(container);
+    if (!messages.length) {
+      if (!lastMessages.length) container.innerHTML = '<p class="sv-empty">No messages in this channel yet.</p>';
+      return;
+    }
+
+    // Only the first load should force the initial scroll. Later updates keep
+    // the user's current position unless they were already near the bottom.
+    var shouldScroll = !lastMessages.length && force ? true : isNearBottom(container);
     var html = "";
+    var nextStates = {};
     messages.forEach(function (message, index) {
       var previous = index > 0 ? messages[index - 1] : null;
       var sameIdentity = previous && previous.author && message.author && previous.author.id === message.author.id && (previous.author.displayName || previous.author.username) === (message.author.displayName || message.author.username) && (previous.author.avatar || "") === (message.author.avatar || "");
       var grouped = sameIdentity && !message.reference && message.createdTimestamp - previous.createdTimestamp < 7 * 60 * 1000;
       var pingedMe = messageMentionsCurrentUser(message);
       html += renderMessage(message, grouped, pingedMe);
+      if (message && message.id) nextStates[String(message.id)] = JSON.stringify(message);
     });
-    container.innerHTML = html;
+
+    // Reconcile by message ID. Unchanged articles stay mounted, so avatars,
+    // reaction chips, highlights, images and scroll position do not blink.
+    var staging = document.createElement("div");
+    staging.innerHTML = html;
+    var existing = {};
+    Array.prototype.forEach.call(container.querySelectorAll("article.sv-msg[data-message-id]"), function (node) {
+      existing[String(node.getAttribute("data-message-id"))] = node;
+    });
+    Array.prototype.forEach.call(container.children, function (child) {
+      if (!child.matches || !child.matches("article.sv-msg[data-message-id]")) child.remove();
+    });
+
+    var cursor = container.firstElementChild;
+    messages.forEach(function (message, index) {
+      var fresh = staging.children[index];
+      if (!fresh) return;
+      var id = String(message.id || "");
+      var previous = existing[id];
+      var state = nextStates[id];
+      var node = previous && renderedMessageState[id] === state ? previous : fresh;
+      var previousMessage = index > 0 ? messages[index - 1] : null;
+      var sameIdentity = previousMessage && previousMessage.author && message.author && previousMessage.author.id === message.author.id && (previousMessage.author.displayName || previousMessage.author.username) === (message.author.displayName || message.author.username) && (previousMessage.author.avatar || "") === (message.author.avatar || "");
+      var grouped = !!(sameIdentity && !message.reference && message.createdTimestamp - previousMessage.createdTimestamp < 7 * 60 * 1000);
+      node.classList.toggle("grouped", grouped);
+      node.classList.toggle("mention-me", messageMentionsCurrentUser(message));
+      if (previous && node !== previous && previous.parentNode) previous.parentNode.replaceChild(node, previous);
+      if (node !== cursor) container.insertBefore(node, cursor);
+      cursor = node.nextElementSibling;
+    });
+    while (cursor) {
+      var next = cursor.nextElementSibling;
+      cursor.remove();
+      cursor = next;
+    }
+
+    renderedMessageState = nextStates;
     lastMessages = messages.slice();
+    window.lastMessages = lastMessages;
+    window.__svLastMessages = lastMessages;
     knownIds = {};
     messages.forEach(function (message) { if (message && message.id) knownIds[message.id] = true; });
     if (shouldScroll) container.scrollTop = container.scrollHeight;
+    if (typeof window.__svEnhanceMessages === "function") window.__svEnhanceMessages();
   }
   function renderMessage(message, grouped, pingedMe) {
     var author = message.author || {};
