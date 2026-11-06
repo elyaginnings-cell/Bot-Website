@@ -120,8 +120,9 @@ async function fromRailway(guildId, secret) {
 
 export default async function handler(req, res) {
   try {
+    let session;
     try {
-      requireAnySession(req);
+      session = requireAnySession(req);
     } catch (err) {
       return res.status(err.status || 401).json({ error: err.message || "Not authenticated" });
     }
@@ -138,7 +139,7 @@ export default async function handler(req, res) {
         command: body.command || body.name,
         options: body.options || {},
         content: body.content,
-        userId: body.userId,
+        userId: session?.discordId || null,
       };
       const tryUrls = [
         `${RAILWAY_API}/api/commands/run`,
