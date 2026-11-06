@@ -1,5 +1,5 @@
 import { requireAnySession } from "../lib/requireAuth.js";
-import { findById } from "../lib/accounts.js";
+import { getConnectedDiscordId } from "../lib/discordIdentity.js";
 
 const RAILWAY_API =
   process.env.BOT_API_URL ||
@@ -134,14 +134,14 @@ export default async function handler(req, res) {
     if (req.method === "POST") {
       const body = typeof req.body === "string" ? JSON.parse(req.body || "{}") : req.body || {};
       if (!secret) return res.status(500).json({ error: "Missing DASHBOARD_API_SECRET" });
-      const account = session?.accountId ? await findById(session.accountId) : null;
+      const connectedDiscordId = await getConnectedDiscordId(session);
       const payload = {
         guildId: body.guildId || guildId,
         channelId: body.channelId,
         command: body.command || body.name,
         options: body.options || {},
         content: body.content,
-        userId: session?.discordId || account?.discord_id || null,
+        userId: connectedDiscordId || null,
       };
       const response = await fetchWithTimeout(
         RAILWAY_API + "/api/commands/run",
