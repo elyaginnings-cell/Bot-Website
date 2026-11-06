@@ -127,6 +127,10 @@
       "#sv-emoji-panel .sv-gif-cell{position:relative;border:0;padding:0;background:#1e1f22;border-radius:8px;overflow:hidden;cursor:pointer;aspect-ratio:1.2}",
       "#sv-emoji-panel .sv-gif-cell img{width:100%;height:100%;object-fit:cover;display:block}",
       "#sv-emoji-panel .sv-gif-star{position:absolute;top:4px;right:4px;border:0;background:rgba(0,0,0,.5);color:#f0b232;border-radius:4px;cursor:pointer;font-size:14px;padding:2px 5px}",
+      "#sv-emoji-panel .sv-emoji-grid.bot-emoji-mode{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}",
+      "#sv-emoji-panel .sv-bot-emoji-cell{min-width:0;border:1px solid #3b3d44;border-radius:9px;background:#23242a;color:#eee;padding:8px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;font:inherit}",
+      "#sv-emoji-panel .sv-bot-emoji-cell img{width:100%;height:76px;object-fit:contain}",
+      "#sv-emoji-panel .sv-bot-emoji-cell span{max-width:100%;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}",
       ".sv-composer-wrap{position:relative}",
       "@media (max-width:768px),(hover:none) and (pointer:coarse){",
       "  #sv-emoji-panel,#server-view .sv-emoji-panel{position:fixed!important;left:0!important;right:0!important;bottom:0!important;top:auto!important;width:100%!important;max-width:100%!important;max-height:min(55vh,420px)!important;border-radius:16px 16px 0 0!important;z-index:100050!important}",
@@ -199,6 +203,8 @@
     setActiveTab(catId);
     grid.dataset.mode = catId;
     var favs = loadFavEmojis();
+    if (catId === "bot-emojis") { grid.classList.remove("gif-mode"); loadBotEmojis(query); return; }
+    grid.classList.remove("bot-emoji-mode");
     if (catId === "gifs" || catId === "gif-favs") {
       grid.classList.add("gif-mode");
       if (catId === "gif-favs") renderGifCells(loadFavGifs());
@@ -270,6 +276,43 @@
     } catch (e) { alert(e.message || "Send failed"); }
   }
 
+  async function loadBotEmojis(query) {
+    var grid = document.getElementById("sv-emoji-grid");
+    if (!grid) return;
+    grid.innerHTML = '<p class="sv-emoji-label">Loading Coffee Shop images…</p>';
+    try {
+      var response = await fetch("/api/config?resource=custom-emojis", { credentials: "include", cache: "no-store" });
+      var data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Could not load the image library.");
+      var items = Array.isArray(data.emojis) ? data.emojis : [];
+      var needle = String(query || "").toLowerCase();
+      items = items.filter(function (item) { return !needle || (String(item.name || "") + " " + String(item.category || "")).toLowerCase().includes(needle); });
+      if (!items.length) { grid.innerHTML = '<p class="sv-emoji-hint">No Coffee Shop images match that search.</p>'; return; }
+      grid.classList.add("bot-emoji-mode");
+      grid.innerHTML = items.map(function (item) {
+        var src = "/api/config?resource=custom-emojis&imageId=" + encodeURIComponent(item.id);
+        return '<button type="button" class="sv-bot-emoji-cell" data-bot-emoji-id="' + esc(item.id) + '" title=":' + esc(item.name) + ':"><img src="' + src + '" alt="' + esc(item.name) + '" loading="lazy"><span>' + esc(item.name) + '</span></button>';
+      }).join("");
+    } catch (error) {
+      grid.innerHTML = '<p class="sv-emoji-hint">' + esc(error.message || "Could not load Coffee Shop images.") + '</p>';
+    }
+  }
+
+  async function sendBotEmoji(id) {
+    if (!id || !guildId() || !channelId()) return;
+    try {
+      var response = await fetch("/api/messages", {
+        method: "POST", credentials: "include",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({ action: "customEmoji", guildId: guildId(), channelId: channelId(), emojiId: id })
+      });
+      var data = await response.json().catch(function () { return {}; });
+      if (!response.ok) throw new Error(data.error || "Could not send this image.");
+      closePanel();
+      if (typeof window.__svForceReloadMessages === "function") window.__svForceReloadMessages();
+    } catch (error) { alert(error.message || "Could not send this image."); }
+  }
+
   function ensureUi(force) {
     injectCss();
     var input = getInput();
@@ -316,6 +359,7 @@
       addTab("emoji-favs", "Favorite emojis", "★", false);
       CATEGORIES.forEach(function (c, i) { addTab(c.id, c.label, c.icon, i === 0); });
       addTab("gifs", "GIFs", "GIF", false);
+      addTab("bot-emojis", "Coffee Shop images", "☕", false);
       addTab("gif-favs", "Favorite GIFs", "★G", false);
 
       var searchWrap = document.createElement("div");
@@ -349,6 +393,7 @@
         var mode = grid.dataset.mode || "smileys";
         clearTimeout(searchTimer);
         searchTimer = setTimeout(function () {
+          if (mode === "bot-emojis") { loadBotEmojis(q); return; }
           if (mode === "gifs" || mode === "gif-favs") {
             setActiveTab("gifs");
             loadGifs(q || "hello");
@@ -364,6 +409,8 @@
           renderGrid(grid.dataset.mode || "smileys", "");
           return;
         }
+        var botEmoji = e.target.closest ? e.target.closest("[data-bot-emoji-id]") : null;
+        if (botEmoji) { sendBotEmoji(botEmoji.getAttribute("data-bot-emoji-id")); return; }
         var gifStar = e.target.closest ? e.target.closest("[data-star]") : null;
         if (gifStar) {
           e.preventDefault(); e.stopPropagation();
@@ -415,7 +462,7 @@
       var view = document.getElementById("server-view");
       if (view && !view.hidden) ensureUi(false);
     }, 4000);
-    console.log("[sv-emoji-picker] v8 ready");
+    console.log("[sv-emoji-picker] v9 ready");
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
