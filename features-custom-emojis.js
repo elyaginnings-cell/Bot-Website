@@ -137,7 +137,7 @@
           '<span class="eyebrow">BOT-WIDE COLLECTION</span><h2>Emoji Library</h2>' +
           '<p class="form-hint">Save images once and use them in every server the bot is in. When someone chooses one with /emoji, the bot posts the image itself. Nothing is added to a server\'s Discord emoji list.</p>' +
           '<div class="emoji-import">' +
-            '<div class="emoji-drop full"><strong>Upload an image</strong><p class="form-hint">PNG, JPG, GIF, or WebP · up to 256 KB</p>' +
+            '<div class="emoji-drop full"><strong>Upload an image</strong><p class="form-hint">PNG, JPG, GIF, or WebP · up to 3 MB</p>' +
               '<input id="custom-emoji-file" type="file" accept="image/png,image/jpeg,image/gif,image/webp">' +
               '<img id="custom-emoji-preview" class="emoji-preview" alt="Selected image preview"></div>' +
             '<div class="input-group"><label for="custom-emoji-name">Image name</label><input id="custom-emoji-name" type="text" maxlength="32" placeholder="happy_cat"></div>' +
@@ -161,8 +161,8 @@
       if (!/^image\/(png|jpeg|gif|webp)$/i.test(file.type)) {
         status("Choose a PNG, JPG, GIF, or WebP image.", true); $("custom-emoji-file").value = ""; return;
       }
-      if (file.size > 256 * 1024) {
-        status("That image is larger than 256 KB. Resize it before importing.", true); $("custom-emoji-file").value = ""; return;
+      if (file.size > 3 * 1024 * 1024) {
+        status("That image is larger than 3 MB. Resize it before importing.", true); $("custom-emoji-file").value = ""; return;
       }
       const reader = new FileReader();
       reader.onload = () => {
