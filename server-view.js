@@ -5,6 +5,7 @@
 (function () {
   "use strict";
   var activeChannelId = null;
+  var activeGuildId = null;
   var pollTimer = null;
   var knownIds = {};
   var lastMessages = [];
@@ -77,6 +78,15 @@
   function openServerView() {
     var server = getServer();
     if (!server || !server.id) { alert("Choose a server first (Choose Server button)."); return; }
+    if (activeGuildId !== String(server.id)) {
+      activeGuildId = String(server.id);
+      activeChannelId = null;
+      window.__svActiveChannelId = null;
+      knownIds = {};
+      lastMessages = [];
+      var messageList = document.getElementById("sv-messages");
+      if (messageList) messageList.innerHTML = '<p class="sv-empty">Choose a channel to view messages.</p>';
+    }
     var app = document.getElementById("app");
     var view = document.getElementById("server-view");
     if (!view) { alert("Server View HTML is missing."); return; }
@@ -136,6 +146,7 @@
   function selectChannel(channelId) {
     if (!channelId) return;
     activeChannelId = channelId;
+    window.__svActiveChannelId = channelId;
     var channel = getChannels().find(function (item) { return item.id === channelId; });
     var channelName = document.getElementById("sv-channel-title");
     var channelIcon = document.getElementById("sv-channel-icon");
