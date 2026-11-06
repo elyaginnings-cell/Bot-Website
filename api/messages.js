@@ -315,20 +315,34 @@ export default async function handler(req, res) {
       if (!channelId) channelId = body.channelId;
     }
 
-    if (req.method === "POST" && String(body.action || "") === "customEmoji") {
-      const userId = String(session?.discordId || "").trim();
-      if (!userId) return res.status(403).json({ error: "Connect your Discord account before sending a custom image." });
-      if (!guildId || !channelId || !body.emojiId) return res.status(400).json({ error: "Choose a server, channel, and image." });
-      const response = await fetch(`${RAILWAY_API}/api/emoji-send`, {
+    const account = session?.accountId ? await findById(session.accountId) : null;
+    const connectedDiscordId = String(session?.discordId || account?.discord_id || "").trim();
+
+    if (req.method === "POST" && ["customEmoji", "sendAsWebhook"].includes(String(body.action || ""))) {
+      if (!connectedDiscordId) {
+        return res.status(403).json({ error: "Connect your Discord account before sending as yourself." });
+      }
+      if (!guildId || !channelId) return res.status(400).json({ error: "Choose a server and channel." });
+
+      const isEmoji = String(body.action) === "customEmoji";
+      if (isEmoji && !body.emojiId) return res.status(400).json({ error: "Choose an image first." });
+      if (!isEmoji && !String(body.content || "").trim()) return res.status(400).json({ error: "Write a message before sending." });
+
+      const endpoint = isEmoji ? "/api/emoji-send" : "/api/message-send";
+      const payload = isEmoji
+        ? { guildId, channelId, emojiId: String(body.emojiId), userId: connectedDiscordId }
+        : { guildId, channelId, content: String(body.content), replyTo: body.replyTo || null, userId: connectedDiscordId };
+      const response = await fetch(RAILWAY_API + endpoint, {
         method: "POST",
-        headers: { Authorization: `Bearer ${dashboardSecret}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ guildId, channelId, emojiId: String(body.emojiId), userId }),
+        headers: { Authorization: "Bearer " + dashboardSecret, "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
         cache: "no-store",
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) return res.status(response.status).json(data);
       return res.status(200).json(data);
     }
+
     if (req.method === "POST" && String(body.action || "") === "react") {
       return await handleReact(req, res, body);
     }
