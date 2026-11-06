@@ -148,7 +148,10 @@
   function boot() {
     injectCss();
     tick();
-    setInterval(tick, 4000);
+    if (window.MutationObserver && document.body) {
+      var composerObserver = new MutationObserver(tick);
+      composerObserver.observe(document.body, { childList: true, subtree: true });
+    }
     console.log("[sv-emoji-force] v4 no-capture");
   }
 
