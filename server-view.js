@@ -187,7 +187,14 @@
     var container = document.getElementById("sv-messages");
     if (!container) return;
     if (!messages.length) {
-      if (!lastMessages.length) container.innerHTML = '<p class="sv-empty">No messages in this channel yet.</p>';
+      if (lastMessages.length || container.querySelector("article.sv-msg")) {
+        container.innerHTML = '<p class="sv-empty">No messages in this channel yet.</p>';
+        renderedMessageState = {};
+        lastMessages = [];
+        knownIds = {};
+      } else if (!container.children.length) {
+        container.innerHTML = '<p class="sv-empty">No messages in this channel yet.</p>';
+      }
       return;
     }
 
