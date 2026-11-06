@@ -103,35 +103,6 @@ export default async function handler(req, res) {
     }
 
     if (String(req.query?.resource || "") === "custom-emojis") {
-      const emojiGuildId = String(req.query?.guildId || "").trim();
-      if (!/^[0-9]{15,22}$/.test(emojiGuildId)) {
-        return res.status(400).json({ error: "Missing or invalid server ID." });
-      }
-      const emojiSession = readSession(req);
-      if (!emojiSession?.discordToken) {
-        return res.status(401).json({ error: "Reconnect Discord to manage server emojis." });
-      }
-      const userGuildsResponse = await fetch("https://discord.com/api/v10/users/@me/guilds", {
-        headers: { Authorization: `Bearer ${emojiSession.discordToken}` },
-        cache: "no-store",
-      });
-      if (!userGuildsResponse.ok) {
-        return res.status(401).json({ error: "Your Discord session expired. Log in with Discord again." });
-      }
-      const userGuilds = await userGuildsResponse.json();
-      const userGuild = Array.isArray(userGuilds)
-        ? userGuilds.find((guild) => String(guild.id) === emojiGuildId)
-        : null;
-      let canManageEmojiGuild = !!userGuild?.owner;
-      try {
-        const permissions = BigInt(userGuild?.permissions || "0");
-        canManageEmojiGuild = canManageEmojiGuild ||
-          (permissions & (1n << 3n)) === (1n << 3n) ||
-          (permissions & (1n << 5n)) === (1n << 5n);
-      } catch (_) {}
-      if (!canManageEmojiGuild) {
-        return res.status(403).json({ error: "You need Administrator or Manage Server permission in this server." });
-      }
       if (!["GET", "POST", "DELETE"].includes(req.method)) {
         return res.status(405).json({ error: "Method not allowed" });
       }
@@ -145,7 +116,7 @@ export default async function handler(req, res) {
         init.headers["Content-Type"] = "application/json";
         init.body = JSON.stringify(body);
       }
-      const response = await fetch(`${RAILWAY_API}/api/guild/${emojiGuildId}/emojis`, init);
+      const response = await fetch(`${RAILWAY_API}/api/emojis`, init);
       const data = await response.json().catch(() => ({}));
       return res.status(response.status).json(data);
     }
