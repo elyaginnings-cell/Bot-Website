@@ -110,7 +110,10 @@
     startPoll();
   }
   function closeServerView() {
-    stopPoll(); closeDrawer(); clearReply();
+    stopPoll();
+    messageRequestId++;
+    loading = false;
+    closeDrawer(); clearReply();
     var panel = document.getElementById("sv-settings-panel");
     if (panel) panel.hidden = true;
     var app = document.getElementById("app");
@@ -647,6 +650,9 @@
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", hide);
   else hide();
-  var observer = new MutationObserver(hide);
-  observer.observe(document.documentElement, { childList: true, subtree: true });
+  var view = document.getElementById("server-view");
+  if (view && window.MutationObserver) {
+    var observer = new MutationObserver(hide);
+    observer.observe(view, { childList: true, subtree: true });
+  }
 })();
