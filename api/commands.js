@@ -143,36 +143,27 @@ export default async function handler(req, res) {
         content: body.content,
         userId: session?.discordId || account?.discord_id || null,
       };
-      const tryUrls = [
-        `${RAILWAY_API}/api/commands/run`,
-        `${RAILWAY_API}/api/commands/execute`,
-        `${RAILWAY_API}/api/slash`,
-        `${RAILWAY_API}/api/guild/${payload.guildId}/commands/run`,
-      ];
-      for (const url of tryUrls) {
-        try {
-          const response = await fetchWithTimeout(
-            url,
-            {
-              method: "POST",
-              headers: {
-                Authorization: `Bearer ${secret}`,
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify(payload),
-              cache: "no-store",
-            },
-            15000
-          );
-          const data = await response.json().catch(() => ({}));
-          if (response.ok) return res.status(200).json({ ok: true, data, via: url });
-        } catch (_) {}
+      const response = await fetchWithTimeout(
+        RAILWAY_API + "/api/commands/run",
+        {
+          method: "POST",
+          headers: {
+            Authorization: "Bearer " + secret,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+          cache: "no-store",
+        },
+        30000
+      );
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        return res.status(response.status).json({
+          error: data.error || "Coffee Shop could not run that command.",
+          details: data.details || null,
+        });
       }
-      return res.status(501).json({
-        error:
-          "Bot has no command runner endpoint yet. Message was not executed as an interaction. Send as text or add /api/commands/run on the bot.",
-        fallback: true,
-      });
+      return res.status(200).json({ ok: true, data, via: "coffee-shop-bot" });
     }
 
     if (req.method !== "GET") {
