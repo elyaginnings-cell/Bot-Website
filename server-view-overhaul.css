@@ -267,3 +267,7 @@
   #server-view .sv-composer { gap: 5px !important; padding: 6px !important; }
   #server-view .sv-send-btn { min-width: 58px !important; padding: 0 10px !important; }
 }
+
+
+/* The sender identity always comes from the connected Discord account. */
+#server-view .sv-name-wrap { display: none !important; }
