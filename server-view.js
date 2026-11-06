@@ -98,8 +98,7 @@
     if (nameElement) nameElement.textContent = server.name || "Server";
     var pill = document.getElementById("sv-server-pill");
     if (pill) pill.textContent = server.name || "Server";
-    var nameInput = document.getElementById("sv-display-name");
-    if (nameInput && !nameInput.value) nameInput.value = localStorage.getItem("svDisplayName") || "";
+
     applyPrefs(); resetDrawer(); clearReply(); renderChannels();
     if (activeChannelId) loadMessages(true);
     else if (window.matchMedia && window.matchMedia("(max-width: 768px)").matches) openDrawer();
@@ -469,12 +468,7 @@
     sending = true;
     input.disabled = true;
     try {
-      var body = { content: text };
-      var displayName = document.getElementById("sv-display-name");
-      if (displayName && displayName.value.trim()) {
-        body.displayName = displayName.value.trim();
-        localStorage.setItem("svDisplayName", displayName.value.trim());
-      }
+      var body = { action: "sendAsWebhook", content: text };
       if (replyTo) body.replyTo = replyTo;
       var response = await fetch("/api/messages?guildId=" + encodeURIComponent(server.id) + "&channelId=" + encodeURIComponent(activeChannelId), {
         method: "POST",
