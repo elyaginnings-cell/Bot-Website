@@ -217,7 +217,7 @@
       if (!child.matches || !child.matches("article.sv-msg[data-message-id]")) child.remove();
     });
 
-    var cursor = container.firstElementChild;
+    var desiredNodes = [];
     messages.forEach(function (message, index) {
       var fresh = staging.children[index];
       if (!fresh) return;
@@ -231,13 +231,14 @@
       node.classList.toggle("grouped", grouped);
       node.classList.toggle("mention-me", messageMentionsCurrentUser(message));
       if (previous && node !== previous && previous.parentNode) previous.parentNode.replaceChild(node, previous);
-      if (node !== cursor) container.insertBefore(node, cursor);
-      cursor = node.nextElementSibling;
+      desiredNodes.push(node);
     });
-    while (cursor) {
-      var next = cursor.nextElementSibling;
-      cursor.remove();
-      cursor = next;
+    desiredNodes.forEach(function (node, index) {
+      var current = container.children[index] || null;
+      if (current !== node) container.insertBefore(node, current);
+    });
+    while (container.children.length > desiredNodes.length) {
+      container.lastElementChild.remove();
     }
 
     renderedMessageState = nextStates;
