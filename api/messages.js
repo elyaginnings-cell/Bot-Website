@@ -315,6 +315,20 @@ export default async function handler(req, res) {
       if (!channelId) channelId = body.channelId;
     }
 
+    if (req.method === "POST" && String(body.action || "") === "customEmoji") {
+      const userId = String(session?.discordId || "").trim();
+      if (!userId) return res.status(403).json({ error: "Connect your Discord account before sending a custom image." });
+      if (!guildId || !channelId || !body.emojiId) return res.status(400).json({ error: "Choose a server, channel, and image." });
+      const response = await fetch(`${RAILWAY_API}/api/emoji-send`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${dashboardSecret}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ guildId, channelId, emojiId: String(body.emojiId), userId }),
+        cache: "no-store",
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) return res.status(response.status).json(data);
+      return res.status(200).json(data);
+    }
     if (req.method === "POST" && String(body.action || "") === "react") {
       return await handleReact(req, res, body);
     }
