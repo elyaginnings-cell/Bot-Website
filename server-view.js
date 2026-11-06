@@ -189,7 +189,8 @@
     var html = "";
     messages.forEach(function (message, index) {
       var previous = index > 0 ? messages[index - 1] : null;
-      var grouped = previous && previous.author && message.author && previous.author.id && message.author.id && previous.author.id === message.author.id && !message.reference && message.createdTimestamp - previous.createdTimestamp < 7 * 60 * 1000;
+      var sameIdentity = previous && previous.author && message.author && previous.author.id === message.author.id && (previous.author.displayName || previous.author.username) === (message.author.displayName || message.author.username) && (previous.author.avatar || "") === (message.author.avatar || "");
+      var grouped = sameIdentity && !message.reference && message.createdTimestamp - previous.createdTimestamp < 7 * 60 * 1000;
       var pingedMe = messageMentionsCurrentUser(message);
       html += renderMessage(message, grouped, pingedMe);
     });
@@ -208,7 +209,7 @@
       ? '<img class="sv-av" src="' + esc(avatarUrl) + '" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.onerror=null;this.src=\'' + defaultAvatar + '\'">'
       : '<img class="sv-av" src="' + defaultAvatar + '" alt="" loading="lazy" referrerpolicy="no-referrer">';
     var timestamp = formatTime(message.createdTimestamp || message.createdAt || Date.now());
-    var botBadge = author.bot ? '<span class="sv-bot-badge">BOT</span>' : "";
+    var botBadge = author.bot && !message.webhook ? '<span class="sv-bot-badge">BOT</span>' : "";
     var content = renderContent(message.content || "", message.mentions);
     var attachments = renderAttachments(message.attachments);
     var embeds = renderEmbeds(message.embeds, message.mentions);
@@ -216,7 +217,7 @@
     var components = renderComponents(message.components);
     var authorId = author.id ? String(author.id) : "";
     var replyBtn = message.id ? '<button type="button" class="sv-reply-btn" data-reply-id="' + esc(message.id) + '" title="Reply">Reply</button>' : "";
-    var punishBtn = authorId && !author.bot ? '<button type="button" class="sv-punish-btn" data-punish-user="' + esc(authorId) + '" data-punish-name="' + esc(authorName) + '" data-punish-msg="' + esc(message.id || "") + '" title="Warn, mute, or ban">Punish</button>' : "";
+    var punishBtn = authorId && !author.bot && !message.webhook ? '<button type="button" class="sv-punish-btn" data-punish-user="' + esc(authorId) + '" data-punish-name="' + esc(authorName) + '" data-punish-msg="' + esc(message.id || "") + '" title="Warn, mute, or ban">Punish</button>' : "";
     var actions = (replyBtn || punishBtn) ? '<div class="sv-msg-actions">' + replyBtn + punishBtn + "</div>" : "";
     var edited = message.editedTimestamp ? '<span class="sv-edited" title="Edited"> (edited)</span>' : "";
     return '<article class="sv-msg' + (grouped ? " grouped" : "") + (pingedMe ? " mention-me" : "") + '" data-message-id="' + esc(message.id || "") + '" data-author-id="' + esc(authorId) + '"><div class="sv-av-wrap">' + avatar + '</div><div class="sv-msg-body"><div class="sv-msg-meta"><span class="sv-author">' + esc(authorName) + '</span>' + botBadge + '<time class="sv-time">' + esc(timestamp) + '</time>' + edited + actions + '</div>' + reply + '<div class="sv-msg-content">' + content + '</div>' + attachments + embeds + components + '</div></article>';
