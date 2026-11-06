@@ -102,6 +102,29 @@ export default async function handler(req, res) {
       });
     }
 
+    if (String(req.query?.resource || "") === "custom-emojis") {
+      const emojiGuildId = String(req.query?.guildId || "").trim();
+      if (!/^[0-9]{15,22}$/.test(emojiGuildId)) {
+        return res.status(400).json({ error: "Missing or invalid server ID." });
+      }
+      if (!["GET", "POST", "DELETE"].includes(req.method)) {
+        return res.status(405).json({ error: "Method not allowed" });
+      }
+      const init = {
+        method: req.method,
+        headers: { Authorization: `Bearer ${dashboardSecret}`, "Cache-Control": "no-store" },
+        cache: "no-store",
+      };
+      if (req.method !== "GET") {
+        const body = typeof req.body === "string" ? JSON.parse(req.body || "{}") : (req.body || {});
+        init.headers["Content-Type"] = "application/json";
+        init.body = JSON.stringify(body);
+      }
+      const response = await fetch(`${RAILWAY_API}/api/guild/${emojiGuildId}/emojis`, init);
+      const data = await response.json().catch(() => ({}));
+      return res.status(response.status).json(data);
+    }
+
     if (String(req.query?.resource || "") === "application-review") {
       const session = readSession(req);
       const reviewerId = String(session?.discordId || "").trim();
