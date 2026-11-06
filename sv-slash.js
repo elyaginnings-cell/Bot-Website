@@ -193,6 +193,7 @@
     var parts = t.slice(1).split(/\s+/);
     var name = parts[0];
     if (!name) return false;
+    window.__svSlashLastError = "";
     try {
       var res = await fetch("/api/commands", {
         method: "POST",
@@ -217,6 +218,7 @@
         return true;
       }
     } catch (e) {
+      window.__svSlashLastError = e && e.message ? e.message : "Could not reach the Coffee Shop bot.";
       console.warn("[sv-slash] run failed", e);
     }
     return false;
