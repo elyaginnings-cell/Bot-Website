@@ -323,13 +323,21 @@
     bindSlash();
     window.__svRenderMembersDiscord = renderMembersDiscordStyle;
     window.__svEnhanceMessages = enhance;
-    setInterval(function () {
-      enhance();
-      var el = document.getElementById("sv-member-list");
-      if (el && Array.isArray(window.membersCache) && window.membersCache.length && el.dataset.discordGrouped !== "1") {
-        renderMembersDiscordStyle(window.membersCache);
-      }
-    }, 1500);
+    enhance();
+    var viewRoot = document.getElementById("server-view");
+    if (viewRoot && window.MutationObserver) {
+      var viewObserver = new MutationObserver(function (records) {
+        var messageChanged = records.some(function (record) {
+          return record.target && (record.target.id === "sv-messages" || (record.target.closest && record.target.closest("#sv-messages")));
+        });
+        if (messageChanged) enhance();
+        var memberList = document.getElementById("sv-member-list");
+        if (memberList && Array.isArray(window.membersCache) && window.membersCache.length && memberList.dataset.discordGrouped !== "1") {
+          renderMembersDiscordStyle(window.membersCache);
+        }
+      });
+      viewObserver.observe(viewRoot, { childList: true, subtree: true });
+    }
     document.addEventListener("click", function (e) {
       var tab = e.target && e.target.closest ? e.target.closest("[data-sv-tab]") : null;
       if (tab && tab.getAttribute("data-sv-tab") === "members") {
