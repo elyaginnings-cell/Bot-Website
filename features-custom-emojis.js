@@ -161,7 +161,7 @@
       if (!file) return;
       previewData = null;
       const preview = $("custom-emoji-preview");
-      if (!/^image\\/(png|jpeg|gif|webp)$/i.test(file.type)) {
+      if (!/^image\/(png|jpeg|gif|webp)$/i.test(file.type)) {
         status("Choose a PNG, JPG, GIF, or WebP image.", true);
         if (fileInput) fileInput.value = "";
         preview.style.display = "none";
@@ -180,7 +180,7 @@
         preview.style.display = "block";
         status("Image ready to save.");
         if (!$("custom-emoji-name").value) $("custom-emoji-name").value =
-          file.name.replace(/\\.[^.]+$/, "").toLowerCase().replace(/[^a-z0-9_]/g, "_").slice(0, 32);
+          file.name.replace(/\.[^.]+$/, "").toLowerCase().replace(/[^a-z0-9_]/g, "_").slice(0, 32);
       };
       reader.onerror = () => status("Couldn't read that image. Try choosing it again.", true);
       reader.readAsDataURL(file);
