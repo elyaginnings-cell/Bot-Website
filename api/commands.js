@@ -177,25 +177,14 @@ export default async function handler(req, res) {
       return res.status(405).json({ error: "Method not allowed" });
     }
 
-    const [discordCmds, railwayCmds] = await Promise.all([
-      fromDiscord(guildId).catch(() => []),
-      fromRailway(guildId, secret).catch(() => []),
-    ]);
+    const railwayCmds = await fromRailway(guildId, secret).catch(() => []);
 
-    const byName = new Map();
-    for (const c of [...railwayCmds, ...discordCmds]) {
-      if (!c || !c.name) continue;
-      if (!byName.has(c.name)) byName.set(c.name, c);
-    }
-    const commands = Array.from(byName.values()).sort((a, b) =>
-      a.name.localeCompare(b.name)
-    );
-
+    const commands = railwayCmds.sort((a, b) => a.name.localeCompare(b.name));
     return res.status(200).json({
       commands,
       total: commands.length,
-      note:
-        "Discord only allows listing *your* bot application commands. Other bots' slash commands are not available via the public API.",
+      source: "coffee-shop-bot",
+      note: "Only commands registered by the Coffee Shop bot are shown here.",
     });
   } catch (error) {
     console.error("Commands API error:", error);
