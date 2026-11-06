@@ -16,7 +16,9 @@
     #custom-emojis .emoji-card button{width:100%;margin-top:4px}
     #custom-emojis .emoji-import{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
     #custom-emojis .emoji-import .full{grid-column:1/-1}
-    #custom-emojis .emoji-drop{border:1px dashed rgba(208,160,255,.45);border-radius:16px;padding:18px;text-align:center;background:rgba(120,65,160,.08)}
+    #custom-emojis .emoji-drop{border:1px dashed rgba(208,160,255,.45);border-radius:16px;padding:18px;text-align:center;background:rgba(120,65,160,.08);transition:border-color .15s ease,background .15s ease,box-shadow .15s ease}
+    #custom-emojis .emoji-drop.drag-over{border-color:#c084fc;background:rgba(168,85,247,.18);box-shadow:0 0 0 3px rgba(192,132,252,.14)}
+    #custom-emojis .emoji-drop input[type=file]{max-width:100%;margin-top:8px}
     #custom-emojis .emoji-preview{width:112px;height:112px;object-fit:contain;margin:10px auto;display:none}
     #custom-emojis .emoji-empty{padding:32px 18px;text-align:center;border:1px dashed rgba(196,150,255,.2);border-radius:16px;color:var(--muted,#aaa)}
     #custom-emojis .emoji-count{color:var(--muted,#aaa);font-size:13px}
@@ -137,8 +139,8 @@
           '<span class="eyebrow">BOT-WIDE COLLECTION</span><h2>Emoji Library</h2>' +
           '<p class="form-hint">Save images once and use them in every server the bot is in. When someone chooses one with /emoji, the bot posts the image itself. Nothing is added to a server\'s Discord emoji list.</p>' +
           '<div class="emoji-import">' +
-            '<div class="emoji-drop full"><strong>Upload an image</strong><p class="form-hint">PNG, JPG, GIF, or WebP · up to 3 MB</p>' +
-              '<input id="custom-emoji-file" type="file" accept="image/png,image/jpeg,image/gif,image/webp">' +
+            '<div class="emoji-drop full" id="custom-emoji-drop"><strong>Drop an image here</strong><p class="form-hint">Drag and drop a PNG, JPG, GIF, or WebP image · up to 3 MB</p><p class="form-hint">Or choose a file below</p>' +
+              '<input id="custom-emoji-file" type="file" accept="image/png,image/jpeg,image/gif,image/webp" aria-label="Choose an image file">' +
               '<img id="custom-emoji-preview" class="emoji-preview" alt="Selected image preview"></div>' +
             '<div class="input-group"><label for="custom-emoji-name">Image name</label><input id="custom-emoji-name" type="text" maxlength="32" placeholder="happy_cat"></div>' +
             '<div class="input-group"><label for="custom-emoji-category">Category</label><input id="custom-emoji-category" type="text" maxlength="80" placeholder="Reactions" value="General"></div>' +
@@ -153,25 +155,66 @@
         '</div>';
       content.appendChild(section);
     }
-    $("custom-emoji-file")?.addEventListener("change", () => {
-      const file = $("custom-emoji-file").files?.[0];
+    const fileInput = $("custom-emoji-file");
+    const dropZone = $("custom-emoji-drop");
+    function useImageFile(file) {
+      if (!file) return;
       previewData = null;
       const preview = $("custom-emoji-preview");
-      if (!file) { preview.style.display = "none"; return; }
-      if (!/^image\/(png|jpeg|gif|webp)$/i.test(file.type)) {
-        status("Choose a PNG, JPG, GIF, or WebP image.", true); $("custom-emoji-file").value = ""; return;
+      if (!/^image\\/(png|jpeg|gif|webp)$/i.test(file.type)) {
+        status("Choose a PNG, JPG, GIF, or WebP image.", true);
+        if (fileInput) fileInput.value = "";
+        preview.style.display = "none";
+        return;
       }
       if (file.size > 3 * 1024 * 1024) {
-        status("That image is larger than 3 MB. Resize it before importing.", true); $("custom-emoji-file").value = ""; return;
+        status("That image is larger than 3 MB. Resize it before importing.", true);
+        if (fileInput) fileInput.value = "";
+        preview.style.display = "none";
+        return;
       }
       const reader = new FileReader();
       reader.onload = () => {
-        previewData = String(reader.result || ""); preview.src = previewData; preview.style.display = "block";
+        previewData = String(reader.result || "");
+        preview.src = previewData;
+        preview.style.display = "block";
+        status("Image ready to save.");
         if (!$("custom-emoji-name").value) $("custom-emoji-name").value =
-          file.name.replace(/\.[^.]+$/, "").toLowerCase().replace(/[^a-z0-9_]/g, "_").slice(0, 32);
+          file.name.replace(/\\.[^.]+$/, "").toLowerCase().replace(/[^a-z0-9_]/g, "_").slice(0, 32);
       };
+      reader.onerror = () => status("Couldn't read that image. Try choosing it again.", true);
       reader.readAsDataURL(file);
-    });
+    }
+    fileInput?.addEventListener("change", () => useImageFile(fileInput.files?.[0]));
+    if (dropZone) {
+      ["dragenter", "dragover"].forEach((eventName) => dropZone.addEventListener(eventName, (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        if (event.dataTransfer) event.dataTransfer.dropEffect = "copy";
+        dropZone.classList.add("drag-over");
+      }));
+      ["dragleave", "dragend"].forEach((eventName) => dropZone.addEventListener(eventName, (event) => {
+        event.preventDefault();
+        if (!dropZone.contains(event.relatedTarget)) dropZone.classList.remove("drag-over");
+      }));
+      dropZone.addEventListener("drop", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        dropZone.classList.remove("drag-over");
+        const files = event.dataTransfer?.files;
+        if (!files || !files.length) return;
+        const file = files[0];
+        if (files.length > 1) status("One image at a time, please. The first image was selected.");
+        try {
+          const transfer = new DataTransfer();
+          transfer.items.add(file);
+          fileInput.files = transfer.files;
+        } catch (_) {
+          // The dropped File can still be previewed and uploaded if assigning input.files is blocked.
+        }
+        useImageFile(file);
+      });
+    }
     $("custom-emoji-search")?.addEventListener("input", render);
     $("custom-emoji-filter")?.addEventListener("change", render);
     $("custom-emoji-refresh")?.addEventListener("click", load);
