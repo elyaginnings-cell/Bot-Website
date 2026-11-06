@@ -204,10 +204,16 @@
     injectCss();
     hookMessages();
     ensureMe();
-    setInterval(function () {
-      markMentions();
-      enrichReplies();
-    }, 800);
+    markMentions();
+    enrichReplies();
+    var messageRoot = document.getElementById("sv-messages");
+    if (messageRoot && window.MutationObserver) {
+      var messageObserver = new MutationObserver(function () {
+        markMentions();
+        enrichReplies();
+      });
+      messageObserver.observe(messageRoot, { childList: true, subtree: true });
+    }
     console.log("[sv-core-fix] v3 online");
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
