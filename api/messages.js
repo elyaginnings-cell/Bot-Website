@@ -1,3 +1,4 @@
+import { findById } from "../lib/accounts.js";
 import { requireAnySession } from "../lib/requireAuth.js";
 import { getConnectedDiscordId } from "../lib/discordIdentity.js";
 
@@ -315,9 +316,8 @@ export default async function handler(req, res) {
       if (!channelId) channelId = body.channelId;
     }
 
-    const connectedDiscordId = String(await getConnectedDiscordId(session) || "").trim();
-
     if (req.method === "POST" && ["customEmoji", "sendAsWebhook"].includes(String(body.action || ""))) {
+      const connectedDiscordId = String(await getConnectedDiscordId(session) || "").trim();
       if (!connectedDiscordId) {
         return res.status(403).json({ error: "Connect your Discord account before sending as yourself." });
       }
