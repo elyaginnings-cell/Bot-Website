@@ -167,11 +167,13 @@
     if (!server || !server.id) return;
     loading = true;
     try {
-      var url = "/api/messages?guildId=" + encodeURIComponent(server.id) + "&channelId=" + encodeURIComponent(activeChannelId);
+      var url = "/api/messages?guildId=" + encodeURIComponent(server.id) + "&channelId=" + encodeURIComponent(activeChannelId) + "&limit=50";
       var response = await fetch(url, { method: "GET", credentials: "include", cache: "no-store", headers: { "Accept": "application/json" } });
       if (!response.ok) throw new Error("Messages request failed: " + response.status);
       var data = await response.json();
       var messages = Array.isArray(data) ? data : Array.isArray(data.messages) ? data.messages : [];
+      // Keep the Server View lightweight even if the API ignores its limit parameter.
+      if (messages.length > 50) messages = messages.slice(-50);
       renderMessages(messages, !!force);
     } catch (error) {
       console.error("Server View message loading failed:", error);
