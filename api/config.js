@@ -103,6 +103,24 @@ export default async function handler(req, res) {
     }
 
     if (String(req.query?.resource || "") === "custom-emojis") {
+      const imageId = String(req.query?.imageId || "").trim();
+      if (imageId) {
+        if (req.method !== "GET" || !/^[a-f0-9-]{20,40}$/i.test(imageId)) {
+          return res.status(400).json({ error: "Invalid image request." });
+        }
+        const imageResponse = await fetch(`${RAILWAY_API}/api/emojis/${imageId}/image`, {
+          headers: { Authorization: `Bearer ${dashboardSecret}` },
+          cache: "no-store",
+        });
+        if (!imageResponse.ok) {
+          const data = await imageResponse.json().catch(() => ({}));
+          return res.status(imageResponse.status).json({ error: data.error || "Image unavailable." });
+        }
+        const bytes = Buffer.from(await imageResponse.arrayBuffer());
+        res.setHeader("Content-Type", imageResponse.headers.get("content-type") || "application/octet-stream");
+        res.setHeader("Cache-Control", "private, max-age=300");
+        return res.status(200).send(bytes);
+      }
       if (!["GET", "POST", "DELETE"].includes(req.method)) {
         return res.status(405).json({ error: "Method not allowed" });
       }
