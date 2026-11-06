@@ -148,11 +148,12 @@
   function boot() {
     injectCss();
     tick();
-    if (window.MutationObserver && document.body) {
+    var composer = document.getElementById("sv-composer");
+    if (window.MutationObserver && composer) {
       var composerObserver = new MutationObserver(tick);
-      composerObserver.observe(document.body, { childList: true, subtree: true });
+      composerObserver.observe(composer, { childList: true, subtree: false });
     }
-    console.log("[sv-emoji-force] v4 no-capture");
+    console.log("[sv-emoji-force] v5 scoped composer observer");
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
