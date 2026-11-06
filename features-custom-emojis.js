@@ -181,7 +181,7 @@
             '<div class="input-group"><label for="custom-emoji-name">Emoji name</label><input id="custom-emoji-name" type="text" maxlength="32" placeholder="happy_cat"></div>' +
             '<div class="input-group"><label for="custom-emoji-category">Category</label><input id="custom-emoji-category" type="text" maxlength="80" placeholder="Reactions" value="General"></div>' +
             '<div class="input-group full"><label for="custom-emoji-pin">Or import from a Pinterest pin</label><input id="custom-emoji-pin" type="url" placeholder="https://www.pinterest.com/pin/..."><p class="form-hint">Use a public pin link. The bot extracts the image itself.</p></div>' +
-            '<div class="full"><button class="button" id="custom-emoji-import" type="button">✨ Import Emoji</button></div>' +
+            '<div class="full"><button class="button" id="custom-emoji-import" type="button">💾 Save to Emoji Library</button></div>' +
           '</div>' +
           '<p class="form-hint" id="custom-emoji-status" role="status"></p>' +
         '</div>' +
@@ -247,12 +247,12 @@
         previewData = null;
         $("custom-emoji-preview").style.display = "none";
         await load();
-        status("✨ Emoji imported into this server!");
+        status("✨ Saved to this server’s Emoji Library!");
       } catch (error) {
         status(error.message, true);
       } finally {
         button.disabled = false;
-        button.textContent = "✨ Import Emoji";
+        button.textContent = "💾 Save to Emoji Library";
       }
     });
     return true;
