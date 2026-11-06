@@ -421,7 +421,7 @@
     var channelList = document.getElementById("sv-channel-list");
     if (channelList && window.MutationObserver) {
       var channelObserver = new MutationObserver(paintChannels);
-      channelObserver.observe(channelList, { childList: true, subtree: true });
+      channelObserver.observe(channelList, { childList: true });
     }
     console.log("[sv-unread] v1 ready");
   }
