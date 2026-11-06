@@ -8,10 +8,10 @@
 
   function esc(v) {
     return String(v == null ? "" : v)
-      .replace(/&/g, "&")
-      .replace(/</g, "<")
-      .replace(/>/g, ">")
-      .replace(/"/g, """);
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
   }
 
   var commands = [];
@@ -195,9 +195,20 @@
       form.dataset.slashSubmit = "1";
       form.addEventListener(
         "submit",
-        function () {
+        async function (event) {
           var text = (input.value || "").trim();
-          if (text.startsWith("/")) tryRunCommand(text);
+          if (!text.startsWith("/")) return;
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          var ok = await tryRunCommand(text);
+          if (ok) {
+            input.value = "";
+            var help = document.getElementById("sv-slash-help");
+            if (help) help.hidden = true;
+            if (typeof window.__svForceReloadMessages === "function") window.__svForceReloadMessages();
+          } else {
+            alert("That Coffee Shop command could not be run here. Check its options or run it in Discord.");
+          }
         },
         true
       );
