@@ -1,5 +1,5 @@
-import { findById } from "../lib/accounts.js";
 import { requireAnySession } from "../lib/requireAuth.js";
+import { getConnectedDiscordId } from "../lib/discordIdentity.js";
 
 export const config = {
   api: {
@@ -315,8 +315,7 @@ export default async function handler(req, res) {
       if (!channelId) channelId = body.channelId;
     }
 
-    const account = session?.accountId ? await findById(session.accountId) : null;
-    const connectedDiscordId = String(session?.discordId || account?.discord_id || "").trim();
+    const connectedDiscordId = String(await getConnectedDiscordId(session) || "").trim();
 
     if (req.method === "POST" && ["customEmoji", "sendAsWebhook"].includes(String(body.action || ""))) {
       if (!connectedDiscordId) {
