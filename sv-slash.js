@@ -87,6 +87,17 @@
     document.head.appendChild(s);
   }
 
+  function commandUsage(command) {
+    var names = [];
+    (command.options || []).forEach(function (option) {
+      if (option.type === 1) names.push(option.name);
+      if (option.type === 2) (option.options || []).forEach(function (child) {
+        if (child.type === 1) names.push(option.name + " " + child.name);
+      });
+    });
+    return names.length ? "Subcommands: " + names.map(function (name) { return "/" + command.name + " " + name; }).join(" · ") : "";
+  }
+
   function renderHelp(q) {
     var help = ensureHelp();
     if (!help) return;
@@ -110,6 +121,7 @@
           esc(c.name) +
           "</strong><span>" +
           esc(c.desc || "") +
+          (commandUsage(c) ? " · " + esc(commandUsage(c)) : "") +
           "</span></button>"
         );
       })
@@ -136,7 +148,9 @@
       });
       var data = await res.json().catch(function () { return {}; });
       if (res.ok && data.ok) {
-        console.log("[sv-slash] executed via bot", data.via);
+        var result = data.data || {};
+        if (result.ephemeral && result.response) alert(result.response);
+        console.log("[sv-slash] executed via Coffee Shop bot", data.via);
         return true;
       }
     } catch (e) {
