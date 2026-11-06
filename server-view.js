@@ -15,6 +15,7 @@
   var sending = false;
   var bound = false;
   var replyTo = null;
+  var currentUserPromise = null;
   function esc(value) {
     return String(value == null ? "" : value)
       .replace(/\x26/g, "\x26amp;")
@@ -23,6 +24,22 @@
       .replace(/\x22/g, "\x26quot;");
   }
   function getServer() { return window.selectedServer || null; }
+  function loadCurrentUser() {
+    if (window.__svMe && (window.__svMe.id || window.__svMe.discord_id)) return Promise.resolve(window.__svMe);
+    if (currentUserPromise) return currentUserPromise;
+    currentUserPromise = fetch("/api/user", { method: "GET", credentials: "include", cache: "no-store", headers: { "Accept": "application/json" } })
+      .then(function (response) { if (!response.ok) throw new Error("Could not load the signed-in Discord identity."); return response.json(); })
+      .then(function (data) {
+        var user = data && data.authenticated && data.user ? data.user : null;
+        if (!user) return null;
+        var id = user.discord_id || user.id;
+        if (id) { window.__svMe = Object.assign({}, user, { id: String(id) }); window.currentUser = window.__svMe; }
+        return window.__svMe || null;
+      })
+      .catch(function (error) { console.warn("[Server View] Could not resolve current user for ping highlights:", error); return null; })
+      .finally(function () { currentUserPromise = null; });
+    return currentUserPromise;
+  }
   function getChannels() { var list = window.channelsCache; return Array.isArray(list) ? list : []; }
   function openDrawer() {
     var view = document.getElementById("server-view");
@@ -105,6 +122,7 @@
     if (pill) pill.textContent = server.name || "Server";
 
     applyPrefs(); resetDrawer(); clearReply(); renderChannels();
+    loadCurrentUser().then(function () { if (lastMessages.length) { renderedMessageState = {}; renderMessages(lastMessages, false); } });
     if (activeChannelId) loadMessages(true);
     else if (window.matchMedia && window.matchMedia("(max-width: 768px)").matches) openDrawer();
     startPoll();
@@ -324,7 +342,7 @@
     var reference = message.reference;
     var replyName = reference.authorName || reference.username || "Reply";
     var replyContent = reference.content || "";
-    return '<div class="sv-reply-preview"><span class="sv-reply-line"></span><span class="sv-reply-text"><strong>' + esc(replyName) + '</strong>' + (replyContent ? " " + esc(truncate(replyContent, 100)) : "") + '</span></div>';
+    return '<div class="sv-reply-preview"><span class="sv-reply-line"></span><span class="sv-reply-text"><strong>' + esc(replyName) + '</strong>' + (replyContent ? " " + formatRichText(truncate(replyContent, 100), reference.mentions || message.mentions) : "") + '</span></div>';
   }
   function messageMentionsCurrentUser(message) {
     if (!message) return false;
@@ -338,7 +356,8 @@
     } catch (e) {}
     if (!me) return false;
     var users = message.mentions && message.mentions.users;
-    if (users && (users[me] || users[String(me)])) return true;
+    if (Array.isArray(users) && users.some(function (user) { return user && String(user.id || "") === me; })) return true;
+    if (users && !Array.isArray(users) && (users[me] || users[String(me)])) return true;
     return content.indexOf("<@" + me + ">") !== -1 || content.indexOf("<@!" + me + ">") !== -1;
   }
   function formatRichText(content, mentions) {
@@ -373,8 +392,10 @@
     }
     function userLabel(id) {
       id = String(id);
-      var u = users[id];
-      if (u) return u.displayName || u.globalName || u.username || id;
+      var u = Array.isArray(users) ? users.find(function (item) { return item && String(item.id || "") === id; }) : users[id];
+      if (u) return u.displayName || u.globalName || u.username || u.name || id;
+      var memberList = window.membersCache;
+      if (Array.isArray(memberList)) { var member = memberList.find(function (item) { return item && String(item.id || "") === id; }); if (member) return member.displayName || member.globalName || member.username || id; }
       return "user";
     }
     function roleStyle(color) {
@@ -401,7 +422,9 @@
       return ph('<span class="sv-mention sv-mention-everyone">@' + kind + '</span>');
     });
     raw = raw.replace(/<@!?(\d+)>/g, function (_, id) {
-      return ph('<span class="sv-mention sv-mention-user">@' + esc(userLabel(id)) + "</span>");
+      var me = window.__svMe && String(window.__svMe.id || window.__svMe.discord_id || "");
+      var mine = me && String(id) === me ? " sv-mention-me" : "";
+      return ph('<span class="sv-mention sv-mention-user' + mine + '">@' + esc(userLabel(id)) + "</span>");
     });
     raw = raw.replace(/<@&(\d+)>/g, function (_, id) {
       var info = roleLabel(id);
