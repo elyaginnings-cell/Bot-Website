@@ -116,6 +116,7 @@
   }
   window.openServerView = openServerView;
   window.closeServerView = closeServerView;
+  window.__svForceReloadMessages = function () { loadMessages(true); };
   function renderChannels() {
     var list = document.getElementById("sv-channel-list");
     if (!list) return;
