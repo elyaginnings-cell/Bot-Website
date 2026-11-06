@@ -336,7 +336,7 @@
           renderMembersDiscordStyle(window.membersCache);
         }
       });
-      viewObserver.observe(viewRoot, { childList: true, subtree: true });
+      viewObserver.observe(viewRoot, { childList: true, subtree: false });
     }
     document.addEventListener("click", function (e) {
       var tab = e.target && e.target.closest ? e.target.closest("[data-sv-tab]") : null;
@@ -348,7 +348,7 @@
         }, 400);
       }
     }, true);
-    console.log("[sv-discord-exact] v5 online (online first, offline last, reply jump)");
+    console.log("[sv-discord-exact] v6 online (scoped observer)");
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
