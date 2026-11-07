@@ -257,3 +257,20 @@ body { background:radial-gradient(ellipse at 75% 0%,rgba(130,37,155,.13),transpa
   .login-card { padding:28px 24px!important; }
   .navigation { max-height:50vh; }
 }
+
+
+/* Guest preview and compact floating account access. */
+.guest-auth-bar{position:fixed!important;z-index:10000!important;left:50%!important;bottom:18px!important;transform:translateX(-50%)!important;width:min(680px,calc(100vw - 28px))!important;display:flex;align-items:center;justify-content:space-between;gap:18px;padding:13px 16px!important;border:1px solid rgba(232,126,255,.35)!important;border-radius:16px!important;background:rgba(25,13,35,.96)!important;box-shadow:0 18px 60px rgba(0,0,0,.48),0 0 28px rgba(217,61,236,.12)!important;backdrop-filter:blur(18px)}
+.guest-auth-bar[hidden],.guest-auth-modal[hidden]{display:none!important}
+.guest-auth-copy{display:flex;flex-direction:column;gap:3px;min-width:0}.guest-auth-copy strong{font-size:13px;color:var(--ds-ink)}.guest-auth-copy span{font-size:11px;color:var(--ds-muted)}
+.guest-auth-actions{display:flex;gap:8px;flex-shrink:0}
+.guest-auth-modal{position:fixed;inset:0;z-index:10010;display:grid;place-items:center;padding:18px}
+.guest-auth-backdrop{position:absolute;inset:0;background:rgba(5,2,9,.76);backdrop-filter:blur(7px)}
+.guest-auth-card{position:relative;z-index:1;width:min(420px,100%);padding:28px;border:1px solid var(--ds-border-strong);border-radius:18px;background:linear-gradient(145deg,#21112d,#120a1a);box-shadow:0 25px 90px rgba(0,0,0,.55)}
+.guest-auth-card h2{margin:8px 0;color:var(--ds-ink);font-size:24px}.guest-auth-card>p{color:var(--ds-muted);font-size:13px;margin:0 0 20px}
+.guest-auth-close{position:absolute;right:13px;top:10px;border:0;background:transparent;color:var(--ds-muted);font-size:25px;cursor:pointer}
+#guest-auth-form{display:grid;gap:13px}#guest-auth-form label{display:grid;gap:6px;color:var(--ds-muted);font-size:12px;font-weight:600}#guest-auth-form input{width:100%}
+#guest-auth-submit{width:100%}.guest-auth-switch{border:0;background:transparent;color:#ed9aff;font-size:12px;cursor:pointer;padding:8px}
+.guest-auth-error{margin:0;color:#ff9aa9;font-size:12px}.guest-preview-value{color:var(--ds-subtle)!important}
+body.guest-preview .account-info strong{font-size:12px}
+@media(max-width:600px){.guest-auth-bar{align-items:stretch;flex-direction:column;gap:10px}.guest-auth-actions{width:100%}.guest-auth-actions button{flex:1}.guest-auth-card{padding:23px}}
