@@ -50,7 +50,7 @@
     $("guest-auth-bar").hidden=false;
     var copy=document.querySelector(".guest-auth-copy");
     if(copy){copy.querySelector("strong").textContent="You're signed in";copy.querySelector("span").textContent="Your account is saved. Server controls remain locked until access is granted.";}
-    $("guest-login-open").hidden=true;$("guest-signup-open").textContent="Account";
+    $("guest-login-open").hidden=true;$("guest-signup-open").hidden=true;
     var name=user.global_name||user.username||user.email||"Account";
     if($("username"))$("username").textContent=name;
     if($("welcome-name"))$("welcome-name").textContent=name;
