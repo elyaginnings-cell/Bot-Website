@@ -28,16 +28,6 @@ export default async function handler(req, res) {
       });
     }
 
-    if (session.staff !== true) {
-      clearSessionCookies(res);
-
-      return res.status(403).json({
-        authenticated: false,
-        error: "You are not authorized to access this dashboard.",
-        code: "STAFF_REQUIRED",
-      });
-    }
-
     if (session.accountId && process.env.DATABASE_URL) {
       const result = await query(
         `SELECT id, email, discord_id, username, global_name, avatar
@@ -49,7 +39,7 @@ export default async function handler(req, res) {
       if (result.rows[0]) {
         return res.status(200).json({
           authenticated: true,
-          user: publicUser(result.rows[0]),
+          user: { ...publicUser(result.rows[0]), role: session.staff === true ? "staff" : "member" },
         });
       }
 
@@ -89,6 +79,7 @@ export default async function handler(req, res) {
           avatar: data.avatar,
           discord_id: data.id,
           email: data.email || null,
+          role: session.staff === true ? "staff" : "member",
         },
       });
     }
