@@ -5,24 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Loading dashboard…</title>
 <link rel="icon" href="/amazon-favicon.svg?v=2" type="image/svg+xml">
-<style id="nav-boot-critical">
-#nav-hamburger{
-  position:fixed!important;top:max(12px,env(safe-area-inset-top))!important;
-  left:max(12px,env(safe-area-inset-left))!important;z-index:2147483000!important;
-  width:48px!important;height:48px!important;border-radius:14px!important;
-  border:1px solid rgba(88,101,242,.5)!important;
-  background:rgba(18,8,28,.96)!important;
-  display:flex!important;flex-direction:column!important;align-items:center!important;
-  justify-content:center!important;gap:5px!important;padding:0!important;
-  opacity:1!important;visibility:visible!important;pointer-events:auto!important;
-}
-#nav-hamburger span{display:block!important;width:18px!important;height:2.5px!important;background:#f5e9ff!important;border-radius:2px!important;}
-body.drawer-nav-only .sidebar,body.drawer-nav-only .navigation,body.drawer-nav-only.mode-mobile .navigation,body.drawer-nav-only.mode-auto .navigation{
-  display:none!important;visibility:hidden!important;pointer-events:none!important;height:0!important;opacity:0!important;
-}
-#nav-drawer-backdrop{pointer-events:none!important;}
-body.nav-drawer-open #nav-drawer-backdrop{pointer-events:auto!important;}
-</style>
 </head>
 <body>
 <script>
@@ -109,11 +91,9 @@ body.nav-drawer-open #nav-drawer-backdrop{pointer-events:auto!important;}
       l.href = href;
       document.head.appendChild(l);
     }
-    loadCss("/nav-drawer.css?v=9");
     loadCss("/mobile-fix.css?v=5");
     loadCss("/mobile-overhaul.css?v=1");
     loadCss("/server-view-overhaul.css?v=1");
-    loadCss("/refined-dashboard.css?v=1");
     await loadScript("/features-ui.js?v=10");
     await loadScript("/features-config.js?v=18");
     await loadScript("/features-ui-patch.js?v=13");
@@ -153,10 +133,10 @@ body.nav-drawer-open #nav-drawer-backdrop{pointer-events:auto!important;}
     await loadScript("/sv-media-react.js?v=5");
     await loadScript("/sv-ux-polish.js?v=3");
     await loadScript("/sv-phase0.js?v=2");
-    await loadScript("/nav-drawer.js?v=10");
     await loadScript("/login-auth.js?v=6");
     await loadScript("/click-rescue.js?v=1");
-    await loadScript("/refined-dashboard.js?v=1");
+    await loadScript("/refined-dashboard.js?v=2");
+    loadCss("/refined-dashboard.css?v=3");
     await loadScript("/theme-boot.js?v=18");
   } catch (e) {
     document.body.innerHTML =
