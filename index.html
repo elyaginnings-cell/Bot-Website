@@ -73,7 +73,7 @@
     document.open();
     document.write(html);
     document.close();
-    loadCss("/refined-dashboard.css?v=4");
+    loadCss("/refined-dashboard.css?v=5");
     function loadScript(src) {
       return new Promise(function (resolve, reject) {
         var s = document.createElement("script");
@@ -96,7 +96,7 @@
     loadCss("/mobile-overhaul.css?v=1");
     loadCss("/server-view-overhaul.css?v=1");
     await loadScript("/features-ui.js?v=10");
-    await loadScript("/refined-dashboard.js?v=3");
+    await loadScript("/refined-dashboard.js?v=4");
     await loadScript("/features-config.js?v=18");
     await loadScript("/features-ui-patch.js?v=13");
     await loadScript("/features-custom-emojis.js?v=5");
