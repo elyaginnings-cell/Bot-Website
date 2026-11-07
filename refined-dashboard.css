@@ -204,3 +204,33 @@ body.ds-sidebar-collapsed .nav-item span { width: auto; font-size: 17px !importa
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
+
+/* Theme compatibility with the legacy dashboard's high-specificity rules */
+html[data-dashboard-theme="light"] body,
+html[data-dashboard-theme="light"] body :is(h1,h2,h3,h4,h5,h6,p,span,strong,label,a,em,small,li,summary,legend) {
+  color: var(--ds-ink) !important;
+}
+html[data-dashboard-theme="light"] body :is(.form-hint,.header p,.hero p,.input-group label,.account-info span,.label,.eyebrow,.connection-status,.quick-card p,.sidebar-brand span,.view-mode-label) {
+  color: var(--ds-muted) !important;
+}
+html[data-dashboard-theme="light"] .sidebar,
+html[data-dashboard-theme="light"] .header,
+html[data-dashboard-theme="light"] .server-bar,
+html[data-dashboard-theme="light"] .card,
+html[data-dashboard-theme="light"] .stat-card,
+html[data-dashboard-theme="light"] .quick-card {
+  background: var(--ds-surface) !important;
+}
+html[data-dashboard-theme="light"] input,
+html[data-dashboard-theme="light"] select,
+html[data-dashboard-theme="light"] textarea,
+html[data-dashboard-theme="light"] .view-mode-select {
+  color: var(--ds-ink) !important;
+  background: var(--ds-raised) !important;
+}
+.ds-mobile-toggle { display: none !important; }
+.ds-sidebar-toggle { display: inline-flex !important; }
+@media (max-width: 960px) {
+  .ds-mobile-toggle { display: inline-flex !important; margin-bottom: 12px; }
+  .ds-sidebar-toggle { display: none !important; }
+}
