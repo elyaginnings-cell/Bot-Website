@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1">
-    <title>Amazon.com. Spend Less. Smile More.</title>
+    <title>Coffee Shop · Bot Control</title>
     <link rel="icon" href="/amazon-favicon.svg?v=2" type="image/svg+xml" sizes="any">
     <link rel="shortcut icon" href="/amazon-favicon.svg?v=2" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/amazon-favicon.svg?v=2">
@@ -21,31 +21,7 @@
 </head>
 <body class="mode-auto">
 
-    <div id="login-screen" class="login-screen">
-        <div class="login-layout">
-            <section class="login-story" aria-label="Coffee Shop dashboard introduction">
-                <div class="login-brand"><span class="login-brand-mark">☕</span><span>COFFEE SHOP <small>BOT CONTROL</small></span></div>
-                <div class="login-story-copy">
-                    <span class="login-kicker">YOUR SERVER, IN GOOD HANDS</span>
-                    <h1>Everything your community needs.<em> One calm workspace.</em></h1>
-                    <p>Manage your server, keep conversations moving, and make the busywork feel effortless.</p>
-                </div>
-                <div class="login-story-foot"><span class="login-live-dot"></span> Your community command center</div>
-            </section>
-            <section class="login-card" aria-label="Sign in">
-                <div class="login-card-heading">
-                    <span class="login-kicker">WELCOME BACK</span>
-                    <h2>Sign in to continue</h2>
-                    <p>Choose how you'd like to access your dashboard.</p>
-                </div>
-                <div class="login-icon" aria-hidden="true">☕</div>
-                <button class="button login-btn" id="login-button" type="button">Continue with Discord</button>
-                <p class="login-footnote">Secure access for your Coffee Shop dashboard.</p>
-            </section>
-        </div>
-    </div>
-
-    <div id="app" hidden>
+    <div id="app">
         <aside class="sidebar">
             <div class="sidebar-brand">
                 <div class="brand-icon">☕</div>
@@ -264,6 +240,29 @@
     <div id="sv-lightbox" class="sv-lightbox" hidden>
         <img id="sv-lightbox-img" src="" alt="">
     </div>
+
+    <div id="guest-auth-bar" class="guest-auth-bar" hidden role="region" aria-label="Account access">
+      <div class="guest-auth-copy"><strong>Looking to manage your server?</strong><span>Create an account or log in to unlock your dashboard.</span></div>
+      <div class="guest-auth-actions"><button type="button" class="button secondary" id="guest-login-open">Log in</button><button type="button" class="button" id="guest-signup-open">Create account</button></div>
+    </div>
+    <div id="guest-auth-modal" class="guest-auth-modal" hidden>
+      <div class="guest-auth-backdrop" data-auth-close></div>
+      <section class="guest-auth-card" role="dialog" aria-modal="true" aria-labelledby="guest-auth-title">
+        <button class="guest-auth-close" type="button" data-auth-close aria-label="Close">×</button>
+        <span class="eyebrow">COFFEE SHOP ACCOUNT</span>
+        <h2 id="guest-auth-title">Welcome back</h2>
+        <p id="guest-auth-description">Log in to your account or create one to save your profile.</p>
+        <form id="guest-auth-form">
+          <label>Email<input id="guest-auth-email" name="email" type="email" autocomplete="email" required placeholder="you@example.com"></label>
+          <label>Password<input id="guest-auth-password" name="password" type="password" autocomplete="current-password" minlength="8" required placeholder="At least 8 characters"></label>
+          <p id="guest-auth-error" class="guest-auth-error" hidden></p>
+          <button class="button" id="guest-auth-submit" type="submit">Log in</button>
+          <button class="guest-auth-switch" id="guest-auth-switch" type="button">Need an account? Create one</button>
+        </form>
+      </section>
+    </div>
+
+    <script src="/guest-auth.js?v=1"></script>
     <script src="branding-ui.js?v=5"></script>
     <script src="branding.js?v=6"></script>
     <script src="script.js?v=14"></script>
