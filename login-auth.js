@@ -172,7 +172,21 @@ async function submitPasswordAuth(endpoint) {
       return;
     }
 
-    window.location.reload();
+    const verifyResponse = await fetch("/api/user", {
+      credentials: "include",
+      cache: "no-store",
+    });
+    const verified = await verifyResponse.json().catch(() => ({}));
+
+    if (!verifyResponse.ok || !verified.authenticated || !verified.user) {
+      setLoginError(
+        verified.error ||
+        "Your credentials were accepted, but the dashboard session could not be verified. Check that this account is authorized for dashboard access."
+      );
+      return;
+    }
+
+    window.location.replace("/");
   } catch {
     setLoginError("Could not reach the login server.");
   } finally {
