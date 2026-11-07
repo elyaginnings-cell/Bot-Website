@@ -135,8 +135,6 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: "Missing SESSION_SECRET" });
     }
 
-    requireStaffConfiguration();
-
     const { email, password } = readBody(req);
 
     const invalid = validateCredentials(email, password);
@@ -145,12 +143,6 @@ export default async function handler(req, res) {
     }
 
     if (signup) {
-      if (!isStaffEmail(email)) {
-        return res.status(403).json({
-          error: "That email is not authorized to create a dashboard account.",
-        });
-      }
-
       const existing = await findByEmail(email);
 
       if (existing) {
@@ -166,7 +158,7 @@ export default async function handler(req, res) {
         accountId: account.id,
         method: "password",
         discordId: account.discord_id || null,
-        staff: true,
+        staff: isStaffEmail(account.email) || isStaffDiscordId(account.discord_id),
       });
 
       return res.status(200).json({
@@ -189,12 +181,6 @@ export default async function handler(req, res) {
 
     const staff =
       isStaffEmail(account.email) || isStaffDiscordId(account.discord_id);
-
-    if (!staff) {
-      return res.status(403).json({
-        error: "This account is not authorized to access the dashboard.",
-      });
-    }
 
     setSessionCookies(res, {
       v: 1,
