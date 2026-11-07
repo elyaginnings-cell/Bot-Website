@@ -35,29 +35,6 @@ body.nav-drawer-open #nav-drawer-backdrop{pointer-events:auto!important;}
     if (html.length < 5000 || html.indexOf("server-view") === -1) {
       throw new Error("Unexpected content length " + html.length);
     }
-    var SV_THEME_OPTIONS =
-      '<option value="discord">Discord</option>' +
-      '<option value="darker">Darker</option>' +
-      '<option value="amoled">AMOLED</option>' +
-      '<option value="ash">Ash</option>' +
-      '<option value="blurple">Blurple</option>' +
-      '<option value="light">Light</option>' +
-      '<option value="midnight">Midnight</option>' +
-      '<option value="nord">Nord</option>' +
-      '<option value="dracula">Dracula</option>' +
-      '<option value="catppuccin">Catppuccin</option>' +
-      '<option value="tokyo">Tokyo Night</option>' +
-      '<option value="gruvbox">Gruvbox</option>' +
-      '<option value="forest">Forest</option>' +
-      '<option value="ocean">Ocean</option>' +
-      '<option value="crimson">Crimson</option>' +
-      '<option value="cyber">Cyber</option>' +
-      '<option value="vapor">Vapor</option>' +
-      '<option value="soft">Soft</option>' +
-      '<option value="mono">Mono</option>' +
-      '<option value="terminal">Terminal</option>' +
-      '<option value="garden">Garden</option>';
-
     var INVITE_CARD =
       '<div class="card form-card wide" id="invite-bot-card" data-invite-bot="1" style="margin-top:16px">' +
       '<span class="eyebrow">INVITE BOT</span>' +
@@ -94,10 +71,7 @@ body.nav-drawer-open #nav-drawer-backdrop{pointer-events:auto!important;}
       .replace(/server-view-members\.css\?v=\d+/g, "server-view-members.css?v=14")
       .replace(/server-view-theme-garden\.css(?![?\w])/g, "server-view-theme-garden.css?v=4")
       .replace(/sv-readability\.css(?![?\w])/g, "sv-readability.css?v=2")
-      .replace(
-        /<select id="sv-theme">[\s\S]*?<\/select>/,
-        '<select id="sv-theme">' + SV_THEME_OPTIONS + '</select>'
-      );
+;
 
     if (html.indexOf("invite-bot-card") === -1) {
       html = html.replace(
@@ -140,8 +114,6 @@ body.nav-drawer-open #nav-drawer-backdrop{pointer-events:auto!important;}
     loadCss("/mobile-fix.css?v=5");
     loadCss("/mobile-overhaul.css?v=1");
     loadCss("/server-view-overhaul.css?v=1");
-    loadCss("/themes-insane.css?v=1");
-    loadCss("/theme-sweetheart.css?v=3");
     loadCss("/refined-dashboard.css?v=1");
     await loadScript("/features-ui.js?v=10");
     await loadScript("/features-config.js?v=18");
@@ -182,9 +154,7 @@ body.nav-drawer-open #nav-drawer-backdrop{pointer-events:auto!important;}
     await loadScript("/sv-media-react.js?v=5");
     await loadScript("/sv-ux-polish.js?v=3");
     await loadScript("/sv-phase0.js?v=2");
-    await loadScript("/theme-boot.js?v=17");
     await loadScript("/nav-drawer.js?v=10");
-    await loadScript("/sv-themes-expand.js?v=2");
     await loadScript("/login-auth.js?v=6");
     await loadScript("/click-rescue.js?v=1");
     await loadScript("/refined-dashboard.js?v=1");
