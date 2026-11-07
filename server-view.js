@@ -62,13 +62,10 @@
     }
   }
   function loadPrefs() {
-    var theme = localStorage.getItem("svTheme") || "discord";
     var density = localStorage.getItem("svDensity") || "default";
     var fontSize = localStorage.getItem("svFontSize") || "16";
-    var themeElement = document.getElementById("sv-theme");
     var densityElement = document.getElementById("sv-density");
     var fontElement = document.getElementById("sv-font-size");
-    if (themeElement) themeElement.value = theme;
     if (densityElement) densityElement.value = density;
     if (fontElement) fontElement.value = fontSize;
     applyPrefs();
@@ -76,21 +73,14 @@
   function applyPrefs() {
     var view = document.getElementById("server-view");
     if (!view) return;
-    var themeElement = document.getElementById("sv-theme");
     var densityElement = document.getElementById("sv-density");
     var fontElement = document.getElementById("sv-font-size");
-    var theme = themeElement ? themeElement.value || "discord" : "discord";
     var density = densityElement ? densityElement.value || "default" : "default";
     var fontSize = fontElement ? fontElement.value || "16" : "16";
-    view.classList.remove("theme-darker", "theme-light", "theme-garden", "theme-midnight", "density-compact", "density-cozy");
-    if (theme === "darker") view.classList.add("theme-darker");
-    else if (theme === "light") view.classList.add("theme-light");
-    else if (theme === "garden") view.classList.add("theme-garden");
-    else if (theme === "midnight") view.classList.add("theme-midnight");
+    view.classList.remove("density-compact", "density-cozy");
     if (density === "compact") view.classList.add("density-compact");
     if (density === "cozy") view.classList.add("density-cozy");
     view.style.setProperty("--sv-font-size", fontSize + "px");
-    localStorage.setItem("svTheme", theme);
     localStorage.setItem("svDensity", density);
     localStorage.setItem("svFontSize", fontSize);
   }
@@ -617,7 +607,6 @@
     var messages = document.getElementById("sv-messages");
     var replyCancel = document.getElementById("sv-reply-cancel");
     var lightbox = document.getElementById("sv-lightbox");
-    var themeEl = document.getElementById("sv-theme");
     var densityEl = document.getElementById("sv-density");
     var fontEl = document.getElementById("sv-font-size");
     if (openBtn) openBtn.addEventListener("click", openServerView);
@@ -641,7 +630,6 @@
     if (messages) messages.addEventListener("click", onMessagesClick);
     if (replyCancel) replyCancel.addEventListener("click", clearReply);
     if (lightbox) lightbox.addEventListener("click", closeLightbox);
-    if (themeEl) themeEl.addEventListener("change", applyPrefs);
     if (densityEl) densityEl.addEventListener("change", applyPrefs);
     if (fontEl) fontEl.addEventListener("change", applyPrefs);
     loadPrefs();
