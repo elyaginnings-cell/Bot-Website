@@ -58,47 +58,7 @@
   --sv-safe-top: env(safe-area-inset-top, 0px);
 }
 
-/* ═══════════════════════════════════════════════════════════
-   THEMES
-   ═══════════════════════════════════════════════════════════ */
-
-.server-view.theme-darker {
-  --sv-bg-primary: #1a1b1e;
-  --sv-bg-secondary: #111214;
-  --sv-bg-tertiary: #0c0d0e;
-
-  --sv-input-bg: #1e1f22;
-  --sv-embed-bg: #111214;
-
-  --sv-bg-modifier: rgba(79, 84, 92, 0.13);
-  --sv-bg-modifier-hover: rgba(79, 84, 92, 0.28);
-  --sv-bg-modifier-active: rgba(79, 84, 92, 0.48);
-}
-
-.server-view.theme-light {
-  --sv-bg-primary: #ffffff;
-  --sv-bg-secondary: #f2f3f5;
-  --sv-bg-tertiary: #e3e5e8;
-
-  --sv-text: #2e3338;
-  --sv-text-muted: #747f8d;
-  --sv-header: #060607;
-
-  --sv-interactive: #4e5058;
-  --sv-interactive-hover: #2e3338;
-  --sv-interactive-active: #060607;
-
-  --sv-embed-bg: #f2f3f5;
-  --sv-input-bg: #ebedef;
-
-  --sv-mention: rgba(88, 101, 242, 0.15);
-  --sv-mention-hover: rgba(88, 101, 242, 0.25);
-  --sv-mention-text: #4752c4;
-
-  --sv-bg-modifier: rgba(116, 127, 141, 0.08);
-  --sv-bg-modifier-hover: rgba(116, 127, 141, 0.16);
-  --sv-bg-modifier-active: rgba(116, 127, 141, 0.24);
-}
+/* Theme variants removed; server view uses its fixed default palette. */
 
 /* ═══════════════════════════════════════════════════════════
    MESSAGE DENSITY
