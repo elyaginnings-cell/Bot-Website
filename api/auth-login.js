@@ -77,7 +77,7 @@ function handleDiscordOAuthRedirect(req, res) {
   if (purpose === "link") {
     try {
       const session = readSession(req);
-      if (!session?.accountId || session.staff !== true) {
+      if (!session?.accountId) {
         return res.status(401).send("You must be logged in to link Discord.");
       }
     } catch {
