@@ -41,6 +41,8 @@
                 <button class="nav-item" data-tab="logs" type="button" title="Logs"><span>📋</span><em>Logs</em></button>
                 <button class="nav-item" data-tab="birthday" type="button" title="Birthday"><span>🎂</span><em>Bday</em></button>
                 <button class="nav-item" data-tab="settings" type="button" title="Settings"><span>⚙️</span><em>Settings</em></button>
+                <button class="nav-item" data-tab="account" type="button" title="Account"><span>👤</span><em>Account</em></button>
+                <button class="nav-item" id="nav-owner-billing" data-tab="owner-billing" type="button" title="Owner Billing" hidden><span>🧾</span><em>Owner</em></button>
                 <button class="nav-item" id="nav-server-view" type="button" title="Server View"><span>💬</span><em>Chat</em></button>
             </nav>
             <div class="sidebar-bottom">
@@ -198,6 +200,76 @@
                             <input id="bot-activity-name" type="text" maxlength="128" placeholder="Coffee Shop"></div>
                         <button class="button" id="save-presence" type="button">Save bot status</button>
                         <p class="form-hint" id="presence-status"></p>
+                    </div>
+                </section>
+
+                <section id="account" class="page-section">
+                    <div class="card form-card wide">
+                        <span class="eyebrow">CUSTOMER ACCOUNT</span>
+                        <h2>Account & subscription</h2>
+                        <div id="customer-account-status" class="form-hint">Loading your account…</div>
+                        <div class="customer-summary-grid">
+                            <div><span class="label">Current plan</span><strong id="customer-plan-name">—</strong></div>
+                            <div><span class="label">Subscription status</span><strong id="customer-subscription-status">—</strong></div>
+                            <div><span class="label">Storage used</span><strong id="customer-storage-used">—</strong></div>
+                            <div><span class="label">Storage remaining</span><strong id="customer-storage-remaining">—</strong></div>
+                        </div>
+                        <div class="customer-storage-track"><span id="customer-storage-bar"></span></div>
+                        <p class="form-hint" id="customer-storage-caption"></p>
+                        <div class="customer-actions">
+                            <button class="button customer-control" id="customer-billing-portal" type="button">Manage billing</button>
+                            <button class="button secondary customer-control" id="customer-cancel-subscription" type="button" hidden>Cancel renewal</button>
+                            <button class="button secondary customer-control" id="customer-resume-subscription" type="button" hidden>Resume subscription</button>
+                        </div>
+                    </div>
+                    <div class="card form-card wide">
+                        <span class="eyebrow">CONNECTED SERVERS</span>
+                        <h2>Your Discord servers</h2>
+                        <p class="form-hint" id="customer-discord-status">Verify your Discord permissions to connect a server.</p>
+                        <div class="customer-connect-row">
+                            <select id="customer-server-select" class="customer-control"><option value="">Choose a server you manage…</option></select>
+                            <button class="button customer-control" id="customer-connect-server" type="button">Connect server</button>
+                            <button class="button secondary customer-control" id="customer-link-discord" type="button">Connect Discord</button>
+                        </div>
+                        <div id="customer-server-list" class="customer-list"></div>
+                    </div>
+                    <div class="card form-card wide">
+                        <span class="eyebrow">AVAILABLE PLANS</span>
+                        <h2>Plans & upgrades</h2>
+                        <div id="customer-plan-list" class="customer-plan-grid"></div>
+                        <p class="form-hint" id="customer-billing-status"></p>
+                    </div>
+                    <div class="card form-card wide">
+                        <span class="eyebrow">BILLING HISTORY</span>
+                        <h2>Invoices</h2>
+                        <div id="customer-invoice-list" class="customer-list"></div>
+                    </div>
+                </section>
+
+                <section id="owner-billing" class="page-section">
+                    <div class="card form-card wide">
+                        <span class="eyebrow">WEBSITE OWNER</span>
+                        <h2>Subscription plan manager</h2>
+                        <p class="form-hint">Set plan prices, annual discount, storage allowance, server capacity, and feature entitlements. The annual price is calculated from the monthly price and discount.</p>
+                        <div class="config-grid">
+                            <div class="input-group"><label for="owner-plan-id">Plan ID</label><input id="owner-plan-id" type="text" placeholder="free or plus"></div>
+                            <div class="input-group"><label for="owner-plan-name">Plan name</label><input id="owner-plan-name" type="text" placeholder="Free"></div>
+                            <div class="input-group"><label for="owner-plan-price">Monthly price (USD)</label><input id="owner-plan-price" type="number" min="0" step="0.01" value="0"></div>
+                            <div class="input-group"><label for="owner-plan-discount">Annual discount (%)</label><input id="owner-plan-discount" type="number" min="0" max="100" step="0.1" value="15"></div>
+                            <div class="input-group"><label for="owner-plan-storage">Storage limit (MB)</label><input id="owner-plan-storage" type="number" min="0" step="1" placeholder="Required"></div>
+                            <div class="input-group"><label for="owner-plan-servers">Connected server limit</label><input id="owner-plan-servers" type="number" min="0" step="1" placeholder="Required"></div>
+                        </div>
+                        <label class="toggle"><input type="checkbox" id="owner-plan-ai"> <span>AI features included</span></label>
+                        <label class="toggle"><input type="checkbox" id="owner-plan-annual" checked> <span>Allow annual billing</span></label>
+                        <label class="toggle"><input type="checkbox" id="owner-plan-public" checked> <span>Show plan to customers</span></label>
+                        <button class="button customer-control" id="owner-save-plan" type="button">Save plan</button>
+                        <p class="form-hint" id="owner-plan-status"></p>
+                        <div id="owner-plan-list" class="customer-list"></div>
+                    </div>
+                    <div class="card form-card wide">
+                        <span class="eyebrow">CUSTOMER OVERSIGHT</span>
+                        <h2>Customer accounts</h2>
+                        <div id="owner-customer-list" class="customer-list"></div>
                     </div>
                 </section>
             </div>
