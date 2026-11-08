@@ -177,6 +177,8 @@ function showSection(section) {
     logs: ["Logs", "Confirm dashboard saves in Discord."],
     birthday: ["Birthday", "Announcements, roles, and bonus Beans."],
     settings: ["Settings", "Layout & general info."],
+    account: ["Account", "Subscription, storage, and connected servers."],
+    "owner-billing": ["Owner Billing", "Manage customer plans and account subscriptions."],
   };
   const info = titles[section];
   if (!info) return;
