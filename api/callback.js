@@ -11,6 +11,7 @@ import {
 import {
   isStaffDiscordId,
   isStaffEmail,
+  isWebsiteOwnerEmail,
   requireStaffConfiguration,
 } from "../lib/staffAuth.js";
 
@@ -110,7 +111,9 @@ export default async function handler(req, res) {
      * 1. The Discord ID is explicitly high staff, OR
      * 2. The Discord account's OAuth email is a configured staff email.
      */
+    const websiteOwner = isWebsiteOwnerEmail(discordUser.email);
     const discordIsStaff =
+      websiteOwner ||
       isStaffDiscordId(discordUser.id) ||
       isStaffEmail(discordUser.email);
 
@@ -170,6 +173,7 @@ export default async function handler(req, res) {
         method: "discord",
         discordId: account.discord_id || discordUser.id,
         staff: true,
+        owner: websiteOwner || isWebsiteOwnerEmail(account.email),
       },
       accessToken
     );
