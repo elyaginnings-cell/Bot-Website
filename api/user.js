@@ -65,7 +65,8 @@ export default async function handler(req, res) {
 
     if (!session) return res.status(401).json({ authenticated: false });
 
-    if (session.accountId && process.env.DATABASE_URL) {
+    const hasDatabase = Boolean(process.env.DATABASE_URL || process.env.DATABASE_PUBLIC_URL || process.env.POSTGRES_URL);
+    if (session.accountId && hasDatabase) {
       const result = await query(
         `SELECT id, email, discord_id, username, global_name, avatar
          FROM accounts WHERE id = $1`,
