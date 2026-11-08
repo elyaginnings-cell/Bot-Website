@@ -4,13 +4,13 @@
  */
 (function () {
   "use strict";
-  if (window.__featuresTabTogglesV3) return;
-  window.__featuresTabTogglesV3 = true;
+  if (window.__featuresTabTogglesV4) return;
+  window.__featuresTabTogglesV4 = true;
 
   // Explicit allowlist: only real bot-system pages get an Enabled toggle.
   var ALLOWED_SYSTEM_TABS = {
     // These pages do not already provide their own feature Enabled control.
-    moderation:"moderation",
+    moderation:"automod",
     invites:"invites",
     birthday:"birthday",
     applications:"applications",
@@ -174,7 +174,7 @@
   }
 
   function wrapShowSection() {
-    if (typeof window.showSection !== "function" || window.showSection.__tabToggleV3) return;
+    if (typeof window.showSection !== "function" || window.showSection.__tabToggleV4) return;
     var orig = window.showSection;
     window.showSection = function (tab) {
       var r = orig.apply(this, arguments);
@@ -183,7 +183,7 @@
       setTimeout(scanAndInject, 500);
       return r;
     };
-    window.showSection.__tabToggleV3 = true;
+    window.showSection.__tabToggleV4 = true;
   }
 
   document.addEventListener(
@@ -206,8 +206,8 @@
     });
     function watchContent() {
       var content = document.querySelector(".content") || document.body;
-      if (!content || content.__tabToggleObsV3) return;
-      content.__tabToggleObsV3 = true;
+      if (!content || content.__tabToggleObsV4) return;
+      content.__tabToggleObsV4 = true;
       obs.observe(content, { childList: true, subtree: true });
     }
     watchContent();
