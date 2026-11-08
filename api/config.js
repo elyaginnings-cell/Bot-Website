@@ -1,4 +1,5 @@
 import { requireAnySession } from "../lib/requireAuth.js";
+import { requireManagedGuild } from "../lib/customerAuth.js";
 import { readSession } from "../lib/session.js";
 import {
   loadGuildConfig,
@@ -89,12 +90,6 @@ function buildFullPushBody(mirrored) {
 
 export default async function handler(req, res) {
   try {
-    try {
-      requireAnySession(req);
-    } catch (err) {
-      return res.status(err.status || 401).json({ error: err.message || "Not authenticated" });
-    }
-
     const dashboardSecret = process.env.DASHBOARD_API_SECRET;
     if (!dashboardSecret) {
       return res.status(500).json({
@@ -103,6 +98,7 @@ export default async function handler(req, res) {
     }
 
     if (String(req.query?.resource || "") === "custom-emojis") {
+      requireAnySession(req);
       const imageId = String(req.query?.imageId || "").trim();
       if (imageId) {
         if (req.method !== "GET" || !/^[a-f0-9-]{20,40}$/i.test(imageId)) {
@@ -140,7 +136,8 @@ export default async function handler(req, res) {
     }
 
     if (String(req.query?.resource || "") === "application-review") {
-      const session = readSession(req);
+      const access = await requireManagedGuild(req, reviewGuildId);
+      const session = access.session;
       const reviewerId = String(session?.discordId || "").trim();
       if (!reviewerId) return res.status(401).json({ error: "Connect your Discord account to cast application votes." });
       const reviewGuildId = String(req.query?.guildId || "").trim();
@@ -164,6 +161,7 @@ export default async function handler(req, res) {
     if (!guildId) {
       return res.status(400).json({ error: "Missing guildId" });
     }
+    await requireManagedGuild(req, guildId);
 
     if (req.method === "GET") {
       let stored = null;
