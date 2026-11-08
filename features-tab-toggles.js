@@ -165,49 +165,6 @@
     el.style.color = ok === false ? "#f87171" : ok ? "#4ade80" : "";
   }
 
-  async function saveSystem(key, on, section) {
-    if (shouldSkip(null, key)) return;
-    if (!window.saveConfig) {
-      setStatus(section, "Save not ready — refresh once.", false);
-      return;
-    }
-    try {
-      var payload = { systems: Object.assign({}, systemsCfg()) };
-      payload.systems[key] = !!on;
-      // Never persist serverview as off
-      delete payload.systems.serverview;
-      await window.saveConfig(payload);
-      window.currentConfig.systems = payload.systems;
-      setStatus(
-        section,
-        on ? "✅ Enabled & saved" : "✅ Disabled & saved",
-        true
-      );
-    } catch (e) {
-      setStatus(section, "❌ " + (e && e.message ? e.message : "Save failed"), false);
-    }
-  }
-
-  async function saveSystemDraft() {
-    var input = document.querySelector(".page-section.active [data-system-toggle] input[data-sys-key]");
-    if (!input) return true;
-    if (!window.saveConfig) throw new Error("Save is not ready. Refresh and try again.");
-    var systems = Object.assign({}, systemsCfg());
-    systems[input.getAttribute("data-sys-key")] = !!input.checked;
-    delete systems.serverview;
-    await window.saveConfig({ systems: systems });
-    window.currentConfig.systems = systems;
-    if (window.syncGlobals) window.syncGlobals();
-    setStatus(input.closest(".page-section"), input.checked ? "Enabled & saved" : "Disabled & saved", true);
-    return true;
-  }
-  function restoreSystemDraft() {
-    var input = document.querySelector(".page-section.active [data-system-toggle] input[data-sys-key]");
-    if (input) input.checked = isOn(input.getAttribute("data-sys-key"));
-    if (input) setStatus(input.closest(".page-section"), "", true);
-  }
-  window.saveSystemTabDraft = saveSystemDraft;
-  window.restoreSystemTabDraft = restoreSystemDraft;
 
   function scanAndInject() {
     stripSkippedToggles();
