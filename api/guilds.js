@@ -1,4 +1,5 @@
-import { requireAnySession } from "../lib/requireAuth.js";
+import { requireCustomerAccount, requireManagedGuild } from "../lib/customerAuth.js";
+import { query } from "../lib/db.js";
 import { readSession } from "../lib/session.js";
 
 const RAILWAY_API =
@@ -173,14 +174,7 @@ async function handleInvite(req, res) {
 
 export default async function handler(req, res) {
   try {
-    try {
-      requireAnySession(req);
-    } catch (err) {
-      return res.status(err.status || 401).json({
-        error: err.message || "Not authenticated",
-        code: err.code || undefined,
-      });
-    }
+    const customer = await requireCustomerAccount(req);
 
     // ---- Invite bot (merged from api/invite-bot.js — Hobby plan 12 fn limit) ----
     if (isInviteRequest(req)) {
@@ -195,6 +189,7 @@ export default async function handler(req, res) {
 
       const guildId = String(req.query?.guildId || "").trim();
       if (!guildId) return res.status(400).json({ error: "Missing guildId" });
+      await requireManagedGuild(req, guildId);
 
       let roles = [];
       let emojis = [];
@@ -251,7 +246,14 @@ export default async function handler(req, res) {
     const railwayData = await railwayResponse.json();
     const botGuilds = Array.isArray(railwayData.guilds) ? railwayData.guilds : [];
 
-    const guilds = botGuilds.map((guild) => ({
+    let visibleGuilds = botGuilds;
+    if (!customer.isOwner && !customer.isStaff) {
+      const linked = await query("SELECT guild_id FROM customer_servers WHERE account_id = $1", [customer.account.id]);
+      const allowed = new Set(linked.rows.map((row) => String(row.guild_id)));
+      visibleGuilds = botGuilds.filter((guild) => allowed.has(String(guild.id)));
+    }
+
+    const guilds = visibleGuilds.map((guild) => ({
       id: guild.id,
       name: guild.name || "Unknown Server",
       icon: guild.icon || null,
