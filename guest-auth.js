@@ -34,6 +34,8 @@
     if(root.matches(".stat-card strong,.stat-card .stat-value,[data-guest-value],.stat-number")&&root.textContent!=="—")root.textContent="—";
   }
   function showGuest(){
+    isLoggedIn=false;
+    isStaff=false;
     // Guest is a client-side preview only, never a registered or persisted account.
     window.__dashboardAuthState="guest";
     document.body.dataset.authState="guest";
@@ -46,6 +48,8 @@
     var app=$("app");if(app)app.hidden=false;
     var login=$("login-screen");if(login)login.remove();
     var username=$("username");if(username)username.textContent="Guest";
+    var logout=$("logout-button");if(logout)logout.hidden=true;
+    var avatar=$("user-avatar");if(avatar){avatar.src="/amazon-favicon.svg";avatar.alt="Guest preview";}
     var welcome=$("welcome-name");if(welcome)welcome.textContent="Guest";
     var account=document.querySelector(".account-info span");if(account)account.textContent="Preview mode";
     var title=document.querySelector(".server-current strong");if(title)title.textContent="No server selected";
@@ -79,6 +83,7 @@
   }
   function showMember(user){
     isLoggedIn=true;isStaff=!!(user&&user.role==="staff");
+    var logout=$("logout-button");if(logout)logout.hidden=false;
     window.__dashboardAuthState=isStaff?"staff":"member";
     document.body.dataset.authState=window.__dashboardAuthState;
     if(isStaff){
