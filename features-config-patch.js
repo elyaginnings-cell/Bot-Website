@@ -273,10 +273,14 @@
       });
       setStatus("verify-status", statusText(d, "✅ Verification saved. Run /verification-setup in Discord.", "Saved on website. Bot offline — redeploy, then /verification-setup."), true);
       if (window.loadGuildData) await window.loadGuildData(); else apply();
+      if (typeof window.captureDashboardDraft === "function") window.captureDashboardDraft();
+      return true;
     } catch (e) {
       setStatus("verify-status", "❌ " + (e.message || "Failed"), false);
+      return false;
     }
   }
+  window.saveVerificationDraft = saveVerification;
 
   async function saveA() {
     try {
