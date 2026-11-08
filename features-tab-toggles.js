@@ -32,18 +32,9 @@
     var id = String(tabId || "").toLowerCase().replace(/[^a-z0-9_-]/g, "");
     return ALLOWED_SYSTEM_TABS[id] || null;
   }
-  function shouldSkip(tabId) { return !systemKeyFor(tabId); }
-
-  function systemKeyFor(tabId) {
-    var id = String(tabId || "")
-      .toLowerCase()
-      .replace(/[^a-z0-9_-]/g, "");
-    if (!id) return null;
-    if (ALIAS[id]) return ALIAS[id];
-    return id;
+  function shouldSkip(tabId, sysKey) {
+    return !systemKeyFor(tabId);
   }
-
-  function shouldSkip(tabId, sysKey) { return !systemKeyFor(tabId); }
 
   function prettyLabel(key, tabId) {
     if (LABELS[key]) return LABELS[key];
@@ -165,7 +156,7 @@
         setStatus(section, "Unsaved changes — use the Save or Cancel bar below.", true);
         if (window.updateDashboardDraftBar) window.updateDashboardDraftBar();
       });
-      if (window.captureDashboardDraft) window.captureDashboardDraft();
+      if (window.captureDashboardDraft && (!window.dashboardDraftIsDirty || !window.dashboardDraftIsDirty())) window.captureDashboardDraft();
     }
   }
 
