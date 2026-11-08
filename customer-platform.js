@@ -76,7 +76,7 @@
       button.addEventListener("click", async () => {
         if (!confirm("Disconnect this server from your account?")) return;
         try {
-          await api("/api/customer-servers?guildId=" + encodeURIComponent(button.dataset.disconnectServer), { method: "DELETE" });
+          await api("/api/user?resource=customer-servers&guildId=" + encodeURIComponent(button.dataset.disconnectServer), { method: "DELETE" });
           await loadServers();
         } catch (error) { status("customer-discord-status", error.message, true); }
       });
@@ -120,7 +120,7 @@
         try {
           status("customer-billing-status", "Preparing secure Stripe checkout…");
           const action = activeSub && ["active", "trialing", "past_due"].includes(activeSub.status) ? "change-plan" : "checkout";
-          const result = await api("/api/billing", {
+          const result = await api("/api/user?resource=billing", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ action, planId: button.dataset.planId, interval: billing })
@@ -136,7 +136,7 @@
   }
   async function loadServers() {
     try {
-      const data = await api("/api/customer-servers");
+      const data = await api("/api/user?resource=customer-servers");
       renderServers(data);
     } catch (error) {
       status("customer-discord-status", error.message, true);
@@ -148,8 +148,8 @@
     if (nav) nav.hidden = false;
     try {
       const [plans, customers] = await Promise.all([
-        api("/api/owner-plans"),
-        api("/api/owner-customers")
+        api("/api/user?resource=owner-plans"),
+        api("/api/user?resource=owner-customers")
       ]);
       const planList = $("owner-plan-list");
       if (planList) {
@@ -189,7 +189,7 @@
   }
   async function loadAccount() {
     try {
-      const data = await api("/api/customer-account");
+      const data = await api("/api/user?resource=customer-account");
       const plan = data.plan;
       window.__customerSubscription = data.subscription;
       status("customer-account-status", "Signed in as " + (data.account.email || data.account.username || "your account") + ".");
@@ -206,7 +206,7 @@
       if ($("customer-cancel-subscription")) $("customer-cancel-subscription").hidden = !(data.subscription && !data.subscription.cancel_at_period_end && ["active", "trialing"].includes(data.subscription.status));
       if ($("customer-resume-subscription")) $("customer-resume-subscription").hidden = !(data.subscription && data.subscription.cancel_at_period_end);
       try {
-        const billing = await api("/api/billing");
+        const billing = await api("/api/user?resource=billing");
         renderPlans(billing.plans, plan);
       } catch (error) { status("customer-billing-status", error.message, true); }
     } catch (error) {
@@ -222,7 +222,7 @@
       const guildId = $("customer-server-select")?.value;
       if (!guildId) return status("customer-discord-status", "Choose a server first.", true);
       try {
-        await api("/api/customer-servers", {
+        await api("/api/user?resource=customer-servers", {
           method: "POST", headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ guildId })
         });
@@ -232,7 +232,7 @@
     });
     $("customer-billing-portal")?.addEventListener("click", async () => {
       try {
-        const result = await api("/api/billing", {
+        const result = await api("/api/user?resource=billing", {
           method: "POST", headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ action: "portal" })
         });
@@ -242,13 +242,13 @@
     $("customer-cancel-subscription")?.addEventListener("click", async () => {
       if (!confirm("Cancel renewal at the end of the current billing period?")) return;
       try {
-        await api("/api/billing", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "cancel" }) });
+        await api("/api/user?resource=billing", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "cancel" }) });
         await loadAccount();
       } catch (error) { status("customer-billing-status", error.message, true); }
     });
     $("customer-resume-subscription")?.addEventListener("click", async () => {
       try {
-        await api("/api/billing", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "resume" }) });
+        await api("/api/user?resource=billing", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "resume" }) });
         await loadAccount();
       } catch (error) { status("customer-billing-status", error.message, true); }
     });
@@ -257,7 +257,7 @@
         const priceCents = Math.round(Number($("owner-plan-price").value || 0) * 100);
         const storageBytes = $("owner-plan-storage").value === "" ? null : Math.round(Number($("owner-plan-storage").value) * 1048576);
         const serverLimit = $("owner-plan-servers").value === "" ? null : Number($("owner-plan-servers").value);
-        const result = await api("/api/owner-plans", {
+        const result = await api("/api/user?resource=owner-plans", {
           method: "POST", headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             id: $("owner-plan-id").value, name: $("owner-plan-name").value,
