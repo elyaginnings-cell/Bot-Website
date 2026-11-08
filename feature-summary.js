@@ -4,12 +4,12 @@
   window.__featureSummaryV1 = true;
 
   var FEATURE_TABS = [
-    "moderation","invites","leveling","currency","emojis","shop","logs","birthday","systems",
+    "moderation","invites","leveling","currency","shop","logs","birthday","systems","custom-emojis",
     "bump","verification","suggestions","tickets","qotd","selfroles",
     "applications","analytics","aichat","automod","aistaff","activitycheck","loa"
   ];
   var TITLES = {
-    moderation:"Moderation", invites:"Invites", leveling:"Leveling", currency:"Currency", emojis:"Custom Emojis", systems:"System Settings",
+    moderation:"Moderation", invites:"Invites", leveling:"Leveling", currency:"Currency", emojis:"Custom Emojis", systems:"System Settings", "custom-emojis":"Custom Emoji Library",
     shop:"Shop", logs:"Logging", birthday:"Birthday", bump:"Bump rewards",
     verification:"Verification", suggestions:"Suggestions", tickets:"Tickets",
     qotd:"Question of the Day", selfroles:"Self Roles", applications:"Applications",
@@ -17,7 +17,7 @@
     activitycheck:"Activity Check", loa:"Leave of Absence"
   };
   var SAVE = {
-    emojis:["save-custom-emoji","custom-emoji-status"],
+    "custom-emojis":["custom-emoji-import","custom-emoji-status"],
     systems:["save-systems","systems-status"],
     bump:["save-bump","bump-status"],
     suggestions:["save-suggestions","suggest-status"],
@@ -74,7 +74,7 @@
     });
     // Include configured collections that are rendered as lists rather than fields.
     var lists=[];
-    editor.querySelectorAll(".level-roles-list,[id$='-list'],[id$='-cats'],#sr-v3-cats,#ticket-cats-list").forEach(function(node){
+    editor.querySelectorAll(".level-roles-list,[id$='-list'],[id$='-cats'],#sr-v3-cats,#ticket-cats-list,#custom-emoji-grid,.emoji-grid").forEach(function(node){
       if(node.closest("[hidden]")) return;
       var text=(node.innerText || node.textContent || "").replace(/\s+/g," ").trim();
       if(text && !/No .* yet|No .* found|loading/i.test(text) && text.length<1800){
