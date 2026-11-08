@@ -40,3 +40,34 @@ body:not(.guest-preview) .account .logout-btn {
 body:not(.guest-preview) #logout-button[hidden] {
   display: inline-flex !important;
 }
+
+
+/* Discord is the primary sign-in action; email remains the alternative. */
+.discord-auth-button {
+  width:100%;
+  min-height:48px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  margin:18px 0 14px;
+  border:1px solid rgba(255,255,255,.16);
+  background:#5865F2;
+  color:#fff;
+  font-weight:700;
+}
+.discord-auth-button:hover { background:#4752c4; }
+.auth-divider {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin:14px 0;
+  color:var(--muted,#a99bb5);
+  font-size:12px;
+}
+.auth-divider::before,.auth-divider::after {
+  content:"";
+  height:1px;
+  flex:1;
+  background:rgba(255,255,255,.12);
+}
