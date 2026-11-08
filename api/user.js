@@ -39,9 +39,7 @@ async function getDiscordServerAccess(token) {
   }
 }
 
-function shapeUser(account, session, serverAccess) {
-  const websiteOwner = isWebsiteOwnerEmail(account.email) || session.owner === true;
-  const staff = websiteOwner || isStaffEmail(account.email) || isStaffDiscordId(account.discord_id) || session.staff === true;
+function shapeUser(account, websiteOwner, staff, serverAccess) {
   return {
     ...publicUser(account),
     role: websiteOwner ? "owner" : staff ? "staff" : "member",
@@ -72,15 +70,16 @@ export default async function handler(req, res) {
          FROM accounts WHERE id = $1`,
         [session.accountId]
       );
-      if (!result.rows[0]) {
+      const account = result.rows[0];
+      if (!account) {
         clearSessionCookies(res);
         return res.status(401).json({ authenticated: false });
       }
-      const account = result.rows[0];
+
+      // Re-evaluate access on every profile check. This upgrades older
+      // sessions immediately when an owner or staff allowlist changes.
       const websiteOwner = isWebsiteOwnerEmail(account.email);
       const staff = websiteOwner || isStaffEmail(account.email) || isStaffDiscordId(account.discord_id);
-      // Refresh older sessions after owner/staff allowlist changes so API
-      // authorization and the visible account role cannot disagree.
       if (session.staff !== staff || session.owner !== websiteOwner) {
         setSessionCookies(res, {
           v: 1,
@@ -92,23 +91,11 @@ export default async function handler(req, res) {
         }, session.discordToken);
         session = { ...session, staff, owner: websiteOwner };
       }
-      const websiteOwner = isWebsiteOwnerEmail(account.email);
-      const staff = websiteOwner || isStaffEmail(account.email) || isStaffDiscordId(account.discord_id);
-      if (session.staff !== staff || session.owner !== websiteOwner) {
-        setSessionCookies(res, {
-          v: 1,
-          accountId: session.accountId || null,
-          method: "discord",
-          discordId: account.discord_id,
-          staff,
-          owner: websiteOwner,
-        }, session.discordToken);
-        session = { ...session, staff, owner: websiteOwner };
-      }
+
       const serverAccess = await getDiscordServerAccess(session.discordToken);
       return res.status(200).json({
         authenticated: true,
-        user: shapeUser(account, session, serverAccess),
+        user: shapeUser(account, websiteOwner, staff, serverAccess),
       });
     }
 
@@ -130,10 +117,12 @@ export default async function handler(req, res) {
         global_name: data.global_name,
         avatar: data.avatar,
       };
+      const websiteOwner = isWebsiteOwnerEmail(account.email);
+      const staff = websiteOwner || isStaffEmail(account.email) || isStaffDiscordId(account.discord_id);
       const serverAccess = await getDiscordServerAccess(session.discordToken);
       return res.status(200).json({
         authenticated: true,
-        user: shapeUser(account, session, serverAccess),
+        user: shapeUser(account, websiteOwner, staff, serverAccess),
       });
     }
 
