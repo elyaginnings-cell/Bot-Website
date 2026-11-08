@@ -1,4 +1,4 @@
-import { requireAnySession } from "../lib/requireAuth.js";
+import { requireManagedGuild } from "../lib/customerAuth.js";
 import { getConnectedDiscordId } from "../lib/discordIdentity.js";
 
 const RAILWAY_API =
@@ -122,17 +122,15 @@ async function fromRailway(guildId, secret) {
 export default async function handler(req, res) {
   try {
     let session;
-    try {
-      session = requireAnySession(req);
-    } catch (err) {
-      return res.status(err.status || 401).json({ error: err.message || "Not authenticated" });
-    }
-
     const guildId = String(req.query?.guildId || "");
     const secret = process.env.DASHBOARD_API_SECRET || "";
 
     if (req.method === "POST") {
       const body = typeof req.body === "string" ? JSON.parse(req.body || "{}") : req.body || {};
+      const targetGuildId = String(body.guildId || guildId).trim();
+      if (!targetGuildId) return res.status(400).json({ error: "Missing guildId" });
+      const access = await requireManagedGuild(req, targetGuildId);
+      session = access.session;
       if (!secret) return res.status(500).json({ error: "Missing DASHBOARD_API_SECRET" });
       const connectedDiscordId = await getConnectedDiscordId(session);
       const payload = {
@@ -170,6 +168,9 @@ export default async function handler(req, res) {
       return res.status(405).json({ error: "Method not allowed" });
     }
 
+    if (!guildId) return res.status(400).json({ error: "Missing guildId" });
+    const access = await requireManagedGuild(req, guildId);
+    session = access.session;
     const railwayCmds = await fromRailway(guildId, secret).catch(() => []);
 
     const commands = railwayCmds.sort((a, b) => a.name.localeCompare(b.name));
