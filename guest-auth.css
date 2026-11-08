@@ -71,3 +71,6 @@ body:not(.guest-preview) #logout-button[hidden] {
   flex:1;
   background:rgba(255,255,255,.12);
 }
+
+.guest-auth-actions .discord-auth-button { background:#5865F2!important;color:#fff!important;border-color:rgba(255,255,255,.18)!important; }
+.guest-auth-actions .discord-auth-button:hover { background:#4752c4!important; }
