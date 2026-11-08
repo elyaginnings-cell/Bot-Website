@@ -91,9 +91,9 @@ async function saveConfig(body) {
 function applyConfigToForms() {
   if (!currentConfig) return;
   const c = currentConfig;
-  if (c.warnChannelId) setVal("warn-channel", c.warnChannelId);
-  if (c.inviteLeaderboardChannelId) setVal("invite-channel", c.inviteLeaderboardChannelId);
-  if (c.dashboardLogChannelId) setVal("dashboard-log-channel", c.dashboardLogChannelId);
+  setVal("warn-channel", c.warnChannelId || "");
+  setVal("invite-channel", c.inviteLeaderboardChannelId || "");
+  setVal("dashboard-log-channel", c.dashboardLogChannelId || "");
   if (c.levelUpChannelId) setVal("level-up-channel", c.levelUpChannelId);
   else setVal("level-up-channel", "");
   const L = c.leveling || {};
