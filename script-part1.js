@@ -161,9 +161,10 @@ function dashboardDraftValue() {
   const activeSection = document.querySelector(".page-section.active");
   if (activeSection) {
     activeSection.querySelectorAll("input,select,textarea").forEach((el, index) => {
-      if (!el.id || seen.has(el.id) || ["button","submit","file","hidden"].includes(el.type)) return;
+      if (!el.id || seen.has(el.id) || ["button","submit","hidden"].includes(el.type)) return;
       seen.add(el.id);
       const value = el.type === "checkbox" || el.type === "radio" ? el.checked :
+        el.type === "file" ? Array.from(el.files || []).map((file) => file.name) :
         el.multiple ? Array.from(el.selectedOptions).map((option) => option.value) : el.value;
       values.push([el.id || "field-" + index, value]);
     });
@@ -182,7 +183,7 @@ function dashboardDraftIsDirty() {
   const section = document.querySelector(".page-section.active")?.id || "overview";
   const activeSection = document.querySelector(".page-section.active");
   const hasSystemToggle = !!activeSection?.querySelector("[data-system-toggle] input[data-sys-key]");
-  const hasEditableFields = !!activeSection?.querySelector("input:not([type=button]):not([type=submit]):not([type=file]):not([type=hidden]),select,textarea");
+  const hasEditableFields = !!activeSection?.querySelector("input:not([type=button]):not([type=submit]):not([type=hidden]),select,textarea");
   if (!DASHBOARD_DRAFT_FIELDS[section] && !hasSystemToggle && !hasEditableFields) return false;
   return dashboardDraftValue() !== dashboardDraftSnapshot;
 }
@@ -221,7 +222,7 @@ function initDashboardDrafts() {
   ["input", "change"].forEach((type) => document.addEventListener(type, (event) => {
     const el = event.target;
     if (!el || !el.matches || !el.matches("#app .page-section input, #app .page-section select, #app .page-section textarea")) return;
-    if (["file", "button", "submit"].includes(el.type)) return;
+    if (["button", "submit"].includes(el.type)) return;
     updateDashboardDraftBar();
   }, true));
   const collectionObserver = new MutationObserver((records) => {
@@ -235,6 +236,7 @@ function initDashboardDrafts() {
 }
 async function cancelDashboardDraft() {
   const section = document.querySelector(".page-section.active")?.id || "overview";
+  document.querySelectorAll(".page-section.active input[type=file]").forEach((input) => { input.value = ""; });
   if (typeof window.loadGuildData === "function" && section !== "settings") {
     try { await window.loadGuildData(); } catch (error) { console.error("[dashboard-drafts] cancel reload failed", error); }
   } else if (typeof applyConfigToForms === "function") {
