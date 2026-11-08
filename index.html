@@ -89,11 +89,9 @@
       return new Promise(function (resolve, reject) {
         var s = document.createElement("script");
         s.src = src;
+        s.async = false;
         s.onload = resolve;
-        s.onerror = function () {
-          console.error("Script failed:", src);
-          resolve();
-        };
+        s.onerror = function () { reject(new Error("Failed to load " + src)); };
         document.body.appendChild(s);
       });
     }
@@ -106,48 +104,51 @@
     loadCss("/mobile-fix.css?v=5");
     loadCss("/mobile-overhaul.css?v=1");
     loadCss("/server-view-overhaul.css?v=1");
-    await loadScript("/features-ui.js?v=10");
-    await loadScript("/refined-dashboard.js?v=4");
-    await loadScript("/features-config.js?v=18");
-    await loadScript("/features-ui-patch.js?v=13");
-    await loadScript("/features-custom-emojis.js?v=5");
-    await loadScript("/features-config-patch.js?v=31");
-    await loadScript("/features-automod-staff.js?v=4");
-    await loadScript("/features-security-upgrade.js?v=2");
-    await loadScript("/features-sudo-operator.js?v=1");
-    await loadScript("/features-ai-chat.js?v=1");
-    await loadScript("/features-ai-ignore-roles.js?v=1");
-    await loadScript("/features-systems.js?v=1");
-    await loadScript("/features-tab-toggles.js?v=3");
-    await loadScript("/features-audit-logs.js?v=4");
-    await loadScript("/features-logging.js?v=4");
-    await loadScript("/features-loa.js?v=3");
-    await loadScript("/features-activitycheck.js?v=3");
-    await loadScript("/features-tickets.js?v=13");
-    await loadScript("/features-tickets-bridge.js?v=3");
-    await loadScript("/app-config-fix.js?v=6");
-    await loadScript("/app-selects-fix.js?v=3");
-    await loadScript("/sr-panels.js?v=2");
-    await loadScript("/features-selfroles-v3.js?v=3");
-    await loadScript("/features-invite-bot.js?v=3");
-    await loadScript("/sv-members-load.js?v=37");
-    await loadScript("/sv-manage.js?v=4");
-    await loadScript("/sv-stable.js?v=7");
-    await loadScript("/sv-role-colors.js?v=2");
-    await loadScript("/sv-core-fix.js?v=5");
-    await loadScript("/sv-slash.js?v=4");
-    await loadScript("/sv-discord-exact.js?v=6");
-    await loadScript("/sv-media-proxy.js?v=3");
-    await loadScript("/sv-emoji-picker.js?v=9");
-    await loadScript("/sv-emoji-force.js?v=5");
-    await loadScript("/sv-mobile-fix.js?v=1");
-    await loadScript("/sv-unread.js?v=2");
-    await loadScript("/sv-members-force.js?v=5");
-    await loadScript("/sv-media-react.js?v=5");
-    await loadScript("/sv-ux-polish.js?v=3");
-    await loadScript("/sv-phase0.js?v=2");
-    await loadScript("/click-rescue.js?v=1");
-    await loadScript("/theme-boot.js?v=18");
+    var scripts = [
+      "/features-ui.js?v=10",
+      "/refined-dashboard.js?v=4",
+      "/features-config.js?v=18",
+      "/features-ui-patch.js?v=13",
+      "/features-custom-emojis.js?v=5",
+      "/features-config-patch.js?v=31",
+      "/features-automod-staff.js?v=4",
+      "/features-security-upgrade.js?v=2",
+      "/features-sudo-operator.js?v=1",
+      "/features-ai-chat.js?v=1",
+      "/features-ai-ignore-roles.js?v=1",
+      "/features-systems.js?v=1",
+      "/features-tab-toggles.js?v=3",
+      "/features-audit-logs.js?v=4",
+      "/features-logging.js?v=4",
+      "/features-loa.js?v=3",
+      "/features-activitycheck.js?v=3",
+      "/features-tickets.js?v=13",
+      "/features-tickets-bridge.js?v=3",
+      "/app-config-fix.js?v=6",
+      "/app-selects-fix.js?v=3",
+      "/sr-panels.js?v=2",
+      "/features-selfroles-v3.js?v=3",
+      "/features-invite-bot.js?v=3",
+      "/sv-members-load.js?v=37",
+      "/sv-manage.js?v=4",
+      "/sv-stable.js?v=7",
+      "/sv-role-colors.js?v=2",
+      "/sv-core-fix.js?v=5",
+      "/sv-slash.js?v=4",
+      "/sv-discord-exact.js?v=6",
+      "/sv-media-proxy.js?v=3",
+      "/sv-emoji-picker.js?v=9",
+      "/sv-emoji-force.js?v=5",
+      "/sv-mobile-fix.js?v=1",
+      "/sv-unread.js?v=2",
+      "/sv-members-force.js?v=5",
+      "/sv-media-react.js?v=5",
+      "/sv-ux-polish.js?v=3",
+      "/sv-phase0.js?v=2",
+      "/click-rescue.js?v=1",
+      "/theme-boot.js?v=18"
+    ];
+    await Promise.all(scripts.map(loadScript));
   } catch (e) {
     document.body.innerHTML =
       "<div style=\"font-family:system-ui;padding:2rem;max-width:32rem\">" +
