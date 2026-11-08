@@ -168,6 +168,12 @@ function dashboardDraftValue() {
       values.push([el.id || "field-" + index, value]);
     });
   }
+  if (activeSection) {
+    activeSection.querySelectorAll(".level-roles-list,[id$='-list'],[id$='-cats']").forEach((node) => {
+      if (!node.id || node.closest(".feature-summary-panel")) return;
+      values.push(["collection:" + node.id, (node.innerText || node.textContent || "").replace(/\\s+/g, " ").trim()]);
+    });
+  }
   const systemToggle = activeSection?.querySelector("[data-system-toggle] input[data-sys-key]");
   if (systemToggle) values.push(["system:" + systemToggle.dataset.sysKey, systemToggle.checked]);
   return JSON.stringify(values);
@@ -218,6 +224,10 @@ function initDashboardDrafts() {
     if (["file", "button", "submit"].includes(el.type)) return;
     updateDashboardDraftBar();
   }, true));
+  const collectionObserver = new MutationObserver((records) => {
+    if (records.some((record) => record.target.closest && record.target.closest(".feature-editor-panel"))) updateDashboardDraftBar();
+  });
+  document.querySelectorAll(".feature-editor-panel").forEach((editor) => collectionObserver.observe(editor, { childList: true, subtree: true, characterData: true }));
   document.getElementById("dashboard-draft-save")?.addEventListener("click", saveDashboardDraft);
   document.getElementById("dashboard-draft-cancel")?.addEventListener("click", cancelDashboardDraft);
   captureDashboardDraft();
