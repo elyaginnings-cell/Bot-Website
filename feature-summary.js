@@ -100,7 +100,13 @@
     if(!FEATURE_TABS.includes(section.id)) return;
     var existing=section.querySelector(":scope > .feature-summary-panel");
     var editor=section.querySelector(":scope > .feature-editor-panel");
-    if(existing && editor){renderSummary(section,existing);return;}
+    if(existing && editor){
+      Array.from(section.childNodes).forEach(function(node){
+        if(node!==existing && node!==editor) editor.appendChild(node);
+      });
+      renderSummary(section,existing);
+      return;
+    }
     var summary=document.createElement("div");
     summary.className="card feature-summary-panel";
     var wrap=document.createElement("div");
