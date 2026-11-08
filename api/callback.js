@@ -12,7 +12,6 @@ import {
   isStaffDiscordId,
   isStaffEmail,
   isWebsiteOwnerEmail,
-  requireStaffConfiguration,
 } from "../lib/staffAuth.js";
 
 export default async function handler(req, res) {
@@ -30,12 +29,6 @@ export default async function handler(req, res) {
     !SESSION_SECRET
   ) {
     return res.status(500).send("Discord OAuth is not configured correctly.");
-  }
-
-  try {
-    requireStaffConfiguration();
-  } catch (error) {
-    return res.status(error.status || 500).send(error.message);
   }
 
   const code = req.query?.code;
@@ -126,7 +119,7 @@ export default async function handler(req, res) {
       try {
         const existingSession = readSession(req);
 
-        if (existingSession?.accountId && existingSession.staff === true) {
+        if (existingSession?.accountId) {
           account = await linkDiscordToAccount(
             existingSession.accountId,
             discordUser
@@ -151,16 +144,6 @@ export default async function handler(req, res) {
       }
     }
 
-    /*
-     * If this wasn't a valid email-session link, require the
-     * Discord identity itself to be high staff.
-     */
-    if (!account && !discordIsStaff) {
-      return res.status(403).send(
-        "This Discord account is not authorized to access the dashboard."
-      );
-    }
-
     if (!account) {
       account = await upsertDiscordAccount(discordUser);
     }
@@ -172,7 +155,7 @@ export default async function handler(req, res) {
         accountId: account.id,
         method: "discord",
         discordId: account.discord_id || discordUser.id,
-        staff: true,
+        staff: discordIsStaff || isStaffEmail(account.email) || isStaffDiscordId(account.discord_id),
         owner: websiteOwner || isWebsiteOwnerEmail(account.email),
       },
       accessToken
