@@ -195,7 +195,10 @@
     if(content) observer.observe(content,{childList:true,subtree:true});
     document.addEventListener("dashboard:guild-loaded",function(){
       setTimeout(function(){process();FEATURE_TABS.forEach(id=>refresh(id));},80);
-      setTimeout(function(){FEATURE_TABS.forEach(id=>refresh(id));},500);
+      setTimeout(function(){
+        FEATURE_TABS.forEach(id=>refresh(id));
+        if(typeof window.captureDashboardDraft==="function") window.captureDashboardDraft();
+      },500);
     });
     document.addEventListener("dashboard:guild-loading",function(){
       FEATURE_TABS.forEach(id=>refresh(id,{collapse:true}));
