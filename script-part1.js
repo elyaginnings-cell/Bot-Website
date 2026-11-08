@@ -142,7 +142,8 @@ const DASHBOARD_DRAFT_FIELDS = {
   shop: ["shop-enabled"],
   logs: ["dashboard-log-channel"],
   birthday: ["bday-channel","bday-ping-role","bday-role","bday-bonus"],
-  settings: ["dashboard-tab-moderation","dashboard-tab-invites","dashboard-tab-leveling","dashboard-tab-currency","dashboard-tab-emojis","dashboard-tab-shop","dashboard-tab-logs","dashboard-tab-birthday","dashboard-tab-account","dashboard-tab-owner-billing"]
+  settings: ["dashboard-tab-moderation","dashboard-tab-invites","dashboard-tab-leveling","dashboard-tab-currency","dashboard-tab-emojis","dashboard-tab-shop","dashboard-tab-logs","dashboard-tab-birthday","dashboard-tab-account","dashboard-tab-owner-billing"],
+  automod: ["verify-enabled","verify-channel","verify-role","verify-log-channel","verify-btn-label","verify-title","verify-desc","verify-monitor-mins"]
 };
 let dashboardDraftSnapshot = "";
 let dashboardDraftSaving = false;
@@ -192,17 +193,24 @@ function initDashboardDrafts() {
       showDashboardDraftNotice();
     }
   }, true);
-  document.querySelectorAll("#app .page-section input, #app .page-section select, #app .page-section textarea").forEach((el) => {
-    if (["file","button","submit"].includes(el.type)) return;
-    el.addEventListener("input", updateDashboardDraftBar);
-    el.addEventListener("change", updateDashboardDraftBar);
-  });
+  // Delegate so dynamically injected feature controls are tracked too.
+  ["input", "change"].forEach((type) => document.addEventListener(type, (event) => {
+    const el = event.target;
+    if (!el || !el.matches || !el.matches("#app .page-section input, #app .page-section select, #app .page-section textarea")) return;
+    if (["file", "button", "submit"].includes(el.type)) return;
+    updateDashboardDraftBar();
+  }, true));
   document.getElementById("dashboard-draft-save")?.addEventListener("click", saveDashboardDraft);
   document.getElementById("dashboard-draft-cancel")?.addEventListener("click", cancelDashboardDraft);
   captureDashboardDraft();
 }
-function cancelDashboardDraft() {
-  if (typeof applyConfigToForms === "function") applyConfigToForms();
+async function cancelDashboardDraft() {
+  const section = document.querySelector(".page-section.active")?.id || "overview";
+  if (section === "automod" && typeof window.loadGuildData === "function") {
+    try { await window.loadGuildData(); } catch (error) { console.error("[dashboard-drafts] cancel reload failed", error); }
+  } else if (typeof applyConfigToForms === "function") {
+    applyConfigToForms();
+  }
   if (typeof applyDashboardTabs === "function") applyDashboardTabs();
   captureDashboardDraft();
 }
@@ -217,7 +225,8 @@ async function saveDashboardDraft() {
     shop: saveShopToggle,
     logs: saveLogChannel,
     birthday: saveBirthday,
-    settings: saveDashboardTabs
+    settings: saveDashboardTabs,
+    automod: () => typeof window.saveVerificationDraft === "function" ? window.saveVerificationDraft() : false
   };
   const action = actions[section];
   if (typeof action !== "function") return;
