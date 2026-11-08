@@ -88,8 +88,8 @@ export default async function handler(req, res) {
        RETURNING *`,
       [
         id, name, String(body.description || "").slice(0, 500), monthly, currency, discount,
-        body.annualEnabled !== false, JSON.stringify(entitlements), storageLimit, serverLimit,
-        body.active !== false, body.public !== false, Number.isSafeInteger(Number(body.sortOrder)) ? Number(body.sortOrder) : 0,
+        id !== "free" && body.annualEnabled !== false, JSON.stringify(entitlements), storageLimit, serverLimit,
+        id === "free" ? true : body.active !== false, id === "free" ? true : body.public !== false, Number.isSafeInteger(Number(body.sortOrder)) ? Number(body.sortOrder) : 0,
       ]
     );
 
