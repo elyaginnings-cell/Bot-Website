@@ -34,7 +34,15 @@ function fillRoleSelects() {
 
 function setVal(id, v) {
   const el = document.getElementById(id);
-  if (el && v !== undefined && v !== null) el.value = v;
+  if (!el || v === undefined || v === null) return;
+  if (el.tagName === "SELECT" && !Array.from(el.options).some((option) => option.value === String(v))) {
+    const option = document.createElement("option");
+    option.value = String(v);
+    option.textContent = "Saved selection (currently unavailable)";
+    option.dataset.savedFallback = "true";
+    el.appendChild(option);
+  }
+  el.value = v;
 }
 function setCheck(id, v) {
   const el = document.getElementById(id);
