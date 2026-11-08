@@ -71,16 +71,30 @@
     }
   }
   function showMember(user){
-    isLoggedIn=true;isStaff=user&&user.role==="staff";
-    if(isStaff){document.body.classList.remove("guest-preview");$("guest-auth-bar").hidden=true;return;}
+    isLoggedIn=true;isStaff=!!(user&&user.role==="staff");
+    if(isStaff){
+      document.body.classList.remove("guest-preview");
+      var staffBar=$("guest-auth-bar");if(staffBar)staffBar.hidden=true;
+      return;
+    }
+    // A signed-in member is still not a server-authorized dashboard user.
+    // Keep the preview lock, but never present that account as the Guest user.
     showGuest();
-    $("guest-auth-bar").hidden=false;
-    var copy=document.querySelector(".guest-auth-copy");
-    if(copy){copy.querySelector("strong").textContent="You're signed in";copy.querySelector("span").textContent="Your account is saved. Server controls remain locked until access is granted.";}
-    $("guest-login-open").hidden=true;$("guest-signup-open").hidden=true;
-    var name=user.global_name||user.username||user.email||"Account";
+    var name=user&&(user.global_name||user.username||user.email)||"Account";
     if($("username"))$("username").textContent=name;
     if($("welcome-name"))$("welcome-name").textContent=name;
+    var accountLabel=document.querySelector(".account-info span");
+    if(accountLabel)accountLabel.textContent="Account · no server access";
+    var bar=$("guest-auth-bar");if(bar)bar.hidden=false;
+    var copy=document.querySelector(".guest-auth-copy");
+    if(copy){
+      var heading=copy.querySelector("strong"),description=copy.querySelector("span");
+      if(heading)heading.textContent="You're signed in";
+      if(description)description.textContent="This account doesn't have server access yet. You can switch accounts or create another one.";
+    }
+    var loginButton=$("guest-login-open"),signupButton=$("guest-signup-open");
+    if(loginButton){loginButton.hidden=false;loginButton.textContent="Switch account";}
+    if(signupButton){signupButton.hidden=false;signupButton.textContent="Create account";}
   }
   window.checkLogin=async function(){
     try{
