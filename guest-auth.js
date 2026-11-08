@@ -8,7 +8,7 @@
   function setMode(mode){
     authMode=mode==="signup"?"signup":"login";
     $("guest-auth-title").textContent=authMode==="signup"?"Create your account":"Welcome back";
-    $("guest-auth-description").textContent=authMode==="signup"?"Create an account to save your profile and sign in later.":"Log in to your existing Coffee Shop account.";
+    $("guest-auth-description").textContent=authMode==="signup"?"Create an account with email and password.":"Discord sign-in opens Discord so you can authorize this website. Email and password are a separate option.";
     $("guest-auth-submit").textContent=authMode==="signup"?"Create account":"Log in";
     $("guest-auth-password").autocomplete=authMode==="signup"?"new-password":"current-password";
     $("guest-auth-switch").textContent=authMode==="signup"?"Already have an account? Log in":"Need an account? Create one";
@@ -141,19 +141,8 @@
 
     // A valid login without staff authorization is an account, not Guest.
     // Keep management controls restricted, but never hide or disable Logout.
-    if(bar){
-      bar.hidden=false;
-      var copy=bar.querySelector(".guest-auth-copy");
-      if(copy){
-        var heading=copy.querySelector("strong"),description=copy.querySelector("span");
-        if(heading)heading.textContent="You're signed in";
-        if(description)description.textContent="Your account is valid, but it isn't on the dashboard administrator list yet. Contact the owner to enable management access.";
-      }
-    }
-    var loginButton=$("guest-login-open"),signupButton=$("guest-signup-open");
-    if(loginButton){loginButton.hidden=false;loginButton.textContent="Email login";}
-    if(signupButton)signupButton.hidden=true;
-    var discordOpen=$("guest-discord-open");if(discordOpen)discordOpen.hidden=false;
+    // Authenticated accounts should not be shown a guest/login prompt.
+    if(bar)bar.hidden=true;
     document.querySelectorAll("#app .page-section button,#app .page-section input,#app .page-section select,#app .page-section textarea,#server-button,#open-server-view,#nav-server-view").forEach(function(control){
       if(control.id==="logout-button")return;
       control.disabled=true;
