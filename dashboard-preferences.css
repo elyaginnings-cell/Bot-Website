@@ -29,3 +29,29 @@ body:has(.dashboard-draft-bar:not([hidden])){padding-bottom:100px}
 
 /* Verification uses the shared bottom draft bar instead of an inline save button. */
 #save-verification{display:none!important}
+
+
+/* Summary-first configuration panels for every feature tab. */
+.feature-summary-panel{margin:0 0 16px;padding:20px;border:1px solid rgba(205,145,255,.22);background:linear-gradient(145deg,rgba(34,19,48,.92),rgba(17,11,25,.96));}
+.feature-summary-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.feature-summary-head h3{margin:5px 0 0;font-size:20px;letter-spacing:-.02em}
+.feature-summary-state{display:inline-flex;align-items:center;border-radius:999px;padding:6px 11px;font-size:12px;font-weight:700}
+.feature-summary-state.is-on{color:#9ff2c0;background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.28)}
+.feature-summary-state.is-off{color:#f0b4bd;background:rgba(244,63,94,.1);border:1px solid rgba(244,63,94,.24)}
+.feature-summary-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 18px;border-top:1px solid rgba(255,255,255,.08)}
+.feature-summary-row{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.07);min-width:0}
+.feature-summary-row span{font-size:12px;color:#bdaecb;flex:0 0 42%;overflow-wrap:anywhere}
+.feature-summary-row strong{font-size:13px;color:#fff;text-align:right;overflow-wrap:anywhere;min-width:0}
+.feature-summary-list{margin-top:12px;padding:12px 14px;border-radius:12px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07)}
+.feature-summary-list>span{display:block;text-transform:capitalize;font-size:11px;color:#bdaecb;margin-bottom:5px}
+.feature-summary-list p{margin:0;font-size:12px;line-height:1.55;overflow-wrap:anywhere;color:#f2eafa}
+.feature-summary-empty{padding:12px 0;color:#bdaecb;font-size:13px}
+.feature-configure-button{margin-top:16px;min-width:190px}
+.feature-editor-panel[hidden]{display:none!important}
+.feature-editor-panel{margin-top:10px}
+@media(max-width:650px){
+ .feature-summary-panel{padding:15px}
+ .feature-summary-grid{grid-template-columns:1fr}
+ .feature-summary-row span{flex-basis:38%}
+ .feature-configure-button{width:100%}
+}
