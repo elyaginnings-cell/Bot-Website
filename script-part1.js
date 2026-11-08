@@ -1,21 +1,4 @@
-(function loadEmailLogin() {
-  if (!document.querySelector('link[href="login-extra.css"]')) {
-    const css = document.createElement("link");
-    css.rel = "stylesheet";
-    css.href = "login-extra.css";
-    document.head.appendChild(css);
-  }
-  if (!document.querySelector('script[src*="login-auth.js"]')) {
-    const s = document.createElement("script");
-    s.src = "login-auth.js?v=4";
-    document.head.appendChild(s);
-  }
-  if (!document.querySelector('script[src*="theme-boot.js"]')) {
-    const t = document.createElement("script");
-    t.src = "theme-boot.js";
-    document.head.appendChild(t);
-  }
-})();
+/* Legacy email-login bootstrap removed. guest-auth.js owns guest and account state. */
 
 var currentUser = null;
 var selectedServer = null;
@@ -172,34 +155,8 @@ async function checkLogin() {
     const data = await response.json();
     if (!data?.authenticated || !data?.user) {
       if (loginScreen) loginScreen.hidden = false;
-      if (app) app.hidden = true;
-      return;
-    }
-    currentUser = data.user;
-    syncGlobals();
-    if (loginScreen) loginScreen.hidden = true;
-    if (app) app.hidden = false;
-    updateUserInterface(currentUser);
-    restoreSelectedServer();
-    startServerRefresh();
-    refreshStorageStatus();
-  } catch {
-    if (loginScreen) loginScreen.hidden = false;
-    if (app) app.hidden = true;
-  }
-}
-
-function updateUserInterface(user) {
-  const username = user.global_name || user.username || user.email || "User";
-  const usernameEl = document.getElementById("username");
-  if (usernameEl) usernameEl.textContent = username;
-  const welcome = document.getElementById("welcome-name");
-  if (welcome) welcome.textContent = username;
-  const avatar = document.getElementById("user-avatar");
-  if (avatar) {
-    const discordId = user.discord_id || user.id;
-    avatar.src =
-      user.avatar && discordId && String(discordId).length > 15
+      if (app) app/* checkLogin is intentionally supplied by guest-auth.js. The legacy implementation hid the dashboard for guests. */
+ngth > 15
         ? `https://cdn.discordapp.com/avatars/${discordId}/${user.avatar}.png?size=128`
         : "https://cdn.discordapp.com/embed/avatars/0.png";
   }
