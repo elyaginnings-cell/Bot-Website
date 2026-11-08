@@ -32,3 +32,11 @@ body.guest-preview.account-authenticated .account .logout-btn { display:inline-f
   .guest-auth-actions { display:grid; grid-template-columns:1fr 1fr; }
   .guest-auth-card { padding:22px 18px; }
 }
+
+/* Authenticated accounts are never styled or treated as guests. */
+body:not(.guest-preview) .account .logout-btn {
+  display: inline-flex !important;
+}
+body:not(.guest-preview) #logout-button[hidden] {
+  display: inline-flex !important;
+}
