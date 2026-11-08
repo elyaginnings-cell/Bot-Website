@@ -1,6 +1,7 @@
 import { query } from "../lib/db.js";
 import { publicUser } from "../lib/accounts.js";
-import { clearSessionCookies, readSession } from "../lib/session.js";
+import { clearSessionCookies, readSession, setSessionCookies } from "../lib/session.js";
+import { isStaffEmail, isStaffDiscordId, isWebsiteOwnerEmail } from "../lib/staffAuth.js";
 
 const ADMIN_PERMISSION = 1n << 3n;
 const MANAGE_GUILD_PERMISSION = 1n << 5n;
@@ -39,8 +40,8 @@ async function getDiscordServerAccess(token) {
 }
 
 function shapeUser(account, session, serverAccess) {
-  const websiteOwner = session.owner === true;
-  const staff = session.staff === true;
+  const websiteOwner = isWebsiteOwnerEmail(account.email) || session.owner === true;
+  const staff = websiteOwner || isStaffEmail(account.email) || isStaffDiscordId(account.discord_id) || session.staff === true;
   return {
     ...publicUser(account),
     role: websiteOwner ? "owner" : staff ? "staff" : "member",
@@ -75,10 +76,39 @@ export default async function handler(req, res) {
         clearSessionCookies(res);
         return res.status(401).json({ authenticated: false });
       }
+      const account = result.rows[0];
+      const websiteOwner = isWebsiteOwnerEmail(account.email);
+      const staff = websiteOwner || isStaffEmail(account.email) || isStaffDiscordId(account.discord_id);
+      // Refresh older sessions after owner/staff allowlist changes so API
+      // authorization and the visible account role cannot disagree.
+      if (session.staff !== staff || session.owner !== websiteOwner) {
+        setSessionCookies(res, {
+          v: 1,
+          accountId: session.accountId,
+          method: session.method || "account",
+          discordId: account.discord_id || null,
+          staff,
+          owner: websiteOwner,
+        }, session.discordToken);
+        session = { ...session, staff, owner: websiteOwner };
+      }
+      const websiteOwner = isWebsiteOwnerEmail(account.email);
+      const staff = websiteOwner || isStaffEmail(account.email) || isStaffDiscordId(account.discord_id);
+      if (session.staff !== staff || session.owner !== websiteOwner) {
+        setSessionCookies(res, {
+          v: 1,
+          accountId: session.accountId || null,
+          method: "discord",
+          discordId: account.discord_id,
+          staff,
+          owner: websiteOwner,
+        }, session.discordToken);
+        session = { ...session, staff, owner: websiteOwner };
+      }
       const serverAccess = await getDiscordServerAccess(session.discordToken);
       return res.status(200).json({
         authenticated: true,
-        user: shapeUser(result.rows[0], session, serverAccess),
+        user: shapeUser(account, session, serverAccess),
       });
     }
 
