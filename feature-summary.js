@@ -161,9 +161,11 @@
     FEATURE_TABS.forEach(function(id){var section=$(id);if(section) attach(section);});
   }
   var observer=new MutationObserver(function(records){
-    var relevant=false;
-    records.forEach(function(record){
-      if(record.type==="childList" && record.addedNodes.length) relevant=true;
+    var relevant=records.some(function(record){
+      if(record.type!=="childList" || !record.addedNodes.length) return false;
+      if(record.target.closest && record.target.closest(".feature-summary-panel,.feature-editor-panel")) return false;
+      return record.target === document.querySelector(".content") ||
+        (record.target.classList && record.target.classList.contains("page-section"));
     });
     if(relevant) setTimeout(process,40);
   });
