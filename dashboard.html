@@ -71,12 +71,15 @@
                     </div>
                     <button class="button secondary" id="open-server-view" type="button">💬 Server</button>
                     <div class="account">
-                        <div class="account-avatar"><img id="user-avatar" src="" alt=""></div>
-                        <div class="account-info">
-                            <strong id="username">Loading...</strong>
-                            <span id="account-role">Checking account…</span>
-                            <span id="account-server-rank" class="account-server-rank" hidden></span>
-                        </div>
+                        <button class="account-profile-button" id="open-account-profile" type="button" aria-label="Open account and subscription settings">
+                            <span class="account-avatar"><img id="user-avatar" src="" alt=""></span>
+                            <span class="account-info">
+                                <strong id="username">Loading...</strong>
+                                <span id="account-role">Checking account…</span>
+                                <span id="account-server-rank" class="account-server-rank" hidden></span>
+                            </span>
+                            <span class="account-profile-chevron" aria-hidden="true">⌄</span>
+                        </button>
                         <button class="logout-btn" id="logout-button" type="button">Logout</button>
                     </div>
                 </div>
@@ -222,6 +225,16 @@
                             <button class="button secondary customer-control" id="customer-cancel-subscription" type="button" hidden>Cancel renewal</button>
                             <button class="button secondary customer-control" id="customer-resume-subscription" type="button" hidden>Resume subscription</button>
                         </div>
+                    </div>
+                    <div class="card form-card wide">
+                        <span class="eyebrow">PROFILE DETAILS</span>
+                        <h2>Your account</h2>
+                        <div class="customer-profile-grid">
+                            <div><span class="label">Display name</span><strong id="customer-profile-name">—</strong></div>
+                            <div><span class="label">Email address</span><strong id="customer-profile-email">—</strong></div>
+                            <div><span class="label">Discord account</span><strong id="customer-profile-discord">—</strong></div>
+                        </div>
+                        <p class="form-hint">Your sign-in and connected Discord identity.</p>
                     </div>
                     <div class="card form-card wide">
                         <span class="eyebrow">CONNECTED SERVERS</span>
@@ -410,6 +423,6 @@
     </script>
     <script src="sv-members-load.js?v=1"></script>
     <script src="sv-punish-attr-fix.js?v=1"></script>
-    <script src="customer-platform.js?v=1"></script>
+    <script src="customer-platform.js?v=2"></script>
 </body>
 </html>
