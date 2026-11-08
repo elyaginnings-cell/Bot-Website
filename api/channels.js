@@ -1,4 +1,4 @@
-import { requireAnySession } from "../lib/requireAuth.js";
+import { requireManagedGuild } from "../lib/customerAuth.js";
 
 const RAILWAY_API =
   process.env.BOT_API_URL ||
@@ -15,12 +15,6 @@ export default async function handler(req, res) {
   const label = roles ? "roles" : "channels";
 
   try {
-    try {
-      requireAnySession(req);
-    } catch (err) {
-      return res.status(err.status || 401).json({ error: err.message || "Not authenticated" });
-    }
-
     const dashboardSecret = process.env.DASHBOARD_API_SECRET;
     if (!dashboardSecret) {
       return res.status(500).json({ error: "Server misconfigured" });
@@ -28,6 +22,7 @@ export default async function handler(req, res) {
 
     const guildId = req.query?.guildId;
     if (!guildId) return res.status(400).json({ error: "Missing guildId" });
+    await requireManagedGuild(req, guildId);
 
     const response = await fetch(
       `${RAILWAY_API}/api/guild/${guildId}/${label}`,
@@ -43,6 +38,6 @@ export default async function handler(req, res) {
     return res.status(200).json(data);
   } catch (error) {
     console.error(`${label} API error:`, error);
-    return res.status(500).json({ error: `Failed to load ${label}` });
+    return res.status(error.status || 500).json({ error: error.message || `Failed to load ${label}` });
   }
 }
