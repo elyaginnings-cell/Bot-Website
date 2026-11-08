@@ -7,90 +7,32 @@
   if (window.__featuresTabTogglesV3) return;
   window.__featuresTabTogglesV3 = true;
 
-  /** Optional aliases: multiple tabs share one system key */
-  var ALIAS = {
-    aichat: "ai",
-    ai: "ai",
-    "ai-chat": "ai",
-    aistaff: "ai",
-    automod: "automod",
-    moderation: "automod",
-    mod: "automod",
-    tickets: "tickets",
-    verification: "verification",
-    verify: "verification",
-    applications: "applications",
-    application: "applications",
-    apply: "applications",
-    fishing: "fishing",
-    fish: "fishing",
-    currency: "currency",
-    beans: "currency",
-    shop: "currency",
-    leveling: "currency",
-    economy: "currency",
-    loa: "loa",
-    activitycheck: "activitycheck",
-    activity: "activitycheck",
-    active: "activitycheck",
-    help: "help",
-    birthday: "birthday",
-    bump: "bump",
-    achievements: "achievements",
-    qotd: "qotd",
-    selfroles: "selfroles",
-    selfrole: "selfroles",
-    analytics: "analytics",
-    suggestions: "suggestions",
-    suggest: "suggestions",
-    invites: "invites",
-    logs: "logs",
-    server: "serverview",
-    "server-view": "serverview",
-    serverview: "serverview",
-    overview: "overview",
-    home: "overview",
-    settings: "settings",
-    themes: "themes",
-    theme: "themes"
+  // Explicit allowlist: only real bot-system pages get an Enabled toggle.
+  var ALLOWED_SYSTEM_TABS = {
+    aichat:"ai", "ai-chat":"ai", aistaff:"ai",
+    automod:"automod", moderation:"automod", mod:"automod",
+    tickets:"tickets", verification:"verification", verify:"verification",
+    applications:"applications", application:"applications", apply:"applications",
+    fishing:"fishing", fish:"fishing",
+    currency:"currency", beans:"currency", shop:"currency", leveling:"currency", economy:"currency",
+    loa:"loa", activitycheck:"activitycheck", activity:"activitycheck", active:"activitycheck",
+    birthday:"birthday", bump:"bump", achievements:"achievements", qotd:"qotd",
+    selfroles:"selfroles", selfrole:"selfroles", analytics:"analytics",
+    suggestions:"suggestions", suggest:"suggestions", invites:"invites", logs:"logs"
   };
-
   var LABELS = {
-    ai: "AI Chat / Staff",
-    automod: "Automod / Moderation",
-    tickets: "Tickets",
-    verification: "Verification",
-    applications: "Applications",
-    fishing: "Fishing",
-    currency: "Economy / Beans / Shop / Leveling",
-    loa: "LOA",
-    activitycheck: "Activity Check",
-    help: "Help",
-    birthday: "Birthday",
-    bump: "Bump",
-    achievements: "Achievements",
-    qotd: "Question of the Day",
-    selfroles: "Self Roles",
-    analytics: "Analytics",
-    suggestions: "Suggestions",
-    invites: "Invites",
-    logs: "Logs",
-    overview: "Overview",
-    settings: "Settings",
-    themes: "Themes"
+    ai:"AI Chat / Staff", automod:"Automod / Moderation", tickets:"Tickets",
+    verification:"Verification", applications:"Applications", fishing:"Fishing",
+    currency:"Economy / Beans / Shop / Leveling", loa:"LOA",
+    activitycheck:"Activity Check", birthday:"Birthday", bump:"Bump",
+    achievements:"Achievements", qotd:"Question of the Day", selfroles:"Self Roles",
+    analytics:"Analytics", suggestions:"Suggestions", invites:"Invites", logs:"Logs"
   };
-
-  /** Never show a toggle on these (UI chrome / always available) */
-  var SKIP = {
-    serverview: true,
-    server: true,
-    "server-view": true,
-    overview: true,
-    home: true,
-    settings: true,
-    themes: true,
-    theme: true
-  };
+  function systemKeyFor(tabId) {
+    var id = String(tabId || "").toLowerCase().replace(/[^a-z0-9_-]/g, "");
+    return ALLOWED_SYSTEM_TABS[id] || null;
+  }
+  function shouldSkip(tabId) { return !systemKeyFor(tabId); }
 
   function systemKeyFor(tabId) {
     var id = String(tabId || "")
@@ -101,16 +43,7 @@
     return id;
   }
 
-  function shouldSkip(tabId, sysKey) {
-    var id = String(tabId || "")
-      .toLowerCase()
-      .replace(/[^a-z0-9_-]/g, "");
-    if (SKIP[id] || SKIP[sysKey]) return true;
-    // Extra: any id containing server-view / serverview
-    if (id.indexOf("serverview") >= 0 || id.indexOf("server-view") >= 0) return true;
-    if (sysKey && String(sysKey).indexOf("serverview") >= 0) return true;
-    return false;
-  }
+  function shouldSkip(tabId, sysKey) { return !systemKeyFor(tabId); }
 
   function prettyLabel(key, tabId) {
     if (LABELS[key]) return LABELS[key];
@@ -134,9 +67,6 @@
     return systemsCfg()[key] !== false;
   }
 
-  function setOn(key, on) {
-    systemsCfg()[key] = !!on;
-  }
 
   function stripSkippedToggles() {
     document.querySelectorAll("[data-system-toggle]").forEach(function (el) {
@@ -190,8 +120,6 @@
 
     var existing = section.querySelector('[data-system-toggle="' + sysKey + '"]');
     if (existing) {
-      var inp = existing.querySelector('input[type="checkbox"]');
-      if (inp) inp.checked = isOn(sysKey);
       return;
     }
 
@@ -234,9 +162,10 @@
     var checkbox = wrap.querySelector('input[type="checkbox"]');
     if (checkbox) {
       checkbox.addEventListener("change", function () {
-        setOn(sysKey, checkbox.checked);
-        saveSystem(sysKey, checkbox.checked, section);
+        setStatus(section, "Unsaved changes — use the Save or Cancel bar below.", true);
+        if (window.updateDashboardDraftBar) window.updateDashboardDraftBar();
       });
+      if (window.captureDashboardDraft) window.captureDashboardDraft();
     }
   }
 
@@ -270,6 +199,25 @@
       setStatus(section, "❌ " + (e && e.message ? e.message : "Save failed"), false);
     }
   }
+
+  async function saveSystemDraft() {
+    var input = document.querySelector(".page-section.active [data-system-toggle] input[data-sys-key]");
+    if (!input) return true;
+    if (!window.saveConfig) throw new Error("Save is not ready. Refresh and try again.");
+    var systems = Object.assign({}, systemsCfg());
+    systems[input.getAttribute("data-sys-key")] = !!input.checked;
+    delete systems.serverview;
+    await window.saveConfig({ systems: systems });
+    window.currentConfig.systems = systems;
+    if (window.syncGlobals) window.syncGlobals();
+    return true;
+  }
+  function restoreSystemDraft() {
+    var input = document.querySelector(".page-section.active [data-system-toggle] input[data-sys-key]");
+    if (input) input.checked = isOn(input.getAttribute("data-sys-key"));
+  }
+  window.saveSystemTabDraft = saveSystemDraft;
+  window.restoreSystemTabDraft = restoreSystemDraft;
 
   function scanAndInject() {
     stripSkippedToggles();
@@ -326,5 +274,5 @@
     }, ms);
   });
 
-  console.log("[features-tab-toggles] v3 — no Server View toggle");
+  console.log("[features-tab-toggles] v4 — allowlisted systems; shared draft bar");
 })();
