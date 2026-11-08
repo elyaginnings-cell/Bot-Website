@@ -39,6 +39,7 @@
     // Guest is a client-side preview only, never a registered or persisted account.
     window.__dashboardAuthState="guest";
     document.body.dataset.authState="guest";
+    document.body.classList.remove("account-authenticated");
     document.body.classList.add("guest-preview");
     var bar=$("guest-auth-bar");
     if(bar){bar.hidden=false;var copy=bar.querySelector(".guest-auth-copy");if(copy){var heading=copy.querySelector("strong"),description=copy.querySelector("span");if(heading)heading.textContent="Guest preview mode";if(description)description.textContent="This is a temporary preview, not an account. Log in to connect your server and manage it.";}}
@@ -82,23 +83,35 @@
     }
   }
   function showMember(user){
-    isLoggedIn=true;isStaff=!!(user&&user.role==="staff");
-    var logout=$("logout-button");if(logout)logout.hidden=false;
-    window.__dashboardAuthState=isStaff?"staff":"member";
-    document.body.dataset.authState=window.__dashboardAuthState;
-    if(isStaff){
-      document.body.classList.remove("guest-preview");
-      var staffBar=$("guest-auth-bar");if(staffBar)staffBar.hidden=true;
-      return;
-    }
-    // A signed-in member is still not a server-authorized dashboard user.
-    // Keep the preview lock, but never present that account as the Guest user.
+    // A real account is only shown when the server verifies its session.
+    // Guest preview itself is never represented as a user or session.
     showGuest();
+    isLoggedIn=true;
+    isStaff=!!(user&&user.role==="staff");
+    document.body.dataset.authState=isStaff?"staff":"member";
     var name=user&&(user.global_name||user.username||user.email)||"Account";
     if($("username"))$("username").textContent=name;
     if($("welcome-name"))$("welcome-name").textContent=name;
+    var avatar=$("user-avatar");
+    if(avatar){
+      var id=user&&(user.discord_id||user.id);
+      avatar.src=user&&user.avatar&&id&&String(id).length>15
+        ?"https://cdn.discordapp.com/avatars/"+id+"/"+user.avatar+".png?size=128"
+        :"/amazon-favicon.svg";
+      avatar.alt=name;
+    }
     var accountLabel=document.querySelector(".account-info span");
-    if(accountLabel)accountLabel.textContent="Account · no server access";
+    if(accountLabel)accountLabel.textContent=isStaff?"Staff account":"Account · no server access";
+    var logout=$("logout-button");
+    if(logout)logout.hidden=false;
+    if(isStaff){
+      document.body.classList.remove("guest-preview","account-authenticated");
+      var staffBar=$("guest-auth-bar");if(staffBar)staffBar.hidden=true;
+      return;
+    }
+    // Authenticated non-staff accounts remain preview-locked, but are not
+    // mislabeled as Guest and retain a working logout control.
+    document.body.classList.add("account-authenticated");
     var bar=$("guest-auth-bar");if(bar)bar.hidden=false;
     var copy=document.querySelector(".guest-auth-copy");
     if(copy){
@@ -143,7 +156,6 @@
       finally{button.disabled=false;}
     });
     showGuest();
-    window.checkLogin();
   }
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",initGuestAuth,{once:true});
   else initGuestAuth();
