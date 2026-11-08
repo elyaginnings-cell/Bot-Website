@@ -201,11 +201,13 @@
     await window.saveConfig({ systems: systems });
     window.currentConfig.systems = systems;
     if (window.syncGlobals) window.syncGlobals();
+    setStatus(input.closest(".page-section"), input.checked ? "Enabled & saved" : "Disabled & saved", true);
     return true;
   }
   function restoreSystemDraft() {
     var input = document.querySelector(".page-section.active [data-system-toggle] input[data-sys-key]");
     if (input) input.checked = isOn(input.getAttribute("data-sys-key"));
+    if (input) setStatus(input.closest(".page-section"), "", true);
   }
   window.saveSystemTabDraft = saveSystemDraft;
   window.restoreSystemTabDraft = restoreSystemDraft;
