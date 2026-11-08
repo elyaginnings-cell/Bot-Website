@@ -1,5 +1,5 @@
 import { findById } from "../lib/accounts.js";
-import { requireAnySession } from "../lib/requireAuth.js";
+import { requireCustomerAccount, requireManagedGuild } from "../lib/customerAuth.js";
 import { getConnectedDiscordId } from "../lib/discordIdentity.js";
 
 export const config = {
@@ -285,12 +285,13 @@ export default async function handler(req, res) {
       return await handleMediaProxy(req, res);
     }
 
-    let session;
+    let customer;
     try {
-      session = requireAnySession(req);
+      customer = await requireCustomerAccount(req);
     } catch (err) {
       return res.status(err.status || 401).json({ error: err.message || "Not authenticated" });
     }
+    const session = customer.session;
 
     if (req.method === "GET" && String(req.query.resource || "") === "gifs") {
       return await handleGifs(req, res);
@@ -315,6 +316,12 @@ export default async function handler(req, res) {
       if (!guildId) guildId = body.guildId;
       if (!channelId) channelId = body.channelId;
     }
+
+    const action = String(body.action || "");
+    if (["customEmoji", "sendAsWebhook", "react", "delete", "warn", "mute", "ban", "kick"].includes(action) && !guildId) {
+      return res.status(400).json({ error: "Choose a server before performing this action." });
+    }
+    if (guildId) await requireManagedGuild(req, guildId);
 
     if (req.method === "POST" && ["customEmoji", "sendAsWebhook"].includes(String(body.action || ""))) {
       const connectedDiscordId = String(await getConnectedDiscordId(session) || "").trim();
