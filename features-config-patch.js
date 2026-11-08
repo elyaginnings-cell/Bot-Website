@@ -284,7 +284,10 @@
           embedTitle: $("verify-title") ? $("verify-title").value || "Verification" : "Verification",
           embedDescription: $("verify-desc")
             ? $("verify-desc").value || "Press the button below to gain access to the server."
-            : "Press the button below to gain access to the server."
+            : "Press the button below to gain access to the server.",
+          newlyVerifiedMonitorMinutes: $("verify-monitor-mins") && $("verify-monitor-mins").value !== ""
+            ? Number($("verify-monitor-mins").value)
+            : 30
         }
       });
       setStatus("verify-status", statusText(d, "✅ Verification saved. Run /verification-setup in Discord.", "Saved on website. Bot offline — redeploy, then /verification-setup."), true);
