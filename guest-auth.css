@@ -1,0 +1,33 @@
+/* Account prompt and guest sign-in UI */
+[hidden] { display: none !important; }
+.guest-auth-bar {
+  position: fixed; z-index: 10000; left: 50%; bottom: max(18px, env(safe-area-inset-bottom));
+  transform: translateX(-50%); width: min(760px, calc(100vw - 32px));
+  display: flex; align-items: center; justify-content: space-between; gap: 18px;
+  padding: 14px 18px; border: 1px solid rgba(232,121,249,.42); border-radius: 16px;
+  background: rgba(19, 10, 29, .97); color: #fff5ff;
+  box-shadow: 0 18px 55px rgba(0,0,0,.48); backdrop-filter: blur(16px);
+}
+.guest-auth-copy { display:flex; flex-direction:column; gap:4px; min-width:0; }
+.guest-auth-copy strong { color:#fff5ff; font-size:14px; }
+.guest-auth-copy span { color:#cbb8d8; font-size:12px; line-height:1.45; }
+.guest-auth-actions { display:flex; align-items:center; gap:8px; flex-shrink:0; }
+.guest-auth-actions button { min-height:38px; white-space:nowrap; }
+.guest-auth-modal[hidden], .guest-auth-bar[hidden] { display:none !important; }
+.guest-auth-modal { position:fixed; inset:0; z-index:11000; display:grid; place-items:center; padding:20px; }
+.guest-auth-backdrop { position:absolute; inset:0; background:rgba(5,2,10,.78); backdrop-filter:blur(8px); }
+.guest-auth-card { position:relative; width:min(440px,100%); padding:28px; border:1px solid rgba(232,121,249,.32); border-radius:20px; background:#160d20; color:#fff5ff; box-shadow:0 24px 80px rgba(0,0,0,.55); }
+.guest-auth-card h2 { margin:10px 0 8px; color:#fff5ff; }
+.guest-auth-card p { color:#cbb8d8; line-height:1.5; }
+.guest-auth-card form { display:grid; gap:14px; margin-top:18px; }
+.guest-auth-card label { display:grid; gap:7px; color:#e9d9f2; font-size:13px; }
+.guest-auth-card input { width:100%; min-height:44px; padding:10px 12px; border:1px solid rgba(232,121,249,.25); border-radius:10px; background:#0d0713; color:#fff; }
+.guest-auth-error { color:#ff9aa8 !important; }
+.guest-auth-switch, .guest-auth-close { border:0; background:transparent; color:#e9a1f5; cursor:pointer; }
+.guest-auth-close { position:absolute; top:12px; right:14px; font-size:24px; }
+body.guest-preview .account .logout-btn { display:none !important; }
+@media(max-width:600px) {
+  .guest-auth-bar { align-items:stretch; flex-direction:column; gap:10px; padding:12px; }
+  .guest-auth-actions { display:grid; grid-template-columns:1fr 1fr; }
+  .guest-auth-card { padding:22px 18px; }
+}
