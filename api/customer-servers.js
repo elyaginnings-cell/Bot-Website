@@ -27,7 +27,7 @@ export default async function handler(req, res) {
         try {
           discordGuilds = await getDiscordGuildPermissions(customer.session.discordToken);
         } catch (error) {
-          if (error.code === "DISCORD_SESSION_EXPIRED") discordConnected = false;
+          if (error.code === "DISCORD_SESSION_EXPIRED" || error.code === "DISCORD_NOT_LINKED") discordConnected = false;
           else throw error;
         }
       }
