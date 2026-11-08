@@ -86,6 +86,10 @@ function setupEventListeners() {
   document.getElementById("server-button")?.addEventListener("click", loadServers);
   function launchServerView(e) {
     if (e) e.preventDefault();
+    if (window.dashboardDraftIsDirty && window.dashboardDraftIsDirty()) {
+      window.showDashboardDraftNotice?.();
+      return;
+    }
     // Prefer the public API from server-view.js
     if (typeof window.openServerView === "function") {
       window.openServerView();
@@ -180,6 +184,14 @@ function initDashboardDrafts() {
   const bar = document.getElementById("dashboard-draft-bar");
   if (!bar || bar.dataset.bound === "true") return;
   bar.dataset.bound = "true";
+  document.addEventListener("click", (event) => {
+    const protectedAction = event.target.closest("#add-level-role, #add-shop-item, [data-remove-level], [data-remove-shop]");
+    if (protectedAction && dashboardDraftIsDirty()) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      showDashboardDraftNotice();
+    }
+  }, true);
   document.querySelectorAll("#app .page-section input, #app .page-section select, #app .page-section textarea").forEach((el) => {
     if (["file","button","submit"].includes(el.type)) return;
     el.addEventListener("input", updateDashboardDraftBar);
