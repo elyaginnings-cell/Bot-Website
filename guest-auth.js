@@ -139,15 +139,10 @@
       return;
     }
 
-    // A valid login without staff authorization is an account, not Guest.
-    // Keep management controls restricted, but never hide or disable Logout.
-    // Authenticated accounts should not be shown a guest/login prompt.
+    // Customer accounts can use server-scoped controls. Every server operation
+    // is authorized again on the backend against the connected Discord account.
+    // Global owner/staff-only actions remain protected by their API routes.
     if(bar)bar.hidden=true;
-    document.querySelectorAll("#app .page-section button,#app .page-section input,#app .page-section select,#app .page-section textarea,#server-button,#open-server-view,#nav-server-view").forEach(function(control){
-      if(control.id==="logout-button"||control.closest("#account")||control.classList.contains("customer-control"))return;
-      control.disabled=true;
-      control.setAttribute("aria-disabled","true");
-    });
   }
   window.checkLogin=async function(){
     try{
