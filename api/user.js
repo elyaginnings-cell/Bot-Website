@@ -39,12 +39,13 @@ async function getDiscordServerAccess(token) {
   }
 }
 
-function shapeUser(account, websiteOwner, staff, serverAccess) {
+function shapeUser(account, websiteOwner, staff, serverAccess, discordConnected) {
   return {
     ...publicUser(account),
     role: websiteOwner ? "owner" : staff ? "staff" : "member",
     website_owner: websiteOwner,
     server_access: serverAccess,
+    discord_connected: discordConnected,
   };
 }
 
@@ -95,7 +96,7 @@ export default async function handler(req, res) {
       const serverAccess = await getDiscordServerAccess(session.discordToken);
       return res.status(200).json({
         authenticated: true,
-        user: shapeUser(account, websiteOwner, staff, serverAccess),
+        user: shapeUser(account, websiteOwner, staff, serverAccess, Boolean(session.discordToken)),
       });
     }
 
