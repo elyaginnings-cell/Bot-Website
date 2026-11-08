@@ -172,6 +172,7 @@ function showSection(section) {
     invites: ["Invites", "Leaderboard channel."],
     leveling: ["Leveling", "XP, Beans rewards, and level roles."],
     currency: ["Currency", "Daily, work, chat drops, coinflip."],
+    emojis: ["Custom Emojis", "Import, organize, and choose your server emojis."],
     shop: ["Shop", "Roles, boosts, packs, titles."],
     logs: ["Logs", "Confirm dashboard saves in Discord."],
     birthday: ["Birthday", "Announcements, roles, and bonus Beans."],
