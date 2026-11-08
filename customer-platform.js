@@ -145,7 +145,11 @@
   }
   async function loadOwner() {
     const nav = $("nav-owner-billing");
-    if (nav) nav.hidden = false;
+    if (nav) {
+      nav.dataset.ownerAvailable = "true";
+      if (typeof window.applyDashboardTabs === "function") window.applyDashboardTabs();
+      else nav.hidden = false;
+    }
     try {
       const [plans, customers] = await Promise.all([
         api("/api/user?resource=owner-plans"),
