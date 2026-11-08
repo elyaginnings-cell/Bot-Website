@@ -13,7 +13,11 @@ function readBody(req) {
 function nullableLimit(value, label) {
   if (value === null || value === "" || value === undefined) return null;
   const number = Number(value);
-  if (!Number.isSafeInteger(number) || number < 0) throw new Error(label + " must be a non-negative integer or blank.");
+  if (!Number.isSafeInteger(number) || number < 0) {
+    const error = new Error(label + " must be a non-negative integer or blank.");
+    error.status = 400;
+    throw error;
+  }
   return String(number);
 }
 
@@ -58,6 +62,7 @@ export default async function handler(req, res) {
     if (!Number.isFinite(discount) || discount < 0 || discount > 100) return res.status(400).json({ error: "Annual discount must be between 0 and 100." });
     if (!entitlements) return res.status(400).json({ error: "Entitlements must be an object." });
     if (id === "free" && monthly !== 0) return res.status(400).json({ error: "The Free plan must have a monthly price of zero." });
+    if (id === "free" && (storageLimit === null || serverLimit === null)) return res.status(400).json({ error: "The Free plan requires explicit storage and connected-server limits." });
 
     const annualPriceCents = calculateAnnualPriceCents(monthly, discount);
     const result = await query(
