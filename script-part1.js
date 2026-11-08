@@ -249,6 +249,10 @@ async function saveDashboardDraft() {
     if (saved && hasSystemToggle && typeof window.saveSystemTabDraft === "function") await window.saveSystemTabDraft();
     if (saved) captureDashboardDraft();
     else showDashboardDraftNotice();
+  } catch (error) {
+    const message = document.getElementById("dashboard-draft-message");
+    if (message) message.textContent = "Save failed: " + (error.message || "Unknown error");
+    showDashboardDraftNotice();
   } finally {
     dashboardDraftSaving = false;
     if (saveButton) saveButton.disabled = false;
