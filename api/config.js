@@ -1,5 +1,6 @@
 import { requireAnySession } from "../lib/requireAuth.js";
 import { requireManagedGuild } from "../lib/customerAuth.js";
+import { requireEntitlement } from "../lib/subscriptions.js";
 import { readSession } from "../lib/session.js";
 import {
   loadGuildConfig,
@@ -161,7 +162,7 @@ export default async function handler(req, res) {
     if (!guildId) {
       return res.status(400).json({ error: "Missing guildId" });
     }
-    await requireManagedGuild(req, guildId);
+    const guildAccess = await requireManagedGuild(req, guildId);
 
     if (req.method === "GET") {
       let stored = null;
@@ -230,6 +231,13 @@ export default async function handler(req, res) {
         typeof req.body === "string"
           ? JSON.parse(req.body || "{}")
           : req.body || {};
+
+      const aiSettings = body.ai && typeof body.ai === "object"
+        ? (body.ai.settings && typeof body.ai.settings === "object" ? { ...body.ai, ...body.ai.settings } : body.ai)
+        : null;
+      if (aiSettings?.enabled === true && !guildAccess.isStaff) {
+        await requireEntitlement(guildAccess.account.id, "ai");
+      }
 
       let mirrored = null;
       try {
