@@ -115,7 +115,7 @@
       var access=Array.isArray(user&&user.server_access)?user.server_access:[];
       serverRank.textContent=access.length
         ? access.slice(0,3).map(function(server){return server.name+": "+server.rank;}).join(" · ")+(access.length>3?" · +"+(access.length-3)+" more":"")
-        : (user&&user.discord_id?"No Discord server access returned":"Connect Discord to view server ranks");
+        : (user&&user.discord_connected===true?"No Discord server access found":"Connect Discord to view server ranks");
       serverRank.hidden=false;
     }
 
