@@ -1,6 +1,8 @@
 (function(){
   "use strict";
   var isStaff=false, isLoggedIn=false, authMode="login";
+  window.__dashboardAuthState="checking";
+  document.body.dataset.authState="checking";
   function $(id){return document.getElementById(id);}
   function setError(message){var el=$("guest-auth-error");if(el){el.textContent=message||"";el.hidden=!message;}}
   function setMode(mode){
@@ -44,8 +46,8 @@
     var bar=$("guest-auth-bar");
     if(bar){bar.hidden=false;var copy=bar.querySelector(".guest-auth-copy");if(copy){var heading=copy.querySelector("strong"),description=copy.querySelector("span");if(heading)heading.textContent="Guest preview mode";if(description)description.textContent="This is a temporary preview, not an account. Log in to connect your server and manage it.";}}
     var loginButton=$("guest-login-open"),signupButton=$("guest-signup-open");
-    if(loginButton){loginButton.hidden=false;loginButton.textContent="Log in";}
-    if(signupButton){signupButton.hidden=false;signupButton.textContent="Create account";}
+    if(loginButton){loginButton.hidden=false;loginButton.textContent="Email login";}
+    if(signupButton)signupButton.hidden=true;
     var app=$("app");if(app)app.hidden=false;
     var login=$("login-screen");if(login)login.remove();
     var username=$("username");if(username)username.textContent="Guest";
@@ -86,10 +88,12 @@
     // Do not call showGuest() here: that function deliberately disables
     // controls and hides Logout for unauthenticated visitors.
     isLoggedIn=true;
-    isStaff=!!(user&&user.role==="staff");
-    window.__dashboardAuthState=isStaff?"staff":"member";
+    var isOwner=!!(user&&(user.website_owner===true||user.role==="owner"));
+    isStaff=!!(user&&(user.role==="staff"||user.role==="owner"||user.website_owner===true));
+    window.__dashboardAuthState=isOwner?"owner":isStaff?"staff":"member";
     document.body.dataset.authState=window.__dashboardAuthState;
-    document.body.classList.remove("guest-preview","account-authenticated");
+    document.body.classList.remove("guest-preview");
+    document.body.classList.add("account-authenticated");
 
     var name=user&&(user.global_name||user.username||user.email)||"Account";
     if($("username"))$("username").textContent=name;
@@ -103,7 +107,17 @@
       avatar.alt=name;
     }
     var accountLabel=document.querySelector(".account-info span");
-    if(accountLabel)accountLabel.textContent=isStaff?"Administrator":"Signed in · limited access";
+    if(accountLabel)accountLabel.textContent=isOwner?"Website Owner":isStaff?"Administrator":"Signed in";
+    var roleLabel=$("account-role");
+    if(roleLabel)roleLabel.textContent=isOwner?"Website Owner":isStaff?"Dashboard Administrator":"Member account";
+    var serverRank=$("account-server-rank");
+    if(serverRank){
+      var access=Array.isArray(user&&user.server_access)?user.server_access:[];
+      serverRank.textContent=access.length
+        ? access.slice(0,3).map(function(server){return server.name+": "+server.rank;}).join(" · ")+(access.length>3?" · +"+(access.length-3)+" more":"")
+        : (user&&user.discord_id?"No Discord server access returned":"Connect Discord to view server ranks");
+      serverRank.hidden=false;
+    }
 
     // Authenticated accounts must always be able to sign out.
     var logout=$("logout-button");
@@ -138,7 +152,7 @@
     }
     var loginButton=$("guest-login-open"),signupButton=$("guest-signup-open");
     if(loginButton){loginButton.hidden=false;loginButton.textContent="Email login";}
-    if(signupButton){signupButton.hidden=false;signupButton.textContent="Create account";}
+    if(signupButton)signupButton.hidden=true;
     var discordOpen=$("guest-discord-open");if(discordOpen)discordOpen.hidden=false;
     document.querySelectorAll("#app .page-section button,#app .page-section input,#app .page-section select,#app .page-section textarea,#server-button,#open-server-view,#nav-server-view").forEach(function(control){
       if(control.id==="logout-button")return;
@@ -181,7 +195,7 @@
       }catch(_){setError("The account service could not be reached. Please try again.");}
       finally{button.disabled=false;}
     });
-    showGuest();
+    window.checkLogin();
   }
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",initGuestAuth,{once:true});
   else initGuestAuth();
