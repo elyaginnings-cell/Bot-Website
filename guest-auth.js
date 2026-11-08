@@ -17,31 +17,58 @@
     setTimeout(function(){$("guest-auth-email").focus();},0);
   }
   function closeModal(){$("guest-auth-modal").hidden=true;setError("");}
+  function lockGuestNode(root){
+    if(!root||root.nodeType!==1)return;
+    var controls=[];
+    if(root.matches("button,input,select,textarea"))controls.push(root);
+    root.querySelectorAll&&root.querySelectorAll("button,input,select,textarea").forEach(function(el){controls.push(el);});
+    controls.forEach(function(control){
+      if(control.closest("#guest-auth-modal")||control.closest("#guest-auth-bar"))return;
+      if(!control.matches(".nav-item")&&"disabled" in control&&!control.disabled)control.disabled=true;
+      if(!control.matches(".nav-item")&&control.getAttribute("aria-disabled")!=="true")control.setAttribute("aria-disabled","true");
+    });
+    root.querySelectorAll&&root.querySelectorAll(".stat-card strong,.stat-card .stat-value,[data-guest-value],.stat-number").forEach(function(el){
+      if(el.textContent!=="—")el.textContent="—";
+      el.classList.add("guest-preview-value");
+    });
+    if(root.matches(".stat-card strong,.stat-card .stat-value,[data-guest-value],.stat-number")&&root.textContent!=="—")root.textContent="—";
+  }
   function showGuest(){
     document.body.classList.add("guest-preview");
-    $("guest-auth-bar").hidden=false;
+    var bar=$("guest-auth-bar");if(bar)bar.hidden=false;
     var app=$("app");if(app)app.hidden=false;
     var login=$("login-screen");if(login)login.remove();
     var username=$("username");if(username)username.textContent="Guest";
     var welcome=$("welcome-name");if(welcome)welcome.textContent="Guest";
     var account=document.querySelector(".account-info span");if(account)account.textContent="Preview mode";
     var title=document.querySelector(".server-current strong");if(title)title.textContent="No server selected";
-    document.querySelectorAll(".stat-card strong,.stat-card .stat-value,[data-guest-value]").forEach(function(el){el.textContent="—";el.classList.add("guest-preview-value");});
-    document.querySelectorAll(".stat-card").forEach(function(card){card.querySelectorAll("strong").forEach(function(el){el.textContent="—";});});
     var status=document.querySelector(".connection-status span:last-child");if(status)status.textContent="Guest preview";
+    document.querySelectorAll(".stat-card strong,.stat-card .stat-value,[data-guest-value],.stat-number").forEach(function(el){
+      if(el.textContent!=="—")el.textContent="—";
+      el.classList.add("guest-preview-value");
+    });
     document.querySelectorAll(".page-section").forEach(function(section){
-      section.querySelectorAll("button,input,select,textarea").forEach(function(control){control.disabled=true;control.setAttribute("aria-disabled","true");});
-      section.querySelectorAll("form").forEach(function(form){form.addEventListener("submit",function(e){e.preventDefault();e.stopImmediatePropagation();},{capture:true});});
+      section.querySelectorAll("button,input,select,textarea").forEach(function(control){
+        if(!control.matches(".nav-item")&&"disabled" in control)control.disabled=true;
+        if(!control.matches(".nav-item")&&control.getAttribute("aria-disabled")!=="true")control.setAttribute("aria-disabled","true");
+      });
     });
     document.querySelectorAll(".header-actions button,.server-bar button,.quick-card,.quick-grid button").forEach(function(el){
-      if(el.matches(".nav-item"))return;
-      el.setAttribute("aria-disabled","true");
+      if(el.matches(".nav-item")||el.closest("#guest-auth-bar"))return;
       if("disabled" in el)el.disabled=true;
-      el.addEventListener("click",function(e){e.preventDefault();e.stopImmediatePropagation();},{capture:true});
+      if(el.getAttribute("aria-disabled")!=="true")el.setAttribute("aria-disabled","true");
     });
-    document.querySelectorAll(".page-section [data-value],.page-section .stat-number").forEach(function(el){el.textContent="—";});
-    document.querySelectorAll(".page-section button:not(.nav-item),.page-section input,.page-section select,.page-section textarea").forEach(function(el){el.disabled=true;});
-    if(!window.__guestLockObserver){window.__guestLockObserver=new MutationObserver(function(){if(document.body.classList.contains("guest-preview")){document.querySelectorAll(".page-section button:not(.nav-item),.page-section input,.page-section select,.page-section textarea").forEach(function(el){el.disabled=true;el.setAttribute("aria-disabled","true");});document.querySelectorAll(".stat-card strong").forEach(function(el){el.textContent="—";});}});window.__guestLockObserver.observe(document.getElementById("app"),{childList:true,subtree:true});}
+    if(app&&!window.__guestSubmitGuard){
+      window.__guestSubmitGuard=true;
+      app.addEventListener("submit",function(e){if(document.body.classList.contains("guest-preview")){e.preventDefault();e.stopImmediatePropagation();}},true);
+    }
+    if(app&&!window.__guestLockObserver){
+      window.__guestLockObserver=new MutationObserver(function(records){
+        if(!document.body.classList.contains("guest-preview"))return;
+        records.forEach(function(record){record.addedNodes.forEach(function(node){lockGuestNode(node);});});
+      });
+      window.__guestLockObserver.observe(app,{childList:true,subtree:true});
+    }
   }
   function showMember(user){
     isLoggedIn=true;isStaff=user&&user.role==="staff";
@@ -63,15 +90,16 @@
       else showGuest();
     }catch(_){showGuest();}
   };
-  document.addEventListener("DOMContentLoaded",function(){
-    $("guest-login-open").addEventListener("click",function(){openModal("login");});
-    $("guest-signup-open").addEventListener("click",function(){openModal("signup");});
-    $("guest-auth-switch").addEventListener("click",function(){setMode(authMode==="login"?"signup":"login");});
+  function initGuestAuth(){
+    var login=$("guest-login-open"),signup=$("guest-signup-open"),switcher=$("guest-auth-switch"),form=$("guest-auth-form");
+    if(login)login.addEventListener("click",function(){openModal("login");});
+    if(signup)signup.addEventListener("click",function(){openModal("signup");});
+    if(switcher)switcher.addEventListener("click",function(){setMode(authMode==="login"?"signup":"login");});
     document.querySelectorAll("[data-auth-close]").forEach(function(el){el.addEventListener("click",closeModal);});
     document.addEventListener("keydown",function(e){if(e.key==="Escape")closeModal();});
-    $("guest-auth-form").addEventListener("submit",async function(e){
+    if(form)form.addEventListener("submit",async function(e){
       e.preventDefault();setError("");
-      var button=$("guest-auth-submit");button.disabled=true;
+      var button=$("guest-auth-submit");if(!button)return;button.disabled=true;
       try{
         var response=await fetch(authMode==="signup"?"/api/signup":"/api/auth-login",{
           method:"POST",credentials:"include",headers:{"Content-Type":"application/json"},
@@ -88,5 +116,7 @@
     });
     showGuest();
     window.checkLogin();
-  });
+  }
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",initGuestAuth,{once:true});
+  else initGuestAuth();
 })();
