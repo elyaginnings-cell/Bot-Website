@@ -1,14 +1,13 @@
-import { requireAnySession } from "../lib/requireAuth.js";
+import { requireManagedGuild } from "../lib/customerAuth.js";
 import { listAuditLogs, getAuditLog } from "../lib/auditLogs.js";
 
 export default async function handler(req, res) {
   try {
-    requireAnySession(req);
-
     const guildId = req.query?.guildId;
     if (!guildId) {
       return res.status(400).json({ error: "Missing guildId" });
     }
+    await requireManagedGuild(req, guildId);
 
     if (req.method !== "GET") {
       return res.status(405).json({ error: "Method not allowed" });
