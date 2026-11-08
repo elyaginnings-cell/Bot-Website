@@ -1,0 +1,15 @@
+.tab-manager-card{margin-bottom:16px}
+.tab-preference-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin:16px 0}
+.tab-preference-grid .toggle{display:flex;align-items:center;gap:10px;min-width:0;margin:0;padding:12px 14px;border:1px solid rgba(255,255,255,.12);border-radius:12px;background:rgba(255,255,255,.025)}
+.tab-preference-grid .toggle[hidden]{display:none!important}
+.tab-preference-grid .toggle span{font-size:14px}
+#save-dashboard-tabs{min-width:160px}
+.custom-emoji-row{display:flex;align-items:center;gap:12px;padding:11px 13px;margin-top:9px;border:1px solid rgba(255,255,255,.12);border-radius:12px;background:rgba(255,255,255,.025)}
+.custom-emoji-row>img{width:42px;height:42px;object-fit:contain;border-radius:8px;background:rgba(0,0,0,.22);flex:0 0 42px}
+.custom-emoji-details{display:flex;flex:1;min-width:0;flex-direction:column;gap:4px}
+.custom-emoji-details strong{overflow-wrap:anywhere}
+.custom-emoji-details span{font-size:12px;color:var(--text-muted,#c4b3d9)}
+.custom-emoji-row .button{flex:0 0 auto}
+#save-custom-emoji:disabled{opacity:.6;cursor:wait}
+@media(max-width:600px){.tab-preference-grid{grid-template-columns:1fr 1fr}.custom-emoji-row{align-items:flex-start;flex-wrap:wrap}.custom-emoji-row .button{width:100%}}
+@media(max-width:380px){.tab-preference-grid{grid-template-columns:1fr}}
