@@ -34,8 +34,15 @@
     if(root.matches(".stat-card strong,.stat-card .stat-value,[data-guest-value],.stat-number")&&root.textContent!=="—")root.textContent="—";
   }
   function showGuest(){
+    // Guest is a client-side preview only, never a registered or persisted account.
+    window.__dashboardAuthState="guest";
+    document.body.dataset.authState="guest";
     document.body.classList.add("guest-preview");
-    var bar=$("guest-auth-bar");if(bar)bar.hidden=false;
+    var bar=$("guest-auth-bar");
+    if(bar){bar.hidden=false;var copy=bar.querySelector(".guest-auth-copy");if(copy){var heading=copy.querySelector("strong"),description=copy.querySelector("span");if(heading)heading.textContent="Guest preview mode";if(description)description.textContent="This is a temporary preview, not an account. Log in to connect your server and manage it.";}}
+    var loginButton=$("guest-login-open"),signupButton=$("guest-signup-open");
+    if(loginButton){loginButton.hidden=false;loginButton.textContent="Log in";}
+    if(signupButton){signupButton.hidden=false;signupButton.textContent="Create account";}
     var app=$("app");if(app)app.hidden=false;
     var login=$("login-screen");if(login)login.remove();
     var username=$("username");if(username)username.textContent="Guest";
@@ -72,6 +79,8 @@
   }
   function showMember(user){
     isLoggedIn=true;isStaff=!!(user&&user.role==="staff");
+    window.__dashboardAuthState=isStaff?"staff":"member";
+    document.body.dataset.authState=window.__dashboardAuthState;
     if(isStaff){
       document.body.classList.remove("guest-preview");
       var staffBar=$("guest-auth-bar");if(staffBar)staffBar.hidden=true;
