@@ -7,7 +7,21 @@
   window.__featuresConfigPatchV26 = true;
 
   function $(id) { return document.getElementById(id); }
-  function setVal(id, v) { var el = $(id); if (el) el.value = v == null ? "" : String(v); }
+  function setVal(id, v) {
+    var el = $(id);
+    if (!el) return;
+    var value = v == null ? "" : String(v);
+    if (el.tagName === "SELECT" && value && !Array.prototype.some.call(el.options, function (option) {
+      return option.value === value;
+    })) {
+      var fallback = document.createElement("option");
+      fallback.value = value;
+      fallback.textContent = "Saved selection (currently unavailable)";
+      fallback.dataset.savedFallback = "true";
+      el.appendChild(fallback);
+    }
+    el.value = value;
+  }
   function setCheck(id, on) { var el = $(id); if (el) el.checked = !!on; }
   function setStatus(id, t, ok) {
     var el = $(id);
@@ -398,9 +412,16 @@
   var n = 0;
   function boot() {
     n++;
-    wire();
-    apply();
+    // The panel is injected asynchronously by features-ui.js. Wait for it,
+    // then initialize once; repeatedly calling apply() overwrites live edits.
     fillSelects();
+    if ($("verify-channel") && $("save-verification")) {
+      wire();
+      apply();
+      fillSelects();
+      if (typeof window.captureDashboardDraft === "function") window.captureDashboardDraft();
+      return;
+    }
     if (n < 80) setTimeout(boot, 200);
   }
 
