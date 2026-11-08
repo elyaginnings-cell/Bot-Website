@@ -142,21 +142,19 @@ function updateShopTypeFields() {
   if (amtLabel && meta.amountLabel) amtLabel.textContent = meta.amountLabel;
 }
 
-async function checkLogin() {
-  const loginScreen = document.getElementById("login-screen");
-  const app = document.getElementById("app");
-  try {
-    const response = await fetch("/api/user", { credentials: "include", cache: "no-store" });
-    if (!response.ok) {
-      if (loginScreen) loginScreen.hidden = false;
-      if (app) app.hidden = true;
-      return;
-    }
-    const data = await response.json();
-    if (!data?.authenticated || !data?.user) {
-      if (loginScreen) loginScreen.hidden = false;
-      if (app) app/* checkLogin is intentionally supplied by guest-auth.js. The legacy implementation hid the dashboard for guests. */
-ngth > 15
+/* checkLogin is supplied by guest-auth.js; the legacy version hid the dashboard for guests. */
+
+function updateUserInterface(user) {
+  const username = user.global_name || user.username || user.email || "User";
+  const usernameEl = document.getElementById("username");
+  if (usernameEl) usernameEl.textContent = username;
+  const welcome = document.getElementById("welcome-name");
+  if (welcome) welcome.textContent = username;
+  const avatar = document.getElementById("user-avatar");
+  if (avatar) {
+    const discordId = user.discord_id || user.id;
+    avatar.src =
+      user.avatar && discordId && String(discordId).length > 15
         ? `https://cdn.discordapp.com/avatars/${discordId}/${user.avatar}.png?size=128`
         : "https://cdn.discordapp.com/embed/avatars/0.png";
   }
