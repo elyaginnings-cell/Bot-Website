@@ -151,15 +151,19 @@ let dashboardDraftSaving = false;
 function dashboardDraftValue() {
   const section = document.querySelector(".page-section.active")?.id || "overview";
   const ids = DASHBOARD_DRAFT_FIELDS[section] || [];
-  return JSON.stringify(ids.map((id) => {
+  const values = ids.map((id) => {
     const el = document.getElementById(id);
     if (!el) return [id, null];
     return [id, el.type === "checkbox" || el.type === "radio" ? el.checked : el.value];
-  }));
+  });
+  const systemToggle = document.querySelector(".page-section.active [data-system-toggle] input[data-sys-key]");
+  if (systemToggle) values.push(["system:" + systemToggle.dataset.sysKey, systemToggle.checked]);
+  return JSON.stringify(values);
 }
 function dashboardDraftIsDirty() {
   const section = document.querySelector(".page-section.active")?.id || "overview";
-  if (!DASHBOARD_DRAFT_FIELDS[section]) return false;
+  const hasSystemToggle = !!document.querySelector(".page-section.active [data-system-toggle] input[data-sys-key]");
+  if (!DASHBOARD_DRAFT_FIELDS[section] && !hasSystemToggle) return false;
   return dashboardDraftValue() !== dashboardDraftSnapshot;
 }
 function captureDashboardDraft() {
@@ -206,6 +210,7 @@ function initDashboardDrafts() {
 }
 async function cancelDashboardDraft() {
   const section = document.querySelector(".page-section.active")?.id || "overview";
+  if (typeof window.restoreSystemTabDraft === "function") window.restoreSystemTabDraft();
   if (section === "verification" && typeof window.loadGuildData === "function") {
     try { await window.loadGuildData(); } catch (error) { console.error("[dashboard-drafts] cancel reload failed", error); }
   } else if (typeof applyConfigToForms === "function") {
@@ -229,14 +234,17 @@ async function saveDashboardDraft() {
     verification: () => typeof window.saveVerificationDraft === "function" ? window.saveVerificationDraft() : false
   };
   const action = actions[section];
-  if (typeof action !== "function") return;
+  const hasSystemToggle = !!document.querySelector(".page-section.active [data-system-toggle] input[data-sys-key]");
+  if (typeof action !== "function" && !hasSystemToggle) return;
   dashboardDraftSaving = true;
   updateDashboardDraftBar();
   const saveButton = document.getElementById("dashboard-draft-save");
   if (saveButton) saveButton.disabled = true;
   try {
-    const saved = await action();
-    if (saved === true) captureDashboardDraft();
+    let saved = true;
+    if (typeof action === "function") saved = (await action()) === true;
+    if (saved && hasSystemToggle && typeof window.saveSystemTabDraft === "function") await window.saveSystemTabDraft();
+    if (saved) captureDashboardDraft();
     else showDashboardDraftNotice();
   } finally {
     dashboardDraftSaving = false;
@@ -246,6 +254,7 @@ async function saveDashboardDraft() {
 }
 window.dashboardDraftIsDirty = dashboardDraftIsDirty;
 window.captureDashboardDraft = captureDashboardDraft;
+window.updateDashboardDraftBar = updateDashboardDraftBar;
 window.showDashboardDraftNotice = showDashboardDraftNotice;
 
 function updateShopTypeFields() {
