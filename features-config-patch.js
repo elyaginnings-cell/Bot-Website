@@ -113,7 +113,7 @@
           catEl.appendChild(o);
         });
       }
-      if (cur) catEl.value = cur;
+      if (cur) setVal("ticket-category-id", cur);
     }
     ["ticket-transcript-channel","analytics-log-channel","suggest-channel","suggest-staff-channel","qotd-channel","verify-channel","verify-log-channel","sr-channel"].forEach(function (id) {
       var el = $(id);
@@ -129,7 +129,7 @@
         o.textContent = "#" + (x.name || x.id);
         el.appendChild(o);
       });
-      if (c) el.value = c;
+      if (c) setVal(id, c);
     });
     ["ticket-staff-role","suggest-ping-role","qotd-manager-role","verify-role"].forEach(function (id) {
       var el = $(id);
@@ -241,6 +241,8 @@
         ", members=" + (A.trackMembers !== false ? "on" : "off") +
         '</p><p class="form-hint">Run <code>/analytics</code> in Discord for live numbers.</p>';
     }
+    // Rebase the draft snapshot after the saved settings have populated the form.
+    if (typeof window.captureDashboardDraft === "function") window.captureDashboardDraft();
   }
 
   function getTicketCategoryId() {
