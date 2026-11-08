@@ -143,6 +143,18 @@
   window.refreshFeatureSummary=refresh;
 
   async function saveFeatureDraft(sectionId){
+    if(sectionId==="shop"){
+      var desiredEnabled=$("shop-enabled") ? $("shop-enabled").checked : true;
+      var itemName=$("shop-name") && $("shop-name").value.trim();
+      var itemPrice=$("shop-price") && $("shop-price").value;
+      if(itemName && itemPrice && typeof window.addShopItem==="function"){
+        var added=await window.addShopItem();
+        if(added!==true) return false;
+      }
+      if($("shop-enabled")) $("shop-enabled").checked=desiredEnabled;
+      if(typeof window.saveShopToggle==="function") return (await window.saveShopToggle())===true;
+      throw new Error("Shop save is not available.");
+    }
     var config=SAVE[sectionId];
     if(!config) return false;
     var button=$(config[0]);
