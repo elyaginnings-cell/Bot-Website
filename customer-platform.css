@@ -10,3 +10,7 @@
 .customer-profile-grid>div{display:flex;flex-direction:column;gap:6px;min-width:0;padding:14px;border:1px solid var(--border,rgba(255,255,255,.1));border-radius:12px;background:rgba(255,255,255,.025)}
 .customer-profile-grid strong{font-size:14px;overflow-wrap:anywhere}
 @media(max-width:760px){.customer-profile-grid{grid-template-columns:1fr}.account-profile-button{flex:1;min-width:0}.account-info{min-width:0}.account-info strong,.account-info span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}
+
+.account-profile-button{font:inherit}
+.account-profile-button .account-avatar{display:block;flex:0 0 35px}
+.account-profile-button .account-info{display:flex;flex-direction:column;min-width:0}
