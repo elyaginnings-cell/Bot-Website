@@ -3,10 +3,22 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Loading dashboard…</title>
+<title>Coffee Shop · Loading dashboard</title>
 <link rel="icon" href="/amazon-favicon.svg?v=2" type="image/svg+xml">
+<style>
+  :root{color-scheme:dark}
+  html,body{min-height:100%;margin:0;background:#090510!important;color:#fff7ff!important}
+  body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+  .boot-splash{min-height:100vh;display:grid;place-items:center;background:radial-gradient(ellipse at 50% 35%,rgba(183,65,210,.18),transparent 42%),#090510}
+  .boot-card{display:flex;align-items:center;gap:14px;padding:18px 22px;border:1px solid rgba(221,112,255,.22);border-radius:18px;background:#130b1d;box-shadow:0 18px 60px rgba(0,0,0,.35)}
+  .boot-mark{display:grid;place-items:center;width:42px;height:42px;border-radius:13px;background:linear-gradient(145deg,#e45af2,#8c38c5);font-size:22px}
+  .boot-title{font-weight:750;letter-spacing:-.02em}.boot-subtitle{margin-top:4px;color:#c7b5d1;font-size:12px}
+  .boot-pulse{width:7px;height:7px;margin-left:8px;border-radius:50%;background:#e879f9;box-shadow:0 0 0 5px rgba(232,121,249,.12);animation:bootpulse 1.3s ease-in-out infinite}
+  @keyframes bootpulse{50%{opacity:.35;transform:scale(.8)}}
+</style>
 </head>
 <body>
+<div class="boot-splash" role="status" aria-live="polite"><div class="boot-card"><span class="boot-mark">☕</span><div><div class="boot-title">Coffee Shop</div><div class="boot-subtitle">Preparing your dashboard…</div></div><span class="boot-pulse"></span></div></div>
 <script>
 (async function () {
   try {
