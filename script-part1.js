@@ -480,6 +480,7 @@ async function loadGuildData() {
     fillChannelSelects();
     fillRoleSelects();
     applyConfigToForms();
+    window.captureDashboardDraft?.();
     if (typeof applyDashboardTabs === "function") applyDashboardTabs();
     if (typeof loadCustomEmojis === "function") loadCustomEmojis();
     window.guildConfigLoading = false;
