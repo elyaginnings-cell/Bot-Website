@@ -83,12 +83,14 @@
     }
   }
   function showMember(user){
-    // A real account is only shown when the server verifies its session.
-    // Guest preview itself is never represented as a user or session.
-    showGuest();
+    // Do not call showGuest() here: that function deliberately disables
+    // controls and hides Logout for unauthenticated visitors.
     isLoggedIn=true;
     isStaff=!!(user&&user.role==="staff");
-    document.body.dataset.authState=isStaff?"staff":"member";
+    window.__dashboardAuthState=isStaff?"staff":"member";
+    document.body.dataset.authState=window.__dashboardAuthState;
+    document.body.classList.remove("guest-preview","account-authenticated");
+
     var name=user&&(user.global_name||user.username||user.email)||"Account";
     if($("username"))$("username").textContent=name;
     if($("welcome-name"))$("welcome-name").textContent=name;
@@ -101,27 +103,47 @@
       avatar.alt=name;
     }
     var accountLabel=document.querySelector(".account-info span");
-    if(accountLabel)accountLabel.textContent=isStaff?"Staff account":"Account · no server access";
+    if(accountLabel)accountLabel.textContent=isStaff?"Administrator":"Signed in · limited access";
+
+    // Authenticated accounts must always be able to sign out.
     var logout=$("logout-button");
-    if(logout)logout.hidden=false;
+    if(logout){logout.hidden=false;logout.removeAttribute("hidden");logout.disabled=false;logout.removeAttribute("aria-disabled");}
+
+    var app=$("app");
+    if(app)app.hidden=false;
+    var login=$("login-screen");
+    if(login)login.remove();
+
+    var bar=$("guest-auth-bar");
     if(isStaff){
-      document.body.classList.remove("guest-preview","account-authenticated");
-      var staffBar=$("guest-auth-bar");if(staffBar)staffBar.hidden=true;
+      if(bar)bar.hidden=true;
+      // The staff dashboard is fully interactive.
+      document.querySelectorAll("#app button,#app input,#app select,#app textarea").forEach(function(control){
+        control.disabled=false;
+        control.removeAttribute("aria-disabled");
+      });
       return;
     }
-    // Authenticated non-staff accounts remain preview-locked, but are not
-    // mislabeled as Guest and retain a working logout control.
-    document.body.classList.add("account-authenticated");
-    var bar=$("guest-auth-bar");if(bar)bar.hidden=false;
-    var copy=document.querySelector(".guest-auth-copy");
-    if(copy){
-      var heading=copy.querySelector("strong"),description=copy.querySelector("span");
-      if(heading)heading.textContent="You're signed in";
-      if(description)description.textContent="This account doesn't have server access yet. You can switch accounts or create another one.";
+
+    // A valid login without staff authorization is an account, not Guest.
+    // Keep management controls restricted, but never hide or disable Logout.
+    if(bar){
+      bar.hidden=false;
+      var copy=bar.querySelector(".guest-auth-copy");
+      if(copy){
+        var heading=copy.querySelector("strong"),description=copy.querySelector("span");
+        if(heading)heading.textContent="You're signed in";
+        if(description)description.textContent="Your account is valid, but it isn't on the dashboard administrator list yet. Contact the owner to enable management access.";
+      }
     }
     var loginButton=$("guest-login-open"),signupButton=$("guest-signup-open");
-    if(loginButton){loginButton.hidden=false;loginButton.textContent="Switch account";}
-    if(signupButton){signupButton.hidden=false;signupButton.textContent="Create account";}
+    if(loginButton){loginButton.hidden=true;}
+    if(signupButton){signupButton.hidden=true;}
+    document.querySelectorAll("#app .page-section button,#app .page-section input,#app .page-section select,#app .page-section textarea,#server-button,#open-server-view,#nav-server-view").forEach(function(control){
+      if(control.id==="logout-button")return;
+      control.disabled=true;
+      control.setAttribute("aria-disabled","true");
+    });
   }
   window.checkLogin=async function(){
     try{
