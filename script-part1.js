@@ -151,19 +151,33 @@ let dashboardDraftSaving = false;
 function dashboardDraftValue() {
   const section = document.querySelector(".page-section.active")?.id || "overview";
   const ids = DASHBOARD_DRAFT_FIELDS[section] || [];
+  const seen = new Set();
   const values = ids.map((id) => {
     const el = document.getElementById(id);
+    seen.add(id);
     if (!el) return [id, null];
     return [id, el.type === "checkbox" || el.type === "radio" ? el.checked : el.value];
   });
-  const systemToggle = document.querySelector(".page-section.active [data-system-toggle] input[data-sys-key]");
+  const activeSection = document.querySelector(".page-section.active");
+  if (activeSection) {
+    activeSection.querySelectorAll("input,select,textarea").forEach((el, index) => {
+      if (!el.id || seen.has(el.id) || ["button","submit","file","hidden"].includes(el.type)) return;
+      seen.add(el.id);
+      const value = el.type === "checkbox" || el.type === "radio" ? el.checked :
+        el.multiple ? Array.from(el.selectedOptions).map((option) => option.value) : el.value;
+      values.push([el.id || "field-" + index, value]);
+    });
+  }
+  const systemToggle = activeSection?.querySelector("[data-system-toggle] input[data-sys-key]");
   if (systemToggle) values.push(["system:" + systemToggle.dataset.sysKey, systemToggle.checked]);
   return JSON.stringify(values);
 }
 function dashboardDraftIsDirty() {
   const section = document.querySelector(".page-section.active")?.id || "overview";
-  const hasSystemToggle = !!document.querySelector(".page-section.active [data-system-toggle] input[data-sys-key]");
-  if (!DASHBOARD_DRAFT_FIELDS[section] && !hasSystemToggle) return false;
+  const activeSection = document.querySelector(".page-section.active");
+  const hasSystemToggle = !!activeSection?.querySelector("[data-system-toggle] input[data-sys-key]");
+  const hasEditableFields = !!activeSection?.querySelector("input:not([type=button]):not([type=submit]):not([type=file]):not([type=hidden]),select,textarea");
+  if (!DASHBOARD_DRAFT_FIELDS[section] && !hasSystemToggle && !hasEditableFields) return false;
   return dashboardDraftValue() !== dashboardDraftSnapshot;
 }
 function captureDashboardDraft() {
@@ -210,12 +224,13 @@ function initDashboardDrafts() {
 }
 async function cancelDashboardDraft() {
   const section = document.querySelector(".page-section.active")?.id || "overview";
-  if (section === "verification" && typeof window.loadGuildData === "function") {
+  if (typeof window.loadGuildData === "function" && section !== "settings") {
     try { await window.loadGuildData(); } catch (error) { console.error("[dashboard-drafts] cancel reload failed", error); }
   } else if (typeof applyConfigToForms === "function") {
     applyConfigToForms();
   }
   if (typeof window.restoreSystemTabDraft === "function") window.restoreSystemTabDraft();
+  if (typeof window.refreshFeatureSummary === "function") window.refreshFeatureSummary(section, { collapse: true });
   if (typeof applyDashboardTabs === "function") applyDashboardTabs();
   captureDashboardDraft();
 }
@@ -235,7 +250,7 @@ async function saveDashboardDraft() {
   };
   const action = actions[section];
   const hasSystemToggle = !!document.querySelector(".page-section.active [data-system-toggle] input[data-sys-key]");
-  if (typeof action !== "function" && !hasSystemToggle) return;
+  if (typeof action !== "function" && !hasSystemToggle && typeof window.saveFeatureDraft !== "function") return;
   dashboardDraftSaving = true;
   updateDashboardDraftBar();
   const saveButton = document.getElementById("dashboard-draft-save");
@@ -245,10 +260,13 @@ async function saveDashboardDraft() {
     const desiredSystemState = systemToggle ? systemToggle.checked : null;
     let saved = true;
     if (typeof action === "function") saved = (await action()) === true;
+    else if (typeof window.saveFeatureDraft === "function") saved = (await window.saveFeatureDraft(section)) === true;
     if (saved && systemToggle && desiredSystemState !== null) systemToggle.checked = desiredSystemState;
     if (saved && hasSystemToggle && typeof window.saveSystemTabDraft === "function") await window.saveSystemTabDraft();
-    if (saved) captureDashboardDraft();
-    else showDashboardDraftNotice();
+    if (saved) {
+      if (typeof window.refreshFeatureSummary === "function") window.refreshFeatureSummary(section, { collapse: true });
+      captureDashboardDraft();
+    } else showDashboardDraftNotice();
   } catch (error) {
     const message = document.getElementById("dashboard-draft-message");
     if (message) message.textContent = "Save failed: " + (error.message || "Unknown error");
