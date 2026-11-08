@@ -187,7 +187,7 @@ export default async function handler(req, res) {
       accountId: account.id,
       method: "password",
       discordId: account.discord_id || null,
-      staff: true,
+      staff,
     });
 
     return res.status(200).json({
