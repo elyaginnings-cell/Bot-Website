@@ -137,8 +137,9 @@
       }
     }
     var loginButton=$("guest-login-open"),signupButton=$("guest-signup-open");
-    if(loginButton){loginButton.hidden=true;}
-    if(signupButton){signupButton.hidden=true;}
+    if(loginButton){loginButton.hidden=false;loginButton.textContent="Email login";}
+    if(signupButton){signupButton.hidden=false;signupButton.textContent="Create account";}
+    var discordOpen=$("guest-discord-open");if(discordOpen)discordOpen.hidden=false;
     document.querySelectorAll("#app .page-section button,#app .page-section input,#app .page-section select,#app .page-section textarea,#server-button,#open-server-view,#nav-server-view").forEach(function(control){
       if(control.id==="logout-button")return;
       control.disabled=true;
@@ -154,8 +155,10 @@
     }catch(_){showGuest();}
   };
   function initGuestAuth(){
-    var login=$("guest-login-open"),signup=$("guest-signup-open"),switcher=$("guest-auth-switch"),form=$("guest-auth-form"),discordLogin=$("guest-discord-login");
-    if(discordLogin)discordLogin.addEventListener("click",function(){window.location.href="/api/login";});
+    var login=$("guest-login-open"),signup=$("guest-signup-open"),switcher=$("guest-auth-switch"),form=$("guest-auth-form"),discordLogin=$("guest-discord-login"),discordOpen=$("guest-discord-open");
+    function startDiscordLogin(){window.location.href="/api/login";}
+    if(discordLogin)discordLogin.addEventListener("click",startDiscordLogin);
+    if(discordOpen)discordOpen.addEventListener("click",startDiscordLogin);
     if(login)login.addEventListener("click",function(){openModal("login");});
     if(signup)signup.addEventListener("click",function(){openModal("signup");});
     if(switcher)switcher.addEventListener("click",function(){setMode(authMode==="login"?"signup":"login");});
