@@ -227,7 +227,7 @@ window.dashboardDraftIsDirty = dashboardDraftIsDirty;
 window.captureDashboardDraft = captureDashboardDraft;
 window.showDashboardDraftNotice = showDashboardDraftNotice;
 
-function updateShopTypeFields()
+function updateShopTypeFields() {
   const type = document.getElementById("shop-type")?.value || "role";
   const meta = SHOP_TYPE_META[type] || SHOP_TYPE_META.role;
   const roleWrap = document.getElementById("shop-role-wrap");
