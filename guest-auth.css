@@ -25,7 +25,8 @@
 .guest-auth-error { color:#ff9aa8 !important; }
 .guest-auth-switch, .guest-auth-close { border:0; background:transparent; color:#e9a1f5; cursor:pointer; }
 .guest-auth-close { position:absolute; top:12px; right:14px; font-size:24px; }
-body.guest-preview .account .logout-btn { display:none !important; }
+body.guest-preview:not(.account-authenticated) .account .logout-btn { display:none !important; }
+body.guest-preview.account-authenticated .account .logout-btn { display:inline-flex !important; }
 @media(max-width:600px) {
   .guest-auth-bar { align-items:stretch; flex-direction:column; gap:10px; padding:12px; }
   .guest-auth-actions { display:grid; grid-template-columns:1fr 1fr; }
