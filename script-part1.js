@@ -119,6 +119,9 @@ function setupEventListeners() {
   document.getElementById("add-shop-item")?.addEventListener("click", addShopItem);
   document.getElementById("shop-type")?.addEventListener("change", updateShopTypeFields);
   document.getElementById("save-birthday")?.addEventListener("click", saveBirthday);
+  document.getElementById("save-dashboard-tabs")?.addEventListener("click", saveDashboardTabs);
+  document.getElementById("save-custom-emoji")?.addEventListener("click", saveCustomEmoji);
+  document.getElementById("emoji-file")?.addEventListener("change", previewCustomEmojiFile);
   ["lvl-beans-base", "lvl-beans-linear", "lvl-beans-quad"].forEach((id) => {
     document.getElementById(id)?.addEventListener("input", updateLevelPreview);
   });
@@ -368,6 +371,8 @@ async function loadGuildData() {
     fillChannelSelects();
     fillRoleSelects();
     applyConfigToForms();
+    if (typeof applyDashboardTabs === "function") applyDashboardTabs();
+    if (typeof loadCustomEmojis === "function") loadCustomEmojis();
     window.guildConfigLoading = false;
     window.dispatchEvent(new CustomEvent("dashboard:guild-loaded", { detail: { guildId } }));
   } catch (e) {
