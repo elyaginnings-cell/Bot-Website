@@ -21,8 +21,18 @@ export default async function handler(req, res) {
          ORDER BY guild_name ASC`,
         [customer.account.id]
       );
-      const discordGuilds = await getDiscordGuildPermissions(customer.session.discordToken);
-      const liveById = new Map(discordGuilds.filter((g) => g.canManage).map((g) => [g.id, g]));
+      let discordGuilds = [];
+      let discordConnected = Boolean(customer.session.discordToken);
+      if (discordConnected) {
+        try {
+          discordGuilds = await getDiscordGuildPermissions(customer.session.discordToken);
+        } catch (error) {
+          if (error.code === "DISCORD_SESSION_EXPIRED") discordConnected = false;
+          else throw error;
+        }
+      }
+      const manageableGuilds = discordGuilds.filter((guild) => guild.canManage);
+      const liveById = new Map(manageableGuilds.map((guild) => [guild.id, guild]));
       const servers = rows.rows.map((server) => {
         const live = liveById.get(server.guild_id);
         return {
@@ -32,7 +42,12 @@ export default async function handler(req, res) {
           guildName: live?.name || server.guild_name,
         };
       });
-      return res.status(200).json({ servers });
+      const connectedIds = new Set(rows.rows.map((server) => server.guild_id));
+      return res.status(200).json({
+        servers,
+        availableServers: manageableGuilds.filter((guild) => !connectedIds.has(guild.id)),
+        discordConnected,
+      });
     }
 
     if (req.method === "POST") {
@@ -99,7 +114,7 @@ export default async function handler(req, res) {
         await query(
           `INSERT INTO owner_audit_log (actor_account_id, action, target_account_id, target_guild_id, details)
            VALUES ($1, 'server_ownership_transfer', $2, $3, $4::jsonb)`,
-          [customer.account.id, customer.account.id, guild.id, JSON.stringify({ accessLevel: guild.accessLevel })]
+          [customer.account.id, existing.account_id, guild.id, JSON.stringify({ accessLevel: guild.accessLevel })]
         );
       }
 
