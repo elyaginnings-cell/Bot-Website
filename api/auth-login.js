@@ -16,6 +16,7 @@ import {
 import {
   isStaffEmail,
   isStaffDiscordId,
+  isWebsiteOwnerEmail,
   requireStaffConfiguration,
 } from "../lib/staffAuth.js";
 
@@ -158,7 +159,8 @@ export default async function handler(req, res) {
         accountId: account.id,
         method: "password",
         discordId: account.discord_id || null,
-        staff: isStaffEmail(account.email) || isStaffDiscordId(account.discord_id),
+        staff: isWebsiteOwnerEmail(account.email) || isStaffEmail(account.email) || isStaffDiscordId(account.discord_id),
+        owner: isWebsiteOwnerEmail(account.email),
       });
 
       return res.status(200).json({
@@ -179,8 +181,8 @@ export default async function handler(req, res) {
       return res.status(401).json({ error: "Invalid email or password." });
     }
 
-    const staff =
-      isStaffEmail(account.email) || isStaffDiscordId(account.discord_id);
+    const owner = isWebsiteOwnerEmail(account.email);
+    const staff = owner || isStaffEmail(account.email) || isStaffDiscordId(account.discord_id);
 
     setSessionCookies(res, {
       v: 1,
@@ -188,6 +190,7 @@ export default async function handler(req, res) {
       method: "password",
       discordId: account.discord_id || null,
       staff,
+      owner,
     });
 
     return res.status(200).json({
