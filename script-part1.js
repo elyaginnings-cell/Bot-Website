@@ -210,12 +210,12 @@ function initDashboardDrafts() {
 }
 async function cancelDashboardDraft() {
   const section = document.querySelector(".page-section.active")?.id || "overview";
-  if (typeof window.restoreSystemTabDraft === "function") window.restoreSystemTabDraft();
   if (section === "verification" && typeof window.loadGuildData === "function") {
     try { await window.loadGuildData(); } catch (error) { console.error("[dashboard-drafts] cancel reload failed", error); }
   } else if (typeof applyConfigToForms === "function") {
     applyConfigToForms();
   }
+  if (typeof window.restoreSystemTabDraft === "function") window.restoreSystemTabDraft();
   if (typeof applyDashboardTabs === "function") applyDashboardTabs();
   captureDashboardDraft();
 }
@@ -241,8 +241,11 @@ async function saveDashboardDraft() {
   const saveButton = document.getElementById("dashboard-draft-save");
   if (saveButton) saveButton.disabled = true;
   try {
+    const systemToggle = document.querySelector(".page-section.active [data-system-toggle] input[data-sys-key]");
+    const desiredSystemState = systemToggle ? systemToggle.checked : null;
     let saved = true;
     if (typeof action === "function") saved = (await action()) === true;
+    if (saved && systemToggle && desiredSystemState !== null) systemToggle.checked = desiredSystemState;
     if (saved && hasSystemToggle && typeof window.saveSystemTabDraft === "function") await window.saveSystemTabDraft();
     if (saved) captureDashboardDraft();
     else showDashboardDraftNotice();
