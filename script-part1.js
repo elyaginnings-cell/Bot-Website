@@ -255,8 +255,6 @@ async function saveDashboardDraft() {
     invites: saveInvites,
     leveling: saveLeveling,
     currency: saveCurrency,
-    shop: saveShopToggle,
-    logs: saveLogChannel,
     birthday: saveBirthday,
     settings: saveDashboardTabs,
     verification: () => typeof window.saveVerificationDraft === "function" ? window.saveVerificationDraft() : false
