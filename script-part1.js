@@ -143,7 +143,7 @@ const DASHBOARD_DRAFT_FIELDS = {
   logs: ["dashboard-log-channel"],
   birthday: ["bday-channel","bday-ping-role","bday-role","bday-bonus"],
   settings: ["dashboard-tab-moderation","dashboard-tab-invites","dashboard-tab-leveling","dashboard-tab-currency","dashboard-tab-emojis","dashboard-tab-shop","dashboard-tab-logs","dashboard-tab-birthday","dashboard-tab-account","dashboard-tab-owner-billing"],
-  automod: ["verify-enabled","verify-channel","verify-role","verify-log-channel","verify-btn-label","verify-title","verify-desc","verify-monitor-mins"]
+  verification: ["verify-enabled","verify-channel","verify-role","verify-log-channel","verify-btn-label","verify-title","verify-desc","verify-monitor-mins"]
 };
 let dashboardDraftSnapshot = "";
 let dashboardDraftSaving = false;
@@ -206,7 +206,7 @@ function initDashboardDrafts() {
 }
 async function cancelDashboardDraft() {
   const section = document.querySelector(".page-section.active")?.id || "overview";
-  if (section === "automod" && typeof window.loadGuildData === "function") {
+  if (section === "verification" && typeof window.loadGuildData === "function") {
     try { await window.loadGuildData(); } catch (error) { console.error("[dashboard-drafts] cancel reload failed", error); }
   } else if (typeof applyConfigToForms === "function") {
     applyConfigToForms();
@@ -226,7 +226,7 @@ async function saveDashboardDraft() {
     logs: saveLogChannel,
     birthday: saveBirthday,
     settings: saveDashboardTabs,
-    automod: () => typeof window.saveVerificationDraft === "function" ? window.saveVerificationDraft() : false
+    verification: () => typeof window.saveVerificationDraft === "function" ? window.saveVerificationDraft() : false
   };
   const action = actions[section];
   if (typeof action !== "function") return;
@@ -296,6 +296,7 @@ function showSection(section, force) {
   const titles = {
     overview: ["Overview", "Manage your Discord server systems."],
     moderation: ["Moderation", "Warn logs."],
+    verification: ["Verification", "Configure the verification button, role, and channels."],
     invites: ["Invites", "Leaderboard channel."],
     leveling: ["Leveling", "XP, Beans rewards, and level roles."],
     currency: ["Currency", "Daily, work, chat drops, coinflip."],
