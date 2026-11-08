@@ -13,3 +13,16 @@
 #save-custom-emoji:disabled{opacity:.6;cursor:wait}
 @media(max-width:600px){.tab-preference-grid{grid-template-columns:1fr 1fr}.custom-emoji-row{align-items:flex-start;flex-wrap:wrap}.custom-emoji-row .button{width:100%}}
 @media(max-width:380px){.tab-preference-grid{grid-template-columns:1fr}}
+
+/* Shared sticky draft controls for server configuration forms. */
+.dashboard-draft-bar{position:fixed;z-index:10000;left:50%;bottom:max(18px,env(safe-area-inset-bottom));transform:translateX(-50%);width:min(720px,calc(100vw - 28px));display:flex;align-items:center;justify-content:space-between;gap:18px;padding:14px 16px;border:1px solid rgba(210,160,255,.32);border-radius:18px;background:rgba(22,10,34,.96);box-shadow:0 16px 55px rgba(0,0,0,.48),0 0 28px rgba(190,90,255,.13);backdrop-filter:blur(18px)}
+.dashboard-draft-bar[hidden]{display:none!important}
+.dashboard-draft-copy{display:flex;flex-direction:column;gap:3px;min-width:0}
+.dashboard-draft-copy strong{font-size:14px;color:#fff}
+.dashboard-draft-copy span{font-size:12px;color:#d8c7e9}
+.dashboard-draft-actions{display:flex;gap:9px;flex-shrink:0}
+.dashboard-draft-actions .button{min-width:108px}
+.dashboard-draft-bar.attention{border-color:rgba(255,110,140,.65)}
+#save-moderation,#save-invites,#save-leveling,#save-currency,#save-logs,#save-shop-toggle,#save-birthday,#save-dashboard-tabs{display:none!important}
+body:has(.dashboard-draft-bar:not([hidden])){padding-bottom:100px}
+@media(max-width:560px){.dashboard-draft-bar{align-items:stretch;flex-direction:column;gap:10px;bottom:max(10px,env(safe-area-inset-bottom));padding:13px}.dashboard-draft-actions{width:100%}.dashboard-draft-actions .button{flex:1;min-width:0}}
