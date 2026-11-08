@@ -1,4 +1,4 @@
-import { requireAnySession } from "../lib/requireAuth.js";
+import { requireManagedGuild } from "../lib/customerAuth.js";
 
 const RAILWAY_API =
   process.env.BOT_API_URL ||
@@ -237,14 +237,6 @@ function mergeRailwayMemberStatuses(discordPayload, railwayPayload) {
 
 export default async function handler(req, res) {
   try {
-    try {
-      requireAnySession(req);
-    } catch (err) {
-      return res.status(err.status || 401).json({
-        error: err.message || "Not authenticated",
-      });
-    }
-
     if (req.method !== "GET") {
       return res.status(405).json({ error: "Method not allowed" });
     }
@@ -253,6 +245,7 @@ export default async function handler(req, res) {
     if (!guildId) {
       return res.status(400).json({ error: "Missing guildId" });
     }
+    await requireManagedGuild(req, guildId);
 
     let limit = parseInt(String(req.query.limit || "150"), 10);
     if (!Number.isFinite(limit) || limit < 1) limit = 150;
@@ -313,7 +306,7 @@ export default async function handler(req, res) {
     return res.status(200).json(payload);
   } catch (error) {
     console.error("Members API error:", error);
-    return res.status(500).json({
+    return res.status(error.status || 500).json({
       error: error.message || "Failed to load members",
     });
   }
