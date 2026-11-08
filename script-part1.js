@@ -227,7 +227,8 @@ function initDashboardDrafts() {
   const collectionObserver = new MutationObserver((records) => {
     if (records.some((record) => record.target.closest && record.target.closest(".feature-editor-panel"))) updateDashboardDraftBar();
   });
-  document.querySelectorAll(".feature-editor-panel").forEach((editor) => collectionObserver.observe(editor, { childList: true, subtree: true, characterData: true }));
+  const dashboardContent = document.querySelector(".content");
+  if (dashboardContent) collectionObserver.observe(dashboardContent, { childList: true, subtree: true, characterData: true });
   document.getElementById("dashboard-draft-save")?.addEventListener("click", saveDashboardDraft);
   document.getElementById("dashboard-draft-cancel")?.addEventListener("click", cancelDashboardDraft);
   captureDashboardDraft();
