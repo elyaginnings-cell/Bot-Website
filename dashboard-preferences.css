@@ -26,3 +26,6 @@
 #save-moderation,#save-invites,#save-leveling,#save-currency,#save-logs,#save-shop-toggle,#save-birthday,#save-dashboard-tabs{display:none!important}
 body:has(.dashboard-draft-bar:not([hidden])){padding-bottom:100px}
 @media(max-width:560px){.dashboard-draft-bar{align-items:stretch;flex-direction:column;gap:10px;bottom:max(10px,env(safe-area-inset-bottom));padding:13px}.dashboard-draft-actions{width:100%}.dashboard-draft-actions .button{flex:1;min-width:0}}
+
+/* Verification uses the shared bottom draft bar instead of an inline save button. */
+#save-verification{display:none!important}
