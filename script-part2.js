@@ -148,8 +148,10 @@ async function saveModeration() {
     const data = await saveConfig({ warnChannelId: document.getElementById("warn-channel")?.value || null });
     const r = formatLogResult(data, "✅ Saved.");
     setStatus("moderation-status", r.text, r.ok);
+    return true;
   } catch (e) {
     setStatus("moderation-status", "❌ " + (e.message || "Failed"), false);
+    return false;
   }
 }
 
@@ -159,8 +161,10 @@ async function saveInvites() {
     const data = await saveConfig({ inviteLeaderboardChannelId: document.getElementById("invite-channel")?.value || null });
     const r = formatLogResult(data, "✅ Saved.");
     setStatus("invites-status", r.text, r.ok);
+    return true;
   } catch (e) {
     setStatus("invites-status", "❌ " + (e.message || "Failed"), false);
+    return false;
   }
 }
 
@@ -184,8 +188,10 @@ async function saveLeveling() {
     });
     const r = formatLogResult(data, "✅ Leveling saved.");
     setStatus("leveling-status", r.text, r.ok);
+    return true;
   } catch (e) {
     setStatus("leveling-status", "❌ " + (e.message || "Failed"), false);
+    return false;
   }
 }
 
@@ -216,8 +222,10 @@ async function saveCurrency() {
     });
     const r = formatLogResult(data, "✅ Currency saved.");
     setStatus("currency-status", r.text, r.ok);
+    return true;
   } catch (e) {
     setStatus("currency-status", "❌ " + (e.message || "Failed"), false);
+    return false;
   }
 }
 
@@ -227,8 +235,10 @@ async function saveLogChannel() {
     const data = await saveConfig({ dashboardLogChannelId: document.getElementById("dashboard-log-channel")?.value || null });
     const r = formatLogResult(data, "✅ Log channel saved.");
     setStatus("logs-status", r.text, r.ok);
+    return true;
   } catch (e) {
     setStatus("logs-status", "❌ " + (e.message || "Failed"), false);
+    return false;
   }
 }
 
@@ -249,8 +259,10 @@ async function saveShopToggle() {
     const data = await saveConfig({ shopEnabled: document.getElementById("shop-enabled")?.checked });
     const r = formatLogResult(data, "✅ Shop toggle saved.");
     setStatus("shop-status", r.text, r.ok);
+    return true;
   } catch (e) {
     setStatus("shop-status", "❌ " + (e.message || "Failed"), false);
+    return false;
   }
 }
 
@@ -348,8 +360,10 @@ async function saveBirthday() {
     });
     const r = formatLogResult(data, "✅ Birthday settings saved.");
     setStatus("birthday-status", r.text, r.ok);
+    return true;
   } catch (e) {
     setStatus("birthday-status", "❌ " + (e.message || "Save failed"), false);
+    return false;
   }
 }
 
@@ -426,11 +440,13 @@ async function saveDashboardTabs() {
     if (statusNode) {
       statusNode.textContent = "Tab layout saved for this server.";
       statusNode.style.color = "#57F287";
+      return true;
     }
   } catch (error) {
     if (statusNode) {
       statusNode.textContent = "Could not save tab layout: " + (error.message || "Unknown error");
       statusNode.style.color = "#f23f43";
+      return false;
     }
   }
 }
