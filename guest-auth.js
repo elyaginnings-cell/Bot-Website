@@ -154,7 +154,8 @@
     }catch(_){showGuest();}
   };
   function initGuestAuth(){
-    var login=$("guest-login-open"),signup=$("guest-signup-open"),switcher=$("guest-auth-switch"),form=$("guest-auth-form");
+    var login=$("guest-login-open"),signup=$("guest-signup-open"),switcher=$("guest-auth-switch"),form=$("guest-auth-form"),discordLogin=$("guest-discord-login");
+    if(discordLogin)discordLogin.addEventListener("click",function(){window.location.href="/api/login";});
     if(login)login.addEventListener("click",function(){openModal("login");});
     if(signup)signup.addEventListener("click",function(){openModal("signup");});
     if(switcher)switcher.addEventListener("click",function(){setMode(authMode==="login"?"signup":"login");});
