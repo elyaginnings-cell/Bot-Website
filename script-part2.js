@@ -350,8 +350,10 @@ async function addShopItem() {
   try {
     await saveConfig({ addShopItem: item });
     await loadGuildData();
+    return true;
   } catch (e) {
     alert(e.message || "Failed");
+    return false;
   }
 }
 
