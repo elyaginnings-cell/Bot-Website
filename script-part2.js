@@ -551,8 +551,8 @@ async function saveCustomEmoji() {
     document.getElementById("emoji-file").value = "";
     const preview = document.getElementById("emoji-import-preview");
     if (preview) preview.hidden = true;
-    setStatus("custom-emoji-status", "Saved :" + data.emoji.name + ": to the shared library.", true);
     await loadCustomEmojis();
+    setStatus("custom-emoji-status", "Saved :" + data.emoji.name + ": to the shared library.", true);
   } catch (error) {
     setStatus("custom-emoji-status", "Could not save emoji: " + (error.message || "Unknown error"), false);
   } finally {
