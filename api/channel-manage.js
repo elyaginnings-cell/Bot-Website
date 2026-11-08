@@ -1,4 +1,4 @@
-import { requireAnySession } from "../lib/requireAuth.js";
+import { requireManagedGuild } from "../lib/customerAuth.js";
 
 function botToken() {
   return (
@@ -59,16 +59,11 @@ function isRoleManageRequest(req) {
 
 export default async function handler(req, res) {
   try {
-    try {
-      requireAnySession(req);
-    } catch (err) {
-      return res.status(err.status || 401).json({ error: err.message || "Not authenticated" });
-    }
-
     const body =
       typeof req.body === "string" ? JSON.parse(req.body || "{}") : req.body || {};
     const guildId = String(req.query?.guildId || body.guildId || "").trim();
     if (!guildId) return res.status(400).json({ error: "Missing guildId" });
+    await requireManagedGuild(req, guildId);
 
     // ---- Role manage (merged from api/role-manage.js) ----
     if (isRoleManageRequest(req)) {
