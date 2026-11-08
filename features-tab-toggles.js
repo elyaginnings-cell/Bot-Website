@@ -9,16 +9,13 @@
 
   // Explicit allowlist: only real bot-system pages get an Enabled toggle.
   var ALLOWED_SYSTEM_TABS = {
-    aichat:"ai", "ai-chat":"ai", aistaff:"ai",
-    automod:"automod", moderation:"automod", mod:"automod",
-    tickets:"tickets", verification:"verification", verify:"verification",
-    applications:"applications", application:"applications", apply:"applications",
-    fishing:"fishing", fish:"fishing",
-    currency:"currency", beans:"currency", shop:"currency", leveling:"currency", economy:"currency",
-    loa:"loa", activitycheck:"activitycheck", activity:"activitycheck", active:"activitycheck",
-    birthday:"birthday", bump:"bump", achievements:"achievements", qotd:"qotd",
-    selfroles:"selfroles", selfrole:"selfroles", analytics:"analytics",
-    suggestions:"suggestions", suggest:"suggestions", invites:"invites", logs:"logs"
+    // These pages do not already provide their own feature Enabled control.
+    moderation:"moderation",
+    invites:"invites",
+    birthday:"birthday",
+    applications:"applications",
+    fishing:"fishing",
+    achievements:"achievements"
   };
   var LABELS = {
     ai:"AI Chat / Staff", automod:"Automod / Moderation", tickets:"Tickets",
