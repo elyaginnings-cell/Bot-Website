@@ -193,9 +193,20 @@
       const plan = data.plan;
       window.__customerSubscription = data.subscription;
       status("customer-account-status", "Signed in as " + (data.account.email || data.account.username || "your account") + ".");
+      if ($("customer-profile-name")) $("customer-profile-name").textContent = data.account.username || "Not set";
+      if ($("customer-profile-email")) $("customer-profile-email").textContent = data.account.email || "No email on this sign-in";
+      if ($("customer-profile-discord")) $("customer-profile-discord").textContent = data.account.discordId ? "Connected" : "Not connected";
       if ($("customer-plan-name")) $("customer-plan-name").textContent = plan.name;
-      if ($("customer-subscription-status")) $("customer-subscription-status").textContent =
-        data.subscription ? data.subscription.status + (data.subscription.cancel_at_period_end ? " · ends at period end" : "") : "Free plan";
+      if ($("customer-subscription-status")) {
+        const subscription = data.subscription;
+        let subscriptionLabel = subscription ? String(subscription.status || "Unknown") : "Free plan";
+        if (subscription && subscription.billing_interval) subscriptionLabel += " · billed " + subscription.billing_interval;
+        if (subscription && subscription.current_period_end) {
+          subscriptionLabel += " · period ends " + new Date(subscription.current_period_end).toLocaleDateString();
+        }
+        if (subscription && subscription.cancel_at_period_end) subscriptionLabel += " · will not renew";
+        $("customer-subscription-status").textContent = subscriptionLabel;
+      }
       const used = Number(data.storage.usedBytes || 0);
       const limit = data.storage.limitBytes == null ? null : Number(data.storage.limitBytes);
       if ($("customer-storage-used")) $("customer-storage-used").textContent = bytes(used);
@@ -217,6 +228,10 @@
   function bind() {
     if (window.__customerPlatformBound) return;
     window.__customerPlatformBound = true;
+    $("open-account-profile")?.addEventListener("click", () => {
+      if (typeof window.showSection === "function") window.showSection("account");
+      else document.querySelector('.nav-item[data-tab="account"]')?.click();
+    });
     $("customer-link-discord")?.addEventListener("click", () => { window.location.href = "/api/login?action=link"; });
     $("customer-connect-server")?.addEventListener("click", async () => {
       const guildId = $("customer-server-select")?.value;
