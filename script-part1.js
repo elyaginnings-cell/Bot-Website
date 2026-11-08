@@ -126,9 +126,108 @@ function setupEventListeners() {
     document.getElementById(id)?.addEventListener("input", updateLevelPreview);
   });
   updateShopTypeFields();
+  initDashboardDrafts();
 }
 
-function updateShopTypeFields() {
+
+const DASHBOARD_DRAFT_FIELDS = {
+  moderation: ["warn-channel"],
+  invites: ["invite-channel"],
+  leveling: ["lvl-enabled","lvl-messages","lvl-beans-enabled","level-up-channel","lvl-xp-min","lvl-xp-max","lvl-xp-cd","lvl-beans-base","lvl-beans-linear","lvl-beans-quad"],
+  currency: ["cur-enabled","cur-name","cur-emoji","cur-daily-min","cur-daily-max","cur-streak-bonus","cur-max-streak","cur-work-min","cur-work-max","cur-work-cd","cur-chat-enabled","cur-chat-chance","cur-chat-min","cur-chat-max","cur-chat-cd","cur-flip-enabled","cur-flip-max"],
+  shop: ["shop-enabled"],
+  logs: ["dashboard-log-channel"],
+  birthday: ["bday-channel","bday-ping-role","bday-role","bday-bonus"],
+  settings: ["dashboard-tab-moderation","dashboard-tab-invites","dashboard-tab-leveling","dashboard-tab-currency","dashboard-tab-emojis","dashboard-tab-shop","dashboard-tab-logs","dashboard-tab-birthday","dashboard-tab-account","dashboard-tab-owner-billing"]
+};
+let dashboardDraftSnapshot = "";
+let dashboardDraftSaving = false;
+
+function dashboardDraftValue() {
+  const section = document.querySelector(".page-section.active")?.id || "overview";
+  const ids = DASHBOARD_DRAFT_FIELDS[section] || [];
+  return JSON.stringify(ids.map((id) => {
+    const el = document.getElementById(id);
+    if (!el) return [id, null];
+    return [id, el.type === "checkbox" || el.type === "radio" ? el.checked : el.value];
+  }));
+}
+function dashboardDraftIsDirty() {
+  const section = document.querySelector(".page-section.active")?.id || "overview";
+  if (!DASHBOARD_DRAFT_FIELDS[section]) return false;
+  return dashboardDraftValue() !== dashboardDraftSnapshot;
+}
+function captureDashboardDraft() {
+  dashboardDraftSnapshot = dashboardDraftValue();
+  updateDashboardDraftBar();
+}
+function showDashboardDraftNotice() {
+  const message = document.getElementById("dashboard-draft-message");
+  if (message) message.textContent = "Save or cancel your changes before switching tabs or servers.";
+  const bar = document.getElementById("dashboard-draft-bar");
+  if (bar) bar.classList.add("attention");
+}
+function updateDashboardDraftBar() {
+  const bar = document.getElementById("dashboard-draft-bar");
+  if (!bar) return;
+  const dirty = dashboardDraftIsDirty();
+  bar.hidden = !dirty && !dashboardDraftSaving;
+  bar.classList.toggle("attention", false);
+  const message = document.getElementById("dashboard-draft-message");
+  if (message && !dashboardDraftSaving) message.textContent = dirty ? "You have unsaved changes." : "";
+}
+function initDashboardDrafts() {
+  const bar = document.getElementById("dashboard-draft-bar");
+  if (!bar || bar.dataset.bound === "true") return;
+  bar.dataset.bound = "true";
+  document.querySelectorAll("#app .page-section input, #app .page-section select, #app .page-section textarea").forEach((el) => {
+    if (["file","button","submit"].includes(el.type)) return;
+    el.addEventListener("input", updateDashboardDraftBar);
+    el.addEventListener("change", updateDashboardDraftBar);
+  });
+  document.getElementById("dashboard-draft-save")?.addEventListener("click", saveDashboardDraft);
+  document.getElementById("dashboard-draft-cancel")?.addEventListener("click", cancelDashboardDraft);
+  captureDashboardDraft();
+}
+function cancelDashboardDraft() {
+  if (typeof applyConfigToForms === "function") applyConfigToForms();
+  if (typeof applyDashboardTabs === "function") applyDashboardTabs();
+  captureDashboardDraft();
+}
+async function saveDashboardDraft() {
+  if (dashboardDraftSaving || !dashboardDraftIsDirty()) return;
+  const section = document.querySelector(".page-section.active")?.id || "overview";
+  const actions = {
+    moderation: saveModeration,
+    invites: saveInvites,
+    leveling: saveLeveling,
+    currency: saveCurrency,
+    shop: saveShopToggle,
+    logs: saveLogChannel,
+    birthday: saveBirthday,
+    settings: saveDashboardTabs
+  };
+  const action = actions[section];
+  if (typeof action !== "function") return;
+  dashboardDraftSaving = true;
+  updateDashboardDraftBar();
+  const saveButton = document.getElementById("dashboard-draft-save");
+  if (saveButton) saveButton.disabled = true;
+  try {
+    const saved = await action();
+    if (saved === true) captureDashboardDraft();
+    else showDashboardDraftNotice();
+  } finally {
+    dashboardDraftSaving = false;
+    if (saveButton) saveButton.disabled = false;
+    updateDashboardDraftBar();
+  }
+}
+window.dashboardDraftIsDirty = dashboardDraftIsDirty;
+window.captureDashboardDraft = captureDashboardDraft;
+window.showDashboardDraftNotice = showDashboardDraftNotice;
+
+function updateShopTypeFields()
   const type = document.getElementById("shop-type")?.value || "role";
   const meta = SHOP_TYPE_META[type] || SHOP_TYPE_META.role;
   const roleWrap = document.getElementById("shop-role-wrap");
@@ -163,7 +262,11 @@ function updateUserInterface(user) {
   }
 }
 
-function showSection(section) {
+function showSection(section, force) {
+  if (!force && window.dashboardDraftIsDirty && window.dashboardDraftIsDirty()) {
+    window.showDashboardDraftNotice?.();
+    return false;
+  }
   document.querySelectorAll(".page-section").forEach((el) => el.classList.remove("active"));
   document.getElementById(section)?.classList.add("active");
   document.querySelectorAll(".nav-item").forEach((btn) => {
@@ -188,6 +291,8 @@ function showSection(section) {
   document.getElementById("page-title").textContent = info[0];
   document.getElementById("page-description").textContent = info[1];
   window.scrollTo({ top: 0, behavior: "smooth" });
+  window.captureDashboardDraft?.();
+  return true;
 }
 
 async function loadServers() {
@@ -239,6 +344,10 @@ async function loadServers() {
 
 async function selectServer(guild) {
   if (!guild?.id) return;
+  if (window.dashboardDraftIsDirty && window.dashboardDraftIsDirty()) {
+    window.showDashboardDraftNotice?.();
+    return;
+  }
   selectedServer = {
     id: guild.id,
     name: guild.name || "Unknown",
