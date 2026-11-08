@@ -93,6 +93,7 @@ function handleDiscordOAuthRedirect(req, res) {
     response_type: "code",
     redirect_uri: redirectUri,
     scope: "identify email guilds",
+    prompt: "consent",
     state,
   });
 
