@@ -374,3 +374,205 @@ async function refreshStorageStatus() {
     el.textContent = "—";
   }
 }
+
+
+const DASHBOARD_TAB_KEYS = [
+  "moderation", "invites", "leveling", "currency", "emojis",
+  "shop", "logs", "birthday", "account", "owner-billing"
+];
+
+function applyDashboardTabs() {
+  const preferences = currentConfig && currentConfig.dashboardTabs || {};
+  const ownerNav = document.getElementById("nav-owner-billing");
+  const ownerAvailable = !!(ownerNav && ownerNav.dataset.ownerAvailable === "true");
+
+  DASHBOARD_TAB_KEYS.forEach((key) => {
+    const enabled = preferences[key] !== false;
+    const nav = document.querySelector('.nav-item[data-tab="' + key + '"]');
+    const row = document.querySelector('[data-tab-pref-row="' + key + '"]');
+    const checkbox = document.getElementById("dashboard-tab-" + key);
+
+    if (checkbox) checkbox.checked = enabled;
+    if (key === "owner-billing") {
+      if (row) row.hidden = !ownerAvailable;
+      if (nav) nav.hidden = !ownerAvailable || !enabled;
+    } else if (nav) {
+      nav.hidden = !enabled;
+    }
+
+    document.querySelectorAll('.quick-card[data-section-link="' + key + '"]').forEach((card) => {
+      card.hidden = !enabled;
+    });
+  });
+
+  const active = document.querySelector(".page-section.active");
+  if (active && preferences[active.id] === false && typeof window.showSection === "function") {
+    window.showSection("overview");
+  }
+}
+window.applyDashboardTabs = applyDashboardTabs;
+
+async function saveDashboardTabs() {
+  const preferences = {};
+  DASHBOARD_TAB_KEYS.forEach((key) => {
+    const checkbox = document.getElementById("dashboard-tab-" + key);
+    if (checkbox) preferences[key] = checkbox.checked;
+  });
+  const statusNode = document.getElementById("dashboard-tabs-status");
+  if (statusNode) statusNode.textContent = "Saving tab layout…";
+  try {
+    await saveConfig({ dashboardTabs: preferences });
+    applyDashboardTabs();
+    if (statusNode) {
+      statusNode.textContent = "Tab layout saved for this server.";
+      statusNode.style.color = "#57F287";
+    }
+  } catch (error) {
+    if (statusNode) {
+      statusNode.textContent = "Could not save tab layout: " + (error.message || "Unknown error");
+      statusNode.style.color = "#f23f43";
+    }
+  }
+}
+
+function previewCustomEmojiFile() {
+  const file = document.getElementById("emoji-file")?.files?.[0];
+  const preview = document.getElementById("emoji-import-preview");
+  const image = document.getElementById("emoji-preview-image");
+  const name = document.getElementById("emoji-preview-name");
+  if (!file || !preview || !image) {
+    if (preview) preview.hidden = true;
+    return;
+  }
+  if (!["image/png", "image/jpeg", "image/gif", "image/webp"].includes(file.type)) {
+    setStatus("custom-emoji-status", "Choose a PNG, JPG, GIF, or WebP image.", false);
+    preview.hidden = true;
+    return;
+  }
+  if (file.size > 3 * 1024 * 1024) {
+    setStatus("custom-emoji-status", "For website uploads, choose an image smaller than 3 MB.", false);
+    preview.hidden = true;
+    return;
+  }
+  image.src = URL.createObjectURL(file);
+  if (name) name.textContent = document.getElementById("emoji-name")?.value || file.name;
+  preview.hidden = false;
+}
+
+function renderCustomEmojis(items) {
+  const list = document.getElementById("custom-emoji-list");
+  if (!list) return;
+  list.replaceChildren();
+  if (!Array.isArray(items) || !items.length) {
+    const empty = document.createElement("p");
+    empty.className = "form-hint";
+    empty.textContent = "No saved custom emojis yet.";
+    list.appendChild(empty);
+    return;
+  }
+  items.forEach((emoji) => {
+    const row = document.createElement("div");
+    row.className = "custom-emoji-row";
+    const image = document.createElement("img");
+    image.src = "/api/config?resource=custom-emojis&imageId=" + encodeURIComponent(emoji.id);
+    image.alt = ":" + emoji.name + ":";
+    image.loading = "lazy";
+    const details = document.createElement("div");
+    details.className = "custom-emoji-details";
+    const title = document.createElement("strong");
+    title.textContent = ":" + emoji.name + ":";
+    const category = document.createElement("span");
+    category.textContent = emoji.category || "General";
+    details.append(title, category);
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "button secondary";
+    remove.textContent = "Delete";
+    remove.addEventListener("click", () => deleteCustomEmoji(emoji.id, emoji.name));
+    row.append(image, details, remove);
+    list.appendChild(row);
+  });
+}
+
+async function loadCustomEmojis() {
+  const list = document.getElementById("custom-emoji-list");
+  if (!list) return;
+  try {
+    const response = await fetch("/api/config?resource=custom-emojis", {
+      credentials: "include", cache: "no-store"
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || "Could not load custom emojis.");
+    renderCustomEmojis(data.emojis || []);
+    setStatus("custom-emoji-status", (data.emojis || []).length + " saved emoji(s) in the shared library.", true);
+  } catch (error) {
+    setStatus("custom-emoji-status", error.message || "Could not load custom emojis.", false);
+  }
+}
+
+async function saveCustomEmoji() {
+  const name = document.getElementById("emoji-name")?.value?.trim();
+  const category = document.getElementById("emoji-category")?.value?.trim() || "General";
+  const source = document.getElementById("emoji-source")?.value?.trim();
+  const file = document.getElementById("emoji-file")?.files?.[0];
+  if (!name) return setStatus("custom-emoji-status", "Give the emoji a name first.", false);
+  if (!file && !source) return setStatus("custom-emoji-status", "Upload an image or paste a Pinterest pin link.", false);
+  const button = document.getElementById("save-custom-emoji");
+  if (button) button.disabled = true;
+  setStatus("custom-emoji-status", "Saving emoji to the shared library…", true);
+  try {
+    const body = { name, category };
+    if (file) {
+      if (!["image/png", "image/jpeg", "image/gif", "image/webp"].includes(file.type)) {
+        throw new Error("Use a PNG, JPG, GIF, or WebP image.");
+      }
+      if (file.size > 3 * 1024 * 1024) throw new Error("Choose an image smaller than 3 MB.");
+      const dataUrl = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result || ""));
+        reader.onerror = () => reject(new Error("Could not read that image."));
+        reader.readAsDataURL(file);
+      });
+      body.contentType = file.type;
+      body.imageBase64 = dataUrl.split(",")[1] || "";
+    } else {
+      body.pinUrl = source;
+    }
+    const response = await fetch("/api/config?resource=custom-emojis", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || "Emoji could not be saved.");
+    document.getElementById("emoji-name").value = "";
+    document.getElementById("emoji-source").value = "";
+    document.getElementById("emoji-file").value = "";
+    const preview = document.getElementById("emoji-import-preview");
+    if (preview) preview.hidden = true;
+    setStatus("custom-emoji-status", "Saved :" + data.emoji.name + ": to the shared library.", true);
+    await loadCustomEmojis();
+  } catch (error) {
+    setStatus("custom-emoji-status", "Could not save emoji: " + (error.message || "Unknown error"), false);
+  } finally {
+    if (button) button.disabled = false;
+  }
+}
+
+async function deleteCustomEmoji(id, name) {
+  if (!confirm("Delete :" + name + ": from the shared emoji library?")) return;
+  try {
+    const response = await fetch("/api/config?resource=custom-emojis", {
+      method: "DELETE",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id })
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || "Could not delete emoji.");
+    await loadCustomEmojis();
+  } catch (error) {
+    setStatus("custom-emoji-status", error.message || "Could not delete emoji.", false);
+  }
+}
