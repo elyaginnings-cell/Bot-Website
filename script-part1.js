@@ -237,6 +237,12 @@ function initDashboardDrafts() {
 async function cancelDashboardDraft() {
   const section = document.querySelector(".page-section.active")?.id || "overview";
   document.querySelectorAll(".page-section.active input[type=file]").forEach((input) => { input.value = ""; });
+  if (section === "custom-emojis") {
+    ["custom-emoji-name","custom-emoji-pin"].forEach((id) => { const input=document.getElementById(id); if(input) input.value=""; });
+    const category=document.getElementById("custom-emoji-category"); if(category) category.value="General";
+    const preview=document.getElementById("custom-emoji-preview"); if(preview) preview.style.display="none";
+    const status=document.getElementById("custom-emoji-status"); if(status) status.textContent="";
+  }
   if (typeof window.loadGuildData === "function" && section !== "settings") {
     try { await window.loadGuildData(); } catch (error) { console.error("[dashboard-drafts] cancel reload failed", error); }
   } else if (typeof applyConfigToForms === "function") {
