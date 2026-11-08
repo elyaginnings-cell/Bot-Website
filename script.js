@@ -8,7 +8,7 @@
       document.head.appendChild(s);
     });
   }
-  load("script-part1.js?v=fix7")
+  load("script-part1.js?v=fix8")
     .then(function(){ return load("script-part2.js?v=fix7"); })
     .then(function(){
       if (typeof bootDashboard === "function") bootDashboard();
