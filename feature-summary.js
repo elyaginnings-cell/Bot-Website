@@ -31,7 +31,6 @@
     aistaff:["save-aistaff","aistaff-status"],
     activitycheck:["ac-save","ac-status"],
     loa:["loa-save","loa-status"],
-    logs:["log-save-config","log-config-status"]
   };
   function $(id){return document.getElementById(id);}
   function escapeHtml(value){
@@ -158,6 +157,10 @@
     if(sectionId==="shop"){
       if(typeof window.saveShopToggle==="function") return (await window.saveShopToggle())===true;
       throw new Error("Shop save is not available.");
+    }
+    if(sectionId==="logs"){
+      if(typeof window.saveLoggingConfig==="function") return (await window.saveLoggingConfig())===true;
+      throw new Error("Logging save is not available.");
     }
     var config=SAVE[sectionId];
     if(!config) return false;
