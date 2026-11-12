@@ -210,6 +210,11 @@ function initDashboardDrafts() {
   const bar = document.getElementById("dashboard-draft-bar");
   if (!bar || bar.dataset.bound === "true") return;
   bar.dataset.bound = "true";
+  window.addEventListener("beforeunload", (event) => {
+    if (!dashboardDraftIsDirty() || dashboardDraftSaving) return;
+    event.preventDefault();
+    event.returnValue = "";
+  });
   document.addEventListener("click", (event) => {
     const protectedAction = event.target.closest("#add-level-role, #add-shop-item, [data-remove-level], [data-remove-shop]");
     if (protectedAction && dashboardDraftIsDirty()) {
@@ -281,6 +286,7 @@ async function saveDashboardDraft() {
     if (saved && systemToggle && desiredSystemState !== null) systemToggle.checked = desiredSystemState;
     if (saved && hasSystemToggle && typeof window.saveSystemTabDraft === "function") await window.saveSystemTabDraft();
     if (saved) {
+      if (typeof window.captureFeatureSummary === "function") window.captureFeatureSummary(section);
       if (typeof window.refreshFeatureSummary === "function") window.refreshFeatureSummary(section, { collapse: true });
       captureDashboardDraft();
     } else showDashboardDraftNotice();
