@@ -249,7 +249,15 @@ async function cancelDashboardDraft() {
     const status=document.getElementById("custom-emoji-status"); if(status) status.textContent="";
   }
   if (typeof window.loadGuildData === "function" && section !== "settings") {
-    try { await window.loadGuildData(); } catch (error) { console.error("[dashboard-drafts] cancel reload failed", error); }
+    try {
+      await window.loadGuildData();
+    } catch (error) {
+      console.error("[dashboard-drafts] cancel reload failed", error);
+      const message = document.getElementById("dashboard-draft-message");
+      if (message) message.textContent = "Couldn't reload saved settings. Your edits are still here; try Cancel again.";
+      showDashboardDraftNotice();
+      return;
+    }
   } else if (typeof applyConfigToForms === "function") {
     applyConfigToForms();
   }
@@ -268,7 +276,13 @@ async function saveDashboardDraft() {
     currency: saveCurrency,
     birthday: saveBirthday,
     settings: saveDashboardTabs,
-    verification: () => typeof window.saveVerificationDraft === "function" ? window.saveVerificationDraft() : false
+    verification: () => typeof window.saveVerificationDraft === "function" ? window.saveVerificationDraft() : false,
+    logs: async () => {
+      if (typeof saveLogChannel !== "function") return false;
+      const basicSaved = await saveLogChannel();
+      if (basicSaved !== true) return false;
+      return typeof window.saveFeatureDraft === "function" ? (await window.saveFeatureDraft("logs")) === true : true;
+    }
   };
   const action = actions[section];
   const hasSystemToggle = !!document.querySelector(".page-section.active [data-system-toggle] input[data-sys-key]");
