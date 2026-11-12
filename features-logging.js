@@ -336,10 +336,13 @@
         !warn
       );
       setTimeout(loadList, 400);
+      return true;
     } catch (e) {
       setCfgStatus("❌ " + (e && e.message ? e.message : "Save failed"), false);
+      return false;
     }
   }
+  window.saveLoggingConfig = saveConfig;
 
   function timeAgo(iso) {
     try {
