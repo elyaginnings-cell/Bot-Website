@@ -58,9 +58,10 @@
     }
     return String(el.value || "").trim();
   }
-  function renderSummary(section, summary){
+  var savedSummaryData = Object.create(null);
+  function collectSummaryData(section){
     var editor=section.querySelector(":scope > .feature-editor-panel");
-    if(!editor) return;
+    if(!editor) return {rows:[],lists:[],enabled:null};
     var rows=[];
     editor.querySelectorAll("input,select,textarea").forEach(function(el){
       if(el.disabled || ["button","submit","file","hidden","password"].includes(el.type)) return;
@@ -72,31 +73,42 @@
       if(!label || label.length>90) return;
       rows.push({label:label,value:value});
     });
-    // Include configured collections that are rendered as lists rather than fields.
     var lists=[];
     editor.querySelectorAll(".level-roles-list,[id$='-list'],[id$='-cats'],#sr-v3-cats,#ticket-cats-list,#custom-emoji-grid,.emoji-grid").forEach(function(node){
       if(node.closest("[hidden]")) return;
-      var text=(node.innerText || node.textContent || "").replace(/\s+/g," ").trim();
+      var text=(node.innerText || node.textContent || "").replace(/\\s+/g," ").trim();
       if(text && !/No .* yet|No .* found|loading/i.test(text) && text.length<1800){
         var id=node.id || "configured-items";
-        if(!lists.some(x=>x.id===id)) lists.push({id:id,text:text});
+        if(!lists.some(function(x){return x.id===id;})) lists.push({id:id,text:text});
       }
     });
     var enabled=editor.querySelector('input[type="checkbox"][id$="enabled"],input[type="checkbox"][id$="-enabled"]');
-    var enabledHtml=enabled
-      ? '<span class="feature-summary-state '+(enabled.checked?'is-on':'is-off')+'">'+(enabled.checked?'Enabled':'Disabled')+'</span>'
-      : "";
-    var rowsHtml=rows.slice(0,36).map(function(row){
+    return {rows:rows,lists:lists,enabled:enabled ? !!enabled.checked : null};
+  }
+  function captureSavedSummary(sectionId){
+    var section=$(sectionId);
+    if(!section) return;
+    attach(section);
+    savedSummaryData[sectionId]=collectSummaryData(section);
+    var summary=section.querySelector(":scope > .feature-summary-panel");
+    if(summary) renderSummary(section,summary);
+  }
+  window.captureFeatureSummary=captureSavedSummary;
+  function renderSummary(section, summary){
+    var data=savedSummaryData[section.id] || collectSummaryData(section);
+    var rowsHtml=data.rows.slice(0,36).map(function(row){
       return '<div class="feature-summary-row"><span>'+escapeHtml(row.label)+'</span><strong>'+escapeHtml(row.value)+'</strong></div>';
     }).join("");
-    var listsHtml=lists.map(function(list){
+    var listsHtml=data.lists.map(function(list){
       return '<div class="feature-summary-list"><span>'+escapeHtml(list.id.replace(/[-_]/g," "))+'</span><p>'+escapeHtml(list.text)+'</p></div>';
     }).join("");
+    var enabledHtml=data.enabled===null ? "" :
+      '<span class="feature-summary-state '+(data.enabled?'is-on':'is-off')+'">'+(data.enabled?'Enabled':'Disabled')+'</span>';
     summary.innerHTML=
       '<div class="feature-summary-head"><div><span class="eyebrow">SAVED CONFIGURATION</span><h3>'+escapeHtml(TITLES[section.id] || section.id)+'</h3></div>'+enabledHtml+'</div>'+
       (rowsHtml?'<div class="feature-summary-grid">'+rowsHtml+'</div>':'<p class="feature-summary-empty">No saved settings to display yet. Open configuration to set this feature up.</p>')+
       listsHtml+
-      '<button type="button" class="button feature-configure-button" data-feature-configure>'+ (editor.hidden?'Configure '+escapeHtml(TITLES[section.id] || 'feature'):'Close configuration') +'</button>';
+      '<button type="button" class="button feature-configure-button" data-feature-configure>'+ (section.querySelector(":scope > .feature-editor-panel").hidden?'Configure '+escapeHtml(TITLES[section.id] || 'feature'):'Close configuration') +'</button>';
   }
   function attach(section){
     if(!FEATURE_TABS.includes(section.id)) return;
@@ -144,14 +156,6 @@
 
   async function saveFeatureDraft(sectionId){
     if(sectionId==="shop"){
-      var desiredEnabled=$("shop-enabled") ? $("shop-enabled").checked : true;
-      var itemName=$("shop-name") && $("shop-name").value.trim();
-      var itemPrice=$("shop-price") && $("shop-price").value;
-      if(itemName && itemPrice && typeof window.addShopItem==="function"){
-        var added=await window.addShopItem();
-        if(added!==true) return false;
-      }
-      if($("shop-enabled")) $("shop-enabled").checked=desiredEnabled;
       if(typeof window.saveShopToggle==="function") return (await window.saveShopToggle())===true;
       throw new Error("Shop save is not available.");
     }
@@ -196,7 +200,7 @@
     document.addEventListener("dashboard:guild-loaded",function(){
       setTimeout(function(){process();FEATURE_TABS.forEach(id=>refresh(id));},80);
       setTimeout(function(){
-        FEATURE_TABS.forEach(id=>refresh(id));
+        FEATURE_TABS.forEach(id=>{refresh(id);captureSavedSummary(id);});
         if(typeof window.captureDashboardDraft==="function") window.captureDashboardDraft();
       },500);
     });
