@@ -29,7 +29,8 @@ test("dashboard shell groups navigation without changing tab targets", () => {
     if (id === "owner-billing") assert.match(html, /data-tab="owner-billing"/);
     else if (id !== "overview") assert.match(html, new RegExp('data-tab="' + id + '"'));
   }
-  assert.match(html, /id="dashboard-menu-toggle"[^>]*aria-expanded="false"/);\n  assert.match(html, /dashboard-shell\\.js\\?v=1/);
+  assert.match(html, /id="dashboard-menu-toggle"[^>]*aria-expanded="false"/);
+  assert.match(html, /dashboard-shell\.js\?v=1/);
   assert.match(html, /id="dashboard-nav-backdrop"/);
   assert.match(html, /aria-controls="dashboard-navigation"/);
   assert.match(html, /id="view-mode"/);
