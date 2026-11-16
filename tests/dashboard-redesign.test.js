@@ -187,11 +187,11 @@ test("navigation grouping runs only after every feature tab injector", () => {
   const order = [
     "/features-ui.js?v=10",
     "/features-ui-patch.js?v=13",
-    "/features-activitycheck.js",
-    "/features-ai-chat.js",
-    "/features-automod-staff.js",
     "/features-custom-emojis.js",
+    "/features-automod-staff.js",
+    "/features-ai-chat.js",
     "/features-loa.js",
+    "/features-activitycheck.js",
     "/refined-dashboard.js?v=5",
     "/dashboard-shell.js?v=1"
   ].map(asset => bootloader.indexOf(asset));
