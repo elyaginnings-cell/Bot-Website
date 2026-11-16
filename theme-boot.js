@@ -29,7 +29,9 @@
       "themes-insane-css",
       "theme-sweetheart-css",
       "themes-extra-css",
-      "themes-server-view-css"
+      "themes-server-view-css",
+      "server-view-theme-garden-css",
+      "server-view-themes-extra-css"
     ].forEach(function (id) {
       var node = document.getElementById(id);
       if (node) node.remove();
@@ -37,7 +39,7 @@
 
     document.querySelectorAll('link[rel="stylesheet"]').forEach(function (link) {
       var href = link.getAttribute("href") || "";
-      if (/themes-(packs|force|radical|insane|extra|server-view)\.css|theme-sweetheart\.css/i.test(href)) {
+      if (/(?:themes-(packs|force|radical|insane|extra|server-view)|theme-sweetheart|server-view-theme-garden|server-view-themes-extra)\.css/i.test(href)) {
         link.remove();
       }
     });
