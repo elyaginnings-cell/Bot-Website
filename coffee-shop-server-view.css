@@ -195,6 +195,7 @@ body[data-coffee-theme] #server-view :is(input,select,button):focus-visible {
 
 
 /* Server View is a complete workspace, not a themed chat panel. */
+body[data-coffee-theme] #server-view.server-view[hidden] { display: none !important; }
 body[data-coffee-theme] #server-view.server-view {
   position: fixed;
   inset: 0;
