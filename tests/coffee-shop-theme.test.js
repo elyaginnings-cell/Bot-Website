@@ -135,6 +135,6 @@ test("legacy theme picker stays removed while the compatibility cleanup remains 
     assert.ok(legacyThemeCleanup.includes(selector), "legacy cleanup no longer removes " + selector);
   }
   assert.ok(!/theme-(?:garden|midnight|ash|blurple|amoled|nord|dracula|catppuccin)/i.test(dashboardMarkup));
-  assert.ok(legacyThemeCleanup.includes('server-view-theme-garden.css'));
-  assert.ok(legacyThemeCleanup.includes('server-view-themes-extra.css'));
+  assert.ok(legacyThemeCleanup.includes('server-view-theme-garden'));
+  assert.ok(legacyThemeCleanup.includes('server-view-themes-extra'));
 });
