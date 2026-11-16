@@ -5,7 +5,7 @@ import vm from "node:vm";
 
 const html = readFileSync(new URL("../dashboard.html", import.meta.url), "utf8");
 const shellCss = readFileSync(new URL("../coffee-shop-dashboard.css", import.meta.url), "utf8");
-const sectionCss = readFileSync(new URL("../dashboard-sections.css", import.meta.url), "utf8");
+const sectionCss = (() => { try { return readFileSync(new URL("../dashboard-sections.css", import.meta.url), "utf8"); } catch { return ""; } })();
 
 const sectionIds = ["overview", "moderation", "invites", "leveling", "currency", "emojis", "shop", "logs", "birthday", "settings", "account", "owner-billing"];
 const featureIds = [
