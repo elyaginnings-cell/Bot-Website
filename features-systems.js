@@ -94,10 +94,15 @@
       if (!window.currentConfig) window.currentConfig = {};
       window.currentConfig.systems = systems;
       setStatus("✅ System toggles saved. Bot applies them on the next config push.", true);
+    return true;
     } catch (e) {
       setStatus("❌ " + (e && e.message ? e.message : "Save failed"), false);
     }
-  }
+  
+      return false;
+    }
+
+  window.saveSystemsDraft = save;
 
   function bind() {
     var saveBtn = $("save-systems");
