@@ -392,6 +392,8 @@ body[data-coffee-theme] .guest-auth-card input {
 }
 body[data-coffee-theme] .guest-auth-switch,
 body[data-coffee-theme] .guest-auth-close { color: var(--coffee-accent) !important; }
+body[data-coffee-theme] .guest-auth-card .guest-auth-error { color: var(--coffee-danger) !important; }
+body[data-coffee-theme] .login-card input { background: var(--coffee-raised) !important; color: var(--coffee-ink) !important; border-color: var(--coffee-line-strong) !important; }
 body[data-coffee-theme] .auth-divider { color: var(--coffee-muted) !important; }
 body[data-coffee-theme] .auth-divider::before,
 body[data-coffee-theme] .auth-divider::after { background: var(--coffee-line) !important; }
