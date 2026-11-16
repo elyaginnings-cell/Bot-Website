@@ -6,6 +6,7 @@ import vm from "node:vm";
 const html = readFileSync(new URL("../dashboard.html", import.meta.url), "utf8");
 const bootloader = readFileSync(new URL("../index.html", import.meta.url), "utf8");
 const shellCss = readFileSync(new URL("../coffee-shop-dashboard.css", import.meta.url), "utf8");
+const serverViewCss = readFileSync(new URL("../coffee-shop-server-view.css", import.meta.url), "utf8");
 const sectionCss = (() => { try { return readFileSync(new URL("../dashboard-sections.css", import.meta.url), "utf8"); } catch { return ""; } })();
 const navigationScript = readFileSync(new URL("../refined-dashboard.js", import.meta.url), "utf8");
 const shellScript = (() => { try { return readFileSync(new URL("../dashboard-shell.js", import.meta.url), "utf8"); } catch { return ""; } })();
@@ -133,4 +134,36 @@ test("mobile navigation initialization is idempotent", () => {
   assert.equal(listeners.toggle.length, 1);
   assert.equal(listeners.backdrop.length, 1);
   assert.equal(listeners.document.filter(item => item.type === "keydown").length, 1);
+});
+
+
+test("task-specific configuration groups and split libraries are present", () => {
+  for (const id of ["leveling", "currency"]) {
+    const start = html.indexOf('<section id="' + id + '"');
+    const end = html.indexOf("</section>", start);
+    const section = html.slice(start, end);
+    assert.ok((section.match(/class="settings-group"/g) || []).length >= 3, id + " needs task-specific groups");
+  }
+  for (const id of ["emojis", "shop"]) {
+    const start = html.indexOf('<section id="' + id + '"');
+    const end = html.indexOf("</section>", start);
+    const section = html.slice(start, end);
+    assert.ok((section.match(/class="card form-card wide settings-panel/g) || []).length >= 2, id + " needs separate editor and library/inventory panels");
+  }
+});
+
+test("Server View has a redesigned workspace layout in both shared themes", () => {
+  assert.ok(serverViewCss.includes("grid-template-columns: 252px minmax(0,1fr)"));
+  assert.ok(serverViewCss.includes(".sv-chat-head"));
+  assert.ok(serverViewCss.includes(".sv-composer-wrap"));
+  assert.ok(serverViewCss.includes("@media (max-width: 768px)"));
+  assert.ok(serverViewCss.includes("prefers-reduced-motion"));
+  assert.ok(serverViewCss.includes('body[data-coffee-theme="cafe"] #server-view'));
+  assert.ok(serverViewCss.includes('body[data-coffee-theme="dark-roast"] #server-view'));
+});
+
+test("dashboard markup contains no duplicate IDs", () => {
+  const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map(match => match[1]);
+  const duplicates = ids.filter((id, index) => ids.indexOf(id) !== index);
+  assert.deepEqual([...new Set(duplicates)], []);
 });
