@@ -1,0 +1,305 @@
+/* Real mobile dashboard layout. Loaded after every legacy stylesheet so the
+   old always-visible, two-column sidebar cannot override the drawer. */
+@media (max-width: 768px) {
+  html, body { min-height: 100%; }
+  body[data-coffee-theme] { overflow-x: hidden; }
+  body[data-coffee-theme].dashboard-nav-open { overflow: hidden; }
+
+  body[data-coffee-theme] #app {
+    display: block !important;
+    width: 100%;
+    min-height: 100dvh;
+    max-width: 100%;
+    padding: max(10px, env(safe-area-inset-top)) 12px calc(22px + env(safe-area-inset-bottom)) !important;
+    margin: 0;
+  }
+  body[data-coffee-theme] #app .main {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    min-width: 0;
+    gap: 12px;
+  }
+
+  /* The sidebar is a real off-canvas drawer, not a permanent mini desktop nav. */
+  body[data-coffee-theme] #app .sidebar {
+    position: fixed !important;
+    inset: 0 auto 0 0 !important;
+    z-index: 12001 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    width: min(326px, calc(100vw - 48px)) !important;
+    min-width: 0 !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    padding: max(18px, env(safe-area-inset-top)) 14px max(16px, env(safe-area-inset-bottom)) !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+    border-radius: 0 20px 20px 0 !important;
+    transform: translateX(-105%) !important;
+    transition: transform .22s cubic-bezier(.2,.8,.2,1) !important;
+    box-shadow: 18px 0 55px rgba(40, 25, 14, .22) !important;
+  }
+  body[data-coffee-theme].dashboard-nav-open #app .sidebar {
+    transform: translateX(0) !important;
+  }
+  body[data-coffee-theme] #app .sidebar-brand {
+    flex: 0 0 auto;
+    padding: 4px 4px 14px !important;
+  }
+  body[data-coffee-theme] #app .navigation {
+    position: static !important;
+    inset: auto !important;
+    z-index: auto !important;
+    display: flex !important;
+    flex: 1 1 auto !important;
+    flex-direction: column !important;
+    flex-wrap: nowrap !important;
+    grid-template-columns: none !important;
+    width: 100%;
+    min-height: 0;
+    max-height: none !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    gap: 8px !important;
+    padding: 4px 2px 12px !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+  body[data-coffee-theme] #app .ds-nav-search,
+  body[data-coffee-theme] #app .ds-nav-group { width: 100%; min-width: 0; }
+  body[data-coffee-theme] #app .ds-nav-group {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 5px 0 9px;
+  }
+  body[data-coffee-theme] #app .ds-nav-group-items {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 4px !important;
+  }
+  body[data-coffee-theme] #app .ds-nav-group-items[hidden] { display: none !important; }
+  body[data-coffee-theme] #app .ds-nav-group .nav-item {
+    width: 100%;
+    min-height: 44px !important;
+    flex: 0 0 auto;
+    padding: 7px 10px !important;
+  }
+  body[data-coffee-theme] #app .sidebar-bottom {
+    display: block !important;
+    flex: 0 0 auto;
+    margin-top: auto;
+  }
+
+  body[data-coffee-theme] #app .dashboard-nav-backdrop {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 12000 !important;
+    display: block !important;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: rgba(30, 20, 14, .48) !important;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .22s ease;
+  }
+  body[data-coffee-theme].dashboard-nav-open #app .dashboard-nav-backdrop {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* Compact app bar: the menu button is visible and touch-sized on phones. */
+  body[data-coffee-theme] #app .header {
+    display: flex;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 13px !important;
+    padding: 14px !important;
+    border-radius: 17px !important;
+  }
+  body[data-coffee-theme] #app .header-text {
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    align-items: center !important;
+    column-gap: 12px;
+    row-gap: 3px;
+    min-width: 0;
+  }
+  body[data-coffee-theme] #app .dashboard-menu-toggle {
+    display: inline-flex !important;
+    flex: 0 0 44px;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    min-height: 44px;
+    padding: 0;
+    border: 1px solid var(--coffee-line-strong);
+    border-radius: 12px;
+    background: var(--coffee-raised);
+    color: var(--coffee-ink);
+    font-size: 21px;
+    line-height: 1;
+    cursor: pointer;
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    box-shadow: 0 3px 10px rgba(50, 32, 19, .06);
+  }
+  body[data-coffee-theme] #app .header-text h1 {
+    grid-column: 2;
+    grid-row: 1;
+    min-width: 0;
+    font-size: clamp(21px, 6vw, 27px) !important;
+    line-height: 1.1;
+  }
+  body[data-coffee-theme] #app .header-text p {
+    grid-column: 2;
+    grid-row: 2;
+    margin-top: 0;
+    font-size: 11px !important;
+    line-height: 1.35;
+  }
+  body[data-coffee-theme] #app .header-actions {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    grid-template-rows: auto auto;
+    gap: 8px !important;
+    width: 100%;
+  }
+  body[data-coffee-theme] #app .header-actions > * {
+    min-width: 0;
+    width: 100%;
+    max-width: none !important;
+  }
+  body[data-coffee-theme] #app .coffee-theme-toggle { grid-column: 1; grid-row: 1; }
+  body[data-coffee-theme] #app .view-mode-wrap { grid-column: 2; grid-row: 1; width: 100%; min-width: 0; }
+  body[data-coffee-theme] #app .view-mode-select { width: 100%; min-width: 0; }
+  body[data-coffee-theme] #app #open-server-view { grid-column: 1; grid-row: 2; }
+  body[data-coffee-theme] #app .account {
+    grid-column: 2;
+    grid-row: 2;
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+    padding: 4px !important;
+    justify-content: center;
+  }
+  body[data-coffee-theme] #app .account-profile-button {
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    justify-content: center;
+    gap: 7px;
+  }
+  body[data-coffee-theme] #app .account-info { display: none !important; }
+  body[data-coffee-theme] #app .logout-btn { display: none !important; }
+
+  body[data-coffee-theme] #app .server-bar.service-ticket {
+    display: flex;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px;
+    min-height: 0;
+    padding: 13px !important;
+    margin: 0 !important;
+  }
+  body[data-coffee-theme] #app .server-current { min-width: 0; align-items: center; }
+  body[data-coffee-theme] #app .server-current > div:last-child { min-width: 0; }
+  body[data-coffee-theme] #app #selected-server-name { overflow-wrap: anywhere; }
+  body[data-coffee-theme] #app .server-selector,
+  body[data-coffee-theme] #app .server-selector > .button { width: 100%; min-width: 0; }
+  body[data-coffee-theme] #app .server-list { left: 0; right: 0; width: 100%; }
+
+  body[data-coffee-theme] #app .content { min-width: 0; padding-top: 4px !important; }
+  body[data-coffee-theme] #app .page-section { min-width: 0; scroll-margin-top: 12px; }
+  body[data-coffee-theme] #app .page-heading { margin: 4px 2px 13px; }
+  body[data-coffee-theme] #app .page-heading h2 { font-size: 23px !important; line-height: 1.15; }
+  body[data-coffee-theme] #app .page-heading p { font-size: 12px; line-height: 1.45; }
+  body[data-coffee-theme] #app .settings-layout {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 12px !important;
+  }
+  body[data-coffee-theme] #app .settings-panel,
+  body[data-coffee-theme] #app .settings-panel:first-child {
+    grid-column: 1 / -1 !important;
+    min-width: 0;
+    padding: 16px !important;
+  }
+  body[data-coffee-theme] #app .config-grid,
+  body[data-coffee-theme] #app .level-role-form {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 8px !important;
+  }
+  body[data-coffee-theme] #app .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 9px !important;
+  }
+  body[data-coffee-theme] #app .stat-card {
+    min-width: 0;
+    min-height: 78px;
+    padding: 10px !important;
+    gap: 7px;
+  }
+  body[data-coffee-theme] #app .stat-card strong { font-size: 18px !important; overflow-wrap: anywhere; }
+  body[data-coffee-theme] #app .stat-icon { width: 30px; height: 30px; flex-basis: 30px; }
+  body[data-coffee-theme] #app .quick-grid,
+  body[data-coffee-theme] #app .quick-grid.three {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 8px !important;
+  }
+  body[data-coffee-theme] #app .quick-card { min-height: 62px; }
+  body[data-coffee-theme] #app .hero.overview-intro { min-height: 0; padding: 17px !important; }
+  body[data-coffee-theme] #app .hero.overview-intro .hero-icon { display: none; }
+  body[data-coffee-theme] #app .card,
+  body[data-coffee-theme] #app .form-card { min-width: 0; max-width: 100%; }
+  body[data-coffee-theme] #app :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    min-height: 44px;
+    font-size: 16px;
+  }
+  body[data-coffee-theme] #app :is(button, .button, a.button) {
+    min-height: 44px;
+    max-width: 100%;
+    touch-action: manipulation;
+  }
+  body[data-coffee-theme] #app .dashboard-draft-bar {
+    left: 10px;
+    right: 10px;
+    bottom: max(10px, env(safe-area-inset-bottom));
+    width: auto;
+    transform: none;
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+@media (max-width: 420px) {
+  body[data-coffee-theme] #app { padding-left: 9px !important; padding-right: 9px !important; }
+  body[data-coffee-theme] #app .header { padding: 12px !important; }
+  body[data-coffee-theme] #app .header-actions { gap: 7px !important; }
+  body[data-coffee-theme] #app .header-actions .button,
+  body[data-coffee-theme] #app .coffee-theme-toggle { padding-inline: 7px !important; font-size: 11px; }
+  body[data-coffee-theme] #app .server-bar.service-ticket { padding: 11px !important; }
+  body[data-coffee-theme] #app .settings-panel { padding: 13px !important; }
+  body[data-coffee-theme] #app .stats-grid { gap: 7px !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body[data-coffee-theme] #app .sidebar,
+  body[data-coffee-theme] #app .dashboard-nav-backdrop {
+    transition-duration: .01ms !important;
+  }
+}
