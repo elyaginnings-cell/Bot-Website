@@ -315,10 +315,13 @@
       setStatus("automod-status", d && d.savedToBot === false ? "Saved on website. Bot offline — redeploy Railway." : "✅ Automod saved (English roles + rules).", true);
       if (window.loadGuildData) await window.loadGuildData();
       else apply();
+    return true;
     } catch (e) {
       setStatus("automod-status", "❌ " + (e.message || "Failed"), false);
     }
-  }
+  
+      return false;
+    }
 
   async function saveAiStaff() {
     try {
@@ -347,10 +350,16 @@
       setStatus("aistaff-status", d && d.savedToBot === false ? "Saved on website. Bot offline." : "✅ AI Staff saved.", true);
       if (window.loadGuildData) await window.loadGuildData();
       else apply();
+    return true;
     } catch (e) {
       setStatus("aistaff-status", "❌ " + (e.message || "Failed"), false);
     }
-  }
+  
+      return false;
+    }
+
+  window.saveAutomodDraft = saveAutomod;
+  window.saveAiStaffDraft = saveAiStaff;
 
   function wire() {
     function once(id, fn) {
