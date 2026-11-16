@@ -99,7 +99,8 @@ test("mobile navigation opens, closes, restores focus, and handles Escape", () =
       toggle(name, force) { if (force) classes.add(name); else classes.delete(name); }
     } },
     getElementById(id) { return id === "dashboard-menu-toggle" ? toggle : id === "dashboard-nav-backdrop" ? backdrop : null; },
-    querySelector(selector) { return selector === "#app .sidebar" ? sidebar : null; },
+    querySelector(selector) { return selector === "#app .sidebar" ? sidebar : selector === "#app .content" ? { querySelectorAll() { return []; } } : null; },
+    querySelectorAll() { return []; },
     addEventListener(type, handler) { listeners.document.push({ type, handler }); }
   };
   const window = { addEventListener(type, handler) { listeners.window.push({ type, handler }); }, matchMedia() { return { matches: false }; } };
