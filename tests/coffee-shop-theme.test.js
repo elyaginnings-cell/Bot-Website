@@ -1,0 +1,84 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import vm from "node:vm";
+
+const source = readFileSync(new URL("../coffee-shop-theme.js", import.meta.url), "utf8");
+
+function createEnvironment(initial = {}) {
+  const values = new Map(Object.entries(initial));
+  const listeners = [];
+  const button = {
+    dataset: {},
+    attributes: {},
+    textContent: "",
+    title: "",
+    addEventListener(type, handler) { listeners.push({ type, handler }); },
+    setAttribute(name, value) { this.attributes[name] = value; }
+  };
+  const document = {
+    readyState: "complete",
+    body: { dataset: {} },
+    documentElement: { style: {} },
+    getElementById(id) { return id === "coffee-shop-theme-toggle" ? button : null; }
+  };
+  const localStorage = {
+    getItem(key) { return values.has(key) ? values.get(key) : null; },
+    setItem(key, value) { values.set(key, String(value)); }
+  };
+  const window = { localStorage };
+  vm.runInNewContext(source, { window, document, localStorage });
+  return { window, document, button, values, listeners };
+}
+
+test("theme defaults to Café au Lait when no preference is saved", () => {
+  const env = createEnvironment();
+  assert.equal(env.window.CoffeeShopTheme.getTheme(), "cafe");
+  assert.equal(env.document.body.dataset.coffeeTheme, "cafe");
+  assert.equal(env.document.documentElement.style.colorScheme, "light");
+  assert.equal(env.values.get("coffeeShopTheme"), "cafe");
+});
+
+test("theme restores a saved Dark Roast preference", () => {
+  const env = createEnvironment({ coffeeShopTheme: "dark-roast" });
+  assert.equal(env.window.CoffeeShopTheme.getTheme(), "dark-roast");
+  assert.equal(env.document.body.dataset.coffeeTheme, "dark-roast");
+  assert.equal(env.document.documentElement.style.colorScheme, "dark");
+  assert.equal(env.button.attributes["aria-pressed"], "true");
+  assert.match(env.button.textContent, /Dark Roast/);
+});
+
+test("invalid saved values safely fall back to Café au Lait", () => {
+  const env = createEnvironment({ coffeeShopTheme: "garden" });
+  assert.equal(env.window.CoffeeShopTheme.getTheme(), "cafe");
+  assert.equal(env.values.get("coffeeShopTheme"), "cafe");
+});
+
+test("setTheme updates the document, accessible control, and persistence", () => {
+  const env = createEnvironment();
+  assert.equal(env.window.CoffeeShopTheme.setTheme("dark-roast"), "dark-roast");
+  assert.equal(env.document.body.dataset.coffeeTheme, "dark-roast");
+  assert.equal(env.button.attributes["aria-pressed"], "true");
+  assert.match(env.button.attributes["aria-label"], /Café au Lait/);
+  assert.equal(env.values.get("coffeeShopTheme"), "dark-roast");
+  env.window.CoffeeShopTheme.setTheme("cafe");
+  assert.equal(env.button.attributes["aria-pressed"], "false");
+  assert.match(env.button.attributes["aria-label"], /Dark Roast/);
+});
+
+test("toggleTheme alternates both themes and persists each selection", () => {
+  const env = createEnvironment();
+  assert.equal(env.window.CoffeeShopTheme.toggleTheme(), "dark-roast");
+  assert.equal(env.values.get("coffeeShopTheme"), "dark-roast");
+  assert.equal(env.window.CoffeeShopTheme.toggleTheme(), "cafe");
+  assert.equal(env.values.get("coffeeShopTheme"), "cafe");
+});
+
+test("repeated init calls do not bind duplicate click handlers", () => {
+  const env = createEnvironment();
+  env.window.CoffeeShopTheme.init();
+  env.window.CoffeeShopTheme.init();
+  assert.equal(env.listeners.filter(item => item.type === "click").length, 1);
+  env.listeners[0].handler();
+  assert.equal(env.document.body.dataset.coffeeTheme, "dark-roast");
+});
