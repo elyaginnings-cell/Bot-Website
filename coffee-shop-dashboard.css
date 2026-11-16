@@ -257,7 +257,7 @@ body[data-coffee-theme] #app .toggle {
 }
 body[data-coffee-theme] #app .toggle span { color: var(--coffee-ink) !important; }
 body[data-coffee-theme] #app :is(.form-hint,.customer-plan-meta,.customer-plan-card p) { line-height: 1.55; }
-body[data-coffee-theme] #app .dashboard-draft-bar {
+body[data-coffee-theme] .dashboard-draft-bar {
   background: var(--coffee-raised) !important;
   border-color: var(--coffee-line-strong) !important;
   box-shadow: var(--coffee-shadow-raised) !important;
@@ -361,4 +361,95 @@ body[data-coffee-theme] #app .is-error { color: var(--coffee-danger) !important;
     transition-duration: .01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+
+/* Shared overlays and account entry surfaces live outside #app. */
+body[data-coffee-theme] .dashboard-draft-bar,
+body[data-coffee-theme] .guest-auth-bar,
+body[data-coffee-theme] .guest-auth-card,
+body[data-coffee-theme] .login-card {
+  background: var(--coffee-surface) !important;
+  color: var(--coffee-ink) !important;
+  border: 1px solid var(--coffee-line-strong) !important;
+  box-shadow: var(--coffee-shadow-raised) !important;
+}
+body[data-coffee-theme] .dashboard-draft-bar { border-radius: 16px !important; }
+body[data-coffee-theme] .dashboard-draft-copy strong,
+body[data-coffee-theme] .guest-auth-copy strong,
+body[data-coffee-theme] .guest-auth-card h2,
+body[data-coffee-theme] .login-card h1 { color: var(--coffee-ink) !important; }
+body[data-coffee-theme] .dashboard-draft-copy span,
+body[data-coffee-theme] .guest-auth-copy span,
+body[data-coffee-theme] .guest-auth-card p,
+body[data-coffee-theme] .login-card > p { color: var(--coffee-muted) !important; }
+body[data-coffee-theme] .guest-auth-backdrop { background: rgba(24, 15, 10, .58) !important; }
+body[data-coffee-theme] .guest-auth-card label { color: var(--coffee-ink) !important; }
+body[data-coffee-theme] .guest-auth-card input {
+  background: var(--coffee-raised) !important;
+  color: var(--coffee-ink) !important;
+  border: 1px solid var(--coffee-line-strong) !important;
+}
+body[data-coffee-theme] .guest-auth-switch,
+body[data-coffee-theme] .guest-auth-close { color: var(--coffee-accent) !important; }
+body[data-coffee-theme] .auth-divider { color: var(--coffee-muted) !important; }
+body[data-coffee-theme] .auth-divider::before,
+body[data-coffee-theme] .auth-divider::after { background: var(--coffee-line) !important; }
+body[data-coffee-theme] .dashboard-draft-actions .button,
+body[data-coffee-theme] .guest-auth-actions .button,
+body[data-coffee-theme] .guest-auth-card #guest-auth-submit,
+body[data-coffee-theme] .login-card .login-btn {
+  background: var(--coffee-accent) !important;
+  color: var(--coffee-button-ink) !important;
+  border: 1px solid var(--coffee-accent) !important;
+  border-radius: 10px !important;
+  box-shadow: none !important;
+}
+body[data-coffee-theme] .dashboard-draft-actions .button.secondary,
+body[data-coffee-theme] .guest-auth-actions .button.secondary {
+  background: var(--coffee-raised) !important;
+  color: var(--coffee-accent) !important;
+  border-color: var(--coffee-line-strong) !important;
+}
+body[data-coffee-theme] .guest-auth-actions .discord-auth-button,
+body[data-coffee-theme] .guest-auth-card .discord-auth-button {
+  background: #5865f2 !important;
+  color: #fff !important;
+  border-color: rgba(88, 101, 242, .45) !important;
+}
+body[data-coffee-theme] .feature-summary-panel,
+body[data-coffee-theme] #app .feature-summary-list,
+body[data-coffee-theme] #app .custom-emoji-row,
+body[data-coffee-theme] #app .tab-preference-grid .toggle {
+  background: var(--coffee-raised) !important;
+  border: 1px solid var(--coffee-line) !important;
+  color: var(--coffee-ink) !important;
+  box-shadow: none !important;
+}
+body[data-coffee-theme] #app .feature-summary-head h3,
+body[data-coffee-theme] #app .feature-summary-row strong,
+body[data-coffee-theme] #app .feature-summary-list p,
+body[data-coffee-theme] #app .custom-emoji-details strong { color: var(--coffee-ink) !important; }
+body[data-coffee-theme] #app .feature-summary-row span,
+body[data-coffee-theme] #app .feature-summary-list > span,
+body[data-coffee-theme] #app .feature-summary-empty,
+body[data-coffee-theme] #app .custom-emoji-details span { color: var(--coffee-muted) !important; }
+body[data-coffee-theme] #app .feature-summary-grid { border-color: var(--coffee-line) !important; }
+body[data-coffee-theme] #app .feature-summary-row { border-color: var(--coffee-line) !important; }
+body[data-coffee-theme] #app .feature-summary-state.is-on {
+  color: var(--coffee-success) !important;
+  background: color-mix(in srgb, var(--coffee-success) 12%, transparent) !important;
+  border-color: color-mix(in srgb, var(--coffee-success) 35%, transparent) !important;
+}
+body[data-coffee-theme] #app .feature-summary-state.is-off {
+  color: var(--coffee-danger) !important;
+  background: color-mix(in srgb, var(--coffee-danger) 10%, transparent) !important;
+  border-color: color-mix(in srgb, var(--coffee-danger) 32%, transparent) !important;
+}
+body[data-coffee-theme] #app .feature-summary-list { background: var(--coffee-soft) !important; }
+body[data-coffee-theme] #app .custom-emoji-row > img { background: var(--coffee-soft) !important; }
+@media (max-width: 600px) {
+  body[data-coffee-theme] .guest-auth-bar { align-items: stretch; flex-direction: column; }
+  body[data-coffee-theme] .guest-auth-actions { display: grid; grid-template-columns: 1fr; }
+  body[data-coffee-theme] .dashboard-draft-bar { width: calc(100vw - 20px); }
 }
