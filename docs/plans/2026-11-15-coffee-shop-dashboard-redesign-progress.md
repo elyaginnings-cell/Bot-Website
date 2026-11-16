@@ -22,7 +22,7 @@ Direction: `docs/plans/2026-11-15-coffee-shop-full-redesign-direction.md`
 - Focused suite: 21 tests passed, 0 failed.
 - JavaScript syntax: `dashboard-shell.js` and `refined-dashboard.js` pass `node --check`.
 - CSS brace balance: all three redesigned stylesheets balanced.
-- Full suite: 24 tests, 23 passed, 1 failed. The same pre-existing failure is `tests/dashboard-tabs.test.js` — “tab preferences accept only known boolean values”; it also failed on the baseline before redesign work began. No existing test was weakened or removed.
+- Full suite: 30 tests, 29 passed, 1 failed. The same pre-existing failure is `tests/dashboard-tabs.test.js` — “tab preferences accept only known boolean values”; it also failed on the baseline before redesign work began. No existing test was weakened or removed.
 - Preview deployment: READY at `https://bot-website-mqueu9guu-elyaginnings-2459s-projects.vercel.app`. The root page, dashboard HTML, redesigned CSS, and navigation JS returned HTTP 200.
 - Browser-rendered inspection is unavailable in the current environment: no browser or Playwright executable is installed, and none was installed. The preview has not been visually inspected at real device widths, and authenticated UI interactions have not been exercised in a browser.
 
