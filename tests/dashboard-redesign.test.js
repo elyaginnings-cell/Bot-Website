@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 import vm from "node:vm";
 
 const html = readFileSync(new URL("../dashboard.html", import.meta.url), "utf8");
+const bootloader = readFileSync(new URL("../index.html", import.meta.url), "utf8");
 const shellCss = readFileSync(new URL("../coffee-shop-dashboard.css", import.meta.url), "utf8");
 const sectionCss = (() => { try { return readFileSync(new URL("../dashboard-sections.css", import.meta.url), "utf8"); } catch { return ""; } })();
 const navigationScript = readFileSync(new URL("../refined-dashboard.js", import.meta.url), "utf8");
@@ -30,7 +31,7 @@ test("dashboard shell groups navigation without changing tab targets", () => {
     else if (id !== "overview") assert.match(html, new RegExp('data-tab="' + id + '"'));
   }
   assert.match(html, /id="dashboard-menu-toggle"[^>]*aria-expanded="false"/);
-  assert.match(html, /dashboard-shell\.js\?v=1/);
+  assert.match(bootloader, /dashboard-shell\.js\?v=1/);
   assert.match(html, /id="dashboard-nav-backdrop"/);
   assert.match(html, /aria-controls="dashboard-navigation"/);
   assert.match(html, /id="view-mode"/);
@@ -62,11 +63,11 @@ test("configuration workspaces use consistent settings panels", () => {
 });
 
 test("redesigned shell has responsive ownership for drawer and worktop", () => {
-  assert.match(shellCss, /\.dashboard-menu-toggle/);
-  assert.match(shellCss, /\.dashboard-nav-backdrop/);
-  assert.match(shellCss, /\.server-bar[^{]*\{/);
-  assert.match(shellCss, /@media[^{}]*max-width:\s*768px/);
-  assert.match(shellCss, /prefers-reduced-motion/);
+  assert.match(sectionCss, /\.dashboard-menu-toggle/);
+  assert.match(sectionCss, /\.dashboard-nav-backdrop/);
+  assert.match(sectionCss, /\.server-bar[^{]*\{/);
+  assert.match(sectionCss, /@media[^{}]*max-width:\s*768px/);
+  assert.match(sectionCss, /prefers-reduced-motion/);
 });
 
 test("all original account, guest, draft, and Server View roots remain", () => {
