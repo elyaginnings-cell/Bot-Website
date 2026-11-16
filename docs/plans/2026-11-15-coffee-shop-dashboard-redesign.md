@@ -127,13 +127,12 @@ git commit -m "feat: redesign dashboard with cafe themes"
 - Create: `coffee-shop-server-view.css`
 - Modify: `dashboard.html`
 - Modify: `server-view.css`
-- Modify: `server-view-layout.js`
 - Modify: `tests/coffee-shop-theme.test.js`
 
 **Interfaces:**
 - Consumes the document body's `data-coffee-theme` and shared semantic tokens from `coffee-shop-dashboard.css`.
 - Maps shared tokens to the existing Server View custom properties: `--sv-bg-primary`, `--sv-bg-secondary`, `--sv-bg-tertiary`, `--sv-bg-modifier`, `--sv-text`, `--sv-text-muted`, `--sv-text-link`, `--sv-brand`, `--sv-embed-bg`, `--sv-input-bg`, and `--sv-scrollbar`.
-- Preserves existing Server View DOM IDs, channel/message/member/reply/composer controls, density preference, font-size preference, and mobile drawer behavior.
+- Preserves existing Server View DOM IDs and channel/message/member/reply/composer behavior. Do not alter the existing density/font-size storage or apply logic, or change the current settings-panel visibility behavior.
 
 - [ ] **Step 1: Add focused failing tests**
 
@@ -173,6 +172,7 @@ git commit -m "feat: theme server view for cafe and dark roast"
 **Files:**
 - Modify: `dashboard.html`
 - Modify: `index.html`
+- Modify: `theme-boot.js`
 - Modify: `coffee-shop-theme.js`
 - Modify: `coffee-shop-dashboard.css`
 - Modify: `coffee-shop-server-view.css`
@@ -195,7 +195,7 @@ Expected: any remaining active legacy theme references are identified by a faili
 
 - [ ] **Step 3: Implement the minimum behavior**
 
-Remove only obsolete theme-picker markup, event wiring, stylesheet references, and legacy palette selectors that are still active in the dashboard. Do not delete unrelated files or remove the Server View density/font-size controls. Keep the view-mode selector and bootloader replacement/injection behavior intact. Update CSS cache query versions in `dashboard.html` and any versioned asset references in `index.html` where required so deployed clients receive the new design.
+Remove only obsolete theme-picker markup, event wiring, stylesheet references, and legacy palette selectors that are still active in the dashboard. Extend the existing compatibility cleanup in `theme-boot.js` to remove cached Server View Garden and legacy theme-pack stylesheets, while leaving `coffeeShopTheme` untouched. Do not delete unrelated files or remove the Server View density/font-size controls. Keep the view-mode selector and bootloader replacement/injection behavior intact. Update CSS cache query versions in `dashboard.html` and any versioned asset references in `index.html` where required so deployed clients receive the new design.
 
 - [ ] **Step 4: Verify the focused pass**
 
