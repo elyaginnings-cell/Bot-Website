@@ -70,6 +70,8 @@ test("redesigned shell has responsive ownership for drawer and worktop", () => {
   assert.match(sectionCss, /\.server-bar[^{]*\{/);
   assert.match(sectionCss, /@media[^{}]*max-width:\s*768px/);
   assert.match(sectionCss, /prefers-reduced-motion/);
+  assert.match(sectionCss, /\.account \{ grid-column: 2; grid-row: 2;/);
+  assert.match(sectionCss, /\.view-mode-wrap \{ grid-column: 2; grid-row: 1;/);
 });
 
 test("all original account, guest, draft, and Server View roots remain", () => {
