@@ -52,18 +52,19 @@
 
     var currencySection = document.getElementById("currency");
     if (currencySection && !$("cur-weekly-min")) {
-      var saveBtn = currencySection.querySelector("#save-currency");
       var extras = document.createElement("div");
       extras.id = "currency-extras";
+      extras.className = "settings-group";
       extras.innerHTML =
+        '<div class="settings-group-heading"><strong>Weekly rewards</strong><span>Set the weekly claim range for your server economy.</span></div>' +
         '<h3 class="subhead">Weekly</h3><div class="config-grid">' +
         '<div class="input-group"><label>Weekly min</label><input id="cur-weekly-min" type="number" min="0" value="200"></div>' +
-        '<div class="input-group"><label>Weekly max</label><input id="cur-weekly-max" type="number" min="0" value="500"></div></div>' +
-        '<h3 class="subhead">Work</h3><div class="config-grid">' +
-        '<div class="input-group"><label>Work min</label><input id="cur-work-min" type="number" min="0" value="50"></div>' +
-        '<div class="input-group"><label>Work max</label><input id="cur-work-max" type="number" min="0" value="150"></div>' +
-        '<div class="input-group"><label>Work cooldown (min)</label><input id="cur-work-cd" type="number" min="1" value="60"></div></div>';
-      if (saveBtn && saveBtn.parentNode) saveBtn.parentNode.insertBefore(extras, saveBtn);
+        '<div class="input-group"><label>Weekly max</label><input id="cur-weekly-max" type="number" min="0" value="500"></div></div>';
+      var panel = currencySection.querySelector(".settings-panel");
+      var groups = panel ? panel.querySelectorAll(".settings-group") : [];
+      var insertBefore = groups.length ? groups[groups.length - 1] : null;
+      if (insertBefore && insertBefore.parentNode) insertBefore.parentNode.insertBefore(extras, insertBefore);
+      else if (panel) panel.appendChild(extras);
       else currencySection.appendChild(extras);
     }
 

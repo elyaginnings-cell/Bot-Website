@@ -12,6 +12,6 @@ test("tab preferences merge without overwriting unrelated tabs", () => {
 test("tab preferences accept only known boolean values", () => {
   assert.deepEqual(
     mergeDashboardTabs({ moderation: false }, { moderation: "false", emojis: true, unknown: false }),
-    { moderation: false }
+    { moderation: false, emojis: true }
   );
 });

@@ -86,7 +86,7 @@
     // loading. The old HTML was visible before stylesheets applied, producing
     // a full-page white/default-browser flash on every navigation.
     html = html.replace("</head>",
-      '<style id="dashboard-style-gate">html,body{min-height:100%;background:#090510!important}#dashboard-style-gate-overlay{position:fixed;inset:0;z-index:2147483647;display:grid;place-items:center;background:radial-gradient(ellipse at 50% 35%,rgba(183,65,210,.18),transparent 42%),#090510;color:#fff7ff;font:600 14px system-ui}#dashboard-style-gate-overlay .gate-card{padding:18px 22px;border:1px solid rgba(221,112,255,.22);border-radius:18px;background:#130b1d;box-shadow:0 18px 60px rgba(0,0,0,.35)}</style></head>'
+      '<style id="dashboard-style-gate">html,body{min-height:100%;background:#f5efe5!important;color:#38271d!important}#dashboard-style-gate-overlay{position:fixed;inset:0;z-index:2147483647;display:grid;place-items:center;background:radial-gradient(ellipse at 50% 35%,rgba(190,145,102,.18),transparent 44%),#f5efe5;color:#38271d;font:600 14px system-ui}#dashboard-style-gate-overlay .gate-card{padding:18px 22px;border:1px solid #e3d4c1;border-radius:18px;background:#fffaf2;box-shadow:0 18px 50px rgba(76,52,32,.10)}</style></head>'
     );
     html = html.replace(/<body([^>]*)>/i,
       '<body$1><div id="dashboard-style-gate-overlay" role="status"><div class="gate-card">☕ Coffee Shop · Preparing your dashboard…</div></div>'
@@ -118,14 +118,14 @@
     // Re-add the core styles with origin-root URLs and wait for them before
     // booting the dashboard scripts. This prevents the unstyled HTML flash.
     await Promise.all([
-      loadCss("/style.css?v=7"),
-      loadCss("/refined-dashboard.css?v=7"),
+      loadCss("/style.css?v=8"),
       loadCss("/guest-auth.css?v=2"),
       loadCss("/mobile-fix.css?v=5"),
       loadCss("/mobile-overhaul.css?v=1"),
       loadCss("/server-view-overhaul.css?v=1"),
       loadCss("/coffee-shop-dashboard.css?v=1"),
-      loadCss("/coffee-shop-server-view.css?v=1")
+      loadCss("/coffee-shop-server-view.css?v=1"),
+      loadCss("/dashboard-sections.css?v=1")
     ]);
     var styleGate=document.getElementById("dashboard-style-gate-overlay");
     if(styleGate)styleGate.remove();
@@ -133,7 +133,6 @@
     if(gateStyle)gateStyle.remove();
     var scripts = [
       "/features-ui.js?v=10",
-      "/refined-dashboard.js?v=4",
       "/features-config.js?v=18",
       "/features-ui-patch.js?v=13",
       "/features-custom-emojis.js?v=5",
@@ -174,7 +173,9 @@
       "/sv-phase0.js?v=2",
       "/click-rescue.js?v=1",
       "/feature-summary.js?v=3",
-      "/theme-boot.js?v=19"
+      "/theme-boot.js?v=19",
+      "/refined-dashboard.js?v=5",
+      "/dashboard-shell.js?v=1"
     ];
     await Promise.all(scripts.map(loadScript));
   } catch (e) {

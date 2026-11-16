@@ -5,20 +5,17 @@
   window.__coffeeShopDesignSystemV3 = true;
 
   var groups = [
-    { id:"overview", label:"Workspace", items:["overview"], open:true },
-    { id:"moderation", label:"Safety & moderation", items:["moderation","verification","logs","apply","applications"], open:true },
-    { id:"community", label:"Community", items:["invites","leveling","birthday","bump","suggestions","qotd"], open:true },
-    { id:"engagement", label:"Member experience", items:["tickets","selfroles","ideas","roles"], open:false },
-    { id:"economy", label:"Economy", items:["currency","shop","beans"], open:false },
-    { id:"settings", label:"Configuration", items:["settings","systems","automod","custom-emojis","emojis"], open:false },
-    { id:"server", label:"Server tools", items:["server-view"], open:false }
+    { id:"overview", label:"Overview", items:["overview"], open:true },
+    { id:"systems", label:"Server systems", items:["moderation","invites","leveling","currency","emojis","shop","logs","birthday","verification","apply","applications","bump","suggestions","qotd","tickets","selfroles","ideas","roles","beans"], open:true },
+    { id:"workspace", label:"Workspace", items:["settings","account","owner-billing","systems","automod","custom-emojis"], open:true },
+    { id:"server", label:"Server View", items:["server-view"], open:true }
   ];
 
   function groupFor(item) {
     var tab = item.getAttribute("data-tab") || "";
     if (item.id === "nav-server-view") return "server";
     for (var i=0;i<groups.length;i++) if (groups[i].items.indexOf(tab) !== -1) return groups[i].id;
-    return "engagement";
+    return "systems";
   }
 
   function setup() {
@@ -40,6 +37,7 @@
       var section = document.createElement("section");
       section.className = "ds-nav-group";
       section.dataset.group = group.id;
+      section.dataset.navGroup = group.label;
       var button = document.createElement("button");
       button.type = "button";
       button.className = "ds-nav-group-toggle";

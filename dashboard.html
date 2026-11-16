@@ -9,7 +9,7 @@
     <link rel="apple-touch-icon" href="/amazon-favicon.svg?v=2">
     <link rel="stylesheet" href="style.css?v=8">
     <link rel="stylesheet" href="/dashboard-preferences.css?v=4">
-    <link rel="stylesheet" href="mobile-fix.css?v=1">
+    <link rel="stylesheet" href="mobile-fix.css?v=5">
     <link rel="stylesheet" href="toggle-fix.css?v=1">
     <link rel="stylesheet" href="server-view.css">
     <link rel="stylesheet" href="sv-layout-fix.css?v=1">
@@ -18,8 +18,8 @@
     <link rel="stylesheet" href="sv-mentions.css?v=1">
     <link rel="stylesheet" href="sv-readability.css">
     <link rel="stylesheet" href="server-view-members.css?v=5">
-    <link rel="stylesheet" href="/refined-dashboard.css?v=7">
     <link rel="stylesheet" href="/customer-platform.css?v=3">
+    <link rel="stylesheet" href="/dashboard-sections.css?v=1">
 </head>
 <body class="mode-auto" data-coffee-theme="cafe">
 
@@ -32,7 +32,7 @@
                     <span>Bot Control</span>
                 </div>
             </div>
-            <nav class="navigation" aria-label="Dashboard tabs">
+            <nav class="navigation" id="dashboard-navigation" aria-label="Dashboard tabs">
                 <button class="nav-item active" data-tab="overview" type="button" title="Overview"><span>🏠</span><em>Home</em></button>
                 <button class="nav-item" data-tab="moderation" type="button" title="Moderation"><span>⚖️</span><em>Mod</em></button>
                 <button class="nav-item" data-tab="invites" type="button" title="Invites"><span>📨</span><em>Invites</em></button>
@@ -54,10 +54,12 @@
                 </div>
             </div>
         </aside>
+        <button class="dashboard-nav-backdrop" id="dashboard-nav-backdrop" type="button" aria-label="Close navigation"></button>
 
         <main class="main">
             <header class="header card">
                 <div class="header-text">
+                    <button class="dashboard-menu-toggle" id="dashboard-menu-toggle" type="button" aria-controls="dashboard-navigation" aria-expanded="false" aria-label="Open navigation" title="Open navigation"><span aria-hidden="true">☰</span></button>
                     <h1 id="page-title">Overview</h1>
                     <p id="page-description">Manage your Discord server systems.</p>
                 </div>
@@ -87,23 +89,26 @@
                 </div>
             </header>
 
-            <div class="server-bar card">
+            <div class="server-bar card service-ticket">
                 <div class="server-current">
                     <div class="server-icon" id="selected-server-icon">☕</div>
                     <div>
-                        <span class="label">SELECTED SERVER</span>
+                        <span class="label">WORKING IN</span>
                         <strong id="selected-server-name">No server selected</strong>
+                        <span class="service-ticket-caption">Server configuration</span>
                     </div>
                 </div>
                 <div class="server-selector">
-                    <button class="button" id="server-button" type="button">Choose Server</button>
+                    <button class="button" id="server-button" type="button">Switch server</button>
                     <div class="server-list" id="server-list" hidden></div>
                 </div>
             </div>
 
             <div class="content">
                 <section id="overview" class="page-section active">
-                    <div class="hero card">
+                    <div class="page-heading"><h2>Your server, at a glance</h2><p>A clear view of your community and the tools configured for this server.</p></div>
+
+                    <div class="hero card overview-intro">
                         <div>
                             <span class="eyebrow">DASHBOARD</span>
                             <h2>Welcome back, <span id="welcome-name">...</span>.</h2>
@@ -117,19 +122,42 @@
                         <div class="stat-card card"><span class="stat-icon">👑</span><div><span class="label">Role</span><strong id="server-owner-status">-</strong></div></div>
                         <div class="stat-card card"><span class="stat-icon">💾</span><div><span class="label">Memory</span><strong id="storage-status">…</strong></div></div>
                     </div>
-                    <div class="quick-grid three">
+                    <div class="overview-quick-area"><div class="overview-subheading"><h3>Quick access</h3><p>Jump straight to a commonly used system.</p></div><div class="quick-grid three">
                         <button class="quick-card card" data-section-link="currency" type="button"><span class="quick-icon">☕</span><div><strong>Currency</strong><p>Beans & rewards</p></div><span class="arrow">→</span></button>
                         <button class="quick-card card" data-section-link="shop" type="button"><span class="quick-icon">🛒</span><div><strong>Shop</strong><p>Roles, boosts, packs</p></div><span class="arrow">→</span></button>
                         <button class="quick-card card" data-section-link="logs" type="button"><span class="quick-icon">📋</span><div><strong>Logs</strong><p>Confirm saves</p></div><span class="arrow">→</span></button>
-                    </div>
+                    </div></div>
                 </section>
 
-                <section id="moderation" class="page-section"><div class="card form-card wide"><span class="eyebrow">PUNISHMENT</span><h2>Moderation</h2><div class="input-group"><label for="warn-channel">Warn log channel</label><select id="warn-channel"><option value="">Select a channel...</option></select></div><button class="button" id="save-moderation" type="button">Save</button><p class="form-hint" id="moderation-status"></p></div></section>
-                <section id="invites" class="page-section"><div class="card form-card wide"><span class="eyebrow">INVITES</span><h2>Invite Leaderboard</h2><div class="input-group"><label for="invite-channel">Leaderboard channel</label><select id="invite-channel"><option value="">Select a channel...</option></select></div><button class="button" id="save-invites" type="button">Save</button><p class="form-hint" id="invites-status"></p></div></section>
-                <section id="leveling" class="page-section"><div class="card form-card wide"><span class="eyebrow">LEVELING</span><h2>Leveling settings</h2><label class="toggle"><input type="checkbox" id="lvl-enabled" checked> <span>Leveling enabled</span></label><label class="toggle"><input type="checkbox" id="lvl-messages" checked> <span>Level-up messages on</span></label><label class="toggle"><input type="checkbox" id="lvl-beans-enabled" checked> <span>Give Beans on level-up</span></label><div class="input-group"><label for="level-up-channel">Level-up channel</label><select id="level-up-channel"><option value="">Same channel they leveled in</option></select></div><div class="config-grid"><div class="input-group"><label>XP min</label><input id="lvl-xp-min" type="number" min="1"></div><div class="input-group"><label>XP max</label><input id="lvl-xp-max" type="number" min="1"></div><div class="input-group"><label>Cooldown (sec)</label><input id="lvl-xp-cd" type="number" min="5"></div></div><h3 class="subhead">Beans formula</h3><div class="config-grid"><div class="input-group"><label>Base</label><input id="lvl-beans-base" type="number" min="0"></div><div class="input-group"><label>Linear</label><input id="lvl-beans-linear" type="number" min="0"></div><div class="input-group"><label>Quadratic</label><input id="lvl-beans-quad" type="number" min="0"></div></div><p class="form-hint" id="lvl-preview">Preview: …</p><button class="button" id="save-leveling" type="button">Save Leveling Settings</button><p class="form-hint" id="leveling-status"></p><h3 class="subhead">Level roles</h3><div class="level-role-form"><div class="input-group"><label>Level</label><input id="level-number" type="number" min="1"></div><div class="input-group"><label>Role</label><select id="level-role"><option value="">Select role...</option></select></div><button class="button" id="add-level-role" type="button">Add</button></div><div id="level-roles-list" class="level-roles-list"></div></div></section>
-                <section id="currency" class="page-section"><div class="card form-card wide"><span class="eyebrow">CURRENCY</span><h2>Currency settings</h2><label class="toggle"><input type="checkbox" id="cur-enabled" checked> <span>Currency enabled</span></label><div class="config-grid"><div class="input-group"><label>Name</label><input id="cur-name" type="text" placeholder="Beans"></div><div class="input-group"><label>Emoji</label><input id="cur-emoji" type="text" placeholder="☕"></div></div><h3 class="subhead">Daily</h3><div class="config-grid"><div class="input-group"><label>Min</label><input id="cur-daily-min" type="number"></div><div class="input-group"><label>Max</label><input id="cur-daily-max" type="number"></div><div class="input-group"><label>Streak bonus</label><input id="cur-streak-bonus" type="number"></div><div class="input-group"><label>Max streak</label><input id="cur-max-streak" type="number"></div></div><h3 class="subhead">Work</h3><div class="config-grid"><div class="input-group"><label>Min</label><input id="cur-work-min" type="number"></div><div class="input-group"><label>Max</label><input id="cur-work-max" type="number"></div><div class="input-group"><label>Cooldown (min)</label><input id="cur-work-cd" type="number"></div></div><h3 class="subhead">Chat drops</h3><label class="toggle"><input type="checkbox" id="cur-chat-enabled" checked> <span>Random chat earnings</span></label><div class="config-grid"><div class="input-group"><label>Chance %</label><input id="cur-chat-chance" type="number"></div><div class="input-group"><label>Min</label><input id="cur-chat-min" type="number"></div><div class="input-group"><label>Max</label><input id="cur-chat-max" type="number"></div><div class="input-group"><label>Cooldown (sec)</label><input id="cur-chat-cd" type="number"></div></div><h3 class="subhead">Coinflip</h3><label class="toggle"><input type="checkbox" id="cur-flip-enabled" checked> <span>Coinflip enabled</span></label><div class="input-group"><label>Max bet (0 = unlimited)</label><input id="cur-flip-max" type="number"></div><button class="button" id="save-currency" type="button">Save Currency Settings</button><p class="form-hint" id="currency-status"></p></div></section>
+                <section id="moderation" class="page-section">
+                    <div class="page-heading"><h2>Moderation</h2><p>Choose where moderation warnings are recorded.</p></div>
+                    <div class="settings-layout">
+<div class="card form-card wide settings-panel"><span class="eyebrow">PUNISHMENT</span><h2>Moderation</h2><div class="settings-group"><div class="settings-group-heading"><strong>Warning destination</strong><span>Select where warning events are recorded.</span></div><div class="input-group"><label for="warn-channel">Warn log channel</label><select id="warn-channel"><option value="">Select a channel...</option></select></div><button class="button" id="save-moderation" type="button">Save</button><p class="form-hint" id="moderation-status"></p></div></div>
+                    </div>
+</section>
+                <section id="invites" class="page-section">
+                    <div class="page-heading"><h2>Invite leaderboard</h2><p>Choose where members can view invite activity.</p></div>
+                    <div class="settings-layout">
+<div class="card form-card wide settings-panel"><span class="eyebrow">INVITES</span><h2>Invite Leaderboard</h2><div class="settings-group"><div class="settings-group-heading"><strong>Leaderboard destination</strong><span>Choose where the invite leaderboard is displayed.</span></div><div class="input-group"><label for="invite-channel">Leaderboard channel</label><select id="invite-channel"><option value="">Select a channel...</option></select></div><button class="button" id="save-invites" type="button">Save</button><p class="form-hint" id="invites-status"></p></div></div>
+                    </div>
+</section>
+                <section id="leveling" class="page-section">
+                    <div class="page-heading"><h2>Leveling & rewards</h2><p>Set progression, experience, and level-up rewards.</p></div>
+                    <div class="settings-layout">
+<div class="card form-card wide settings-panel"><span class="eyebrow">LEVELING</span><h2>Leveling settings</h2><div class="settings-group"><div class="settings-group-heading"><strong>Progression</strong><span>Choose how members earn experience.</span></div><label class="toggle"><input type="checkbox" id="lvl-enabled" checked> <span>Leveling enabled</span></label><label class="toggle"><input type="checkbox" id="lvl-messages" checked> <span>Level-up messages on</span></label><label class="toggle"><input type="checkbox" id="lvl-beans-enabled" checked> <span>Give Beans on level-up</span></label><div class="input-group"><label for="level-up-channel">Level-up channel</label><select id="level-up-channel"><option value="">Same channel they leveled in</option></select></div><div class="config-grid"><div class="input-group"><label>XP min</label><input id="lvl-xp-min" type="number" min="1"></div><div class="input-group"><label>XP max</label><input id="lvl-xp-max" type="number" min="1"></div><div class="input-group"><label>Cooldown (sec)</label><input id="lvl-xp-cd" type="number" min="5"></div></div></div><div class="settings-group"><div class="settings-group-heading"><strong>Level-up rewards</strong><span>Set the Beans reward formula for each level.</span></div><h3 class="subhead">Beans formula</h3><div class="config-grid"><div class="input-group"><label>Base</label><input id="lvl-beans-base" type="number" min="0"></div><div class="input-group"><label>Linear</label><input id="lvl-beans-linear" type="number" min="0"></div><div class="input-group"><label>Quadratic</label><input id="lvl-beans-quad" type="number" min="0"></div></div><p class="form-hint" id="lvl-preview">Preview: …</p><button class="button" id="save-leveling" type="button">Save Leveling Settings</button><p class="form-hint" id="leveling-status"></p></div><div class="settings-group"><div class="settings-group-heading"><strong>Level roles</strong><span>Assign roles members receive as they progress.</span></div><h3 class="subhead">Role rewards</h3><div class="level-role-form"><div class="input-group"><label>Level</label><input id="level-number" type="number" min="1"></div><div class="input-group"><label>Role</label><select id="level-role"><option value="">Select role...</option></select></div><button class="button" id="add-level-role" type="button">Add</button></div><div id="level-roles-list" class="level-roles-list"></div></div></div>
+                    </div>
+</section>
+                <section id="currency" class="page-section">
+                    <div class="page-heading"><h2>Beans economy</h2><p>Configure the rewards and activities that power your server economy.</p></div>
+                    <div class="settings-layout">
+<div class="card form-card wide settings-panel"><span class="eyebrow">CURRENCY</span><h2>Currency settings</h2><div class="settings-group"><div class="settings-group-heading"><strong>Currency identity</strong><span>Choose the name and symbol members will see.</span></div><label class="toggle"><input type="checkbox" id="cur-enabled" checked> <span>Currency enabled</span></label><div class="config-grid"><div class="input-group"><label>Name</label><input id="cur-name" type="text" placeholder="Beans"></div><div class="input-group"><label>Emoji</label><input id="cur-emoji" type="text" placeholder="☕"></div></div></div><div class="settings-group"><div class="settings-group-heading"><strong>Daily rewards</strong><span>Configure daily claims and streak bonuses.</span></div><h3 class="subhead">Daily</h3><div class="config-grid"><div class="input-group"><label>Min</label><input id="cur-daily-min" type="number"></div><div class="input-group"><label>Max</label><input id="cur-daily-max" type="number"></div><div class="input-group"><label>Streak bonus</label><input id="cur-streak-bonus" type="number"></div><div class="input-group"><label>Max streak</label><input id="cur-max-streak" type="number"></div></div></div><div class="settings-group"><div class="settings-group-heading"><strong>Work rewards</strong><span>Set reward ranges and cooldowns.</span></div><h3 class="subhead">Work</h3><div class="config-grid"><div class="input-group"><label>Min</label><input id="cur-work-min" type="number"></div><div class="input-group"><label>Max</label><input id="cur-work-max" type="number"></div><div class="input-group"><label>Cooldown (min)</label><input id="cur-work-cd" type="number"></div></div></div><div class="settings-group"><div class="settings-group-heading"><strong>Chat earnings</strong><span>Configure occasional rewards for chatting.</span></div><h3 class="subhead">Chat drops</h3><label class="toggle"><input type="checkbox" id="cur-chat-enabled" checked> <span>Random chat earnings</span></label><div class="config-grid"><div class="input-group"><label>Chance %</label><input id="cur-chat-chance" type="number"></div><div class="input-group"><label>Min</label><input id="cur-chat-min" type="number"></div><div class="input-group"><label>Max</label><input id="cur-chat-max" type="number"></div><div class="input-group"><label>Cooldown (sec)</label><input id="cur-chat-cd" type="number"></div></div></div><div class="settings-group"><div class="settings-group-heading"><strong>Coinflip</strong><span>Set whether members can wager Beans.</span></div><h3 class="subhead">Coinflip</h3><label class="toggle"><input type="checkbox" id="cur-flip-enabled" checked> <span>Coinflip enabled</span></label><div class="input-group"><label>Max bet (0 = unlimited)</label><input id="cur-flip-max" type="number"></div><button class="button" id="save-currency" type="button">Save Currency Settings</button><p class="form-hint" id="currency-status"></p></div></div>
+                    </div>
+</section>
                 <section id="emojis" class="page-section">
-                <div class="card form-card wide">
+                    <div class="page-heading"><h2>Custom emoji library</h2><p>Import, organize, and manage the emoji collection for this server.</p></div>
+                    <div class="settings-layout">
+
+                <div class="card form-card wide settings-panel">
                     <span class="eyebrow">SERVER CUSTOMIZATION</span>
                     <h2>Custom emojis</h2>
                     <p class="form-hint">Manage your server's custom emoji collection in one place. Each emoji keeps its image and its display name.</p>
@@ -158,24 +186,44 @@
                     </div>
                     <button class="button" id="save-custom-emoji" type="button">Save emoji to library</button>
                     <p class="form-hint" id="custom-emoji-status"></p>
-                    <div class="level-roles-list" id="custom-emoji-list">
+                    </div><div class="card form-card wide settings-panel emoji-library-panel"><span class="eyebrow">LIBRARY</span><h2>Saved emojis</h2><p class="form-hint">Your saved server emojis appear here.</p><div class="level-roles-list" id="custom-emoji-list">
                         <div class="form-hint">Your saved custom emojis will appear here.</div>
                     </div>
                 </div>
-            </section>
-            <section id="shop" class="page-section"><div class="card form-card wide"><span class="eyebrow">SHOP</span><h2>Server shop</h2><label class="toggle"><input type="checkbox" id="shop-enabled" checked> <span>Shop enabled</span></label><button class="button" id="save-shop-toggle" type="button">Save Shop On/Off</button><p class="form-hint" id="shop-status"></p><h3 class="subhead">Add item</h3><div class="input-group"><label>Item type</label><select id="shop-type"><option value="role">Permanent role</option><option value="temp_role">Temporary role</option><option value="xp_boost">XP boost</option><option value="bean_boost">Bean boost</option><option value="title">Profile title</option><option value="xp_pack">XP pack</option><option value="bean_pack">Bean pack</option><option value="mystery">Mystery box</option><option value="work_skip">Skip work cooldown</option><option value="daily_reset">Reset daily</option></select></div><div class="config-grid"><div class="input-group"><label>Item name</label><input id="shop-name" type="text"></div><div class="input-group"><label>Price</label><input id="shop-price" type="number"></div></div><div class="input-group" id="shop-role-wrap"><label>Role</label><select id="shop-role"><option value="">Select a role...</option></select></div><div class="config-grid" id="shop-extra-grid"><div class="input-group" id="shop-duration-wrap" hidden><label>Duration (hours)</label><input id="shop-duration" type="number"></div><div class="input-group" id="shop-amount-wrap" hidden><label id="shop-amount-label">Amount</label><input id="shop-amount" type="number"></div><div class="input-group" id="shop-title-wrap" hidden><label>Title text</label><input id="shop-title-text" type="text"></div></div><div class="input-group"><label>Description (optional)</label><input id="shop-desc" type="text"></div><p class="form-hint" id="shop-type-hint"></p><button class="button" id="add-shop-item" type="button">Add item</button><div id="shop-items-list" class="level-roles-list"></div></div></section>
-                <section id="logs" class="page-section"><div class="card form-card wide"><span class="eyebrow">LOGS</span><h2>Dashboard logs</h2><div class="input-group"><label for="dashboard-log-channel">Log channel</label><select id="dashboard-log-channel"><option value="">Select a channel...</option></select></div><button class="button" id="save-logs" type="button">Save</button><button class="button secondary" id="test-log" type="button">Send test log</button><p class="form-hint" id="logs-status"></p></div></section>
-                <section id="birthday" class="page-section"><div class="card form-card wide"><span class="eyebrow">BIRTHDAYS</span><h2>Birthday system</h2>
-                  <p class="form-hint">Members use /birthday set MM-DD. Announcements, roles, and bonus Beans are configured here.</p>
+
+                    </div>
+</section>
+            <section id="shop" class="page-section">
+                    <div class="page-heading"><h2>Server shop</h2><p>Manage the shop and the items members can purchase.</p></div>
+                    <div class="settings-layout">
+<div class="card form-card wide settings-panel"><span class="eyebrow">SHOP</span><h2>Server shop</h2><label class="toggle"><input type="checkbox" id="shop-enabled" checked> <span>Shop enabled</span></label><button class="button" id="save-shop-toggle" type="button">Save Shop On/Off</button><p class="form-hint" id="shop-status"></p><h3 class="subhead">Add item</h3><div class="input-group"><label>Item type</label><select id="shop-type"><option value="role">Permanent role</option><option value="temp_role">Temporary role</option><option value="xp_boost">XP boost</option><option value="bean_boost">Bean boost</option><option value="title">Profile title</option><option value="xp_pack">XP pack</option><option value="bean_pack">Bean pack</option><option value="mystery">Mystery box</option><option value="work_skip">Skip work cooldown</option><option value="daily_reset">Reset daily</option></select></div><div class="config-grid"><div class="input-group"><label>Item name</label><input id="shop-name" type="text"></div><div class="input-group"><label>Price</label><input id="shop-price" type="number"></div></div><div class="input-group" id="shop-role-wrap"><label>Role</label><select id="shop-role"><option value="">Select a role...</option></select></div><div class="config-grid" id="shop-extra-grid"><div class="input-group" id="shop-duration-wrap" hidden><label>Duration (hours)</label><input id="shop-duration" type="number"></div><div class="input-group" id="shop-amount-wrap" hidden><label id="shop-amount-label">Amount</label><input id="shop-amount" type="number"></div><div class="input-group" id="shop-title-wrap" hidden><label>Title text</label><input id="shop-title-text" type="text"></div></div><div class="input-group"><label>Description (optional)</label><input id="shop-desc" type="text"></div><p class="form-hint" id="shop-type-hint"></p><button class="button" id="add-shop-item" type="button">Add item</button></div><div class="card form-card wide settings-panel shop-inventory-panel"><span class="eyebrow">INVENTORY</span><h2>Items in your shop</h2><p class="form-hint">Review the items currently available to members.</p><div id="shop-items-list" class="level-roles-list"></div></div>
+                    </div>
+</section>
+                <section id="logs" class="page-section">
+                    <div class="page-heading"><h2>Activity logs</h2><p>Choose where dashboard activity is recorded and send a test event.</p></div>
+                    <div class="settings-layout">
+<div class="card form-card wide settings-panel"><span class="eyebrow">LOGS</span><h2>Dashboard logs</h2><div class="settings-group"><div class="settings-group-heading"><strong>Log destination</strong><span>Choose where dashboard events are sent.</span></div><div class="input-group"><label for="dashboard-log-channel">Log channel</label><select id="dashboard-log-channel"><option value="">Select a channel...</option></select></div><button class="button" id="save-logs" type="button">Save</button><button class="button secondary" id="test-log" type="button">Send test log</button><p class="form-hint" id="logs-status"></p></div></div>
+                    </div>
+</section>
+                <section id="birthday" class="page-section">
+                    <div class="page-heading"><h2>Birthday celebrations</h2><p>Set up birthday announcements, roles, and bonus Beans.</p></div>
+                    <div class="settings-layout">
+<div class="card form-card wide settings-panel"><span class="eyebrow">BIRTHDAYS</span><h2>Birthday system</h2>
+                  <p class="form-hint">Members use /birthday set MM-DD. Announcements, roles, and bonus Beans are configured here.</p><div class="settings-group"><div class="settings-group-heading"><strong>Announcement details</strong><span>Choose where birthdays are announced and which roles are assigned.</span></div>
                   <div class="input-group"><label for="bday-channel">Announcement channel</label><select id="bday-channel"><option value="">Select a channel...</option></select></div>
                   <div class="input-group"><label for="bday-ping-role">Ping role (optional)</label><select id="bday-ping-role"><option value="">None</option></select></div>
                   <div class="input-group"><label for="bday-role">Birthday role for the day</label><select id="bday-role"><option value="">None</option></select></div>
-                  <div class="input-group"><label for="bday-bonus">Bonus Beans on birthday</label><input id="bday-bonus" type="number" min="0" value="500"></div>
+                  </div><div class="settings-group"><div class="settings-group-heading"><strong>Birthday reward</strong><span>Set the Beans members receive on their birthday.</span></div><div class="input-group"><label for="bday-bonus">Bonus Beans on birthday</label><input id="bday-bonus" type="number" min="0" value="500"></div>
                   <button class="button" id="save-birthday" type="button">Save Birthday Settings</button>
-                  <p class="form-hint" id="birthday-status"></p>
-                </div></section>
+                  <p class="form-hint" id="birthday-status"></p></div>
+                </div>
+                    </div>
+</section>
                 <section id="settings" class="page-section">
-                    <div class="card form-card wide tab-manager-card">
+                    <div class="page-heading"><h2>Workspace settings</h2><p>Choose which tools appear and customize your bot's presence.</p></div>
+                    <div class="settings-layout">
+
+                    <div class="card form-card wide settings-panel tab-manager-card">
                         <span class="eyebrow">DASHBOARD LAYOUT</span>
                         <h2>Manage dashboard tabs</h2>
                         <p class="form-hint">Choose which tabs appear in the sidebar for this server. Your choices are saved to PostgreSQL and follow this server when you switch between servers. Home and Settings stay available so you can always restore hidden tabs.</p>
@@ -194,7 +242,7 @@
                         <button class="button" id="save-dashboard-tabs" type="button">Save tab layout</button>
                         <p class="form-hint" id="dashboard-tabs-status"></p>
                     </div>
-                    <div class="card form-card wide">
+                    <div class="card form-card wide settings-panel">
                         <span class="eyebrow">SETTINGS</span>
                         <h2>Browser tab title</h2>
                         <p class="form-hint">This only changes the name in the browser tab. Your dashboard stays Coffee Shop.</p>
@@ -204,7 +252,7 @@
                         <button class="button secondary" id="reset-branding" type="button">Reset default</button>
                         <p class="form-hint" id="branding-status"></p>
                     </div>
-                    <div class="card form-card wide" style="margin-top:16px">
+                    <div class="card form-card wide settings-panel">
                         <span class="eyebrow">BOT PRESENCE</span>
                         <h2>Bot status</h2>
                         <p class="form-hint">Change what Discord shows under the bot name.</p>
@@ -232,10 +280,15 @@
                         <button class="button" id="save-presence" type="button">Save bot status</button>
                         <p class="form-hint" id="presence-status"></p>
                     </div>
-                </section>
+
+                    </div>
+</section>
 
                 <section id="account" class="page-section">
-                    <div class="card form-card wide">
+                    <div class="page-heading"><h2>Account & subscription</h2><p>Review your plan, connected servers, and billing details.</p></div>
+                    <div class="settings-layout">
+
+                    <div class="card form-card wide settings-panel">
                         <span class="eyebrow">CUSTOMER ACCOUNT</span>
                         <h2>Account & subscription</h2>
                         <div id="customer-account-status" class="form-hint">Loading your account…</div>
@@ -253,7 +306,7 @@
                             <button class="button secondary customer-control" id="customer-resume-subscription" type="button" hidden>Resume subscription</button>
                         </div>
                     </div>
-                    <div class="card form-card wide">
+                    <div class="card form-card wide settings-panel">
                         <span class="eyebrow">PROFILE DETAILS</span>
                         <h2>Your account</h2>
                         <div class="customer-profile-grid">
@@ -263,7 +316,7 @@
                         </div>
                         <p class="form-hint">Your sign-in and connected Discord identity.</p>
                     </div>
-                    <div class="card form-card wide">
+                    <div class="card form-card wide settings-panel">
                         <span class="eyebrow">CONNECTED SERVERS</span>
                         <h2>Your Discord servers</h2>
                         <p class="form-hint" id="customer-discord-status">Verify your Discord permissions to connect a server.</p>
@@ -274,21 +327,26 @@
                         </div>
                         <div id="customer-server-list" class="customer-list"></div>
                     </div>
-                    <div class="card form-card wide">
+                    <div class="card form-card wide settings-panel">
                         <span class="eyebrow">AVAILABLE PLANS</span>
                         <h2>Plans & upgrades</h2>
                         <div id="customer-plan-list" class="customer-plan-grid"></div>
                         <p class="form-hint" id="customer-billing-status"></p>
                     </div>
-                    <div class="card form-card wide">
+                    <div class="card form-card wide settings-panel">
                         <span class="eyebrow">BILLING HISTORY</span>
                         <h2>Invoices</h2>
                         <div id="customer-invoice-list" class="customer-list"></div>
                     </div>
-                </section>
+
+                    </div>
+</section>
 
                 <section id="owner-billing" class="page-section">
-                    <div class="card form-card wide">
+                    <div class="page-heading"><h2>Plan management</h2><p>Manage subscription plans and review customer accounts.</p></div>
+                    <div class="settings-layout">
+
+                    <div class="card form-card wide settings-panel">
                         <span class="eyebrow">WEBSITE OWNER</span>
                         <h2>Subscription plan manager</h2>
                         <p class="form-hint">Set plan prices, annual discount, storage allowance, server capacity, and feature entitlements. The annual price is calculated from the monthly price and discount.</p>
@@ -307,12 +365,14 @@
                         <p class="form-hint" id="owner-plan-status"></p>
                         <div id="owner-plan-list" class="customer-list"></div>
                     </div>
-                    <div class="card form-card wide">
+                    <div class="card form-card wide settings-panel">
                         <span class="eyebrow">CUSTOMER OVERSIGHT</span>
                         <h2>Customer accounts</h2>
                         <div id="owner-customer-list" class="customer-list"></div>
                     </div>
-                </section>
+
+                    </div>
+</section>
             </div>
         </main>
     </div>
