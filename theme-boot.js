@@ -1,6 +1,6 @@
-/* Theme system retired.
-   The dashboard now uses one fixed purple design. This file remains as a
-   compatibility kill-switch for older cached pages that still request it. */
+/* Legacy theme-picker cleanup.
+   The dashboard now uses the persistent Café au Lait / Dark Roast preference.
+   Keep removing obsolete cached theme UI without touching coffeeShopTheme. */
 (function () {
   "use strict";
 
