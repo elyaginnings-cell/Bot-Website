@@ -9,6 +9,7 @@ const shellCss = readFileSync(new URL("../coffee-shop-dashboard.css", import.met
 const serverViewCss = readFileSync(new URL("../coffee-shop-server-view.css", import.meta.url), "utf8");
 const sectionCss = (() => { try { return readFileSync(new URL("../dashboard-sections.css", import.meta.url), "utf8"); } catch { return ""; } })();
 const navigationScript = readFileSync(new URL("../refined-dashboard.js", import.meta.url), "utf8");
+const featureUiScript = readFileSync(new URL("../features-ui.js", import.meta.url), "utf8");
 const shellScript = (() => { try { return readFileSync(new URL("../dashboard-shell.js", import.meta.url), "utf8"); } catch { return ""; } })();
 
 const sectionIds = ["overview", "moderation", "invites", "leveling", "currency", "emojis", "shop", "logs", "birthday", "settings", "account", "owner-billing"];
@@ -127,6 +128,7 @@ test("mobile navigation initialization is idempotent", () => {
     body: { classList: { add(){}, remove(){}, contains(){return false;}, toggle(){} } },
     getElementById(id) { return id === "dashboard-menu-toggle" ? toggle : id === "dashboard-nav-backdrop" ? backdrop : null; },
     querySelector() { return sidebar; },
+    querySelectorAll() { return []; },
     addEventListener(type, handler) { listeners.document.push({ type, handler }); }
   };
   const window = { addEventListener(type, handler) { listeners.window.push({ type, handler }); }, matchMedia() { return { matches: false }; } };
@@ -168,4 +170,14 @@ test("dashboard markup contains no duplicate IDs", () => {
   const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map(match => match[1]);
   const duplicates = ids.filter((id, index) => ids.indexOf(id) !== index);
   assert.deepEqual([...new Set(duplicates)], []);
+});
+
+
+test("dynamically injected feature pages use the shared workspace and currency groups", () => {
+  assert.ok(shellScript.includes('section.querySelector(".page-heading")'));
+  assert.ok(shellScript.includes('layout.className = "settings-layout"'));
+  assert.ok(shellScript.includes('card.classList.add("settings-panel")'));
+  assert.ok(featureUiScript.includes('extras.className = "settings-group"'));
+  assert.ok(featureUiScript.includes('id="cur-weekly-min"'));
+  assert.ok(!featureUiScript.includes('id="cur-work-min" type="number" min="0" value="50"'));
 });
