@@ -133,7 +133,6 @@
     if(gateStyle)gateStyle.remove();
     var scripts = [
       "/features-ui.js?v=10",
-      "/refined-dashboard.js?v=5",
       "/features-config.js?v=18",
       "/features-ui-patch.js?v=13",
       "/features-custom-emojis.js?v=5",
@@ -175,6 +174,7 @@
       "/click-rescue.js?v=1",
       "/feature-summary.js?v=3",
       "/theme-boot.js?v=19",
+      "/refined-dashboard.js?v=5",
       "/dashboard-shell.js?v=1"
     ];
     await Promise.all(scripts.map(loadScript));
