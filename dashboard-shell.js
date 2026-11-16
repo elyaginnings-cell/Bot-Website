@@ -26,6 +26,55 @@
     }
   }
 
+  function decorateSection(section) {
+    if (!section || section.dataset.workspaceDecorated === "true") return;
+    var cards = Array.prototype.filter.call(section.children || [], function (child) {
+      return child.classList && child.classList.contains("form-card");
+    });
+    if (!cards.length) return;
+
+    cards.forEach(function (card) { card.classList.add("settings-panel"); });
+
+    if (!section.querySelector(".page-heading")) {
+      var sourceTitle = cards[0].querySelector("h2");
+      var sourceDescription = cards[0].querySelector(".form-hint");
+      var heading = document.createElement("div");
+      var title = document.createElement("h2");
+      var description = document.createElement("p");
+      heading.className = "page-heading";
+      title.textContent = sourceTitle ? sourceTitle.textContent.trim() : "Server system";
+      description.textContent = sourceDescription ? sourceDescription.textContent.trim() : "Configure this system for your server.";
+      heading.appendChild(title);
+      heading.appendChild(description);
+      section.insertBefore(heading, section.firstChild);
+    }
+
+    if (!section.querySelector(".settings-layout")) {
+      var layout = document.createElement("div");
+      layout.className = "settings-layout";
+      section.insertBefore(layout, cards[0]);
+      cards.forEach(function (card) { layout.appendChild(card); });
+    }
+    section.dataset.workspaceDecorated = "true";
+  }
+
+  function decorateAllSections() {
+    document.querySelectorAll(".content .page-section").forEach(decorateSection);
+    var content = document.querySelector("#app .content");
+    if (content && window.MutationObserver) {
+      var observer = new window.MutationObserver(function (records) {
+        records.forEach(function (record) {
+          record.addedNodes.forEach(function (node) {
+            if (!node || node.nodeType !== 1) return;
+            if (node.matches && node.matches(".page-section")) decorateSection(node);
+            if (node.querySelectorAll) node.querySelectorAll(".page-section").forEach(decorateSection);
+          });
+        });
+      });
+      observer.observe(content, { childList: true, subtree: true });
+    }
+  }
+
   function init() {
     if (initialized) return;
     toggle = document.getElementById("dashboard-menu-toggle");
@@ -33,6 +82,7 @@
     sidebar = document.querySelector("#app .sidebar");
     if (!toggle || !backdrop || !sidebar) return;
     initialized = true;
+    decorateAllSections();
     toggle.addEventListener("click", function () {
       var open = document.body.classList.contains("dashboard-nav-open");
       setOpen(!open, false);
