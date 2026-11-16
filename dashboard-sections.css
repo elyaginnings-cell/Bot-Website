@@ -607,6 +607,7 @@ body[data-coffee-theme] #app .status-dot { background: var(--coffee-success) !im
   body[data-coffee-theme] #app .account { max-width: 100%; }
 }
 @media (max-width: 768px) {
+  body[data-coffee-theme].dashboard-nav-open { overflow: hidden; }
   body[data-coffee-theme] #app {
     display: block;
     min-height: 100dvh;
