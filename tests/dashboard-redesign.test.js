@@ -200,3 +200,11 @@ test("navigation grouping runs only after every feature tab injector", () => {
   assert.ok(order.every(index => index >= 0), "all tab injectors and shell assets must be loaded");
   assert.deepEqual(order, [...order].sort((a, b) => a - b), "feature tabs must be inserted before the navigation is grouped");
 });
+
+
+test("mobile drawer stylesheet loads after legacy responsive rules", () => {
+  const sections = bootloader.indexOf('loadCss("/dashboard-sections.css?v=1")');
+  const mobile = bootloader.indexOf('loadCss("/coffee-shop-mobile.css?v=1")');
+  assert.ok(sections >= 0, "dashboard section stylesheet must load");
+  assert.ok(mobile > sections, "mobile drawer overrides must load last");
+});
