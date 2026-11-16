@@ -111,7 +111,7 @@ body[data-coffee-theme] #server-view .sv-side-tab {
   border-radius: 8px !important;
 }
 body[data-coffee-theme] #server-view .sv-side-tab.active {
-  color: #fffaf2 !important;
+  color: var(--coffee-button-ink) !important;
   background: var(--sv-brand) !important;
 }
 body[data-coffee-theme] #server-view .sv-cat { color: var(--sv-text-muted) !important; }
@@ -158,7 +158,7 @@ body[data-coffee-theme] #server-view .sv-composer {
 }
 body[data-coffee-theme] #server-view .sv-send-btn {
   background: var(--sv-brand) !important;
-  color: #fffaf2 !important;
+  color: var(--coffee-button-ink) !important;
   border-radius: 9px !important;
 }
 body[data-coffee-theme] #server-view .sv-reply-bar {
