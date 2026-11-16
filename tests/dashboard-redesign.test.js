@@ -8,6 +8,7 @@ const bootloader = readFileSync(new URL("../index.html", import.meta.url), "utf8
 const shellCss = readFileSync(new URL("../coffee-shop-dashboard.css", import.meta.url), "utf8");
 const serverViewCss = readFileSync(new URL("../coffee-shop-server-view.css", import.meta.url), "utf8");
 const sectionCss = (() => { try { return readFileSync(new URL("../dashboard-sections.css", import.meta.url), "utf8"); } catch { return ""; } })();
+const mobileCss = readFileSync(new URL("../coffee-shop-mobile.css", import.meta.url), "utf8");
 const navigationScript = readFileSync(new URL("../refined-dashboard.js", import.meta.url), "utf8");
 const featureUiScript = readFileSync(new URL("../features-ui.js", import.meta.url), "utf8");
 const shellScript = (() => { try { return readFileSync(new URL("../dashboard-shell.js", import.meta.url), "utf8"); } catch { return ""; } })();
@@ -207,4 +208,9 @@ test("mobile drawer stylesheet loads after legacy responsive rules", () => {
   const mobile = bootloader.indexOf('loadCss("/coffee-shop-mobile.css?v=1")');
   assert.ok(sections >= 0, "dashboard section stylesheet must load");
   assert.ok(mobile > sections, "mobile drawer overrides must load last");
+  assert.match(mobileCss, /\.sidebar \{[\s\S]*?position: fixed !important/);
+  assert.match(mobileCss, /\.dashboard-nav-open #app \.sidebar \{[\s\S]*?transform: translateX\(0\) !important/);
+  assert.match(mobileCss, /\.navigation \{[\s\S]*?flex-direction: column !important/);
+  assert.match(mobileCss, /\.dashboard-menu-toggle \{[\s\S]*?display: inline-flex !important/);
+  assert.match(mobileCss, /grid-template-columns: repeat\(2, minmax\(0, 1fr\)\) !important/);
 });
