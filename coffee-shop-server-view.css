@@ -1,0 +1,194 @@
+/* Server View — uses the same Café au Lait / Dark Roast tokens as the dashboard */
+body[data-coffee-theme="cafe"] #server-view,
+body[data-coffee-theme="cafe"] .server-view {
+  --sv-bg-primary: var(--coffee-surface);
+  --sv-bg-secondary: #f1e7d9;
+  --sv-bg-tertiary: var(--coffee-page);
+  --sv-bg-modifier: rgba(112, 75, 47, .055);
+  --sv-bg-modifier-hover: rgba(112, 75, 47, .10);
+  --sv-bg-modifier-active: rgba(152, 96, 57, .16);
+  --sv-text: var(--coffee-ink);
+  --sv-text-muted: var(--coffee-muted);
+  --sv-text-link: #81502f;
+  --sv-header: var(--coffee-ink);
+  --sv-interactive: #806a58;
+  --sv-interactive-hover: var(--coffee-ink);
+  --sv-interactive-active: #2c1d14;
+  --sv-brand: var(--coffee-accent);
+  --sv-brand-hover: var(--coffee-accent-hover);
+  --sv-mention: rgba(152, 96, 57, .16);
+  --sv-mention-hover: rgba(152, 96, 57, .24);
+  --sv-mention-text: #704321;
+  --sv-embed-bg: var(--coffee-raised);
+  --sv-input-bg: var(--coffee-raised);
+  --sv-scrollbar: #d7c4ad;
+}
+body[data-coffee-theme="dark-roast"] #server-view,
+body[data-coffee-theme="dark-roast"] .server-view {
+  --sv-bg-primary: var(--coffee-surface);
+  --sv-bg-secondary: #38291f;
+  --sv-bg-tertiary: var(--coffee-page);
+  --sv-bg-modifier: rgba(244, 218, 191, .045);
+  --sv-bg-modifier-hover: rgba(244, 218, 191, .09);
+  --sv-bg-modifier-active: rgba(212, 160, 107, .17);
+  --sv-text: var(--coffee-ink);
+  --sv-text-muted: var(--coffee-muted);
+  --sv-text-link: #e7b984;
+  --sv-header: var(--coffee-ink);
+  --sv-interactive: #c3a88f;
+  --sv-interactive-hover: var(--coffee-ink);
+  --sv-interactive-active: #fff8ef;
+  --sv-brand: var(--coffee-accent);
+  --sv-brand-hover: var(--coffee-accent-hover);
+  --sv-mention: rgba(212, 160, 107, .16);
+  --sv-mention-hover: rgba(212, 160, 107, .26);
+  --sv-mention-text: #f1c895;
+  --sv-embed-bg: var(--coffee-raised);
+  --sv-input-bg: var(--coffee-raised);
+  --sv-scrollbar: #5b4332;
+}
+body[data-coffee-theme] #server-view {
+  background: var(--sv-bg-tertiary) !important;
+  color: var(--sv-text) !important;
+  font-family: "DM Sans", Inter, "Noto Sans", sans-serif !important;
+}
+body[data-coffee-theme] #server-view .sv-topbar {
+  min-height: 58px;
+  padding: 8px 14px;
+  background: var(--sv-bg-secondary) !important;
+  border-bottom: 1px solid var(--coffee-line) !important;
+  box-shadow: 0 5px 18px rgba(0,0,0,.07) !important;
+}
+body[data-coffee-theme] #server-view .sv-body { background: var(--sv-bg-tertiary) !important; }
+body[data-coffee-theme] #server-view .sv-channels {
+  background: var(--sv-bg-secondary) !important;
+  border-right: 1px solid var(--coffee-line) !important;
+}
+body[data-coffee-theme] #server-view .sv-chat { background: var(--sv-bg-tertiary) !important; }
+body[data-coffee-theme] #server-view .sv-chat-head {
+  background: var(--sv-bg-primary) !important;
+  color: var(--sv-header) !important;
+  border-bottom: 1px solid var(--coffee-line) !important;
+}
+body[data-coffee-theme] #server-view .sv-channels-head,
+body[data-coffee-theme] #server-view .sv-channels-head strong,
+body[data-coffee-theme] #server-view .sv-server-pill,
+body[data-coffee-theme] #server-view #sv-channel-title { color: var(--sv-header) !important; }
+body[data-coffee-theme] #server-view .sv-server-pill {
+  background: var(--coffee-accent-wash) !important;
+  border: 1px solid var(--coffee-line-strong) !important;
+  border-radius: 999px !important;
+}
+body[data-coffee-theme] #server-view :is(.sv-back,.sv-menu-btn,.sv-icon-btn,.sv-refresh,.sv-channels-close) {
+  color: var(--sv-interactive) !important;
+  background: var(--sv-bg-primary) !important;
+  border: 1px solid var(--coffee-line) !important;
+  border-radius: 10px !important;
+}
+body[data-coffee-theme] #server-view :is(.sv-back,.sv-menu-btn,.sv-icon-btn,.sv-refresh,.sv-channels-close):hover {
+  color: var(--sv-interactive-hover) !important;
+  background: var(--sv-bg-modifier-hover) !important;
+  border-color: var(--coffee-line-strong) !important;
+}
+body[data-coffee-theme] #server-view .sv-name-wrap {
+  background: var(--sv-bg-primary) !important;
+  border: 1px solid var(--coffee-line) !important;
+  border-radius: 10px !important;
+  color: var(--sv-text-muted) !important;
+}
+body[data-coffee-theme] #server-view .sv-name-wrap input {
+  background: var(--sv-input-bg) !important;
+  color: var(--sv-text) !important;
+  border: 1px solid var(--coffee-line) !important;
+}
+body[data-coffee-theme] #server-view .sv-sidebar-tabs {
+  background: var(--sv-bg-tertiary) !important;
+  border: 1px solid var(--coffee-line) !important;
+  border-radius: 11px !important;
+}
+body[data-coffee-theme] #server-view .sv-side-tab {
+  color: var(--sv-text-muted) !important;
+  border-radius: 8px !important;
+}
+body[data-coffee-theme] #server-view .sv-side-tab.active {
+  color: #fffaf2 !important;
+  background: var(--sv-brand) !important;
+}
+body[data-coffee-theme] #server-view .sv-cat { color: var(--sv-text-muted) !important; }
+body[data-coffee-theme] #server-view .sv-ch {
+  color: var(--sv-text-muted) !important;
+  border-radius: 9px !important;
+}
+body[data-coffee-theme] #server-view .sv-ch:hover { color: var(--sv-text) !important; background: var(--sv-bg-modifier-hover) !important; }
+body[data-coffee-theme] #server-view .sv-ch.active {
+  color: var(--sv-text) !important;
+  background: var(--sv-bg-modifier-active) !important;
+  border-color: var(--coffee-line-strong) !important;
+}
+body[data-coffee-theme] #server-view .sv-hash,
+body[data-coffee-theme] #server-view .sv-hash-big { color: var(--sv-brand) !important; }
+body[data-coffee-theme] #server-view .sv-messages { background: var(--sv-bg-tertiary) !important; }
+body[data-coffee-theme] #server-view .sv-msg { color: var(--sv-text) !important; }
+body[data-coffee-theme] #server-view .sv-msg:hover { background: var(--sv-bg-modifier) !important; }
+body[data-coffee-theme] #server-view :is(.sv-author,.sv-msg-content,.sv-reply-preview,.sv-embed,.sv-attachment,.sv-member-name) { color: var(--sv-text) !important; }
+body[data-coffee-theme] #server-view :is(.sv-time,.sv-edited,.sv-member-meta,.sv-empty) { color: var(--sv-text-muted) !important; }
+body[data-coffee-theme] #server-view .sv-msg-content a { color: var(--sv-text-link) !important; }
+body[data-coffee-theme] #server-view .sv-mention {
+  color: var(--sv-mention-text) !important;
+  background: var(--sv-mention) !important;
+}
+body[data-coffee-theme] #server-view :is(.sv-embed,.sv-reply-preview,.sv-attachment,.sv-settings-panel,.sv-member-search-wrap) {
+  background: var(--sv-embed-bg) !important;
+  border-color: var(--coffee-line) !important;
+  color: var(--sv-text) !important;
+}
+body[data-coffee-theme] #server-view :is(.sv-input,.sv-composer input,#sv-input,.sv-member-search,#sv-member-search,.sv-settings-panel select) {
+  background: var(--sv-input-bg) !important;
+  color: var(--sv-text) !important;
+  border-color: var(--coffee-line-strong) !important;
+}
+body[data-coffee-theme] #server-view .sv-composer-wrap {
+  background: var(--sv-bg-tertiary) !important;
+  border-top: 1px solid var(--coffee-line) !important;
+}
+body[data-coffee-theme] #server-view .sv-composer {
+  background: var(--sv-input-bg) !important;
+  border: 1px solid var(--coffee-line-strong) !important;
+  border-radius: 13px !important;
+}
+body[data-coffee-theme] #server-view .sv-send-btn {
+  background: var(--sv-brand) !important;
+  color: #fffaf2 !important;
+  border-radius: 9px !important;
+}
+body[data-coffee-theme] #server-view .sv-reply-bar {
+  background: var(--sv-bg-secondary) !important;
+  border-color: var(--coffee-line) !important;
+  color: var(--sv-text) !important;
+}
+body[data-coffee-theme] #server-view .sv-settings-panel {
+  background: var(--sv-bg-primary) !important;
+  border: 1px solid var(--coffee-line) !important;
+  box-shadow: var(--coffee-shadow) !important;
+}
+body[data-coffee-theme] #server-view :is(input,select,button):focus-visible {
+  outline: 3px solid var(--coffee-focus) !important;
+  outline-offset: 2px !important;
+}
+@media (max-width: 768px) {
+  body[data-coffee-theme] #server-view .sv-topbar { min-height: 54px; padding: 7px 9px; gap: 5px; }
+  body[data-coffee-theme] #server-view .sv-top-left,
+  body[data-coffee-theme] #server-view .sv-top-right { gap: 5px; min-width: 0; }
+  body[data-coffee-theme] #server-view .sv-server-pill { max-width: 31vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  body[data-coffee-theme] #server-view .sv-name-wrap { max-width: 34vw; min-width: 0; }
+  body[data-coffee-theme] #server-view .sv-name-wrap input { min-width: 0; width: 100%; }
+  body[data-coffee-theme] #server-view .sv-channels { max-width: min(84vw, 320px); }
+  body[data-coffee-theme] #server-view .sv-chat { min-width: 0; width: 100%; }
+  body[data-coffee-theme] #server-view .sv-chat-head { min-height: 50px; padding: 9px 12px; }
+  body[data-coffee-theme] #server-view .sv-messages { padding: 12px 8px 18px !important; }
+  body[data-coffee-theme] #server-view .sv-msg { grid-template-columns: 34px minmax(0,1fr) !important; gap: 8px !important; padding: 7px 5px !important; }
+  body[data-coffee-theme] #server-view .sv-av-wrap,
+  body[data-coffee-theme] #server-view .sv-av { width: 34px !important; height: 34px !important; }
+  body[data-coffee-theme] #server-view .sv-composer-wrap { padding: 8px 9px calc(8px + env(safe-area-inset-bottom)) !important; }
+  body[data-coffee-theme] #server-view .sv-composer { gap: 6px; }
+}
