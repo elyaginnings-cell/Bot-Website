@@ -75,3 +75,62 @@ test("all original account, guest, draft, and Server View roots remain", () => {
     assert.ok(html.includes('id="' + id + '"'), "missing preserved root " + id);
   }
 });
+
+test("mobile navigation opens, closes, restores focus, and handles Escape", () => {
+  const listeners = { toggle: [], backdrop: [], sidebar: [], document: [], window: [] };
+  const classes = new Set();
+  const makeTarget = (key) => ({
+    attributes: {},
+    addEventListener(type, handler) { listeners[key].push({ type, handler }); },
+    setAttribute(name, value) { this.attributes[name] = value; },
+    focus() { this.focused = true; },
+    title: ""
+  });
+  const toggle = makeTarget("toggle");
+  const backdrop = makeTarget("backdrop");
+  const sidebar = makeTarget("sidebar");
+  const document = {
+    readyState: "complete",
+    body: { classList: {
+      add(name) { classes.add(name); },
+      remove(name) { classes.delete(name); },
+      contains(name) { return classes.has(name); },
+      toggle(name, force) { if (force) classes.add(name); else classes.delete(name); }
+    } },
+    getElementById(id) { return id === "dashboard-menu-toggle" ? toggle : id === "dashboard-nav-backdrop" ? backdrop : null; },
+    querySelector(selector) { return selector === "#app .sidebar" ? sidebar : null; },
+    addEventListener(type, handler) { listeners.document.push({ type, handler }); }
+  };
+  const window = { addEventListener(type, handler) { listeners.window.push({ type, handler }); }, matchMedia() { return { matches: false }; } };
+  vm.runInNewContext(shellScript, { window, document });
+  assert.equal(toggle.attributes["aria-expanded"], "false");
+  listeners.toggle[0].handler();
+  assert.equal(classes.has("dashboard-nav-open"), true);
+  assert.equal(toggle.attributes["aria-expanded"], "true");
+  listeners.document.find(item => item.type === "keydown").handler({ key: "Escape" });
+  assert.equal(classes.has("dashboard-nav-open"), false);
+  assert.equal(toggle.attributes["aria-expanded"], "false");
+  assert.equal(toggle.focused, true);
+  listeners.toggle[0].handler();
+  listeners.backdrop[0].handler();
+  assert.equal(classes.has("dashboard-nav-open"), false);
+});
+
+test("mobile navigation initialization is idempotent", () => {
+  const listeners = { toggle: [], backdrop: [], sidebar: [], document: [], window: [] };
+  const target = key => ({ attributes: {}, addEventListener(type, handler) { listeners[key].push({ type, handler }); }, setAttribute(name, value) { this.attributes[name] = value; }, focus() {}, title: "" });
+  const toggle = target("toggle"), backdrop = target("backdrop"), sidebar = target("sidebar");
+  const document = {
+    readyState: "complete",
+    body: { classList: { add(){}, remove(){}, contains(){return false;}, toggle(){} } },
+    getElementById(id) { return id === "dashboard-menu-toggle" ? toggle : id === "dashboard-nav-backdrop" ? backdrop : null; },
+    querySelector() { return sidebar; },
+    addEventListener(type, handler) { listeners.document.push({ type, handler }); }
+  };
+  const window = { addEventListener(type, handler) { listeners.window.push({ type, handler }); }, matchMedia() { return { matches: false }; } };
+  vm.runInNewContext(shellScript, { window, document });
+  window.DashboardShell?.init?.();
+  assert.equal(listeners.toggle.length, 1);
+  assert.equal(listeners.backdrop.length, 1);
+  assert.equal(listeners.document.filter(item => item.type === "keydown").length, 1);
+});
