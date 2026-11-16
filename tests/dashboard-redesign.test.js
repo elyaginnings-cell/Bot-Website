@@ -212,5 +212,7 @@ test("mobile drawer stylesheet loads after legacy responsive rules", () => {
   assert.match(mobileCss, /\.dashboard-nav-open #app \.sidebar \{[\s\S]*?transform: translateX\(0\) !important/);
   assert.match(mobileCss, /\.navigation \{[\s\S]*?flex-direction: column !important/);
   assert.match(mobileCss, /\.dashboard-menu-toggle \{[\s\S]*?display: inline-flex !important/);
+  assert.match(mobileCss, /\.header-text \{[\s\S]*?display: grid/);
+  assert.match(mobileCss, /\.ds-nav-group-items\[hidden\] \{ display: none !important; \}/);
   assert.match(mobileCss, /grid-template-columns: repeat\(2, minmax\(0, 1fr\)\) !important/);
 });
