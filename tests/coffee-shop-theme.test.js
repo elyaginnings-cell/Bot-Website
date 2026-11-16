@@ -82,3 +82,37 @@ test("repeated init calls do not bind duplicate click handlers", () => {
   env.listeners[0].handler();
   assert.equal(env.document.body.dataset.coffeeTheme, "dark-roast");
 });
+
+import { readFileSync as readText } from "node:fs";
+const dashboardMarkup = readText(new URL("../dashboard.html", import.meta.url), "utf8");
+const dashboardStyles = readText(new URL("../coffee-shop-dashboard.css", import.meta.url), "utf8");
+const serverViewStyles = readText(new URL("../coffee-shop-server-view.css", import.meta.url), "utf8");
+
+test("dashboard exposes exactly one theme toggle and preserves the layout selector", () => {
+  assert.equal((dashboardMarkup.match(/id="coffee-shop-theme-toggle"/g) || []).length, 1);
+  assert.match(dashboardMarkup, /id="view-mode"/);
+  assert.match(dashboardMarkup, /id="server-view"/);
+  assert.match(dashboardMarkup, /id="dashboard-draft-bar"/);
+  assert.match(dashboardMarkup, /id="customer-billing-portal"/);
+});
+
+test("dashboard design system defines both coordinated palettes and core shell styles", () => {
+  assert.match(dashboardStyles, /body\[data-coffee-theme="cafe"\]/);
+  assert.match(dashboardStyles, /body\[data-coffee-theme="dark-roast"\]/);
+  for (const token of ["--coffee-page", "--coffee-surface", "--coffee-ink", "--coffee-muted", "--coffee-accent", "--coffee-line", "--coffee-focus"]) {
+    assert.ok(dashboardStyles.includes(token), "missing design token " + token);
+  }
+  for (const selector of [".sidebar", ".navigation", ".header", ".server-bar", ".form-card", ".button", ".customer-plan-card", ".dashboard-draft-bar"]) {
+    assert.ok(dashboardStyles.includes(selector), "missing dashboard component " + selector);
+  }
+});
+
+test("Server View inherits the two shared themes and retains its familiar controls", () => {
+  assert.match(serverViewStyles, /body\[data-coffee-theme="cafe"\] #server-view/);
+  assert.match(serverViewStyles, /body\[data-coffee-theme="dark-roast"\] #server-view/);
+  for (const id of ["sv-channel-list", "sv-messages", "sv-member-panel", "sv-reply-bar", "sv-composer", "sv-settings-panel"]) {
+    assert.ok(dashboardMarkup.includes('id="' + id + '"'), "missing Server View root " + id);
+  }
+  const serverMarkup = dashboardMarkup.split('<div id="server-view"')[1].split('</div>\n    </div>')[0];
+  assert.ok(!/theme-(?:garden|midnight|ash|blurple|amoled|nord|dracula|catppuccin)/i.test(serverMarkup));
+});
