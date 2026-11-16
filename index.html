@@ -123,7 +123,9 @@
       loadCss("/guest-auth.css?v=2"),
       loadCss("/mobile-fix.css?v=5"),
       loadCss("/mobile-overhaul.css?v=1"),
-      loadCss("/server-view-overhaul.css?v=1")
+      loadCss("/server-view-overhaul.css?v=1"),
+      loadCss("/coffee-shop-dashboard.css?v=1"),
+      loadCss("/coffee-shop-server-view.css?v=1")
     ]);
     var styleGate=document.getElementById("dashboard-style-gate-overlay");
     if(styleGate)styleGate.remove();
@@ -172,7 +174,8 @@
       "/sv-phase0.js?v=2",
       "/click-rescue.js?v=1",
       "/feature-summary.js?v=3",
-      "/theme-boot.js?v=18"
+      "/theme-boot.js?v=19",
+      "/coffee-shop-theme.js?v=1"
     ];
     await Promise.all(scripts.map(loadScript));
   } catch (e) {
