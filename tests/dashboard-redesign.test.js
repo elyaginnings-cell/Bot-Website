@@ -6,6 +6,8 @@ import vm from "node:vm";
 const html = readFileSync(new URL("../dashboard.html", import.meta.url), "utf8");
 const shellCss = readFileSync(new URL("../coffee-shop-dashboard.css", import.meta.url), "utf8");
 const sectionCss = (() => { try { return readFileSync(new URL("../dashboard-sections.css", import.meta.url), "utf8"); } catch { return ""; } })();
+const navigationScript = readFileSync(new URL("../refined-dashboard.js", import.meta.url), "utf8");
+const shellScript = (() => { try { return readFileSync(new URL("../dashboard-shell.js", import.meta.url), "utf8"); } catch { return ""; } })();
 
 const sectionIds = ["overview", "moderation", "invites", "leveling", "currency", "emojis", "shop", "logs", "birthday", "settings", "account", "owner-billing"];
 const featureIds = [
@@ -19,14 +21,15 @@ const featureIds = [
 ];
 
 test("dashboard shell groups navigation without changing tab targets", () => {
-  for (const group of ["Overview", "Server systems", "Workspace", "Server View"]) {
-    assert.match(html, new RegExp('data-nav-group="' + group + '"', "i"), "missing navigation group " + group);
+  for (const group of ['label:"Overview"', 'label:"Server systems"', 'label:"Workspace"', 'label:"Server View"']) {
+    assert.ok(navigationScript.includes(group), "missing navigation group " + group);
   }
+  assert.match(navigationScript, /dataset\.navGroup = group\.label/);
   for (const id of sectionIds) {
     if (id === "owner-billing") assert.match(html, /data-tab="owner-billing"/);
     else if (id !== "overview") assert.match(html, new RegExp('data-tab="' + id + '"'));
   }
-  assert.match(html, /id="dashboard-menu-toggle"[^>]*aria-expanded="false"/);
+  assert.match(html, /id="dashboard-menu-toggle"[^>]*aria-expanded="false"/);\n  assert.match(html, /dashboard-shell\\.js\\?v=1/);
   assert.match(html, /id="dashboard-nav-backdrop"/);
   assert.match(html, /aria-controls="dashboard-navigation"/);
   assert.match(html, /id="view-mode"/);
