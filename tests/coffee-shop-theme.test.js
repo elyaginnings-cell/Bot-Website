@@ -105,7 +105,7 @@ test("dashboard design system defines both coordinated palettes and core shell s
   for (const selector of [".sidebar", ".navigation", ".header", ".server-bar", ".form-card", ".button", ".customer-plan-card", ".dashboard-draft-bar"]) {
     assert.ok(dashboardStyles.includes(selector), "missing dashboard component " + selector);
   }
-  for (const overlay of [".guest-auth-bar", ".guest-auth-card", ".feature-summary-panel", ".custom-emoji-row"]) {
+  for (const overlay of [".guest-auth-bar", ".guest-auth-card", ".feature-summary-panel", ".custom-emoji-row", ".ds-nav-group-toggle", ".ds-nav-search"]) {
     assert.ok(dashboardStyles.includes(overlay), "missing themed dashboard surface " + overlay);
   }
 
@@ -119,6 +119,8 @@ test("Server View inherits the two shared themes and retains its familiar contro
   }
   const serverMarkup = dashboardMarkup.split('<div id="server-view"')[1].split('</div>\n    </div>')[0];
   assert.ok(!/theme-(?:garden|midnight|ash|blurple|amoled|nord|dracula|catppuccin)/i.test(serverMarkup));
+  assert.match(dashboardStyles, /grid-template-columns: repeat\(2, minmax\(0, 1fr\)\) !important;/);
+  assert.match(dashboardStyles, /max-height: min\(42vh, 360px\)/);
 });
 
 const bootloaderMarkup = readText(new URL("../index.html", import.meta.url), "utf8");
