@@ -305,6 +305,8 @@ body[data-coffee-theme] #app .is-error { color: var(--coffee-danger) !important;
     scrollbar-width: none;
   }
   body[data-coffee-theme] #app .navigation::-webkit-scrollbar { display: none; }
+  body.drawer-nav-only[data-coffee-theme] #app .navigation { display: none !important; }
+  body.drawer-nav-only[data-coffee-theme] #app .sidebar { display: none !important; }
   body[data-coffee-theme] #app .nav-item {
     flex: 0 0 58px !important;
     min-width: 58px !important;
