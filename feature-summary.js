@@ -75,7 +75,7 @@
     var lists=[];
     editor.querySelectorAll(".level-roles-list,[id$='-list'],[id$='-cats'],#sr-v3-cats,#ticket-cats-list,#custom-emoji-grid,.emoji-grid").forEach(function(node){
       if(node.closest("[hidden]")) return;
-      var text=(node.innerText || node.textContent || "").replace(/\\s+/g," ").trim();
+      var text=(node.innerText || node.textContent || "").replace(/\s+/g," ").trim();
       if(text && !/No .* yet|No .* found|loading/i.test(text) && text.length<1800){
         var id=node.id || "configured-items";
         if(!lists.some(function(x){return x.id===id;})) lists.push({id:id,text:text});
