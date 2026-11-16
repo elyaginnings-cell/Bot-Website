@@ -119,13 +119,13 @@
     // booting the dashboard scripts. This prevents the unstyled HTML flash.
     await Promise.all([
       loadCss("/style.css?v=7"),
-      loadCss("/refined-dashboard.css?v=7"),
       loadCss("/guest-auth.css?v=2"),
       loadCss("/mobile-fix.css?v=5"),
       loadCss("/mobile-overhaul.css?v=1"),
       loadCss("/server-view-overhaul.css?v=1"),
       loadCss("/coffee-shop-dashboard.css?v=1"),
-      loadCss("/coffee-shop-server-view.css?v=1")
+      loadCss("/coffee-shop-server-view.css?v=1"),
+      loadCss("/dashboard-sections.css?v=1")
     ]);
     var styleGate=document.getElementById("dashboard-style-gate-overlay");
     if(styleGate)styleGate.remove();
@@ -133,7 +133,7 @@
     if(gateStyle)gateStyle.remove();
     var scripts = [
       "/features-ui.js?v=10",
-      "/refined-dashboard.js?v=4",
+      "/refined-dashboard.js?v=5",
       "/features-config.js?v=18",
       "/features-ui-patch.js?v=13",
       "/features-custom-emojis.js?v=5",
@@ -174,7 +174,8 @@
       "/sv-phase0.js?v=2",
       "/click-rescue.js?v=1",
       "/feature-summary.js?v=3",
-      "/theme-boot.js?v=19"
+      "/theme-boot.js?v=19",
+      "/dashboard-shell.js?v=1"
     ];
     await Promise.all(scripts.map(loadScript));
   } catch (e) {
