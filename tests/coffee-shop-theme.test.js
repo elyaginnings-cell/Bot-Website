@@ -125,6 +125,8 @@ test("bootloader loads the shared theme assets after legacy styles", () => {
   assert.match(bootloaderMarkup, /coffee-shop-server-view\.css\?v=1/);
   assert.match(bootloaderMarkup, /coffee-shop-theme\.js\?v=1/);
   assert.match(bootloaderMarkup, /theme-boot\.js\?v=19/);
+  assert.ok(bootloaderMarkup.indexOf("/server-view-overhaul.css?v=1") < bootloaderMarkup.indexOf("/coffee-shop-dashboard.css?v=1"));
+  assert.ok(bootloaderMarkup.indexOf("/coffee-shop-server-view.css?v=1") < bootloaderMarkup.indexOf("/features-ui.js?v=10"));
 });
 
 test("legacy theme picker stays removed while the compatibility cleanup remains active", () => {
@@ -133,4 +135,6 @@ test("legacy theme picker stays removed while the compatibility cleanup remains 
     assert.ok(legacyThemeCleanup.includes(selector), "legacy cleanup no longer removes " + selector);
   }
   assert.ok(!/theme-(?:garden|midnight|ash|blurple|amoled|nord|dracula|catppuccin)/i.test(dashboardMarkup));
+  assert.ok(legacyThemeCleanup.includes('server-view-theme-garden.css'));
+  assert.ok(legacyThemeCleanup.includes('server-view-themes-extra.css'));
 });
