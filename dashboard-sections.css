@@ -257,6 +257,7 @@ body[data-coffee-theme] #app .header-actions {
   justify-content: flex-end;
   gap: 9px !important;
 }
+body[data-coffee-theme] #app .dashboard-nav-backdrop { display: none; }
 body[data-coffee-theme] #app .dashboard-menu-toggle {
   display: none;
   width: 40px;
