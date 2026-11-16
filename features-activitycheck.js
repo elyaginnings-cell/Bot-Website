@@ -231,10 +231,13 @@
       );
       if (window.loadGuildData) await window.loadGuildData();
       else apply();
+    return true;
     } catch (e) {
       setStatus("❌ " + (e.message || "Failed"), false);
     }
-  }
+  
+      return false;
+    }
 
   async function addStaff() {
     var rid = $("ac-staff-role") && $("ac-staff-role").value;
@@ -250,6 +253,8 @@
       setStatus("❌ " + (e.message || "Failed"), false);
     }
   }
+
+  window.saveActivityCheckDraft = save;
 
   function wire() {
     function bind(id, fn) {
