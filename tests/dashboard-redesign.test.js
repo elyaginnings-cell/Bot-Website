@@ -153,7 +153,7 @@ test("task-specific configuration groups and split libraries are present", () =>
 });
 
 test("Server View has a redesigned workspace layout in both shared themes", () => {
-  assert.ok(serverViewCss.includes("grid-template-columns: 252px minmax(0,1fr)"));
+  assert.ok(serverViewCss.includes("grid-template-columns: 252px minmax(0,1fr)"));\n  assert.ok(serverViewCss.includes("#server-view.server-view[hidden] { display: none !important; }"));
   assert.ok(serverViewCss.includes(".sv-chat-head"));
   assert.ok(serverViewCss.includes(".sv-composer-wrap"));
   assert.ok(serverViewCss.includes("@media (max-width: 768px)"));
