@@ -153,6 +153,19 @@
   }
   window.refreshFeatureSummary=refresh;
 
+  var DIRECT_SAVE = {
+    systems:"saveSystemsDraft",
+    bump:"saveBumpDraft",
+    suggestions:"saveSuggestionsDraft",
+    tickets:"saveTicketsDraft",
+    qotd:"saveQotdDraft",
+    analytics:"saveAnalyticsDraft",
+    aichat:"saveAiChatDraft",
+    automod:"saveAutomodDraft",
+    aistaff:"saveAiStaffDraft",
+    activitycheck:"saveActivityCheckDraft",
+    loa:"saveLoaDraft",
+  };
   async function saveFeatureDraft(sectionId){
     if(sectionId==="shop"){
       if(typeof window.saveShopToggle==="function") return (await window.saveShopToggle())===true;
@@ -161,6 +174,14 @@
     if(sectionId==="logs"){
       if(typeof window.saveLoggingConfig==="function") return (await window.saveLoggingConfig())===true;
       throw new Error("Logging save is not available.");
+    }
+    var directName=DIRECT_SAVE[sectionId];
+    if(directName){
+      var directSave=window[directName];
+      if(typeof directSave!=="function") throw new Error("The save handler for "+(TITLES[sectionId]||sectionId)+" is not ready.");
+      var directResult=await directSave();
+      if(directResult!==true) throw new Error("The "+(TITLES[sectionId]||sectionId)+" settings were not confirmed as saved.");
+      return true;
     }
     var config=SAVE[sectionId];
     if(!config) return false;
