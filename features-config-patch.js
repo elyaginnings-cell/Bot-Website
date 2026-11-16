@@ -266,10 +266,13 @@
       });
       setStatus("bump-status", statusText(d, "✅ Bump rewards saved."), true);
       if (window.loadGuildData) await window.loadGuildData(); else apply();
+    return true;
     } catch (e) {
       setStatus("bump-status", "❌ " + (e.message || "Failed"), false);
     }
-  }
+  
+      return false;
+    }
 
   async function saveVerification() {
     try {
@@ -314,10 +317,13 @@
       });
       setStatus("analytics-status", statusText(d, "✅ Analytics saved."), true);
       if (window.loadGuildData) await window.loadGuildData(); else apply();
+    return true;
     } catch (e) {
       setStatus("analytics-status", "❌ " + (e.message || "Failed"), false);
     }
-  }
+  
+      return false;
+    }
 
   async function saveS() {
     try {
@@ -332,10 +338,13 @@
       });
       setStatus("suggest-status", statusText(d, "✅ Suggestions saved."), true);
       if (window.loadGuildData) await window.loadGuildData(); else apply();
+    return true;
     } catch (e) {
       setStatus("suggest-status", "❌ " + (e.message || "Failed"), false);
     }
-  }
+  
+      return false;
+    }
 
   async function saveQ() {
     try {
@@ -349,10 +358,13 @@
       });
       setStatus("qotd-status", statusText(d, "✅ QOTD saved."), true);
       if (window.loadGuildData) await window.loadGuildData(); else apply();
+    return true;
     } catch (e) {
       setStatus("qotd-status", "❌ " + (e.message || "Failed"), false);
     }
-  }
+  
+      return false;
+    }
 
   async function saveT() {
     try {
@@ -369,10 +381,13 @@
       });
       setStatus("ticket-status", statusText(d, "✅ Tickets saved. Run /ticket-panel in Discord.", "Saved on website. Bot offline."), true);
       if (window.loadGuildData) await window.loadGuildData(); else apply();
+    return true;
     } catch (e) {
       setStatus("ticket-status", "❌ " + (e.message || "Failed"), false);
     }
-  }
+  
+      return false;
+    }
 
   async function addStaff() {
     var rid = $("ticket-staff-role") ? $("ticket-staff-role").value : "";
@@ -391,6 +406,12 @@
       setStatus("ticket-status", "❌ " + (e.message || "Failed"), false);
     }
   }
+
+  window.saveBumpDraft = saveBump;
+  window.saveAnalyticsDraft = saveA;
+  window.saveSuggestionsDraft = saveS;
+  window.saveQotdDraft = saveQ;
+  window.saveTicketsDraft = saveT;
 
   function wire() {
     function bind(id, fn) {
