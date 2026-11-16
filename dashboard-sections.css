@@ -676,7 +676,6 @@ body[data-coffee-theme] #app .status-dot { background: var(--coffee-success) !im
   body[data-coffee-theme] #app { padding-inline: 12px; }
   body[data-coffee-theme] #app .header-actions { grid-template-columns: minmax(0,1fr) 84px; }
   body[data-coffee-theme] #app .account { padding: 4px !important; justify-content: center; }
-  body[data-coffee-theme] #app .stats-grid { grid-template-columns: minmax(0,1fr); }
   body[data-coffee-theme] #app .server-bar.service-ticket { align-items: flex-start; flex-direction: column; }
   body[data-coffee-theme] #app .server-selector,
   body[data-coffee-theme] #app .server-selector > .button { width: 100%; }
