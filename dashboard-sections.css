@@ -645,11 +645,12 @@ body[data-coffee-theme] #app .status-dot { background: var(--coffee-success) !im
   body[data-coffee-theme] #app .header-text { flex: 1; align-items: center; }
   body[data-coffee-theme] #app .header h1 { font-size: 22px !important; }
   body[data-coffee-theme] #app .header p { font-size: 11px !important; }
-  body[data-coffee-theme] #app .header-actions { width: 100%; display: grid; grid-template-columns: minmax(0,1fr) minmax(80px,auto); gap: 8px !important; }
-  body[data-coffee-theme] #app .header-actions .coffee-theme-toggle { grid-column: 1; width: 100%; }
-  body[data-coffee-theme] #app .view-mode-wrap { grid-column: 2; }
-  body[data-coffee-theme] #app #open-server-view { grid-column: 1; width: 100%; }
-  body[data-coffee-theme] #app .account { grid-column: 2; grid-row: 1 / span 2; max-width: 100%; }
+  body[data-coffee-theme] #app .header-actions { width: 100%; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); grid-template-rows: auto auto; gap: 8px !important; }
+  body[data-coffee-theme] #app .header-actions .coffee-theme-toggle { grid-column: 1; grid-row: 1; width: 100%; }
+  body[data-coffee-theme] #app .view-mode-wrap { grid-column: 2; grid-row: 1; }
+  body[data-coffee-theme] #app #open-server-view { grid-column: 1; grid-row: 2; width: 100%; }
+  body[data-coffee-theme] #app .account { grid-column: 2; grid-row: 2; width: 100%; max-width: 100%; justify-content: center; }
+  body[data-coffee-theme] #app .account-profile-button { width: 100%; justify-content: center; }
   body[data-coffee-theme] #app .account-info { display: none; }
   body[data-coffee-theme] #app .logout-btn { display: none; }
   body[data-coffee-theme] #app .server-bar.service-ticket { margin-top: 12px !important; padding: 11px 12px !important; min-height: 68px; }
