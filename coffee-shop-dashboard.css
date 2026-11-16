@@ -1,0 +1,360 @@
+/* Coffee Shop Dashboard — shared Café au Lait / Dark Roast design system */
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap");
+
+body[data-coffee-theme="cafe"] {
+  color-scheme: light;
+  --coffee-page: #f5efe5;
+  --coffee-surface: #fffaf2;
+  --coffee-raised: #fffdf8;
+  --coffee-soft: #eee3d4;
+  --coffee-ink: #38271d;
+  --coffee-muted: #766354;
+  --coffee-subtle: #988474;
+  --coffee-line: #e3d4c1;
+  --coffee-line-strong: #cbb398;
+  --coffee-accent: #986039;
+  --coffee-accent-hover: #774728;
+  --coffee-accent-wash: rgba(152, 96, 57, .12);
+  --coffee-success: #28734d;
+  --coffee-warning: #94601d;
+  --coffee-danger: #a43e38;
+  --coffee-focus: #b87943;
+  --coffee-shadow: 0 10px 28px rgba(76, 52, 32, .075);
+  --coffee-shadow-raised: 0 16px 36px rgba(76, 52, 32, .11);
+}
+body[data-coffee-theme="dark-roast"] {
+  color-scheme: dark;
+  --coffee-page: #211812;
+  --coffee-surface: #2c211a;
+  --coffee-raised: #36271f;
+  --coffee-soft: #413026;
+  --coffee-ink: #f7eadb;
+  --coffee-muted: #d0bba8;
+  --coffee-subtle: #ab907b;
+  --coffee-line: #4e3a2c;
+  --coffee-line-strong: #73553e;
+  --coffee-accent: #d4a06b;
+  --coffee-accent-hover: #edbd86;
+  --coffee-accent-wash: rgba(212, 160, 107, .15);
+  --coffee-success: #83c99e;
+  --coffee-warning: #e7bc76;
+  --coffee-danger: #f08e82;
+  --coffee-focus: #e3b27c;
+  --coffee-shadow: 0 12px 30px rgba(0, 0, 0, .22);
+  --coffee-shadow-raised: 0 18px 42px rgba(0, 0, 0, .32);
+}
+
+html { color-scheme: light; }
+body[data-coffee-theme] {
+  background: var(--coffee-page) !important;
+  color: var(--coffee-ink) !important;
+  font-family: "DM Sans", Inter, ui-sans-serif, system-ui, sans-serif !important;
+  letter-spacing: 0;
+  transition: background-color .2s ease, color .2s ease;
+}
+body[data-coffee-theme]::before { display: none !important; }
+body[data-coffee-theme] #app {
+  max-width: 1600px !important;
+  min-height: 100dvh;
+  gap: 22px !important;
+  padding: clamp(12px, 2vw, 26px) !important;
+}
+body[data-coffee-theme] #app,
+body[data-coffee-theme] #app * {
+  font-family: "DM Sans", Inter, ui-sans-serif, system-ui, sans-serif;
+}
+body[data-coffee-theme] #app :is(h1,h2,h3,h4,.sidebar-brand strong) {
+  font-family: "Playfair Display", Georgia, serif !important;
+  letter-spacing: -.025em;
+}
+body[data-coffee-theme] #app :is(h1,h2,h3,h4,p,span,strong,label,em,a,small,li,dt,dd) {
+  color: var(--coffee-ink) !important;
+}
+body[data-coffee-theme] #app :is(.header p,.hero p,.form-hint,.input-group label,.account-info span,.label,.sidebar-brand span,.view-mode-label,.quick-card p,.connection-status,.subhead,.customer-plan-meta,.customer-plan-card p) {
+  color: var(--coffee-muted) !important;
+}
+body[data-coffee-theme] #app :is(.eyebrow,.label) {
+  color: var(--coffee-accent) !important;
+  font-weight: 700;
+  letter-spacing: .12em;
+}
+body[data-coffee-theme] #app :is(.sidebar,.header,.server-bar,.card,.stat-card,.quick-card,.form-card,.account,.customer-plan-card,.customer-row) {
+  background: var(--coffee-surface) !important;
+  border: 1px solid var(--coffee-line) !important;
+  border-radius: 18px !important;
+  box-shadow: var(--coffee-shadow) !important;
+}
+body[data-coffee-theme] #app .sidebar {
+  width: 252px !important;
+  min-width: 252px;
+  padding: 18px 13px !important;
+  gap: 18px;
+}
+body[data-coffee-theme] #app .sidebar-brand {
+  padding: 5px 8px 17px !important;
+  border-bottom: 1px solid var(--coffee-line) !important;
+  gap: 11px !important;
+}
+body[data-coffee-theme] #app .brand-icon {
+  width: 42px !important;
+  height: 42px !important;
+  border-radius: 13px !important;
+  background: var(--coffee-soft) !important;
+  color: var(--coffee-accent) !important;
+  border: 1px solid var(--coffee-line) !important;
+}
+body[data-coffee-theme] #app .sidebar-brand strong { font-size: 17px !important; font-weight: 700 !important; }
+body[data-coffee-theme] #app .sidebar-brand span { font-size: 11px !important; }
+body[data-coffee-theme] #app .navigation { gap: 5px !important; padding: 2px !important; }
+body[data-coffee-theme] #app .nav-item {
+  min-height: 43px !important;
+  padding: 7px 10px !important;
+  border: 1px solid transparent !important;
+  border-radius: 11px !important;
+  background: transparent !important;
+  color: var(--coffee-muted) !important;
+  box-shadow: none !important;
+  gap: 10px !important;
+}
+body[data-coffee-theme] #app .nav-item span {
+  width: 28px !important;
+  height: 28px !important;
+  border-radius: 9px !important;
+  background: var(--coffee-soft) !important;
+  filter: none !important;
+  opacity: 1 !important;
+}
+body[data-coffee-theme] #app .nav-item em { color: inherit !important; font-size: 13px !important; font-weight: 600 !important; }
+body[data-coffee-theme] #app .nav-item:hover {
+  background: var(--coffee-soft) !important;
+  border-color: var(--coffee-line) !important;
+  color: var(--coffee-ink) !important;
+}
+body[data-coffee-theme] #app .nav-item.active {
+  background: var(--coffee-accent-wash) !important;
+  border-color: var(--coffee-line-strong) !important;
+  color: var(--coffee-accent) !important;
+  box-shadow: inset 3px 0 0 var(--coffee-accent) !important;
+}
+body[data-coffee-theme] #app .nav-item.active span { background: var(--coffee-raised) !important; }
+body[data-coffee-theme] #app .sidebar-bottom { border-top: 1px solid var(--coffee-line) !important; }
+body[data-coffee-theme] #app .status-dot { box-shadow: 0 0 0 3px color-mix(in srgb, var(--coffee-success) 16%, transparent) !important; }
+
+body[data-coffee-theme] #app .header {
+  min-height: 92px;
+  padding: 18px 22px !important;
+  gap: 18px !important;
+}
+body[data-coffee-theme] #app .header h1 { font-size: clamp(23px, 2vw, 29px) !important; font-weight: 700 !important; }
+body[data-coffee-theme] #app .header-actions { display: flex; align-items: center; justify-content: flex-end; gap: 9px !important; flex-wrap: wrap; }
+body[data-coffee-theme] #app .coffee-theme-toggle {
+  white-space: nowrap;
+  border: 1px solid var(--coffee-line-strong) !important;
+  background: var(--coffee-soft) !important;
+  color: var(--coffee-ink) !important;
+  box-shadow: none !important;
+  font-size: 12px;
+  min-height: 40px;
+  padding: 8px 12px;
+}
+body[data-coffee-theme] #app .coffee-theme-toggle:hover {
+  background: var(--coffee-accent-wash) !important;
+  border-color: var(--coffee-accent) !important;
+}
+body[data-coffee-theme] #app .view-mode-wrap {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+body[data-coffee-theme] #app .account {
+  padding: 7px 10px !important;
+  background: var(--coffee-raised) !important;
+  border-color: var(--coffee-line) !important;
+}
+body[data-coffee-theme] #app .account-profile-button:hover .account-info strong { color: var(--coffee-accent) !important; }
+body[data-coffee-theme] #app .account-profile-chevron { color: var(--coffee-accent) !important; }
+
+body[data-coffee-theme] #app .server-bar {
+  padding: 15px 18px !important;
+  background: var(--coffee-raised) !important;
+}
+body[data-coffee-theme] #app .server-icon {
+  background: var(--coffee-soft) !important;
+  border-color: var(--coffee-line) !important;
+  color: var(--coffee-accent) !important;
+}
+body[data-coffee-theme] #app .server-list {
+  background: var(--coffee-raised) !important;
+  border-color: var(--coffee-line-strong) !important;
+  box-shadow: var(--coffee-shadow-raised) !important;
+  backdrop-filter: blur(16px);
+}
+body[data-coffee-theme] #app .server-item { color: var(--coffee-ink) !important; }
+body[data-coffee-theme] #app .server-item:hover { background: var(--coffee-accent-wash) !important; }
+
+body[data-coffee-theme] #app .hero {
+  background: linear-gradient(120deg, var(--coffee-raised), var(--coffee-soft)) !important;
+  border-color: var(--coffee-line) !important;
+}
+body[data-coffee-theme] #app .hero h2 { font-size: clamp(23px, 2vw, 30px) !important; }
+body[data-coffee-theme] #app .hero-icon { filter: saturate(.7); }
+body[data-coffee-theme] #app .stat-card,
+body[data-coffee-theme] #app .quick-card { background: var(--coffee-raised) !important; }
+body[data-coffee-theme] #app .stat-icon,
+body[data-coffee-theme] #app .quick-icon {
+  background: var(--coffee-soft) !important;
+  border-radius: 12px;
+}
+body[data-coffee-theme] #app .quick-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--coffee-line-strong) !important;
+  box-shadow: var(--coffee-shadow-raised) !important;
+}
+body[data-coffee-theme] #app .page-section { gap: 16px !important; }
+body[data-coffee-theme] #app .form-card { padding: clamp(17px, 2vw, 25px) !important; }
+body[data-coffee-theme] #app .form-card h2 { margin-bottom: 12px; font-size: 24px !important; }
+body[data-coffee-theme] #app .input-group { gap: 7px; margin: 13px 0; }
+body[data-coffee-theme] #app .input-group label { font-weight: 650 !important; font-size: 12px !important; }
+body[data-coffee-theme] #app :is(input:not([type="checkbox"]):not([type="radio"]),select,textarea,.view-mode-select) {
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px solid var(--coffee-line-strong) !important;
+  border-radius: 10px !important;
+  background: var(--coffee-raised) !important;
+  color: var(--coffee-ink) !important;
+  caret-color: var(--coffee-ink);
+  box-shadow: none !important;
+}
+body[data-coffee-theme] #app textarea { min-height: 100px; }
+body[data-coffee-theme] #app :is(input,select,textarea)::placeholder { color: var(--coffee-subtle) !important; opacity: 1; }
+body[data-coffee-theme] #app select option { background: var(--coffee-raised); color: var(--coffee-ink); }
+body[data-coffee-theme] #app :is(input,select,textarea,button,a):focus-visible {
+  outline: 3px solid var(--coffee-focus) !important;
+  outline-offset: 2px !important;
+}
+body[data-coffee-theme] #app .button {
+  min-height: 42px;
+  border: 1px solid var(--coffee-accent) !important;
+  border-radius: 10px !important;
+  background: var(--coffee-accent) !important;
+  color: #fffaf2 !important;
+  box-shadow: none !important;
+  font-weight: 700 !important;
+  transition: background .16s ease, border-color .16s ease, transform .16s ease;
+}
+body[data-coffee-theme] #app .button:hover { background: var(--coffee-accent-hover) !important; border-color: var(--coffee-accent-hover) !important; filter: none !important; }
+body[data-coffee-theme] #app .button.secondary {
+  background: var(--coffee-raised) !important;
+  border-color: var(--coffee-line-strong) !important;
+  color: var(--coffee-accent) !important;
+}
+body[data-coffee-theme] #app .button.secondary:hover { background: var(--coffee-accent-wash) !important; }
+body[data-coffee-theme] #app .toggle {
+  color: var(--coffee-ink) !important;
+  border-color: var(--coffee-line) !important;
+}
+body[data-coffee-theme] #app .toggle span { color: var(--coffee-ink) !important; }
+body[data-coffee-theme] #app :is(.form-hint,.customer-plan-meta,.customer-plan-card p) { line-height: 1.55; }
+body[data-coffee-theme] #app .dashboard-draft-bar {
+  background: var(--coffee-raised) !important;
+  border-color: var(--coffee-line-strong) !important;
+  box-shadow: var(--coffee-shadow-raised) !important;
+}
+body[data-coffee-theme] #app :is(.customer-summary-grid>div,.customer-profile-grid>div,.customer-plan-card,.customer-row) {
+  background: var(--coffee-raised) !important;
+  border-color: var(--coffee-line) !important;
+}
+body[data-coffee-theme] #app .customer-storage-track { background: var(--coffee-soft) !important; }
+body[data-coffee-theme] #app .customer-storage-track span { background: var(--coffee-accent) !important; }
+body[data-coffee-theme] #app .customer-current-tag,
+body[data-coffee-theme] #app .customer-feature { background: var(--coffee-accent-wash) !important; color: var(--coffee-accent) !important; }
+body[data-coffee-theme] #app .customer-plan-card.is-current { border-color: var(--coffee-accent) !important; box-shadow: 0 0 0 2px var(--coffee-accent-wash) !important; }
+body[data-coffee-theme] #app .is-error { color: var(--coffee-danger) !important; }
+
+@media (min-width: 961px) {
+  body[data-coffee-theme] #app { align-items: flex-start; }
+  body[data-coffee-theme] #app .sidebar { position: sticky; top: 22px; height: calc(100dvh - 44px); flex: 0 0 252px; }
+  body[data-coffee-theme] #app .main { min-width: 0; }
+  body[data-coffee-theme] #app .stats-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  body[data-coffee-theme] #app .quick-grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  body[data-coffee-theme] #app .config-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 960px) {
+  body[data-coffee-theme] #app { display: flex; flex-direction: column; width: 100%; max-width: 100%; padding: 10px 10px calc(100px + env(safe-area-inset-bottom)) !important; gap: 12px !important; }
+  body[data-coffee-theme] #app .sidebar { width: 100% !important; min-width: 0; height: auto; max-height: none; position: static; padding: 10px !important; border-radius: 15px !important; }
+  body[data-coffee-theme] #app .sidebar-brand { padding: 2px 5px 10px !important; }
+  body[data-coffee-theme] #app .sidebar-bottom { display: none; }
+  body[data-coffee-theme] #app .navigation {
+    position: fixed !important;
+    left: 8px !important;
+    right: 8px !important;
+    bottom: max(8px, env(safe-area-inset-bottom)) !important;
+    z-index: 1000 !important;
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    gap: 5px !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    padding: 7px !important;
+    border: 1px solid var(--coffee-line-strong) !important;
+    border-radius: 15px !important;
+    background: var(--coffee-raised) !important;
+    box-shadow: var(--coffee-shadow-raised) !important;
+    backdrop-filter: blur(16px);
+    scrollbar-width: none;
+  }
+  body[data-coffee-theme] #app .navigation::-webkit-scrollbar { display: none; }
+  body[data-coffee-theme] #app .nav-item {
+    flex: 0 0 58px !important;
+    min-width: 58px !important;
+    min-height: 54px !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    gap: 3px !important;
+    padding: 5px 3px !important;
+    border-radius: 10px !important;
+  }
+  body[data-coffee-theme] #app .nav-item span { width: 23px !important; height: 23px !important; font-size: 13px !important; }
+  body[data-coffee-theme] #app .nav-item em { max-width: 55px; font-size: 10px !important; text-align: center; }
+  body[data-coffee-theme] #app .header { flex-direction: column; align-items: stretch; padding: 15px !important; }
+  body[data-coffee-theme] #app .header-actions { justify-content: flex-start; width: 100%; }
+  body[data-coffee-theme] #app .header-actions > * { max-width: 100%; }
+  body[data-coffee-theme] #app .view-mode-wrap { flex: 1 1 110px; }
+  body[data-coffee-theme] #app .view-mode-select { width: 100%; }
+  body[data-coffee-theme] #app .account { flex: 1 1 100%; min-width: 0; }
+  body[data-coffee-theme] #app .server-bar { flex-direction: column; align-items: stretch; }
+  body[data-coffee-theme] #app .server-selector,
+  body[data-coffee-theme] #app .server-selector .button { width: 100%; }
+  body[data-coffee-theme] #app .server-list { left: 0; right: 0; width: 100%; }
+  body[data-coffee-theme] #app .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  body[data-coffee-theme] #app .quick-grid,
+  body[data-coffee-theme] #app .quick-grid.three,
+  body[data-coffee-theme] #app .config-grid,
+  body[data-coffee-theme] #app .level-role-form { grid-template-columns: minmax(0, 1fr) !important; }
+  body[data-coffee-theme] #app .card { min-width: 0; max-width: 100%; }
+}
+@media (max-width: 520px) {
+  body[data-coffee-theme] #app { padding-left: 8px !important; padding-right: 8px !important; }
+  body[data-coffee-theme] #app .header-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  body[data-coffee-theme] #app .header-actions > * { min-width: 0; }
+  body[data-coffee-theme] #app .coffee-theme-toggle { grid-column: 1 / -1; justify-self: start; }
+  body[data-coffee-theme] #app .header-actions .account { grid-column: 1 / -1; }
+  body[data-coffee-theme] #app .header-actions .button { width: 100%; }
+  body[data-coffee-theme] #app .server-current { align-items: flex-start; }
+  body[data-coffee-theme] #app .stats-grid { gap: 8px; }
+  body[data-coffee-theme] #app .stat-card { min-height: 72px; gap: 8px; padding: 10px !important; }
+  body[data-coffee-theme] #app .stat-icon { width: 34px; height: 34px; }
+  body[data-coffee-theme] #app .hero { align-items: flex-start; }
+  body[data-coffee-theme] #app .hero h2 { font-size: 21px !important; }
+  body[data-coffee-theme] #app .hero-icon { display: none; }
+  body[data-coffee-theme] #app .form-card { padding: 14px 12px !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body[data-coffee-theme] *, body[data-coffee-theme] *::before, body[data-coffee-theme] *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
