@@ -116,3 +116,21 @@ test("Server View inherits the two shared themes and retains its familiar contro
   const serverMarkup = dashboardMarkup.split('<div id="server-view"')[1].split('</div>\n    </div>')[0];
   assert.ok(!/theme-(?:garden|midnight|ash|blurple|amoled|nord|dracula|catppuccin)/i.test(serverMarkup));
 });
+
+const bootloaderMarkup = readText(new URL("../index.html", import.meta.url), "utf8");
+const legacyThemeCleanup = readText(new URL("../theme-boot.js", import.meta.url), "utf8");
+
+test("bootloader loads the shared theme assets after legacy styles", () => {
+  assert.match(bootloaderMarkup, /coffee-shop-dashboard\.css\?v=1/);
+  assert.match(bootloaderMarkup, /coffee-shop-server-view\.css\?v=1/);
+  assert.match(bootloaderMarkup, /coffee-shop-theme\.js\?v=1/);
+  assert.match(bootloaderMarkup, /theme-boot\.js\?v=19/);
+});
+
+test("legacy theme picker stays removed while the compatibility cleanup remains active", () => {
+  for (const selector of ['#theme-fab', '#themes', '#theme-dropdown-wrap', '#dashboard-theme', '#themes-grid']) {
+    assert.ok(!dashboardMarkup.includes(selector), "legacy theme picker remains in dashboard markup: " + selector);
+    assert.ok(legacyThemeCleanup.includes(selector), "legacy cleanup no longer removes " + selector);
+  }
+  assert.ok(!/theme-(?:garden|midnight|ash|blurple|amoled|nord|dracula|catppuccin)/i.test(dashboardMarkup));
+});
