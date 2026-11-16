@@ -233,10 +233,15 @@
       );
       if (window.loadGuildData) await window.loadGuildData();
       else applyFromConfig();
+    return true;
     } catch (e) {
       setStatus("❌ " + (e.message || "Failed"), false);
     }
-  }
+  
+      return false;
+    }
+
+  window.saveAiChatDraft = save;
 
   function wire() {
     ensureNav();
