@@ -292,3 +292,17 @@ test("guest access is in normal dashboard flow and hidden state cannot be overri
   assert.match(menuRedesignCss, /#guest-auth-bar\[hidden\] \{ display:none!important; \}/);
   assert.match(menuRedesignCss, /#guest-auth-bar\.guest-auth-bar \{[\s\S]*?position:relative!important/);
 });
+
+
+test("dashboard loads the scripts that build the grouped menu and mobile drawer", () => {
+  assert.match(html, /refined-dashboard\\.js\\?v=6/);
+  assert.match(html, /dashboard-shell\\.js\\?v=2/);
+  assert.ok(html.indexOf("refined-dashboard.js?v=6") < html.indexOf("</body>"));
+  assert.ok(html.indexOf("dashboard-shell.js?v=2") < html.indexOf("</body>"));
+});
+
+test("café paper surfaces explicitly override the legacy white-text theme", () => {
+  assert.match(menuRedesignCss, /cafe-server-card :is\\(h1,h2,h3,h4,p,span,strong,label,small,div\\)[\\s\\S]*?color:var\\(--menu-ink\\)!important/);
+  assert.match(menuRedesignCss, /coffee-welcome-board :is\\(h1,h2,h3,p,span,strong,small\\)[\\s\\S]*?color:var\\(--menu-ink\\)!important/);
+  assert.match(menuRedesignCss, /grid-template-columns:repeat\\(2,minmax\\(0,1fr\\))!important/);
+});
