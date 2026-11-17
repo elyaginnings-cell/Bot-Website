@@ -129,7 +129,11 @@
         load();
       });
       const settings = nav.querySelector('[data-tab="settings"]');
-      nav.insertBefore(button, settings || null);
+      // The dashboard groups navigation items after initial tab injection.
+      // If this feature loads later, insert into Settings' group instead of
+      // trying to insert a nested node into the navigation root.
+      const destination = settings && settings.parentElement !== nav ? settings.parentElement : nav;
+      destination.insertBefore(button, settings && settings.parentElement === destination ? settings : null);
     }
     if (!$("custom-emojis")) {
       const section = document.createElement("section");
