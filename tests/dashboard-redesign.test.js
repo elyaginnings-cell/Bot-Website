@@ -10,6 +10,7 @@ const serverViewCss = readFileSync(new URL("../coffee-shop-server-view.css", imp
 const sectionCss = (() => { try { return readFileSync(new URL("../dashboard-sections.css", import.meta.url), "utf8"); } catch { return ""; } })();
 const mobileCss = readFileSync(new URL("../coffee-shop-mobile.css", import.meta.url), "utf8");
 const controlCenterCss = readFileSync(new URL("../coffee-shop-control-center.css", import.meta.url), "utf8");
+const menuRedesignCss = readFileSync(new URL("../coffee-shop-menu-redesign.css", import.meta.url), "utf8");
 const navigationScript = readFileSync(new URL("../refined-dashboard.js", import.meta.url), "utf8");
 const featureUiScript = readFileSync(new URL("../features-ui.js", import.meta.url), "utf8");
 const customEmojiScript = readFileSync(new URL("../features-custom-emojis.js", import.meta.url), "utf8");
@@ -270,4 +271,24 @@ test("dashboard follows Paisley's café menu blueprint with menu, workspace, and
   assert.match(controlCenterCss, /\.cafe-server-card/);
   assert.match(controlCenterCss, /#guest-auth-bar/);
   assert.match(bootloader, /coffee-shop-control-center\.css\?v=3/);
+});
+
+
+test("menu redesign uses a clean three-station workspace instead of a framed admin dashboard", () => {
+  assert.match(html, /coffee-shop-menu-redesign\\.css\\?v=1/);
+  assert.match(menuRedesignCss, /grid-template-columns:290px minmax\\(0,1fr\\) 258px/);
+  assert.match(menuRedesignCss, /grid-template-columns:repeat\\(2,minmax\\(0,1fr\\)\\)/);
+  assert.match(menuRedesignCss, /grid-column:2; grid-row:3\\/5/);
+  assert.match(menuRedesignCss, /border:0!important; border-radius:0!important; box-shadow:none!important/);
+  assert.match(menuRedesignCss, /@media \\(max-width:768px\\)/);
+  assert.match(menuRedesignCss, /transform:translateX\\(-110%\\)!important/);
+});
+
+test("guest access is in normal dashboard flow and hidden state cannot be overridden", () => {
+  const headerEnd = html.indexOf("</header>");
+  const bannerStart = html.indexOf('id="guest-auth-bar"');
+  const workspaceStart = html.indexOf('class="content workspace-paper');
+  assert.ok(headerEnd >= 0 && bannerStart > headerEnd && bannerStart < workspaceStart);
+  assert.match(menuRedesignCss, /#guest-auth-bar\\[hidden\\] \\{ display:none!important; \\}/);
+  assert.match(menuRedesignCss, /#guest-auth-bar\\.guest-auth-bar \\{[\\s\\S]*?position:relative!important/);
 });
