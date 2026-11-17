@@ -220,3 +220,15 @@ test("mobile drawer stylesheet loads after legacy responsive rules", () => {
   assert.match(mobileCss, /#guest-signup-open \{\s*grid-column: 1 \/ -1/);
 
 });
+
+
+test("dashboard uses the new café-counter HTML composition, not only theme CSS", () => {
+  assert.match(html, /class="coffee-shop-shell"/);
+  assert.match(html, /class="cafe-brand-plaque"/);
+  assert.match(html, /class="cafe-rail-section"/);
+  assert.match(html, /class="coffee-counter"/);
+  assert.match(html, /class="coffee-counter-greeting"/);
+  assert.match(html, /class="server-ticket coffee-server-ticket"/);
+  assert.match(html, /class="workspace-paper"/);
+  assert.match(html, /class="cafe-wood-trim"/);
+});
