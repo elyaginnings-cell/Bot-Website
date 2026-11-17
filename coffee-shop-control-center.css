@@ -497,3 +497,327 @@ body[data-coffee-theme="dark-roast"] #app .ds-search-field { background:#24180f;
   body[data-coffee-theme="dark-roast"] #app .cafe-stats-grid { grid-template-columns:minmax(0,1fr); }
   body[data-coffee-theme="dark-roast"] #app .cafe-stats-grid .stat-card { border-right:0;border-bottom:1px solid #57402d; }
 }
+
+/* Paisley's café menu composition — one paper menu, three working stations. */
+:root{
+ --menu-wood:#754b34;--menu-wood-deep:#4a2b1b;--menu-paper:#efd4b8;--menu-paper-light:#f8e8d4;
+ --menu-ink:#4a2414;--menu-muted:#8a5e45;--menu-cream:#fff9ee;--menu-rule:#b98b6c;
+ --menu-panel:#f6e2ca;--menu-shadow:0 18px 46px rgba(42,22,12,.18);
+}
+html,body{min-height:100%;background:#795039!important}
+body[data-coffee-theme="cafe"]{background:radial-gradient(ellipse at 50% 0%,#a97856 0,#795039 62%,#603c2a 100%)!important;color:var(--menu-ink)}
+body[data-coffee-theme="cafe"] #app.coffee-shop-shell{
+ display:grid!important;grid-template-columns:minmax(340px,1.02fr) minmax(410px,1.2fr) minmax(245px,.72fr);
+ grid-template-rows:auto minmax(0,1fr);gap:18px!important;align-items:start;
+ width:min(1660px,calc(100% - 42px));max-width:none!important;min-height:calc(100vh - 40px);
+ margin:20px auto!important;padding:22px!important;position:relative;isolation:isolate;
+ border:8px solid var(--menu-cream);border-radius:28px;
+ background:linear-gradient(145deg,#f4dfc8 0%,#ecd1b5 52%,#f3dfc9 100%);
+ box-shadow:0 0 0 2px rgba(255,248,236,.55),0 22px 60px rgba(37,17,8,.28),inset 0 0 0 1px rgba(117,73,43,.15);
+}
+body[data-coffee-theme="cafe"] #app.coffee-shop-shell:before{
+ content:"";position:absolute;inset:-15px;z-index:-1;border:7px solid rgba(255,249,238,.96);
+ border-radius:34px;pointer-events:none;filter:drop-shadow(0 2px 2px rgba(44,23,13,.18));
+}
+body[data-coffee-theme="cafe"] #app>.main.coffee-main{display:contents!important}
+body[data-coffee-theme="cafe"] #app .coffee-counter{
+ grid-column:1/-1;grid-row:1;min-height:106px;margin:0;padding:5px 8px 18px;
+ display:flex;align-items:center;justify-content:space-between;gap:18px;
+ border:0;border-bottom:2px solid var(--menu-rule);border-radius:0;background:transparent;
+ color:var(--menu-ink);box-shadow:none;
+}
+body[data-coffee-theme="cafe"] #app .coffee-counter:after{display:none}
+body[data-coffee-theme="cafe"] #app .coffee-counter-greeting{
+ display:flex;align-items:center;gap:18px;min-width:0;
+}
+body[data-coffee-theme="cafe"] #app .coffee-shop-wordmark{
+ margin:0;color:var(--menu-ink);font-family:"Marker Felt","Comic Sans MS","Trebuchet MS",cursive;
+ font-size:clamp(40px,5.2vw,72px);font-weight:1000;line-height:.95;letter-spacing:-.065em;
+ text-transform:uppercase;text-shadow:1px 2px 0 rgba(255,250,239,.55);
+}
+body[data-coffee-theme="cafe"] #app .coffee-shop-tagline{margin:7px 0 0;color:var(--menu-muted);font-size:12px;font-weight:750;letter-spacing:.11em;text-transform:uppercase}
+body[data-coffee-theme="cafe"] #app .dashboard-menu-toggle{
+ display:none;width:42px;height:42px;border:1px solid var(--menu-rule);border-radius:50%;
+ background:var(--menu-cream);color:var(--menu-ink);font-size:20px;
+}
+body[data-coffee-theme="cafe"] #app .header-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+body[data-coffee-theme="cafe"] #app .header-actions .button,
+body[data-coffee-theme="cafe"] #app .header-actions select{
+ min-height:38px;border:1px solid #b98c6d;border-radius:8px;background:#fff7eb;color:#4a2819;
+ box-shadow:0 2px 0 rgba(94,52,29,.12);font-weight:750;
+}
+body[data-coffee-theme="cafe"] #app .account-profile-button{color:var(--menu-ink)}
+body[data-coffee-theme="cafe"] #app .cafe-menu-board{
+ grid-column:1;grid-row:2;position:relative;top:auto;width:auto;height:auto;min-height:590px;
+ padding:22px 20px 18px;display:flex;flex-direction:column;gap:17px;overflow:visible;
+ color:var(--menu-ink);border:2px solid rgba(157,104,70,.32);border-radius:18px;
+ background:linear-gradient(160deg,#f5dfc6,#e9c9a9 100%);
+ box-shadow:inset 0 0 0 5px rgba(255,249,238,.5),inset 0 0 22px rgba(115,67,39,.07),0 9px 22px rgba(82,45,25,.12);
+}
+body[data-coffee-theme="cafe"] #app .cafe-menu-heading{display:flex;flex-direction:column;gap:3px;padding:0 5px 8px}
+body[data-coffee-theme="cafe"] #app .cafe-menu-heading strong{
+ color:var(--menu-ink);font:900 clamp(27px,2.4vw,36px)/1 "Marker Felt","Comic Sans MS",cursive;
+ letter-spacing:.01em;text-transform:uppercase;
+}
+body[data-coffee-theme="cafe"] #app .cafe-menu-kicker{color:#966b50;font-size:9px;font-weight:900;letter-spacing:.2em;text-transform:uppercase}
+body[data-coffee-theme="cafe"] #app .cafe-menu-rule{display:block;width:100%;height:3px;margin-top:8px;border-radius:100%;background:#74452f}
+body[data-coffee-theme="cafe"] #app .navigation{
+ flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+ grid-template-rows:auto minmax(0,1fr) auto;align-content:start;gap:18px 22px;padding:0 2px;
+}
+body[data-coffee-theme="cafe"] #app .ds-nav-search{grid-column:1/-1;grid-row:1;margin:0}
+body[data-coffee-theme="cafe"] #app .ds-nav-search label{color:#916449;font-size:9px;font-weight:900;letter-spacing:.16em}
+body[data-coffee-theme="cafe"] #app .ds-search-field{height:35px;border:1px solid #c59b7b;border-radius:8px;background:rgba(255,250,242,.55);color:#76513a}
+body[data-coffee-theme="cafe"] #app .ds-search-field input{color:#4a2819}
+body[data-coffee-theme="cafe"] #app .ds-nav-group{min-width:0}
+body[data-coffee-theme="cafe"] #app .ds-nav-group[data-group="overview"]{grid-column:1/-1;grid-row:2}
+body[data-coffee-theme="cafe"] #app .ds-nav-group[data-group="systems"]{grid-column:1;grid-row:3}
+body[data-coffee-theme="cafe"] #app .ds-nav-group[data-group="workspace"]{grid-column:2;grid-row:3}
+body[data-coffee-theme="cafe"] #app .ds-nav-group[data-group="server"]{grid-column:2;grid-row:4}
+body[data-coffee-theme="cafe"] #app .ds-nav-group-toggle{
+ width:100%;min-height:40px;padding:0 2px 8px;display:flex;align-items:center;gap:5px;
+ border:0;border-bottom:3px solid #70432e;border-radius:0;background:transparent;color:#4b2818;
+ text-align:left;font:900 clamp(17px,1.6vw,23px)/1.1 "Marker Felt","Comic Sans MS",cursive;
+}
+body[data-coffee-theme="cafe"] #app .ds-nav-group-label{white-space:normal}
+body[data-coffee-theme="cafe"] #app .ds-nav-group-meta{margin-left:auto;color:#9a7258;font:700 10px "Trebuchet MS",sans-serif}
+body[data-coffee-theme="cafe"] #app .ds-nav-chevron{color:#81563e;font:700 14px "Trebuchet MS",sans-serif}
+body[data-coffee-theme="cafe"] #app .ds-nav-group-items{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:2px 9px;padding-top:7px;
+}
+body[data-coffee-theme="cafe"] #app .ds-nav-group[data-group="workspace"] .ds-nav-group-items,
+body[data-coffee-theme="cafe"] #app .ds-nav-group[data-group="server"] .ds-nav-group-items{grid-template-columns:1fr}
+body[data-coffee-theme="cafe"] #app .ds-nav-group[data-group="overview"] .ds-nav-group-items{grid-template-columns:1fr}
+body[data-coffee-theme="cafe"] #app .navigation .nav-item{
+ min-width:0;min-height:37px;padding:6px 4px;display:flex;align-items:center;gap:5px;
+ border:0;border-radius:7px;background:transparent;color:#875a41;text-align:left;
+ font:800 clamp(14px,1.18vw,18px)/1.12 "Marker Felt","Comic Sans MS",cursive;
+ transition:background .15s ease,color .15s ease;
+}
+body[data-coffee-theme="cafe"] #app .navigation .nav-item span{display:none}
+body[data-coffee-theme="cafe"] #app .navigation .nav-item em{font-style:normal;overflow-wrap:anywhere}
+body[data-coffee-theme="cafe"] #app .navigation .nav-item:hover{background:rgba(255,250,241,.48);color:#4d2b1a}
+body[data-coffee-theme="cafe"] #app .navigation .nav-item.active{
+ color:#fff7ed;background:#6c402b;box-shadow:0 2px 0 rgba(61,31,17,.16);padding-inline:9px;
+}
+body[data-coffee-theme="cafe"] #app .cafe-rail-footer{margin-top:auto;padding:12px 5px 0;border-top:1px solid rgba(110,67,43,.25)}
+body[data-coffee-theme="cafe"] #app .cafe-rail-footer .connection-status{color:#79533b;font-size:10px;font-weight:750}
+body[data-coffee-theme="cafe"] #app .cafe-workspace-board{
+ grid-column:2;grid-row:2;min-width:0;width:100%;margin:0;padding:22px 21px 26px;
+ border:2px solid rgba(157,104,70,.3);border-radius:18px;
+ background:rgba(255,249,239,.72);box-shadow:inset 0 0 0 4px rgba(255,255,255,.4),0 9px 22px rgba(82,45,25,.1);
+}
+body[data-coffee-theme="cafe"] #app .workspace-paper-top{margin-bottom:18px}
+body[data-coffee-theme="cafe"] #app .paper-stamp{font-size:8px;letter-spacing:.12em}
+body[data-coffee-theme="cafe"] #app .page-heading{margin-bottom:18px;padding-bottom:13px;border-color:#d8b89b}
+body[data-coffee-theme="cafe"] #app .page-heading h2{font:900 clamp(24px,2.2vw,31px)/1.12 "Marker Felt","Comic Sans MS",cursive;color:#4a2819}
+body[data-coffee-theme="cafe"] #app .page-heading p{color:#815a42;font-size:13px;line-height:1.55}
+body[data-coffee-theme="cafe"] #app .coffee-welcome-board{
+ min-height:185px;grid-template-columns:minmax(0,1fr) 125px;gap:10px;padding:22px;
+ border:2px solid #74472f;border-bottom:5px solid #58321f;border-radius:12px;
+ background:linear-gradient(145deg,#70452f,#54301f);box-shadow:inset 0 1px rgba(255,255,255,.13),0 7px 15px rgba(69,38,22,.13);
+}
+body[data-coffee-theme="cafe"] #app .welcome-board-copy h2{font:900 clamp(22px,2vw,29px)/1.1 "Marker Felt","Comic Sans MS",cursive}
+body[data-coffee-theme="cafe"] #app .welcome-board-copy p{font-size:12px;line-height:1.5}
+body[data-coffee-theme="cafe"] #app .welcome-board-art{min-height:120px}
+body[data-coffee-theme="cafe"] #app .coffee-cup{width:82px;height:76px;font-size:43px}
+body[data-coffee-theme="cafe"] #app .cup-saucer{width:118px}
+body[data-coffee-theme="cafe"] #app .overview-ledger,
+body[data-coffee-theme="cafe"] #app .cafe-shortcuts{margin-top:20px}
+body[data-coffee-theme="cafe"] #app .ledger-heading h3{font:900 19px "Marker Felt","Comic Sans MS",cursive;color:#4b2919}
+body[data-coffee-theme="cafe"] #app .quick-grid{display:grid;grid-template-columns:1fr;gap:9px}
+body[data-coffee-theme="cafe"] #app .cafe-shortcut{min-height:70px;padding:12px;border:1px solid #d4b18f;border-left:4px solid #8c5c3e;border-radius:9px;background:#fff8ed;box-shadow:none}
+body[data-coffee-theme="cafe"] #app .cafe-shortcut strong{color:#4b2919;font-size:13px}
+body[data-coffee-theme="cafe"] #app .cafe-shortcut p{color:#805941;font-size:11px}
+body[data-coffee-theme="cafe"] #app .cafe-server-card{
+ grid-column:3;grid-row:2;min-width:0;padding:20px 16px 18px;
+ border:2px solid rgba(157,104,70,.35);border-radius:18px;
+ background:#f0d7bd;box-shadow:inset 0 0 0 4px rgba(255,249,239,.35),0 9px 22px rgba(82,45,25,.12);
+}
+body[data-coffee-theme="cafe"] #app .cafe-server-card-heading h2{
+ margin:5px 0 0;color:#4a2819;font:900 24px/1.1 "Marker Felt","Comic Sans MS",cursive;
+}
+body[data-coffee-theme="cafe"] #app .cafe-server-card .server-ticket{
+ display:flex;flex-direction:column;align-items:stretch;gap:13px;margin:15px 0;padding:13px;
+ border:0;border-radius:12px;background:#4b2819;color:#fff4e5;box-shadow:none;
+}
+body[data-coffee-theme="cafe"] #app .cafe-server-card .server-current{align-items:center;gap:10px}
+body[data-coffee-theme="cafe"] #app .cafe-server-card .server-icon{width:42px;height:42px;flex:0 0 42px;border:1px solid #c89b73;border-radius:50%;background:#6e432c;color:#fff1df}
+body[data-coffee-theme="cafe"] #app .cafe-server-card .server-current .label{color:#d5b494;font-size:8px;letter-spacing:.16em}
+body[data-coffee-theme="cafe"] #app .cafe-server-card .server-current strong{display:block;color:#fff4e5;font:800 16px "Marker Felt","Comic Sans MS",cursive;overflow-wrap:anywhere}
+body[data-coffee-theme="cafe"] #app .cafe-server-card .service-ticket-caption{color:#d4b394;font-size:10px}
+body[data-coffee-theme="cafe"] #app .cafe-server-card .server-selector .button{width:100%;min-height:36px;border:1px solid #d2aa83;border-radius:7px;background:#f0d7bd;color:#4b2819;font-weight:850}
+body[data-coffee-theme="cafe"] #app .cafe-server-stats-heading{margin:18px 0 9px;color:#81563d;font:900 12px "Marker Felt","Comic Sans MS",cursive;letter-spacing:.12em}
+body[data-coffee-theme="cafe"] #app .cafe-server-card .cafe-stats-grid{display:grid;grid-template-columns:1fr;gap:7px;border:0;background:transparent;overflow:visible}
+body[data-coffee-theme="cafe"] #app .cafe-server-card .stat-card{
+ min-height:60px;display:flex;align-items:center;gap:10px;padding:10px 12px;
+ border:1px solid #d2b08e;border-radius:9px;background:#fff7eb;box-shadow:none;
+}
+body[data-coffee-theme="cafe"] #app .cafe-server-card .stat-icon{width:32px;height:32px;flex:0 0 32px;display:grid;place-items:center;border:1px solid #d2b08e;border-radius:50%;background:#eed7bd;color:#70452d}
+body[data-coffee-theme="cafe"] #app .cafe-server-card .label{display:block;color:#8a634a;font-size:8px;font-weight:900;letter-spacing:.12em;text-transform:uppercase}
+body[data-coffee-theme="cafe"] #app .cafe-server-card .stat-card strong{display:block;color:#4b2819;font:900 17px "Marker Felt","Comic Sans MS",cursive;overflow-wrap:anywhere}
+body[data-coffee-theme="cafe"] #app .cafe-server-card-note{margin:14px 3px 0;color:#8a644b;font-size:10px;line-height:1.5}
+body[data-coffee-theme="cafe"] #app .cafe-server-card .server-list{max-height:260px;overflow:auto}
+body[data-coffee-theme="cafe"] #app .cafe-menu-board .ds-nav-group[hidden],
+body[data-coffee-theme="cafe"] #app .cafe-menu-board .nav-item[hidden]{display:none!important}
+body[data-coffee-theme="cafe"] #app .cafe-workspace-board .settings-layout{display:grid;grid-template-columns:1fr;gap:13px}
+body[data-coffee-theme="cafe"] #app .cafe-workspace-board .settings-panel,
+body[data-coffee-theme="cafe"] #app .cafe-workspace-board .form-card{
+ min-width:0;padding:17px;border:1px solid #d6b899;border-top:3px solid #956346;border-radius:10px;background:#fff9ef;box-shadow:0 3px 9px rgba(87,51,29,.06)
+}
+body[data-coffee-theme="cafe"] #app .cafe-workspace-board input:not([type=checkbox]):not([type=radio]),
+body[data-coffee-theme="cafe"] #app .cafe-workspace-board select,
+body[data-coffee-theme="cafe"] #app .cafe-workspace-board textarea{max-width:100%;border:1px solid #cba98a;border-radius:7px;background:#fffdf8;color:#4a2819}
+body[data-coffee-theme="cafe"] #app .cafe-workspace-board .button{border:1px solid #805337;border-radius:7px;background:#75482f;color:#fff7ec}
+body[data-coffee-theme="cafe"] #app .cafe-workspace-board .button.secondary{border-color:#c7a382;background:#f6e4d0;color:#583521}
+body[data-coffee-theme="cafe"] #app .cafe-workspace-board .settings-group{border-color:#e2c8ad}
+body[data-coffee-theme="cafe"] #app .cafe-workspace-board .settings-group-heading strong{color:#4a2819}
+body[data-coffee-theme="cafe"] #app .cafe-workspace-board .settings-group-heading span,
+body[data-coffee-theme="cafe"] #app .cafe-workspace-board .form-hint{color:#805941}
+body[data-coffee-theme="cafe"] #app .dashboard-nav-backdrop{z-index:39}
+@media(max-width:1180px) and (min-width:769px){
+ body[data-coffee-theme="cafe"] #app.coffee-shop-shell{grid-template-columns:minmax(260px,.82fr) minmax(0,1.18fr);gap:14px!important}
+ body[data-coffee-theme="cafe"] #app .coffee-counter{grid-column:1/-1}
+ body[data-coffee-theme="cafe"] #app .cafe-menu-board{grid-column:1;grid-row:2 / span 2}
+ body[data-coffee-theme="cafe"] #app .cafe-server-card{grid-column:2;grid-row:2}
+ body[data-coffee-theme="cafe"] #app .cafe-workspace-board{grid-column:2;grid-row:3}
+}
+@media(max-width:900px) and (min-width:769px){
+ body[data-coffee-theme="cafe"] #app.coffee-shop-shell{width:calc(100% - 24px);padding:15px!important}
+ body[data-coffee-theme="cafe"] #app .cafe-menu-board{padding:16px 13px}
+ body[data-coffee-theme="cafe"] #app .navigation{gap:13px 12px}
+ body[data-coffee-theme="cafe"] #app .ds-nav-group-toggle{font-size:18px}
+ body[data-coffee-theme="cafe"] #app .navigation .nav-item{font-size:14px}
+ body[data-coffee-theme="cafe"] #app .cafe-server-card{padding:14px 11px}
+}
+@media(max-width:768px){
+ body[data-coffee-theme="cafe"] #app.coffee-shop-shell{
+  display:grid!important;grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto auto;
+  width:calc(100% - 20px);min-height:calc(100vh - 20px);margin:10px auto!important;padding:13px!important;gap:12px!important;
+  border-width:6px;border-radius:21px;
+ }
+ body[data-coffee-theme="cafe"] #app.coffee-shop-shell:before{inset:-10px;border-width:5px;border-radius:26px}
+ body[data-coffee-theme="cafe"] #app>.main.coffee-main{display:contents!important}
+ body[data-coffee-theme="cafe"] #app .coffee-counter{grid-column:1;grid-row:1;min-height:76px;padding:2px 2px 12px;align-items:flex-start;flex-wrap:wrap}
+ body[data-coffee-theme="cafe"] #app .coffee-counter-greeting{gap:10px}
+ body[data-coffee-theme="cafe"] #app .dashboard-menu-toggle{display:inline-grid;place-items:center;flex:0 0 40px}
+ body[data-coffee-theme="cafe"] #app .coffee-shop-wordmark{font-size:clamp(32px,9vw,46px)}
+ body[data-coffee-theme="cafe"] #app .coffee-shop-tagline{font-size:9px;letter-spacing:.06em}
+ body[data-coffee-theme="cafe"] #app .header-actions{width:100%;justify-content:flex-start;gap:6px}
+ body[data-coffee-theme="cafe"] #app .header-actions .button,
+ body[data-coffee-theme="cafe"] #app .header-actions select{min-height:34px;font-size:11px}
+ body[data-coffee-theme="cafe"] #app .cafe-menu-board{
+  position:fixed!important;top:0!important;left:0!important;bottom:0!important;z-index:40!important;
+  width:min(340px,88vw)!important;height:100dvh!important;min-height:0!important;max-height:100dvh!important;
+  padding:20px 17px!important;overflow-y:auto!important;border-radius:0 18px 18px 0!important;
+  transform:translateX(-110%)!important;transition:transform .22s ease!important;box-shadow:12px 0 36px rgba(41,21,12,.3)!important;
+ }
+ body[data-coffee-theme="cafe"].dashboard-nav-open #app .cafe-menu-board{transform:translateX(0)!important}
+ body[data-coffee-theme="cafe"] #app .navigation{grid-template-columns:1fr 1fr;gap:14px 15px}
+ body[data-coffee-theme="cafe"] #app .ds-nav-group-toggle{font-size:19px}
+ body[data-coffee-theme="cafe"] #app .navigation .nav-item{min-height:36px;font-size:15px}
+ body[data-coffee-theme="cafe"] #app .cafe-server-card{grid-column:1;grid-row:2;padding:15px}
+ body[data-coffee-theme="cafe"] #app .cafe-server-card .server-ticket{display:grid;grid-template-columns:minmax(0,1fr) minmax(110px,.7fr);align-items:center}
+ body[data-coffee-theme="cafe"] #app .cafe-server-card .server-selector .button{white-space:normal}
+ body[data-coffee-theme="cafe"] #app .cafe-server-card .cafe-stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ body[data-coffee-theme="cafe"] #app .cafe-workspace-board{grid-column:1;grid-row:3;padding:15px}
+ body[data-coffee-theme="cafe"] #app .coffee-welcome-board{grid-template-columns:minmax(0,1fr) 92px;padding:17px}
+ body[data-coffee-theme="cafe"] #app .welcome-board-art{min-height:90px}
+ body[data-coffee-theme="cafe"] #app .coffee-cup{width:62px;height:59px;font-size:32px}
+ body[data-coffee-theme="cafe"] #app .cup-saucer{width:92px}
+ body[data-coffee-theme="cafe"] #app .board-corner-mark{display:none}
+}
+@media(max-width:480px){
+ body[data-coffee-theme="cafe"] #app.coffee-shop-shell{width:calc(100% - 14px);margin:7px auto!important;padding:10px!important;gap:9px!important}
+ body[data-coffee-theme="cafe"] #app .coffee-counter{gap:8px}
+ body[data-coffee-theme="cafe"] #app .coffee-counter-greeting{width:100%}
+ body[data-coffee-theme="cafe"] #app .header-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+ body[data-coffee-theme="cafe"] #app .header-actions .account{grid-column:1/-1}
+ body[data-coffee-theme="cafe"] #app .cafe-server-card .server-ticket{grid-template-columns:1fr}
+ body[data-coffee-theme="cafe"] #app .cafe-server-card .cafe-stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ body[data-coffee-theme="cafe"] #app .cafe-server-card .stat-card{min-height:56px;padding:8px}
+ body[data-coffee-theme="cafe"] #app .cafe-server-card .stat-card strong{font-size:15px}
+ body[data-coffee-theme="cafe"] #app .coffee-welcome-board{grid-template-columns:1fr}
+ body[data-coffee-theme="cafe"] #app .welcome-board-art{display:none}
+ body[data-coffee-theme="cafe"] #app .page-heading h2{font-size:23px}
+}
+body[data-coffee-theme="dark-roast"]{background:radial-gradient(ellipse at 50% 0%,#49301f 0,#241810 65%,#170f0b 100%)!important;color:#ead8bf}
+body[data-coffee-theme="dark-roast"] #app.coffee-shop-shell{
+ display:grid!important;grid-template-columns:minmax(340px,1.02fr) minmax(410px,1.2fr) minmax(245px,.72fr);
+ grid-template-rows:auto minmax(0,1fr);gap:18px!important;align-items:start;width:min(1660px,calc(100% - 42px));
+ max-width:none!important;min-height:calc(100vh - 40px);margin:20px auto!important;padding:22px!important;
+ border:8px solid #e4cbb0;border-radius:28px;background:linear-gradient(145deg,#302015,#3b281c 55%,#2a1b12);
+ box-shadow:0 0 0 2px rgba(228,203,176,.3),0 22px 60px rgba(0,0,0,.38);
+}
+body[data-coffee-theme="dark-roast"] #app>.main.coffee-main{display:contents!important}
+body[data-coffee-theme="dark-roast"] #app .coffee-counter{grid-column:1/-1;grid-row:1;min-height:106px;margin:0;padding:5px 8px 18px;display:flex;align-items:center;justify-content:space-between;gap:18px;border:0;border-bottom:2px solid #8b6548;border-radius:0;background:transparent;color:#f4dfc7;box-shadow:none}
+body[data-coffee-theme="dark-roast"] #app .coffee-counter:after{display:none}
+body[data-coffee-theme="dark-roast"] #app .coffee-shop-wordmark{margin:0;color:#f4dfc7;font:1000 clamp(40px,5.2vw,72px)/.95 "Marker Felt","Comic Sans MS",cursive;letter-spacing:-.065em;text-transform:uppercase}
+body[data-coffee-theme="dark-roast"] #app .coffee-shop-tagline{margin:7px 0 0;color:#c8a88b;font-size:12px;font-weight:750;letter-spacing:.11em;text-transform:uppercase}
+body[data-coffee-theme="dark-roast"] #app .dashboard-menu-toggle{display:none}
+body[data-coffee-theme="dark-roast"] #app .cafe-menu-board{grid-column:1;grid-row:2;position:relative;top:auto;width:auto;height:auto;min-height:590px;padding:22px 20px 18px;display:flex;flex-direction:column;gap:17px;color:#f0d8bd;border:2px solid #6f4d35;border-radius:18px;background:linear-gradient(160deg,#49301f,#392419);box-shadow:inset 0 0 0 5px rgba(255,239,216,.04),0 9px 22px rgba(0,0,0,.22)}
+body[data-coffee-theme="dark-roast"] #app .cafe-menu-heading strong,
+body[data-coffee-theme="dark-roast"] #app .ds-nav-group-toggle,
+body[data-coffee-theme="dark-roast"] #app .cafe-server-card-heading h2,
+body[data-coffee-theme="dark-roast"] #app .page-heading h2{color:#f3dfc8;font-family:"Marker Felt","Comic Sans MS",cursive}
+body[data-coffee-theme="dark-roast"] #app .cafe-menu-kicker,
+body[data-coffee-theme="dark-roast"] #app .ds-nav-group-meta{color:#c29b79}
+body[data-coffee-theme="dark-roast"] #app .cafe-menu-rule,
+body[data-coffee-theme="dark-roast"] #app .ds-nav-group-toggle{border-color:#b18461}
+body[data-coffee-theme="dark-roast"] #app .ds-search-field{background:#2b1c13;border-color:#806047}
+body[data-coffee-theme="dark-roast"] #app .ds-search-field input{color:#f0dcc5}
+body[data-coffee-theme="dark-roast"] #app .navigation .nav-item{color:#c9a587;font:800 clamp(14px,1.18vw,18px)/1.12 "Marker Felt","Comic Sans MS",cursive}
+body[data-coffee-theme="dark-roast"] #app .navigation .nav-item.active{background:#b8875f;color:#28190f}
+body[data-coffee-theme="dark-roast"] #app .cafe-workspace-board{grid-column:2;grid-row:2;min-width:0;width:100%;margin:0;padding:22px 21px 26px;border:2px solid #61452f;border-radius:18px;background:#302116;box-shadow:inset 0 0 0 4px rgba(255,239,216,.025),0 9px 22px rgba(0,0,0,.22)}
+body[data-coffee-theme="dark-roast"] #app .page-heading{border-color:#62452f}
+body[data-coffee-theme="dark-roast"] #app .page-heading p,
+body[data-coffee-theme="dark-roast"] #app .ledger-note{color:#c3a181}
+body[data-coffee-theme="dark-roast"] #app .coffee-welcome-board{border-color:#8c6344;background:linear-gradient(145deg,#4c3020,#382216)}
+body[data-coffee-theme="dark-roast"] #app .cafe-server-card{grid-column:3;grid-row:2;padding:20px 16px 18px;border:2px solid #65482f;border-radius:18px;background:#39271b;box-shadow:inset 0 0 0 4px rgba(255,239,216,.025),0 9px 22px rgba(0,0,0,.22)}
+body[data-coffee-theme="dark-roast"] #app .cafe-server-card .server-ticket{display:flex;flex-direction:column;align-items:stretch;gap:13px;margin:15px 0;padding:13px;border:0;border-radius:12px;background:#1e130d;color:#fff0dc}
+body[data-coffee-theme="dark-roast"] #app .cafe-server-card .server-current strong,
+body[data-coffee-theme="dark-roast"] #app .cafe-server-card .stat-card strong{color:#f4dfc7;font-family:"Marker Felt","Comic Sans MS",cursive}
+body[data-coffee-theme="dark-roast"] #app .cafe-server-card .stat-card{background:#4a3222;border-color:#6b4c34}
+body[data-coffee-theme="dark-roast"] #app .cafe-server-card .label,
+body[data-coffee-theme="dark-roast"] #app .cafe-server-card-note{color:#c4a181}
+body[data-coffee-theme="dark-roast"] #app .cafe-workspace-board .settings-panel,
+body[data-coffee-theme="dark-roast"] #app .cafe-workspace-board .form-card{background:#3a281c;border-color:#674a33}
+body[data-coffee-theme="dark-roast"] #app .cafe-workspace-board input:not([type=checkbox]):not([type=radio]),
+body[data-coffee-theme="dark-roast"] #app .cafe-workspace-board select,
+body[data-coffee-theme="dark-roast"] #app .cafe-workspace-board textarea{background:#261a12;border-color:#72543b;color:#f1dfcb}
+@media(max-width:1180px) and (min-width:769px){
+ body[data-coffee-theme="dark-roast"] #app.coffee-shop-shell{grid-template-columns:minmax(260px,.82fr) minmax(0,1.18fr);gap:14px!important}
+ body[data-coffee-theme="dark-roast"] #app .coffee-counter{grid-column:1/-1}
+ body[data-coffee-theme="dark-roast"] #app .cafe-menu-board{grid-column:1;grid-row:2/span 2}
+ body[data-coffee-theme="dark-roast"] #app .cafe-server-card{grid-column:2;grid-row:2}
+ body[data-coffee-theme="dark-roast"] #app .cafe-workspace-board{grid-column:2;grid-row:3}
+}
+@media(max-width:768px){
+ body[data-coffee-theme="dark-roast"] #app.coffee-shop-shell{display:grid!important;grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto auto;width:calc(100% - 20px);margin:10px auto!important;padding:13px!important;gap:12px!important;border-width:6px;border-radius:21px}
+ body[data-coffee-theme="dark-roast"] #app>.main.coffee-main{display:contents!important}
+ body[data-coffee-theme="dark-roast"] #app .coffee-counter{grid-column:1;grid-row:1;min-height:76px;padding:2px 2px 12px;flex-wrap:wrap;border-bottom:2px solid #8b6548}
+ body[data-coffee-theme="dark-roast"] #app .dashboard-menu-toggle{display:inline-grid;place-items:center;flex:0 0 40px;background:#302015;border-color:#9a7454;color:#f3dfc8}
+ body[data-coffee-theme="dark-roast"] #app .coffee-shop-wordmark{font-size:clamp(32px,9vw,46px)}
+ body[data-coffee-theme="dark-roast"] #app .coffee-shop-tagline{font-size:9px}
+ body[data-coffee-theme="dark-roast"] #app .header-actions{width:100%;justify-content:flex-start}
+ body[data-coffee-theme="dark-roast"] #app .cafe-menu-board{position:fixed!important;top:0!important;left:0!important;bottom:0!important;z-index:40!important;width:min(340px,88vw)!important;height:100dvh!important;min-height:0!important;max-height:100dvh!important;padding:20px 17px!important;overflow-y:auto!important;border-radius:0 18px 18px 0!important;transform:translateX(-110%)!important;transition:transform .22s ease!important}
+ body[data-coffee-theme="dark-roast"].dashboard-nav-open #app .cafe-menu-board{transform:translateX(0)!important}
+ body[data-coffee-theme="dark-roast"] #app .cafe-server-card{grid-column:1;grid-row:2;padding:15px}
+ body[data-coffee-theme="dark-roast"] #app .cafe-server-card .server-ticket{display:grid;grid-template-columns:minmax(0,1fr) minmax(110px,.7fr);align-items:center}
+ body[data-coffee-theme="dark-roast"] #app .cafe-server-card .cafe-stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ body[data-coffee-theme="dark-roast"] #app .cafe-workspace-board{grid-column:1;grid-row:3;padding:15px}
+}
+@media(max-width:480px){
+ body[data-coffee-theme="dark-roast"] #app.coffee-shop-shell{width:calc(100% - 14px);margin:7px auto!important;padding:10px!important;gap:9px!important}
+ body[data-coffee-theme="dark-roast"] #app .coffee-counter-greeting{width:100%}
+ body[data-coffee-theme="dark-roast"] #app .header-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+ body[data-coffee-theme="dark-roast"] #app .header-actions .account{grid-column:1/-1}
+ body[data-coffee-theme="dark-roast"] #app .cafe-server-card .server-ticket{grid-template-columns:1fr}
+ body[data-coffee-theme="dark-roast"] #app .cafe-server-card .cafe-stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ body[data-coffee-theme="dark-roast"] #app .coffee-welcome-board{grid-template-columns:1fr}
+ body[data-coffee-theme="dark-roast"] #app .welcome-board-art{display:none}
+}
+@media(prefers-reduced-motion:reduce){
+ body[data-coffee-theme] #app .cafe-menu-board,
+ body[data-coffee-theme] #app .navigation .nav-item{transition:none!important}
+}
