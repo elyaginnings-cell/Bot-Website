@@ -388,3 +388,112 @@ body[data-coffee-theme="cafe"] #app .ds-nav-group-items[hidden] { display:none!i
 body[data-coffee-theme="cafe"] #app .ds-nav-group.has-active > .ds-nav-group-toggle { color:#f5d8ad;border-bottom-color:rgba(230,198,156,.48); }
 body[data-coffee-theme="cafe"] #app .navigation .nav-item[hidden] { display:none!important; }
 body[data-coffee-theme="cafe"] #app .cafe-wood-trim { box-shadow:inset 0 0 0 2px rgba(216,183,137,.12),inset 0 0 0 4px rgba(35,21,13,.16),0 5px 12px rgba(0,0,0,.2); }
+
+/* Dark Roast keeps the same carved-counter identity with a low-light finish. */
+body[data-coffee-theme="dark-roast"] {
+  background:radial-gradient(ellipse at 12% 8%,rgba(158,112,69,.12),transparent 26rem),linear-gradient(135deg,#211811,#302218 52%,#1b140f)!important;
+  color:#ead8bf;
+}
+body[data-coffee-theme="dark-roast"] #app.coffee-shop-shell { display:grid!important;grid-template-columns:276px minmax(0,1fr);gap:0!important;max-width:none!important;min-height:100vh;padding:0!important;margin:0!important;background:transparent; }
+body[data-coffee-theme="dark-roast"] #app .cafe-wood-rail {
+  position:sticky;top:0;height:100vh;min-height:100vh;width:276px;padding:22px 16px 18px;
+  display:flex;flex-direction:column;gap:24px;overflow-y:auto;color:#f8eddd;border-right:5px solid #170f0a;
+  background:repeating-linear-gradient(2deg,rgba(255,255,255,.018) 0 1px,transparent 2px 12px),linear-gradient(115deg,#352319,#49301f 45%,#2d1d14);
+  box-shadow:inset -8px 0 18px rgba(0,0,0,.25),7px 0 24px rgba(0,0,0,.22);z-index:30;
+}
+body[data-coffee-theme="dark-roast"] #app .cafe-brand-plaque { display:flex;align-items:center;gap:14px;min-height:98px;padding:15px 14px;border:1px solid #8c6844;border-radius:8px;background:linear-gradient(145deg,#21160f,#39251a);box-shadow:inset 0 0 0 2px rgba(216,183,137,.1),0 5px 12px rgba(0,0,0,.25); }
+body[data-coffee-theme="dark-roast"] #app .cafe-brand-plaque strong { color:#f6e7d1;font:600 22px "Playfair Display",Georgia,serif; }
+body[data-coffee-theme="dark-roast"] #app .cafe-brand-plaque span,
+body[data-coffee-theme="dark-roast"] #app .cafe-rail-label { color:#c4a27a; }
+body[data-coffee-theme="dark-roast"] #app .cafe-rail-section { min-height:0;flex:1;display:flex;flex-direction:column; }
+body[data-coffee-theme="dark-roast"] #app .navigation { display:flex;flex-direction:column;gap:5px;padding:0 2px; }
+body[data-coffee-theme="dark-roast"] #app .navigation .nav-item { display:flex;align-items:center;gap:12px;min-height:43px;padding:9px 12px;border:1px solid transparent;border-radius:6px;background:transparent;color:#ead8bf;text-align:left; }
+body[data-coffee-theme="dark-roast"] #app .navigation .nav-item.active { color:#2e1e14;background:linear-gradient(90deg,#c9a77b,#a77b4d);border-color:#d8bb91;box-shadow:inset 3px 0 #54351f; }
+body[data-coffee-theme="dark-roast"] #app .cafe-rail-footer { padding:14px 12px 3px;border-top:1px solid rgba(238,210,171,.2); }
+body[data-coffee-theme="dark-roast"] #app .cafe-rail-footer .connection-status { color:#cdb28e;font-size:11px; }
+body[data-coffee-theme="dark-roast"] #app .coffee-main { display:flex;flex-direction:column;gap:0;width:100%;min-width:0;max-width:none;padding:24px clamp(20px,3.4vw,54px) 48px; }
+body[data-coffee-theme="dark-roast"] #app .coffee-counter {
+  position:relative;display:flex;align-items:center;justify-content:space-between;gap:22px;min-height:118px;padding:22px 26px;
+  border:1px solid #745335;border-bottom:5px solid #1a100a;border-radius:10px 10px 4px 4px;color:#f5e6d0;
+  background:repeating-linear-gradient(2deg,rgba(255,255,255,.02) 0 1px,transparent 1px 9px),linear-gradient(112deg,#21160f,#49301f 42%,#281a12);
+  box-shadow:0 9px 0 rgba(0,0,0,.2),0 18px 30px rgba(0,0,0,.18);
+}
+body[data-coffee-theme="dark-roast"] #app .coffee-counter-greeting { display:grid;grid-template-columns:42px minmax(0,1fr);grid-template-rows:auto auto;align-items:center;column-gap:14px;row-gap:2px; }
+body[data-coffee-theme="dark-roast"] #app .coffee-counter h1 { grid-column:2;grid-row:1;margin:0;color:#fff0da;font:600 clamp(25px,2.5vw,34px)/1.08 "Playfair Display",Georgia,serif; }
+body[data-coffee-theme="dark-roast"] #app .coffee-counter p { grid-column:2;grid-row:2;margin:3px 0 0;color:#c6a984;font-size:12px; }
+body[data-coffee-theme="dark-roast"] #app .dashboard-menu-toggle { grid-column:1;grid-row:1 / span 2;width:42px;height:42px;border:1px solid #a98255;border-radius:7px;background:#2c1d14;color:#f7e6ce; }
+body[data-coffee-theme="dark-roast"] #app .coffee-counter .button,
+body[data-coffee-theme="dark-roast"] #app .coffee-counter select { min-height:39px;border:1px solid #9b764d;border-radius:6px;background:#3d2a1d;color:#f5e4cb; }
+body[data-coffee-theme="dark-roast"] #app .server-ticket { margin:22px 0 18px;padding:15px 18px;display:flex;align-items:center;justify-content:space-between;gap:18px;border:1px solid #6b5036;border-left:5px solid #a8794d;border-radius:7px;background:linear-gradient(105deg,#38271b,#2c1e15);box-shadow:0 5px 14px rgba(0,0,0,.12); }
+body[data-coffee-theme="dark-roast"] #app .server-ticket .server-icon { width:46px;height:46px;display:grid;place-items:center;border:1px solid #80613f;border-radius:7px;background:#4a3321;color:#ead6b8; }
+body[data-coffee-theme="dark-roast"] #app .server-ticket .server-current strong { color:#f2e1c9;font:600 18px "Playfair Display",Georgia,serif; }
+body[data-coffee-theme="dark-roast"] #app .server-ticket .service-ticket-caption { color:#b99b75;font-size:11px; }
+body[data-coffee-theme="dark-roast"] #app .server-ticket .server-selector .button { min-height:40px;border:1px solid #b08a5d;border-radius:5px;background:linear-gradient(#8d613b,#68452c);color:#fff1dc; }
+body[data-coffee-theme="dark-roast"] #app .workspace-paper { min-width:0;padding:22px clamp(16px,2.4vw,34px) 36px;border:1px solid #5b422e;border-radius:7px;background:repeating-linear-gradient(0deg,rgba(255,220,170,.012) 0 1px,transparent 1px 5px),linear-gradient(180deg,#2b1e15,#251a13);box-shadow:0 16px 36px rgba(0,0,0,.18); }
+body[data-coffee-theme="dark-roast"] #app .paper-rule { height:1px;flex:1;background:#4d3928; }
+body[data-coffee-theme="dark-roast"] #app .paper-stamp { color:#ad8b63;font-size:9px;font-weight:800;letter-spacing:.19em; }
+body[data-coffee-theme="dark-roast"] #app .page-heading { margin:0 0 22px;padding:0 0 15px;border-bottom:1px solid #4d3928; }
+body[data-coffee-theme="dark-roast"] #app .page-heading h2 { color:#f0dfc7;font:600 clamp(24px,2.3vw,31px)/1.18 "Playfair Display",Georgia,serif; }
+body[data-coffee-theme="dark-roast"] #app .page-heading p { color:#bba184; }
+body[data-coffee-theme="dark-roast"] #app .coffee-welcome-board { position:relative;overflow:hidden;min-height:230px;display:grid;grid-template-columns:minmax(0,1fr) 220px;align-items:center;gap:20px;padding:30px 34px;border:1px solid #85613e;border-bottom:6px solid #1a100a;border-radius:8px;color:#fff1dc;background:repeating-linear-gradient(2deg,rgba(255,255,255,.02) 0 1px,transparent 1px 8px),linear-gradient(112deg,#21160f,#543722 52%,#2a1b12); }
+body[data-coffee-theme="dark-roast"] #app .welcome-board-copy h2 { color:#fff1dd;font:600 clamp(27px,3vw,39px)/1.1 "Playfair Display",Georgia,serif; }
+body[data-coffee-theme="dark-roast"] #app .welcome-board-copy p { color:#d2b795; }
+body[data-coffee-theme="dark-roast"] #app .welcome-kicker { color:#c9a77b; }
+body[data-coffee-theme="dark-roast"] #app .ledger-heading h3 { color:#f0dfc7;font:600 21px "Playfair Display",Georgia,serif; }
+body[data-coffee-theme="dark-roast"] #app .ledger-note { color:#b99b75; }
+body[data-coffee-theme="dark-roast"] #app .cafe-stats-grid { display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;border:1px solid #5e442e;border-radius:6px;overflow:hidden;background:#342419; }
+body[data-coffee-theme="dark-roast"] #app .cafe-stats-grid .stat-card { min-height:86px;display:flex;align-items:center;gap:12px;padding:15px;border:0;border-right:1px solid #57402d;border-radius:0;background:transparent;box-shadow:none; }
+body[data-coffee-theme="dark-roast"] #app .cafe-stats-grid .stat-icon { width:38px;height:38px;display:grid;place-items:center;border:1px solid #76583b;border-radius:50%;background:#493321;color:#e4c49a; }
+body[data-coffee-theme="dark-roast"] #app .cafe-stats-grid .label { color:#b99b75;font-size:10px;text-transform:uppercase;letter-spacing:.1em; }
+body[data-coffee-theme="dark-roast"] #app .cafe-stats-grid strong { color:#f1e1cb;font:600 22px "Playfair Display",Georgia,serif; }
+body[data-coffee-theme="dark-roast"] #app .cafe-shortcut { min-height:105px;display:flex;align-items:center;gap:14px;padding:16px;border:1px solid #57402d;border-left:4px solid #a8794d;border-radius:6px;background:linear-gradient(135deg,#38271b,#2b1e15); }
+body[data-coffee-theme="dark-roast"] #app .cafe-shortcut strong { color:#f0dfc7;font:600 16px "Playfair Display",Georgia,serif; }
+body[data-coffee-theme="dark-roast"] #app .cafe-shortcut p { color:#bba184;font-size:11px; }
+body[data-coffee-theme="dark-roast"] #app .settings-layout { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:start; }
+body[data-coffee-theme="dark-roast"] #app .settings-panel,
+body[data-coffee-theme="dark-roast"] #app .form-card { min-width:0;padding:22px;border:1px solid #58412d;border-top:3px solid #a8794d;border-radius:6px;background:#342419;box-shadow:0 5px 15px rgba(0,0,0,.12); }
+body[data-coffee-theme="dark-roast"] #app .settings-panel h2,
+body[data-coffee-theme="dark-roast"] #app .form-card h2 { color:#f0dfc7;font:600 21px "Playfair Display",Georgia,serif; }
+body[data-coffee-theme="dark-roast"] #app .settings-group { margin-top:17px;padding:16px 0 0;border-top:1px solid #4d3928; }
+body[data-coffee-theme="dark-roast"] #app .settings-group-heading strong { color:#e8d4b8; }
+body[data-coffee-theme="dark-roast"] #app .settings-group-heading span,
+body[data-coffee-theme="dark-roast"] #app .form-hint { color:#bba184; }
+body[data-coffee-theme="dark-roast"] #app input:not([type="checkbox"]):not([type="radio"]),
+body[data-coffee-theme="dark-roast"] #app select,
+body[data-coffee-theme="dark-roast"] #app textarea { border:1px solid #67503a;border-radius:4px;background:#241a13;color:#f1e1cb; }
+body[data-coffee-theme="dark-roast"] #app .button:not(.secondary) { border:1px solid #a98255;border-radius:5px;background:linear-gradient(#8d613b,#68452c);color:#fff1dc; }
+body[data-coffee-theme="dark-roast"] #app .button.secondary { border:1px solid #6b5036;border-radius:5px;background:#3c2b1e;color:#e8d4b8; }
+body[data-coffee-theme="dark-roast"] #app .ds-nav-group-toggle { color:#c9a77b;border-color:#5c432e; }
+body[data-coffee-theme="dark-roast"] #app .ds-nav-search label { color:#c9a77b; }
+body[data-coffee-theme="dark-roast"] #app .ds-search-field { background:#24180f;border-color:#745437;color:#d9b88e; }
+@media(max-width:1120px) {
+  body[data-coffee-theme="dark-roast"] #app.coffee-shop-shell { grid-template-columns:236px minmax(0,1fr); }
+  body[data-coffee-theme="dark-roast"] #app .cafe-wood-rail { width:236px; }
+  body[data-coffee-theme="dark-roast"] #app .coffee-main { padding-inline:22px; }
+  body[data-coffee-theme="dark-roast"] #app .cafe-stats-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+@media(max-width:900px) {
+  body[data-coffee-theme="dark-roast"] #app.coffee-shop-shell { display:block!important; }
+  body[data-coffee-theme="dark-roast"] #app .cafe-wood-rail { width:min(310px,88vw); }
+  body[data-coffee-theme="dark-roast"] #app .coffee-main { padding:14px 14px 30px; }
+  body[data-coffee-theme="dark-roast"] #app .coffee-counter { min-height:100px;padding:17px;flex-wrap:wrap; }
+  body[data-coffee-theme="dark-roast"] #app .header-actions { justify-content:flex-start;width:100%; }
+  body[data-coffee-theme="dark-roast"] #app .server-ticket { margin:15px 0;padding:13px; }
+  body[data-coffee-theme="dark-roast"] #app .workspace-paper { padding:17px; }
+  body[data-coffee-theme="dark-roast"] #app .settings-layout,
+  body[data-coffee-theme="dark-roast"] #app .quick-grid { grid-template-columns:minmax(0,1fr); }
+}
+@media(max-width:560px) {
+  body[data-coffee-theme="dark-roast"] #app .coffee-counter { padding:15px; }
+  body[data-coffee-theme="dark-roast"] #app .coffee-counter-greeting { grid-template-columns:38px minmax(0,1fr);column-gap:10px; }
+  body[data-coffee-theme="dark-roast"] #app .dashboard-menu-toggle { width:38px;height:38px; }
+  body[data-coffee-theme="dark-roast"] #app .header-actions { display:grid;grid-template-columns:repeat(2,minmax(0,1fr)); }
+  body[data-coffee-theme="dark-roast"] #app .header-actions .account { grid-column:1/-1; }
+  body[data-coffee-theme="dark-roast"] #app .server-ticket { align-items:flex-start;flex-direction:column; }
+  body[data-coffee-theme="dark-roast"] #app .server-ticket .server-selector,
+  body[data-coffee-theme="dark-roast"] #app .server-ticket .server-selector .button { width:100%; }
+  body[data-coffee-theme="dark-roast"] #app .coffee-welcome-board { grid-template-columns:minmax(0,1fr);padding:24px 20px; }
+  body[data-coffee-theme="dark-roast"] #app .welcome-board-art { min-height:135px; }
+  body[data-coffee-theme="dark-roast"] #app .cafe-stats-grid { grid-template-columns:minmax(0,1fr); }
+  body[data-coffee-theme="dark-roast"] #app .cafe-stats-grid .stat-card { border-right:0;border-bottom:1px solid #57402d; }
+}
