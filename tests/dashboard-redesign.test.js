@@ -226,7 +226,8 @@ test("mobile drawer stylesheet loads after legacy responsive rules", () => {
 test("dashboard uses the new café-counter HTML composition, not only theme CSS", () => {
   assert.match(html, /class="coffee-shop-shell"/);
   assert.match(html, /class="[^"]*cafe-brand-plaque/);
-  assert.match(html, /class="cafe-rail-section"/);
+  assert.match(html, /<nav class="navigation cafe-rail-section" id="dashboard-navigation"/);
+  assert.match(html, /<aside class="sidebar cafe-wood-rail">[\\s\\S]*?<nav class="navigation cafe-rail-section"/);
   assert.match(html, /class="[^"]*coffee-counter/);
   assert.match(html, /class="[^"]*coffee-counter-greeting/);
   assert.match(html, /class="[^"]*server-ticket coffee-server-ticket/);
