@@ -112,3 +112,26 @@
     init();
   }
 })();
+
+
+/* Keep the hand-drawn header plaque tied to the real account and server labels. */
+(function () {
+  "use strict";
+  function syncBoardIdentity() {
+    var user = document.getElementById("username");
+    var server = document.getElementById("selected-server-name");
+    var headerUser = document.getElementById("cafe-header-name");
+    var headerServer = document.getElementById("cafe-header-server");
+    if (headerUser && user) headerUser.textContent = (user.textContent || "").trim() || "Guest";
+    if (headerServer && server) headerServer.textContent = (server.textContent || "").trim() || "Not selected";
+  }
+  function observe(id) {
+    var node = document.getElementById(id);
+    if (!node || !window.MutationObserver) return;
+    new MutationObserver(syncBoardIdentity).observe(node, { childList:true, characterData:true, subtree:true });
+  }
+  syncBoardIdentity();
+  observe("username");
+  observe("selected-server-name");
+  document.addEventListener("DOMContentLoaded", syncBoardIdentity, { once:true });
+})();
