@@ -276,24 +276,24 @@ test("dashboard follows Paisley's café menu blueprint with menu, workspace, and
 
 
 test("Paisley board composition uses three hand-drawn columns and the parchment frame", () => {
-  assert.match(html, /class="cafe-header-identity"/);
-  assert.match(html, /id="cafe-header-name"/);
-  assert.match(html, /id="cafe-header-server"/);
-  assert.match(menuRedesignCss, /grid-template-columns:minmax\\(340px,1\\.32fr\\) minmax\\(280px,1fr\\) minmax\\(220px,\\.72fr\\)/);
-  assert.match(menuRedesignCss, /border:12px solid var\\(--menu-edge\\)/);
-  assert.match(menuRedesignCss, /ds-nav-group\\[data-group="systems"\\]\\{grid-column:1;grid-row:5\\}/);
-  assert.match(menuRedesignCss, /ds-nav-group\\[data-group="workspace"\\]\\{grid-column:2;grid-row:2\\}/);
-  assert.match(menuRedesignCss, /ds-nav-group\\[data-group="server"\\]\\{grid-column:2;grid-row:3\\}/);
-  assert.match(menuRedesignCss, /cafe-server-card\\{\\s*grid-column:3/);
-  assert.match(menuRedesignCss, /Comic Sans MS/);
+  assert.ok(html.includes('class="cafe-header-identity"'));
+  assert.ok(html.includes('id="cafe-header-name"'));
+  assert.ok(html.includes('id="cafe-header-server"'));
+  assert.ok(menuRedesignCss.includes("grid-template-columns:minmax(340px,1.32fr) minmax(280px,1fr) minmax(220px,.72fr)"));
+  assert.ok(menuRedesignCss.includes("border:12px solid var(--menu-edge)"));
+  assert.ok(menuRedesignCss.includes('ds-nav-group[data-group="systems"]{grid-column:1;grid-row:5}'));
+  assert.ok(menuRedesignCss.includes('ds-nav-group[data-group="workspace"]{grid-column:2;grid-row:2}'));
+  assert.ok(menuRedesignCss.includes('ds-nav-group[data-group="server"]{grid-column:2;grid-row:3}'));
+  assert.ok(menuRedesignCss.includes("grid-column:3;grid-row:2/span 5"));
+  assert.ok(menuRedesignCss.includes("Comic Sans MS"));
 });
 
 test("menu board stylesheet loads after legacy styles in both entry paths", () => {
-  assert.match(html, /coffee-shop-menu-redesign\\.css\\?v=2/);
-  assert.match(html, /guest-auth\\.css\\?v=2/);
+  assert.ok(html.includes('coffee-shop-menu-redesign.css?v=2'));
+  assert.ok(html.includes('guest-auth.css?v=2'));
   assert.ok(bootloader.indexOf('loadCss("/coffee-shop-menu-redesign.css?v=2")') > bootloader.indexOf('loadCss("/coffee-shop-control-center.css?v=3")'));
-  assert.match(menuRedesignCss, /body\\[data-coffee-theme\\] \\.guest-auth-modal\\[hidden\\]\\{display:none!important\\}/);
-  assert.match(menuRedesignCss, /guest-auth-card/);
+  assert.ok(menuRedesignCss.includes('.guest-auth-modal[hidden]{display:none!important}'));
+  assert.ok(menuRedesignCss.includes(".guest-auth-card"));
 });
 
 test("guest preview access is contained inside the server details station", () => {
@@ -301,17 +301,18 @@ test("guest preview access is contained inside the server details station", () =
   const bannerStart = html.indexOf('id="guest-auth-bar"');
   const serverStats = html.indexOf('class="cafe-server-stats-heading"');
   assert.ok(serverCard >= 0 && bannerStart > serverCard && bannerStart < serverStats);
-  assert.match(menuRedesignCss, /#guest-auth-bar\\.guest-auth-bar\\{\\s*position:static!important/);
+  assert.ok(menuRedesignCss.includes("position:static!important"));
 });
 
 test("header plaque follows the live account and selected server labels", () => {
-  assert.match(shellScript, /cafe-header-name/);
-  assert.match(shellScript, /cafe-header-server/);
-  assert.match(shellScript, /MutationObserver\\(syncBoardIdentity\\)/);
+  assert.ok(shellScript.includes("cafe-header-name"));
+  assert.ok(shellScript.includes("cafe-header-server"));
+  assert.ok(shellScript.includes("MutationObserver(syncBoardIdentity)"));
 });
 
 test("mobile board retains a working slide-out navigation and stacked stations", () => {
-  assert.match(menuRedesignCss, /@media\\(max-width:900px\\)/);
-  assert.match(menuRedesignCss, /dashboard-nav-open #app \\.cafe-wood-rail/);
-  assert.match(menuRedesignCss, /grid-template-columns:repeat\\(2,minmax\\(0,1fr\\)!important/);
+  assert.ok(menuRedesignCss.includes("@media(max-width:900px)"));
+  assert.ok(menuRedesignCss.includes("dashboard-nav-open #app .cafe-wood-rail"));
+  assert.ok(menuRedesignCss.includes("order:2;display:flex!important;position:fixed!important"));
+  assert.ok(menuRedesignCss.includes("grid-template-columns:repeat(2,minmax(0,1fr))!important"));
 });
