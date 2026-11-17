@@ -57,7 +57,7 @@ body[data-coffee-theme] #app .account-info span { color:var(--menu-muted)!import
 
 /* Paisley's menu: printed-paper surface, grouped into real two-column menu lists. */
 body[data-coffee-theme] #app>.cafe-menu-board {
-  grid-column:1; grid-row:2/4; position:relative!important; inset:auto!important;
+  grid-column:1; grid-row:3/5; position:relative!important; inset:auto!important;
   width:auto!important; height:auto!important; min-height:0!important; max-height:none!important;
   padding:21px 19px 18px!important; margin:0!important; overflow:visible!important;
   display:flex!important; flex-direction:column; gap:16px;
@@ -137,7 +137,7 @@ body[data-coffee-theme] #app .cafe-rail-footer .connection-status { color:var(--
 
 /* The workspace is the visual focus; it is not another framed panel inside a frame. */
 body[data-coffee-theme] #app>.cafe-workspace-board {
-  grid-column:2; grid-row:2/4; min-width:0; width:100%; margin:0!important;
+  grid-column:2; grid-row:3/5; min-width:0; width:100%; margin:0!important;
   padding:22px 25px 34px!important; color:var(--menu-ink)!important;
   border:1px solid var(--menu-rule)!important; border-top:3px solid var(--menu-brass)!important;
   border-radius:4px!important; background:var(--menu-paper)!important;
@@ -203,7 +203,7 @@ body[data-coffee-theme] #app .cafe-shortcut .arrow { color:var(--menu-brass); }
 
 /* Server details: compact reference card, not a third competing dashboard. */
 body[data-coffee-theme] #app>.cafe-server-card {
-  grid-column:3; grid-row:2/4; min-width:0; margin:0!important; padding:18px 15px!important;
+  grid-column:3; grid-row:3/5; min-width:0; margin:0!important; padding:18px 15px!important;
   border:1px solid var(--menu-rule)!important; border-top:3px solid var(--menu-walnut)!important;
   border-radius:4px!important; background:#f0e5d6!important; color:var(--menu-ink)!important;
   box-shadow:none!important;
@@ -316,7 +316,7 @@ body[data-coffee-theme="dark-roast"] #app .button.secondary { background:#30231b
 /* Tablet: retain the menu column, move server information above the work surface. */
 @media (max-width:1120px) and (min-width:769px) {
   body[data-coffee-theme] #app.coffee-shop-shell { grid-template-columns:260px minmax(0,1fr); gap:14px!important; }
-  body[data-coffee-theme] #app>.cafe-menu-board { grid-column:1; grid-row:2/5; }
+  body[data-coffee-theme] #app>.cafe-menu-board { grid-column:1; grid-row:3/5; }
   body[data-coffee-theme] #app>.cafe-server-card { grid-column:2; grid-row:3; }
   body[data-coffee-theme] #app>.cafe-workspace-board { grid-column:2; grid-row:4; }
   body[data-coffee-theme] #guest-auth-bar.guest-auth-bar { grid-row:2; }
