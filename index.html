@@ -22,7 +22,7 @@
 <script>
 (async function () {
   try {
-    var url = "https://raw.githubusercontent.com/elyaginnings-cell/Bot-Website/main/dashboard.html";
+    var url = "/dashboard.html";
     var res = await fetch(url + "?t=" + Date.now());
     if (!res.ok) throw new Error("HTTP " + res.status);
     var html = await res.text();
