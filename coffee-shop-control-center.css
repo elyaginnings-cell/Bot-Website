@@ -821,3 +821,21 @@ body[data-coffee-theme="dark-roast"] #app .cafe-workspace-board textarea{backgro
  body[data-coffee-theme] #app .cafe-menu-board,
  body[data-coffee-theme] #app .navigation .nav-item{transition:none!important}
 }
+
+/* Guest access banner: keep both actions fully inside the parchment frame. */
+body[data-coffee-theme] #guest-auth-bar.guest-auth-bar{
+ box-sizing:border-box;width:min(980px,calc(100% - 28px));max-width:calc(100% - 28px);margin:12px auto;
+ display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
+ padding:15px 18px;border:1px solid #b98b6c;border-radius:14px;background:#fff8ed;color:#4a2819;
+ box-shadow:0 8px 22px rgba(55,29,15,.14);
+}
+body[data-coffee-theme] #guest-auth-bar .guest-auth-copy{min-width:0;flex:1 1 260px;display:grid;gap:4px}
+body[data-coffee-theme] #guest-auth-bar .guest-auth-copy strong{color:#4a2819;font:900 19px "Marker Felt","Comic Sans MS",cursive}
+body[data-coffee-theme] #guest-auth-bar .guest-auth-copy span{color:#805941;font-size:12px;line-height:1.5}
+body[data-coffee-theme] #guest-auth-bar .guest-auth-actions{min-width:0;max-width:100%;display:flex;flex:0 1 auto;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:8px}
+body[data-coffee-theme] #guest-auth-bar .guest-auth-actions>button{min-width:0;max-width:100%;min-height:42px;flex:0 1 auto;white-space:normal;overflow-wrap:anywhere}
+@media(max-width:560px){
+ body[data-coffee-theme] #guest-auth-bar.guest-auth-bar{width:calc(100% - 20px);max-width:calc(100% - 20px);padding:14px;gap:12px}
+ body[data-coffee-theme] #guest-auth-bar .guest-auth-actions{display:grid;grid-template-columns:1fr;width:100%}
+ body[data-coffee-theme] #guest-auth-bar .guest-auth-actions>button{width:100%}
+}
