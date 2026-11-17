@@ -357,3 +357,34 @@ body[data-coffee-theme="cafe"] #app .quick-grid { display:grid;grid-template-col
 @media (prefers-reduced-motion: reduce) {
   body[data-coffee-theme="cafe"] #app * { transition:none !important;animation:none !important;scroll-behavior:auto !important; }
 }
+
+/* Navigation components created by the existing feature-aware menu script. */
+body[data-coffee-theme="cafe"] #app .ds-nav-search { margin:0 5px 15px; }
+body[data-coffee-theme="cafe"] #app .ds-nav-search label {
+  display:block;margin:0 0 7px;color:#d5b58c;font-size:9px;font-weight:800;letter-spacing:.18em;
+}
+body[data-coffee-theme="cafe"] #app .ds-search-field {
+  display:flex;align-items:center;gap:8px;padding:0 10px;min-height:38px;
+  border:1px solid rgba(228,194,143,.45);border-radius:5px;
+  background:rgba(36,22,14,.4);color:#e6c9a4;
+}
+body[data-coffee-theme="cafe"] #app .ds-search-field input {
+  width:100%;min-width:0;border:0!important;outline:0;background:transparent!important;
+  box-shadow:none!important;color:#fff1df!important;font-size:12px;
+}
+body[data-coffee-theme="cafe"] #app .ds-search-field input::placeholder { color:#c3a17b; }
+body[data-coffee-theme="cafe"] #app .ds-nav-group { margin:0 0 12px; }
+body[data-coffee-theme="cafe"] #app .ds-nav-group-toggle {
+  width:100%;display:flex;align-items:center;gap:8px;padding:8px 10px;
+  border:0;border-bottom:1px solid rgba(230,198,156,.22);border-radius:0;
+  background:transparent;color:#d8b990;text-align:left;
+  font-size:10px;font-weight:850;letter-spacing:.13em;text-transform:uppercase;
+}
+body[data-coffee-theme="cafe"] #app .ds-nav-group-meta { margin-left:auto;color:#b58a5f;font-size:10px; }
+body[data-coffee-theme="cafe"] #app .ds-nav-chevron { color:#d2b087;transition:transform .16s ease; }
+body[data-coffee-theme="cafe"] #app .ds-nav-group-toggle[aria-expanded="true"] .ds-nav-chevron { transform:rotate(180deg); }
+body[data-coffee-theme="cafe"] #app .ds-nav-group-items { display:flex;flex-direction:column;gap:4px;padding-top:6px; }
+body[data-coffee-theme="cafe"] #app .ds-nav-group-items[hidden] { display:none!important; }
+body[data-coffee-theme="cafe"] #app .ds-nav-group.has-active > .ds-nav-group-toggle { color:#f5d8ad;border-bottom-color:rgba(230,198,156,.48); }
+body[data-coffee-theme="cafe"] #app .navigation .nav-item[hidden] { display:none!important; }
+body[data-coffee-theme="cafe"] #app .cafe-wood-trim { box-shadow:inset 0 0 0 2px rgba(216,183,137,.12),inset 0 0 0 4px rgba(35,21,13,.16),0 5px 12px rgba(0,0,0,.2); }
