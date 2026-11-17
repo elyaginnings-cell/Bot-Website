@@ -12,6 +12,7 @@ const mobileCss = readFileSync(new URL("../coffee-shop-mobile.css", import.meta.
 const controlCenterCss = readFileSync(new URL("../coffee-shop-control-center.css", import.meta.url), "utf8");
 const navigationScript = readFileSync(new URL("../refined-dashboard.js", import.meta.url), "utf8");
 const featureUiScript = readFileSync(new URL("../features-ui.js", import.meta.url), "utf8");
+const customEmojiScript = readFileSync(new URL("../features-custom-emojis.js", import.meta.url), "utf8");
 const shellScript = (() => { try { return readFileSync(new URL("../dashboard-shell.js", import.meta.url), "utf8"); } catch { return ""; } })();
 
 const sectionIds = ["overview", "moderation", "invites", "leveling", "currency", "emojis", "shop", "logs", "birthday", "settings", "account", "owner-billing"];
@@ -243,4 +244,10 @@ test("dashboard uses the new café-counter HTML composition, not only theme CSS"
 test("bootloader loads the dashboard document from the same deployment", () => {
   assert.match(bootloader, /var url = "\/dashboard\.html"/);
   assert.doesNotMatch(bootloader, /raw\.githubusercontent\.com\/elyaginnings-cell\/Bot-Website\/main\/dashboard\.html/);
+});
+
+
+test("custom emoji navigation injects into the settings group after menu grouping", () => {
+  assert.match(customEmojiScript, /settings && settings\.parentElement !== nav/);
+  assert.match(customEmojiScript, /destination\.insertBefore\(button/);
 });
