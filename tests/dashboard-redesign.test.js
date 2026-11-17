@@ -274,35 +274,44 @@ test("dashboard follows Paisley's café menu blueprint with menu, workspace, and
 });
 
 
-test("menu redesign uses a clean three-station workspace instead of a framed admin dashboard", () => {
-  assert.match(html, /coffee-shop-menu-redesign\.css\?v=1/);
-  assert.match(menuRedesignCss, /grid-template-columns:290px minmax\(0,1fr\) 258px/);
-  assert.match(menuRedesignCss, /grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
-  assert.match(menuRedesignCss, /grid-column:2; grid-row:3/);
-  assert.match(menuRedesignCss, /border:0!important; border-radius:0!important; box-shadow:none!important/);
-  assert.match(menuRedesignCss, /@media \(max-width:768px\)/);
-  assert.match(menuRedesignCss, /transform:translateX\(-110%\)!important/);
+
+test("Paisley board composition uses three hand-drawn columns and the parchment frame", () => {
+  assert.match(html, /class="cafe-header-identity"/);
+  assert.match(html, /id="cafe-header-name"/);
+  assert.match(html, /id="cafe-header-server"/);
+  assert.match(menuRedesignCss, /grid-template-columns:minmax\\(340px,1\\.32fr\\) minmax\\(280px,1fr\\) minmax\\(220px,\\.72fr\\)/);
+  assert.match(menuRedesignCss, /border:12px solid var\\(--menu-edge\\)/);
+  assert.match(menuRedesignCss, /ds-nav-group\\[data-group="systems"\\]\\{grid-column:1;grid-row:5\\}/);
+  assert.match(menuRedesignCss, /ds-nav-group\\[data-group="workspace"\\]\\{grid-column:2;grid-row:2\\}/);
+  assert.match(menuRedesignCss, /ds-nav-group\\[data-group="server"\\]\\{grid-column:2;grid-row:3\\}/);
+  assert.match(menuRedesignCss, /cafe-server-card\\{\\s*grid-column:3/);
+  assert.match(menuRedesignCss, /Comic Sans MS/);
 });
 
-test("guest access is in normal dashboard flow and hidden state cannot be overridden", () => {
-  const headerEnd = html.indexOf("</header>");
+test("menu board stylesheet loads after legacy styles in both entry paths", () => {
+  assert.match(html, /coffee-shop-menu-redesign\\.css\\?v=2/);
+  assert.match(html, /guest-auth\\.css\\?v=2/);
+  assert.ok(bootloader.indexOf('loadCss("/coffee-shop-menu-redesign.css?v=2")') > bootloader.indexOf('loadCss("/coffee-shop-control-center.css?v=3")'));
+  assert.match(menuRedesignCss, /body\\[data-coffee-theme\\] \\.guest-auth-modal\\[hidden\\]\\{display:none!important\\}/);
+  assert.match(menuRedesignCss, /guest-auth-card/);
+});
+
+test("guest preview access is contained inside the server details station", () => {
+  const serverCard = html.indexOf('class="cafe-server-card"');
   const bannerStart = html.indexOf('id="guest-auth-bar"');
-  const workspaceStart = html.indexOf('class="content workspace-paper');
-  assert.ok(headerEnd >= 0 && bannerStart > headerEnd && bannerStart < workspaceStart);
-  assert.match(menuRedesignCss, /#guest-auth-bar\[hidden\] \{ display:none!important; \}/);
-  assert.match(menuRedesignCss, /#guest-auth-bar\.guest-auth-bar \{[\s\S]*?position:relative!important/);
+  const serverStats = html.indexOf('class="cafe-server-stats-heading"');
+  assert.ok(serverCard >= 0 && bannerStart > serverCard && bannerStart < serverStats);
+  assert.match(menuRedesignCss, /#guest-auth-bar\\.guest-auth-bar\\{\\s*position:static!important/);
 });
 
-
-test("dashboard loads the scripts that build the grouped menu and mobile drawer", () => {
-  assert.match(html, /refined-dashboard\\.js\\?v=6/);
-  assert.match(html, /dashboard-shell\\.js\\?v=2/);
-  assert.ok(html.indexOf("refined-dashboard.js?v=6") < html.indexOf("</body>"));
-  assert.ok(html.indexOf("dashboard-shell.js?v=2") < html.indexOf("</body>"));
+test("header plaque follows the live account and selected server labels", () => {
+  assert.match(shellScript, /cafe-header-name/);
+  assert.match(shellScript, /cafe-header-server/);
+  assert.match(shellScript, /MutationObserver\\(syncBoardIdentity\\)/);
 });
 
-test("café paper surfaces explicitly override the legacy white-text theme", () => {
-  assert.match(menuRedesignCss, /cafe-server-card :is\\(h1,h2,h3,h4,p,span,strong,label,small,div\\)[\\s\\S]*?color:var\\(--menu-ink\\)!important/);
-  assert.match(menuRedesignCss, /coffee-welcome-board :is\\(h1,h2,h3,p,span,strong,small\\)[\\s\\S]*?color:var\\(--menu-ink\\)!important/);
-  assert.match(menuRedesignCss, /grid-template-columns:repeat\\(2,minmax\\(0,1fr\\))!important/);
+test("mobile board retains a working slide-out navigation and stacked stations", () => {
+  assert.match(menuRedesignCss, /@media\\(max-width:900px\\)/);
+  assert.match(menuRedesignCss, /dashboard-nav-open #app \\.cafe-wood-rail/);
+  assert.match(menuRedesignCss, /grid-template-columns:repeat\\(2,minmax\\(0,1fr\\)!important/);
 });
