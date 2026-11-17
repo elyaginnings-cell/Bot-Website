@@ -8,6 +8,7 @@
     <link rel="shortcut icon" href="/amazon-favicon.svg?v=2" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/amazon-favicon.svg?v=2">
     <link rel="stylesheet" href="style.css?v=8">
+    <link rel="stylesheet" href="/guest-auth.css?v=2">
     <link rel="stylesheet" href="/dashboard-preferences.css?v=4">
     <link rel="stylesheet" href="mobile-fix.css?v=5">
     <link rel="stylesheet" href="toggle-fix.css?v=1">
@@ -22,7 +23,7 @@
     <link rel="stylesheet" href="/dashboard-sections.css?v=1">
     <link rel="stylesheet" href="/coffee-shop-mobile.css?v=1">
     <link rel="stylesheet" href="/coffee-shop-control-center.css?v=3">
-    <link rel="stylesheet" href="/coffee-shop-menu-redesign.css?v=1">
+    <link rel="stylesheet" href="/coffee-shop-menu-redesign.css?v=2">
 </head>
 <body class="mode-auto" data-coffee-theme="cafe">
 
@@ -64,6 +65,7 @@
                         <span id="page-description" hidden>Manage your Discord server systems.</span>
                     </div>
                 </div>
+                <div class="cafe-header-identity" aria-label="Current account and server"><span>Name: <strong id="cafe-header-name">Guest</strong></span><span>Server: <strong id="cafe-header-server">Not selected</strong></span></div>
                 <div class="header-actions">
                     <button class="button secondary coffee-theme-toggle" id="coffee-shop-theme-toggle" type="button" aria-label="Switch to Dark Roast theme" aria-pressed="false" title="Switch to Dark Roast">☀ Café au Lait</button>
                     <div class="view-mode-wrap">
@@ -90,10 +92,6 @@
                 </div>
             </header>
 
-            <div id="guest-auth-bar" class="guest-auth-bar" hidden role="region" aria-label="Account access">
-      <div class="guest-auth-copy"><strong>Guest preview mode</strong><span>This is a temporary preview, not an account. Log in to connect your server and manage it.</span></div>
-      <div class="guest-auth-actions"><button type="button" class="button discord-auth-button" id="guest-discord-open">Continue with Discord</button><button type="button" class="button secondary" id="guest-login-open">Email login</button><button type="button" class="button" id="guest-signup-open">Create account</button></div>
-    </div>
 
 
             <div class="content workspace-paper cafe-workspace-board"><div class="workspace-paper-top" aria-hidden="true"><span class="paper-rule"></span><span class="paper-stamp">COFFEE SHOP · COMMUNITY CONTROL</span><span class="paper-rule"></span></div>
@@ -368,6 +366,11 @@
         </main>
 
         <aside class="cafe-server-card" aria-label="Selected server details">
+            <div id="guest-auth-bar" class="guest-auth-bar" hidden role="region" aria-label="Account access">
+      <div class="guest-auth-copy"><strong>Guest preview mode</strong><span>This is a temporary preview, not an account. Log in to connect your server and manage it.</span></div>
+      <div class="guest-auth-actions"><button type="button" class="button discord-auth-button" id="guest-discord-open">Continue with Discord</button><button type="button" class="button secondary" id="guest-login-open">Email login</button><button type="button" class="button" id="guest-signup-open">Create account</button></div>
+    </div>
+
             <div class="cafe-server-card-heading"><span class="cafe-menu-kicker">YOUR CORNER</span><h2>Server details</h2><span class="cafe-menu-rule"></span></div>
             <div class="server-bar card service-ticket server-ticket coffee-server-ticket">
                 <div class="server-current">
