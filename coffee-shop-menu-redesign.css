@@ -383,3 +383,73 @@ body[data-coffee-theme="dark-roast"] #app .button.secondary { background:#30231b
   body[data-coffee-theme] #app .navigation .nav-item,
   body[data-coffee-theme] #app .dashboard-nav-backdrop { transition:none!important; }
 }
+
+
+/* Contrast repair: the legacy stylesheet declares white text with !important.
+   These scoped café tokens deliberately win inside the paper surfaces. */
+body[data-coffee-theme="cafe"] #app .cafe-server-card :is(h1,h2,h3,h4,p,span,strong,label,small,div) {
+  color:var(--menu-ink)!important;
+}
+body[data-coffee-theme="cafe"] #app .cafe-server-card .cafe-menu-kicker,
+body[data-coffee-theme="cafe"] #app .cafe-server-card .label,
+body[data-coffee-theme="cafe"] #app .cafe-server-card .cafe-server-stats-heading {
+  color:var(--menu-walnut)!important;
+}
+body[data-coffee-theme="cafe"] #app .cafe-server-card .service-ticket-caption,
+body[data-coffee-theme="cafe"] #app .cafe-server-card .cafe-server-card-note {
+  color:var(--menu-muted)!important;
+}
+body[data-coffee-theme="cafe"] #app .cafe-server-card .server-icon,
+body[data-coffee-theme="cafe"] #app .cafe-server-card .stat-icon { color:var(--menu-walnut)!important; }
+body[data-coffee-theme="cafe"] #app .coffee-welcome-board :is(h1,h2,h3,p,span,strong,small) {
+  color:var(--menu-ink)!important;
+}
+body[data-coffee-theme="cafe"] #app .coffee-welcome-board .welcome-kicker,
+body[data-coffee-theme="cafe"] #app .coffee-welcome-board .board-corner-mark { color:var(--menu-walnut)!important; }
+body[data-coffee-theme="cafe"] #app .ledger-heading :is(h2,h3,p,span),
+body[data-coffee-theme="cafe"] #app .cafe-shortcut :is(strong,p,span) {
+  color:var(--menu-ink)!important;
+}
+body[data-coffee-theme="cafe"] #app .ledger-heading .eyebrow,
+body[data-coffee-theme="cafe"] #app .cafe-shortcut p { color:var(--menu-muted)!important; }
+body[data-coffee-theme="cafe"] #app .page-heading :is(h1,h2,h3,p,span),
+body[data-coffee-theme="cafe"] #app .settings-panel :is(h1,h2,h3,h4,p,span,strong,label,small),
+body[data-coffee-theme="cafe"] #app .form-card :is(h1,h2,h3,h4,p,span,strong,label,small) {
+  color:var(--menu-ink)!important;
+}
+body[data-coffee-theme="cafe"] #app .page-heading .eyebrow,
+body[data-coffee-theme="cafe"] #app .settings-panel .eyebrow,
+body[data-coffee-theme="cafe"] #app .form-card .eyebrow { color:var(--menu-walnut)!important; }
+body[data-coffee-theme="cafe"] #app .settings-panel .form-hint,
+body[data-coffee-theme="cafe"] #app .form-card .form-hint { color:var(--menu-muted)!important; }
+body[data-coffee-theme="cafe"] #app .navigation .ds-nav-group-toggle,
+body[data-coffee-theme="cafe"] #app .navigation .ds-nav-group-label { color:var(--menu-walnut)!important; }
+body[data-coffee-theme="cafe"] #app .navigation .nav-item,
+body[data-coffee-theme="cafe"] #app .navigation .nav-item em { color:var(--menu-muted)!important; }
+body[data-coffee-theme="cafe"] #app .navigation .nav-item.active,
+body[data-coffee-theme="cafe"] #app .navigation .nav-item.active em { color:var(--menu-roast)!important; }
+body[data-coffee-theme="cafe"] #app .ds-nav-search>label { color:var(--menu-muted)!important; }
+body[data-coffee-theme="cafe"] #guest-auth-bar :is(strong,span,p) { color:var(--menu-ink)!important; }
+body[data-coffee-theme="cafe"] #guest-auth-bar .guest-auth-copy span { color:var(--menu-muted)!important; }
+
+/* Keep the paper menu genuinely two-column once the grouping script runs. */
+body[data-coffee-theme] #app .ds-nav-group-items {
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:5px 8px!important;
+}
+body[data-coffee-theme] #app .ds-nav-group[data-group="overview"] .ds-nav-group-items,
+body[data-coffee-theme] #app .ds-nav-group[data-group="server"] .ds-nav-group-items {
+  grid-template-columns:1fr!important;
+}
+body[data-coffee-theme] #app .ds-nav-group-toggle {
+  color:var(--menu-walnut)!important;
+  background:transparent!important;
+}
+body[data-coffee-theme] #app .ds-nav-group-label { color:var(--menu-walnut)!important; }
+body[data-coffee-theme="dark-roast"] #app .cafe-server-card :is(h1,h2,h3,h4,p,span,strong,label,small,div),
+body[data-coffee-theme="dark-roast"] #app .coffee-welcome-board :is(h1,h2,h3,p,span,strong,small),
+body[data-coffee-theme="dark-roast"] #app .ledger-heading :is(h2,h3,p,span),
+body[data-coffee-theme="dark-roast"] #app .cafe-shortcut :is(strong,p,span) {
+  color:var(--menu-ink)!important;
+}
