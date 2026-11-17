@@ -9,6 +9,7 @@ const shellCss = readFileSync(new URL("../coffee-shop-dashboard.css", import.met
 const serverViewCss = readFileSync(new URL("../coffee-shop-server-view.css", import.meta.url), "utf8");
 const sectionCss = (() => { try { return readFileSync(new URL("../dashboard-sections.css", import.meta.url), "utf8"); } catch { return ""; } })();
 const mobileCss = readFileSync(new URL("../coffee-shop-mobile.css", import.meta.url), "utf8");
+const controlCenterCss = readFileSync(new URL("../coffee-shop-control-center.css", import.meta.url), "utf8");
 const navigationScript = readFileSync(new URL("../refined-dashboard.js", import.meta.url), "utf8");
 const featureUiScript = readFileSync(new URL("../features-ui.js", import.meta.url), "utf8");
 const shellScript = (() => { try { return readFileSync(new URL("../dashboard-shell.js", import.meta.url), "utf8"); } catch { return ""; } })();
@@ -230,5 +231,9 @@ test("dashboard uses the new café-counter HTML composition, not only theme CSS"
   assert.match(html, /class="coffee-counter-greeting"/);
   assert.match(html, /class="server-ticket coffee-server-ticket"/);
   assert.match(html, /class="workspace-paper"/);
+  assert.match(controlCenterCss, /repeating-linear-gradient\(2deg/);
+  assert.match(controlCenterCss, /\.cafe-wood-rail/);
+  assert.match(controlCenterCss, /\.coffee-welcome-board/);
+  assert.match(controlCenterCss, /\.workspace-paper/);
   assert.match(html, /class="cafe-wood-trim"/);
 });
