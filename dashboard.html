@@ -24,16 +24,16 @@
 </head>
 <body class="mode-auto" data-coffee-theme="cafe">
 
-    <div id="app">
-        <aside class="sidebar">
-            <div class="sidebar-brand">
+    <div id="app" class="coffee-shop-shell">
+        <aside class="sidebar cafe-wood-rail">
+            <div class="sidebar-brand cafe-brand-plaque">
                 <div class="brand-icon">☕</div>
                 <div>
                     <strong>Coffee Shop</strong>
                     <span>Bot Control</span>
                 </div>
             </div>
-            <nav class="navigation" id="dashboard-navigation" aria-label="Dashboard tabs">
+            <div class="cafe-rail-section"><span class="cafe-rail-label">THE MENU</span><nav class="navigation" id="dashboard-navigation" aria-label="Dashboard tabs">
                 <button class="nav-item active" data-tab="overview" type="button" title="Overview"><span>🏠</span><em>Home</em></button>
                 <button class="nav-item" data-tab="moderation" type="button" title="Moderation"><span>⚖️</span><em>Mod</em></button>
                 <button class="nav-item" data-tab="invites" type="button" title="Invites"><span>📨</span><em>Invites</em></button>
@@ -47,8 +47,8 @@
                 <button class="nav-item" data-tab="account" type="button" title="Account"><span>👤</span><em>Account</em></button>
                 <button class="nav-item" id="nav-owner-billing" data-tab="owner-billing" type="button" title="Owner Billing" hidden><span>🧾</span><em>Owner</em></button>
                 <button class="nav-item" id="nav-server-view" type="button" title="Server View"><span>💬</span><em>Chat</em></button>
-            </nav>
-            <div class="sidebar-bottom">
+            </nav></div>
+            <div class="sidebar-bottom cafe-rail-footer">
                 <div class="connection-status">
                     <span class="status-dot"></span>
                     <span>Dashboard online</span>
@@ -57,9 +57,9 @@
         </aside>
         <button class="dashboard-nav-backdrop" id="dashboard-nav-backdrop" type="button" aria-label="Close navigation"></button>
 
-        <main class="main">
-            <header class="header card">
-                <div class="header-text">
+        <main class="main coffee-main">
+            <header class="header coffee-counter">
+                <div class="header-text coffee-counter-greeting">
                     <button class="dashboard-menu-toggle" id="dashboard-menu-toggle" type="button" aria-controls="dashboard-navigation" aria-expanded="false" aria-label="Open navigation" title="Open navigation"><span aria-hidden="true">☰</span></button>
                     <h1 id="page-title">Overview</h1>
                     <p id="page-description">Manage your Discord server systems.</p>
@@ -90,7 +90,7 @@
                 </div>
             </header>
 
-            <div class="server-bar card service-ticket">
+            <div class="server-bar card service-ticket server-ticket coffee-server-ticket">
                 <div class="server-current">
                     <div class="server-icon" id="selected-server-icon">☕</div>
                     <div>
@@ -105,29 +105,36 @@
                 </div>
             </div>
 
-            <div class="content">
-                <section id="overview" class="page-section active">
-                    <div class="page-heading"><h2>Your server, at a glance</h2><p>A clear view of your community and the tools configured for this server.</p></div>
-
-                    <div class="hero card overview-intro">
-                        <div>
-                            <span class="eyebrow">DASHBOARD</span>
-                            <h2>Welcome back, <span id="welcome-name">...</span>.</h2>
-                            <p>Configure moderation, economy, shop, and more from one place.</p>
+            <div class="content workspace-paper"><div class="workspace-paper-top" aria-hidden="true"><span class="paper-rule"></span><span class="paper-stamp">COFFEE SHOP · COMMUNITY CONTROL</span><span class="paper-rule"></span></div>
+                <section id="overview" class="page-section active cafe-overview">
+                    <div class="page-heading"><span class="eyebrow">THE COUNTER</span><h2>Your community, freshly brewed.</h2><p>A warm little control room for everything happening in your Discord server.</p></div>
+                    <div class="coffee-welcome-board">
+                        <div class="welcome-board-copy">
+                            <span class="welcome-kicker">WELCOME TO YOUR COFFEE SHOP</span>
+                            <h2>Good to see you, <span id="welcome-name">...</span>.</h2>
+                            <p>Your server's essentials, all in one place. Pull up a chair and make yourself at home.</p>
+                            <button class="coffee-board-action" data-section-link="moderation" type="button">Visit server systems <span aria-hidden="true">↗</span></button>
                         </div>
-                        <div class="hero-icon">☕</div>
+                        <div class="welcome-board-art" aria-hidden="true"><span class="coffee-steam steam-one"></span><span class="coffee-steam steam-two"></span><span class="coffee-cup">☕</span><span class="cup-saucer"></span><span class="coffee-bean bean-one">●</span><span class="coffee-bean bean-two">●</span></div>
+                        <div class="board-corner-mark" aria-hidden="true">EST.<br>COFFEE<br>SHOP</div>
                     </div>
-                    <div class="stats-grid">
-                        <div class="stat-card card"><span class="stat-icon">👥</span><div><span class="label">Members</span><strong id="server-member-count">0</strong></div></div>
-                        <div class="stat-card card"><span class="stat-icon">🟢</span><div><span class="label">Online</span><strong id="server-online-count">0</strong></div></div>
-                        <div class="stat-card card"><span class="stat-icon">👑</span><div><span class="label">Role</span><strong id="server-owner-status">-</strong></div></div>
-                        <div class="stat-card card"><span class="stat-icon">💾</span><div><span class="label">Memory</span><strong id="storage-status">…</strong></div></div>
+                    <div class="overview-ledger">
+                        <div class="ledger-heading"><div><span class="eyebrow">TODAY AT THE COUNTER</span><h3>Server snapshot</h3></div><span class="ledger-note">Live account details</span></div>
+                        <div class="stats-grid cafe-stats-grid">
+                            <div class="stat-card card"><span class="stat-icon">♧</span><div><span class="label">Members</span><strong id="server-member-count">0</strong></div></div>
+                            <div class="stat-card card"><span class="stat-icon">◉</span><div><span class="label">Online</span><strong id="server-online-count">0</strong></div></div>
+                            <div class="stat-card card"><span class="stat-icon">✦</span><div><span class="label">Your role</span><strong id="server-owner-status">-</strong></div></div>
+                            <div class="stat-card card"><span class="stat-icon">▤</span><div><span class="label">Storage</span><strong id="storage-status">…</strong></div></div>
+                        </div>
                     </div>
-                    <div class="overview-quick-area"><div class="overview-subheading"><h3>Quick access</h3><p>Jump straight to a commonly used system.</p></div><div class="quick-grid three">
-                        <button class="quick-card card" data-section-link="currency" type="button"><span class="quick-icon">☕</span><div><strong>Currency</strong><p>Beans & rewards</p></div><span class="arrow">→</span></button>
-                        <button class="quick-card card" data-section-link="shop" type="button"><span class="quick-icon">🛒</span><div><strong>Shop</strong><p>Roles, boosts, packs</p></div><span class="arrow">→</span></button>
-                        <button class="quick-card card" data-section-link="logs" type="button"><span class="quick-icon">📋</span><div><strong>Logs</strong><p>Confirm saves</p></div><span class="arrow">→</span></button>
-                    </div></div>
+                    <div class="cafe-shortcuts">
+                        <div class="ledger-heading"><div><span class="eyebrow">HOUSE SPECIALS</span><h3>Jump back into work</h3></div><span class="ledger-note">Choose a station</span></div>
+                        <div class="quick-grid three">
+                            <button class="quick-card card cafe-shortcut" data-section-link="moderation" type="button"><span class="quick-icon">⚖</span><div><strong>Moderation desk</strong><p>Warning destinations and server safety</p></div><span class="arrow">↗</span></button>
+                            <button class="quick-card card cafe-shortcut" data-section-link="currency" type="button"><span class="quick-icon">☕</span><div><strong>Beans counter</strong><p>Rewards, daily claims, and chat earnings</p></div><span class="arrow">↗</span></button>
+                            <button class="quick-card card cafe-shortcut" data-section-link="shop" type="button"><span class="quick-icon">♙</span><div><strong>Community shop</strong><p>Manage items members can purchase</p></div><span class="arrow">↗</span></button>
+                        </div>
+                    </div>
                 </section>
 
                 <section id="moderation" class="page-section">
