@@ -237,3 +237,9 @@ test("dashboard uses the new café-counter HTML composition, not only theme CSS"
   assert.match(controlCenterCss, /\.workspace-paper/);
   assert.match(html, /class="[^"]*cafe-wood-trim/);
 });
+
+
+test("bootloader loads the dashboard document from the same deployment", () => {
+  assert.match(bootloader, /var url = "\/dashboard\.html"/);
+  assert.doesNotMatch(bootloader, /raw\.githubusercontent\.com\/elyaginnings-cell\/Bot-Website\/main\/dashboard\.html/);
+});
