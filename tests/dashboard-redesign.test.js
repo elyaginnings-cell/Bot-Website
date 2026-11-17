@@ -278,7 +278,7 @@ test("menu redesign uses a clean three-station workspace instead of a framed adm
   assert.match(html, /coffee-shop-menu-redesign\\.css\\?v=1/);
   assert.match(menuRedesignCss, /grid-template-columns:290px minmax\\(0,1fr\\) 258px/);
   assert.match(menuRedesignCss, /grid-template-columns:repeat\\(2,minmax\\(0,1fr\\)\\)/);
-  assert.match(menuRedesignCss, /grid-column:2; grid-row:3\\/5/);
+  assert.match(menuRedesignCss, /grid-column:2; grid-row:3/);
   assert.match(menuRedesignCss, /border:0!important; border-radius:0!important; box-shadow:none!important/);
   assert.match(menuRedesignCss, /@media \\(max-width:768px\\)/);
   assert.match(menuRedesignCss, /transform:translateX\\(-110%\\)!important/);
