@@ -215,4 +215,8 @@ test("mobile drawer stylesheet loads after legacy responsive rules", () => {
   assert.match(mobileCss, /\.header-text \{[\s\S]*?display: grid/);
   assert.match(mobileCss, /\.ds-nav-group-items\[hidden\] \{ display: none !important; \}/);
   assert.match(mobileCss, /grid-template-columns: repeat\(2, minmax\(0, 1fr\)\) !important/);
+  assert.match(mobileCss, /@media \(max-width: 900px\)[\s\S]*?\.guest-auth-bar \{[\s\S]*?flex-direction: column/);
+  assert.match(mobileCss, /\.guest-auth-actions > button \{[\s\S]*?min-width: 0 !important/);
+  assert.match(mobileCss, /#guest-signup-open \{\s*grid-column: 1 \/ -1/);
+
 });
