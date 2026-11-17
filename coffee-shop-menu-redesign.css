@@ -349,3 +349,49 @@ body[data-coffee-theme] #app :is(h1,h2,h3,h4,p,span,strong,label,small){text-sha
  body[data-coffee-theme] #app .dashboard-nav-backdrop,
  body[data-coffee-theme] #app .navigation .nav-item{transition:none!important}
 }
+
+/* Dark Roast keeps the same board geometry while shifting to a deep walnut finish. */
+body[data-coffee-theme="dark-roast"]{
+  --menu-ink:#f4e2cf;--menu-muted:#d2b59b;--menu-paper:#3c281d;
+  --menu-paper-light:#4a3022;--menu-cream:#24160f;--menu-rule:#bd8c64;
+  --menu-wood:#29180f;--menu-walnut:#d3a47c;--menu-roast:#21130d;--menu-edge:#8a5b3d;
+}
+body[data-coffee-theme="dark-roast"]{
+  background:repeating-linear-gradient(3deg,rgba(255,235,210,.025) 0 2px,rgba(0,0,0,.09) 3px 6px,transparent 7px 15px),linear-gradient(135deg,#29180f,#573522 45%,#29180f)!important;
+}
+body[data-coffee-theme="dark-roast"] #app.coffee-shop-shell{
+  background:linear-gradient(145deg,#4a3022,#382318)!important;
+  box-shadow:0 0 0 8px rgba(0,0,0,.3),inset 0 0 0 3px rgba(255,235,210,.06),0 20px 60px rgba(0,0,0,.35)!important;
+}
+body[data-coffee-theme="dark-roast"] #app .coffee-shop-wordmark,
+body[data-coffee-theme="dark-roast"] #app .coffee-shop-tagline,
+body[data-coffee-theme="dark-roast"] #app .cafe-menu-heading strong,
+body[data-coffee-theme="dark-roast"] #app .ds-nav-group-label,
+body[data-coffee-theme="dark-roast"] #app .page-heading h2,
+body[data-coffee-theme="dark-roast"] #app .cafe-server-card-heading h2,
+body[data-coffee-theme="dark-roast"] #app .ledger-heading h3{color:#f4e2cf!important}
+body[data-coffee-theme="dark-roast"] #app .ds-nav-group-toggle{border-color:#9c6d4a!important}
+body[data-coffee-theme="dark-roast"] #app .navigation .nav-item{color:#d2b59b!important}
+body[data-coffee-theme="dark-roast"] #app .navigation .nav-item.active{background:#6d472e!important;color:#fff2e2!important}
+body[data-coffee-theme="dark-roast"] #app .cafe-header-identity{background:#21130d!important;color:#fff8ed!important}
+body[data-coffee-theme="dark-roast"] #app .cafe-header-identity :is(span,strong){color:#fff8ed!important}
+body[data-coffee-theme="dark-roast"] #app .cafe-server-card .server-ticket,
+body[data-coffee-theme="dark-roast"] #app .cafe-stats-grid{background:#21130d!important}
+body[data-coffee-theme="dark-roast"] #app .cafe-server-card .server-current strong,
+body[data-coffee-theme="dark-roast"] #app .cafe-server-card .label,
+body[data-coffee-theme="dark-roast"] #app .cafe-server-card .service-ticket-caption,
+body[data-coffee-theme="dark-roast"] #app .cafe-stats-grid .label,
+body[data-coffee-theme="dark-roast"] #app .cafe-stats-grid strong{color:#fff2e2!important}
+body[data-coffee-theme="dark-roast"] #app .cafe-workspace-board{background:rgba(30,18,11,.34)!important;border-color:#8a6246!important}
+body[data-coffee-theme="dark-roast"] #app .coffee-welcome-board{background:#68452f!important}
+body[data-coffee-theme="dark-roast"] #app .welcome-board-copy :is(h2,p,span){color:#fff2e2!important}
+body[data-coffee-theme="dark-roast"] #app .settings-panel,
+body[data-coffee-theme="dark-roast"] #app .form-card{background:#4a3022!important;border-color:#9c704d!important}
+body[data-coffee-theme="dark-roast"] #app .settings-panel :is(h1,h2,h3,h4,p,span,strong,label,small),
+body[data-coffee-theme="dark-roast"] #app .form-card :is(h1,h2,h3,h4,p,span,strong,label,small),
+body[data-coffee-theme="dark-roast"] #app .page-heading :is(h1,h2,h3,p,span){color:#f4e2cf!important}
+body[data-coffee-theme="dark-roast"] #app input:not([type=checkbox]):not([type=radio]),
+body[data-coffee-theme="dark-roast"] #app select,
+body[data-coffee-theme="dark-roast"] #app textarea{background:#26180f!important;color:#fff2e2!important;border-color:#a77b58!important}
+body[data-coffee-theme="dark-roast"] .guest-auth-card{background:#3c281d!important;color:#f4e2cf!important}
+body[data-coffee-theme="dark-roast"] .guest-auth-card :is(h2,p,label,.eyebrow){color:#f4e2cf!important}
