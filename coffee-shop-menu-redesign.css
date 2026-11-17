@@ -86,7 +86,7 @@ body[data-coffee-theme] #app .cafe-wood-rail{
   display:contents!important;
 }
 body[data-coffee-theme] #app .cafe-menu-heading{
-  grid-column:1;grid-row:2;display:block!important;
+  grid-column:1;grid-row:2;display:none!important;
   padding:0 8px 10px!important;border:0!important;
   border-bottom:3px solid var(--menu-rule)!important;
 }
@@ -99,7 +99,7 @@ body[data-coffee-theme] #app .cafe-menu-heading strong{
 body[data-coffee-theme] #app .cafe-menu-heading .cafe-menu-rule{display:none!important}
 body[data-coffee-theme] #app .navigation{display:contents!important}
 body[data-coffee-theme] #app .ds-nav-search{
-  grid-column:1;grid-row:3;min-width:0;margin:0!important;
+  grid-column:1;grid-row:3;display:none!important;min-width:0;margin:0!important;
 }
 body[data-coffee-theme] #app .ds-nav-search>label{
   color:var(--menu-muted)!important;font:800 10px Inter,Arial,sans-serif!important;
@@ -212,26 +212,24 @@ body[data-coffee-theme] #app .cafe-server-card-heading h2{
 body[data-coffee-theme] #app .cafe-server-card-heading .cafe-menu-rule{height:2px;background:var(--menu-rule)}
 body[data-coffee-theme] #app .cafe-server-card .server-ticket{
   display:flex;flex-direction:column;align-items:stretch;gap:10px;
-  margin:10px 0 16px;padding:12px;border:2px solid #9a6a49;border-radius:10px;
-  background:rgba(255,250,241,.72)!important;box-shadow:none!important;
+  margin:10px 0 16px;padding:12px;border:2px solid #9a6a49;border-radius:50px;
+  background:var(--menu-roast)!important;color:#fff8ed!important;box-shadow:none!important;
 }
-body[data-coffee-theme] #app .cafe-server-card .server-current strong{color:var(--menu-roast)!important;font:800 17px "Comic Sans MS","Comic Neue",cursive}
-body[data-coffee-theme] #app .cafe-server-card .label{color:var(--menu-muted)!important}
-body[data-coffee-theme] #app .cafe-server-card .service-ticket-caption{color:var(--menu-muted)!important}
+body[data-coffee-theme] #app .cafe-server-card .server-current strong{color:#fff8ed!important;font:800 17px "Comic Sans MS","Comic Neue",cursive}
+body[data-coffee-theme] #app .cafe-server-card .label{color:#e8cdb5!important}
+body[data-coffee-theme] #app .cafe-server-card .service-ticket-caption{color:#d9b89d!important}
 body[data-coffee-theme] #app .cafe-server-card .server-selector .button{
-  width:100%;min-height:36px;background:var(--menu-roast)!important;color:#fff8ed!important;border:0!important;border-radius:5px;
+  width:100%;min-height:36px;background:#9b6948!important;color:#fff8ed!important;border:1px solid #d7b391!important;border-radius:5px;
 }
-body[data-coffee-theme] #app .cafe-server-stats-heading{
-  margin:14px 0 8px;color:var(--menu-roast)!important;font:900 20px/1.1 "Comic Sans MS","Comic Neue",cursive!important;
-}
-body[data-coffee-theme] #app .cafe-stats-grid{display:grid;grid-template-columns:1fr;gap:8px;background:transparent;border:0}
+body[data-coffee-theme] #app .cafe-server-stats-heading{display:none!important}
+body[data-coffee-theme] #app .cafe-stats-grid{display:grid;grid-template-columns:1fr;gap:0;padding:8px 12px;background:var(--menu-roast);border:0;border-radius:9px}
 body[data-coffee-theme] #app .cafe-stats-grid .stat-card{
   min-height:68px;display:flex;align-items:center;gap:10px;padding:10px;
-  border:1px solid rgba(91,47,29,.2)!important;border-radius:7px!important;
-  background:#fff8ef!important;box-shadow:none!important;
+  border:0!important;border-bottom:1px solid rgba(255,248,237,.2)!important;border-radius:0!important;
+  background:transparent!important;color:#fff8ed!important;box-shadow:none!important;
 }
-body[data-coffee-theme] #app .cafe-stats-grid .label{color:var(--menu-muted)!important}
-body[data-coffee-theme] #app .cafe-stats-grid strong{color:var(--menu-roast)!important;font:900 19px "Comic Sans MS","Comic Neue",cursive}
+body[data-coffee-theme] #app .cafe-stats-grid .label{color:#e8cdb5!important}
+body[data-coffee-theme] #app .cafe-stats-grid strong{color:#fff8ed!important;font:900 19px "Comic Sans MS","Comic Neue",cursive}
 body[data-coffee-theme] #app .cafe-server-card-note{color:var(--menu-muted)!important;font-size:11px}
 body[data-coffee-theme] #guest-auth-bar.guest-auth-bar{
   position:static!important;inset:auto!important;transform:none!important;
@@ -310,7 +308,7 @@ body[data-coffee-theme] #app :is(h1,h2,h3,h4,p,span,strong,label,small){text-sha
  body[data-coffee-theme] #app .cafe-header-identity{width:auto;min-height:0;flex:1 1 170px;border-radius:12px;transform:none;padding:10px 14px;font-size:14px}
  body[data-coffee-theme] #app .header-actions{width:100%;justify-content:flex-start}
  body[data-coffee-theme] #app .cafe-wood-rail{
-  display:flex!important;position:fixed!important;top:0!important;bottom:0!important;left:0!important;
+  order:2;display:flex!important;position:fixed!important;top:0!important;bottom:0!important;left:0!important;
   z-index:100!important;width:min(360px,88vw)!important;height:100dvh!important;max-height:100dvh!important;
   padding:20px!important;overflow-y:auto!important;flex-direction:column!important;gap:14px!important;
   background:var(--menu-paper)!important;border:6px solid var(--menu-edge)!important;border-left:0!important;
