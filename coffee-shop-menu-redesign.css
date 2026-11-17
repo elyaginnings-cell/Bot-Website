@@ -395,3 +395,102 @@ body[data-coffee-theme="dark-roast"] #app select,
 body[data-coffee-theme="dark-roast"] #app textarea{background:#26180f!important;color:#fff2e2!important;border-color:#a77b58!important}
 body[data-coffee-theme="dark-roast"] .guest-auth-card{background:#3c281d!important;color:#f4e2cf!important}
 body[data-coffee-theme="dark-roast"] .guest-auth-card :is(h2,p,label,.eyebrow){color:#f4e2cf!important}
+
+
+/* Compact board proportions: keep the hand-drawn layout without oversized spacing. */
+@media(min-width:901px){
+  body[data-coffee-theme] #app.coffee-shop-shell{
+    grid-template-columns:minmax(290px,1.18fr) minmax(270px,1fr) minmax(205px,.72fr)!important;
+    grid-template-rows:78px auto auto minmax(0,1fr)!important;
+    gap:12px 16px!important;
+    width:calc(100% - 44px)!important;
+    max-width:1440px!important;
+    min-height:calc(100vh - 28px)!important;
+    margin:14px auto!important;
+    padding:18px 20px 22px!important;
+    border-width:9px!important;
+    border-radius:22px!important;
+  }
+  body[data-coffee-theme] #app .coffee-counter{
+    min-height:0!important;
+    grid-template-columns:minmax(0,1fr) 142px minmax(200px,auto)!important;
+    gap:12px!important;
+    padding:0 4px 9px!important;
+  }
+  body[data-coffee-theme] #app .coffee-shop-wordmark{
+    font-size:clamp(34px,3.4vw,52px)!important;
+    letter-spacing:-.05em!important;
+  }
+  body[data-coffee-theme] #app .coffee-shop-tagline{margin-top:5px!important;font-size:9px!important}
+  body[data-coffee-theme] #app .cafe-header-identity{
+    width:142px!important;min-height:70px!important;padding:9px 14px!important;
+    gap:3px!important;font-size:13px!important;line-height:1.12!important;
+  }
+  body[data-coffee-theme] #app .cafe-header-identity strong{
+    max-width:108px!important;font-size:12px!important;line-height:1.1!important;
+  }
+  body[data-coffee-theme] #app .header-actions{gap:5px!important}
+  body[data-coffee-theme] #app .header-actions .button,
+  body[data-coffee-theme] #app .header-actions select{
+    min-height:30px!important;padding:5px 7px!important;font-size:10px!important;
+  }
+  body[data-coffee-theme] #app .ds-nav-group-toggle{
+    min-height:31px!important;padding:1px 3px 5px!important;border-bottom-width:2px!important;
+  }
+  body[data-coffee-theme] #app .ds-nav-group-label{
+    font-size:clamp(18px,1.55vw,24px)!important;line-height:1!important;
+  }
+  body[data-coffee-theme] #app .ds-nav-group-items{
+    gap:2px 8px!important;padding-top:5px!important;
+  }
+  body[data-coffee-theme] #app .navigation .nav-item{
+    min-height:29px!important;padding:4px 6px!important;gap:7px!important;
+    font-size:11px!important;border-radius:5px!important;
+  }
+  body[data-coffee-theme] #app .navigation .nav-item>span{
+    width:23px!important;height:23px!important;min-width:23px!important;
+    font-size:13px!important;border-radius:6px!important;
+  }
+  body[data-coffee-theme] #app .cafe-server-card{
+    padding:7px 9px 10px!important;
+  }
+  body[data-coffee-theme] #app .cafe-server-card-heading{margin-bottom:7px!important}
+  body[data-coffee-theme] #app .cafe-server-card-heading h2{font-size:19px!important}
+  body[data-coffee-theme] #app .cafe-server-card .server-ticket{
+    gap:6px!important;margin:7px 0 9px!important;padding:9px!important;border-radius:22px!important;
+  }
+  body[data-coffee-theme] #app .cafe-server-card .server-current strong{font-size:13px!important}
+  body[data-coffee-theme] #app .cafe-stats-grid{padding:5px 9px!important}
+  body[data-coffee-theme] #app .cafe-stats-grid .stat-card{padding:6px 0!important;min-height:38px!important}
+  body[data-coffee-theme] #app .guest-auth-bar{
+    display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;
+    align-items:center!important;gap:7px 10px!important;
+    min-height:0!important;margin:0 0 8px!important;padding:9px!important;
+    border-width:1px!important;border-radius:8px!important;
+  }
+  body[data-coffee-theme] #app .guest-auth-bar .guest-auth-copy strong{font-size:13px!important}
+  body[data-coffee-theme] #app .guest-auth-bar .guest-auth-copy span{font-size:9px!important;line-height:1.35!important}
+  body[data-coffee-theme] #app .guest-auth-bar .guest-auth-actions{
+    display:flex!important;flex-direction:column!important;gap:4px!important;
+  }
+  body[data-coffee-theme] #app .guest-auth-bar .guest-auth-actions>button{
+    min-height:26px!important;padding:4px 7px!important;font-size:10px!important;
+  }
+  body[data-coffee-theme] #app .cafe-workspace-board{
+    padding:13px 14px 18px!important;
+    border-radius:10px!important;
+  }
+  body[data-coffee-theme] #app .page-heading{margin-bottom:11px!important;padding-bottom:8px!important}
+  body[data-coffee-theme] #app .page-heading h2{font-size:clamp(20px,1.65vw,25px)!important}
+  body[data-coffee-theme] #app .page-heading p{font-size:12px!important}
+  body[data-coffee-theme] #app .coffee-welcome-board{
+    min-height:118px!important;padding:13px!important;
+    grid-template-columns:minmax(0,1fr) 82px!important;gap:8px!important;
+  }
+  body[data-coffee-theme] #app .welcome-board-copy h2{font-size:20px!important}
+  body[data-coffee-theme] #app .welcome-board-copy p{font-size:11px!important}
+  body[data-coffee-theme] #app .welcome-board-art{min-height:75px!important}
+  body[data-coffee-theme] #app .coffee-cup{font-size:38px!important}
+  body[data-coffee-theme] #app .cafe-shortcuts{margin-top:12px!important}
+  body[data-coffee-theme] #app .ledger-heading h3{font-size:17px!important}
+}
