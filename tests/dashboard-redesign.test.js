@@ -226,18 +226,18 @@ test("mobile drawer stylesheet loads after legacy responsive rules", () => {
 
 test("dashboard uses the new café-counter HTML composition, not only theme CSS", () => {
   assert.match(html, /class="coffee-shop-shell"/);
-  assert.match(html, /class="[^"]*cafe-brand-plaque/);
+  assert.match(html, /class="cafe-menu-heading"/);
   assert.match(html, /<nav class="navigation cafe-rail-section" id="dashboard-navigation"/);
-  assert.ok(html.indexOf('<aside class="sidebar cafe-wood-rail">') < html.indexOf('<nav class="navigation cafe-rail-section"'));
+  assert.ok(html.indexOf('<aside class="sidebar cafe-wood-rail cafe-menu-board">') < html.indexOf('<nav class="navigation cafe-rail-section"'));
   assert.match(html, /class="[^"]*coffee-counter/);
   assert.match(html, /class="[^"]*coffee-counter-greeting/);
   assert.match(html, /class="[^"]*server-ticket coffee-server-ticket/);
-  assert.match(html, /class="[^"]*workspace-paper/);
+  assert.match(html, /class="content workspace-paper cafe-workspace-board"/);
   assert.match(controlCenterCss, /repeating-linear-gradient\(2deg/);
   assert.match(controlCenterCss, /\.cafe-wood-rail/);
   assert.match(controlCenterCss, /\.coffee-welcome-board/);
   assert.match(controlCenterCss, /\.workspace-paper/);
-  assert.match(html, /class="[^"]*cafe-wood-trim/);
+  assert.match(html, /class="cafe-server-card"/);
 });
 
 
@@ -250,4 +250,24 @@ test("bootloader loads the dashboard document from the same deployment", () => {
 test("custom emoji navigation injects into the settings group after menu grouping", () => {
   assert.match(customEmojiScript, /settings && settings\.parentElement !== nav/);
   assert.match(customEmojiScript, /destination\.insertBefore\(button/);
+});
+
+
+test("dashboard follows Paisley's café menu blueprint with menu, workspace, and server card", () => {
+  assert.match(html, /class="[^"]*cafe-menu-board/);
+  assert.match(html, /class="[^"]*cafe-workspace-board/);
+  assert.match(html, /class="[^"]*cafe-server-card/);
+  assert.match(html, /class="[^"]*coffee-shop-wordmark/);
+  assert.match(html, /id="dashboard-navigation"/);
+  assert.match(html, /id="selected-server-name"/);
+  assert.match(html, /id="server-member-count"/);
+  assert.match(html, /id="server-online-count"/);
+  assert.match(html, /id="server-owner-status"/);
+  assert.match(html, /id="storage-status"/);
+  assert.match(controlCenterCss, /\.coffee-shop-shell/);
+  assert.match(controlCenterCss, /\.cafe-menu-board/);
+  assert.match(controlCenterCss, /\.cafe-workspace-board/);
+  assert.match(controlCenterCss, /\.cafe-server-card/);
+  assert.match(controlCenterCss, /#guest-auth-bar/);
+  assert.match(bootloader, /coffee-shop-control-center\.css\?v=3/);
 });
