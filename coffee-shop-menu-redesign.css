@@ -494,3 +494,41 @@ body[data-coffee-theme="dark-roast"] .guest-auth-card :is(h2,p,label,.eyebrow){c
   body[data-coffee-theme] #app .cafe-shortcuts{margin-top:12px!important}
   body[data-coffee-theme] #app .ledger-heading h3{font-size:17px!important}
 }
+
+
+/* Restore the original floating guest account bar, now in the café palette. */
+body[data-coffee-theme] #guest-auth-bar.guest-auth-bar{
+  position:fixed!important;left:50%!important;right:auto!important;bottom:max(16px,env(safe-area-inset-bottom))!important;
+  top:auto!important;inset-inline:auto!important;transform:translateX(-50%)!important;
+  z-index:10000!important;width:min(700px,calc(100vw - 36px))!important;max-width:700px!important;
+  margin:0!important;padding:11px 15px!important;display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:14px;
+  border:2px solid #b98b65!important;border-radius:13px!important;
+  background:rgba(255,248,237,.97)!important;color:#452719!important;
+  box-shadow:0 10px 32px rgba(45,22,11,.28)!important;backdrop-filter:blur(12px);
+}
+body[data-coffee-theme] #guest-auth-bar[hidden]{display:none!important}
+body[data-coffee-theme] #guest-auth-bar .guest-auth-copy{max-width:none;display:flex;flex-direction:column;gap:3px}
+body[data-coffee-theme] #guest-auth-bar .guest-auth-copy strong{color:#452719!important;font:800 14px/1.2 "Comic Sans MS","Comic Neue",cursive}
+body[data-coffee-theme] #guest-auth-bar .guest-auth-copy span{color:#80563e!important;font-size:11px;line-height:1.35}
+body[data-coffee-theme] #guest-auth-bar .guest-auth-actions{display:flex;gap:7px;flex-shrink:0}
+body[data-coffee-theme] #guest-auth-bar .guest-auth-actions button{min-height:32px;padding:6px 12px!important;border:1px solid #a87854!important;border-radius:6px!important;background:#5a2f1b!important;color:#fff8ed!important;font-size:11px!important}
+body[data-coffee-theme] #guest-auth-bar .guest-auth-actions button.secondary{background:#fff8ed!important;color:#5a2f1b!important}
+@media(max-width:600px){
+ body[data-coffee-theme] #guest-auth-bar.guest-auth-bar{width:calc(100vw - 22px)!important;flex-direction:column;align-items:stretch;gap:8px;padding:10px!important}
+ body[data-coffee-theme] #guest-auth-bar .guest-auth-actions{display:grid;grid-template-columns:1fr 1fr}
+}
+
+/* Align the two navigation columns as a single compact menu board. */
+@media(min-width:901px){
+ body[data-coffee-theme] #app.coffee-shop-shell{
+   grid-template-rows:78px auto auto auto!important;
+   align-content:start!important;min-height:0!important;height:auto!important;
+ }
+ body[data-coffee-theme] #app .ds-nav-group[data-group="overview"]{grid-column:1!important;grid-row:2!important}
+ body[data-coffee-theme] #app .ds-nav-group[data-group="systems"]{grid-column:1!important;grid-row:3!important}
+ body[data-coffee-theme] #app .ds-nav-group[data-group="workspace"]{grid-column:2!important;grid-row:2!important}
+ body[data-coffee-theme] #app .ds-nav-group[data-group="server"]{grid-column:2!important;grid-row:3!important}
+ body[data-coffee-theme] #app .cafe-workspace-board{grid-column:2!important;grid-row:4!important}
+ body[data-coffee-theme] #app .cafe-server-card{grid-column:3!important;grid-row:2/span 3!important}
+ body[data-coffee-theme] #app .cafe-rail-footer{grid-column:1!important;grid-row:4!important}
+}
