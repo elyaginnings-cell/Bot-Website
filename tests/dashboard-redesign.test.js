@@ -291,9 +291,9 @@ test("Paisley board composition uses three hand-drawn columns and the parchment 
 });
 
 test("menu board stylesheet loads after legacy styles in both entry paths", () => {
-  assert.ok(html.includes('coffee-shop-menu-redesign.css?v=5'));
+  assert.ok(html.includes('coffee-shop-menu-redesign.css?v=7'));
   assert.ok(html.includes('guest-auth.css?v=2'));
-  assert.ok(bootloader.indexOf('loadCss("/coffee-shop-menu-redesign.css?v=5")') > bootloader.indexOf('loadCss("/coffee-shop-control-center.css?v=3")'));
+  assert.ok(bootloader.indexOf('loadCss("/coffee-shop-menu-redesign.css?v=7")') > bootloader.indexOf('loadCss("/coffee-shop-control-center.css?v=3")'));
   assert.ok(menuRedesignCss.includes('.guest-auth-modal[hidden]{display:none!important}'));
   assert.ok(menuRedesignCss.includes(".guest-auth-card"));
 });
@@ -343,4 +343,23 @@ test("Coffee Shop keeps the main workspace as a real container on desktop and mo
   assert.ok(menuRedesignCss.includes("position:fixed!important;"));
   assert.ok(menuRedesignCss.includes("left:50%!important;"));
   assert.ok(menuRedesignCss.includes("transform:translateX(-50%)!important;"));
+});
+
+
+test("Home and Menu remove the legacy navigation board from the visible workspace", () => {
+  assert.match(menuPageScript, /side\.setAttribute\(\"aria-hidden\",\"true\"\)/);
+  assert.match(menuRedesignCss, /#app \.sidebar\[aria-hidden=\"true\"\]\s*\{\s*display:none!important;/);
+  assert.match(menuRedesignCss, /#app\.coffee-shop-shell\s*\{[^}]*grid-template-columns:minmax\(0,1fr\) minmax\(250px,320px\)!important/);
+  assert.match(menuRedesignCss, /#app>\.main\.coffee-main\s*\{[^}]*grid-column:1!important/);
+  assert.match(menuRedesignCss, /#app>\.cafe-server-card\s*\{[^}]*grid-column:2!important/);
+});
+
+
+test("mobile layout overrides the final desktop Home grid", () => {
+  const desktopGrid = menuRedesignCss.lastIndexOf("body[data-coffee-theme] #app.coffee-shop-shell {");
+  const mobileOverride = menuRedesignCss.lastIndexOf("@media(max-width:900px)");
+  assert.ok(mobileOverride > desktopGrid, "mobile shell rules must come after desktop Home grid rules");
+  const mobileLayout = menuRedesignCss.slice(mobileOverride);
+  assert.match(mobileLayout, /#app\.coffee-shop-shell\s*\{[^}]*display:flex!important/);
+  assert.match(mobileLayout, /#app>\.main\.coffee-main\s*\{[^}]*display:flex!important/);
 });

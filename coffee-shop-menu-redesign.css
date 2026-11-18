@@ -798,3 +798,82 @@ body[data-coffee-theme="dark-roast"] #app .cafe-shortcut:hover {
   background:#493020!important;
   border-color:#bd8c64!important;
 }
+
+
+/* Home and Menu are separate destinations: keep the old navigation only as
+   a data source for building the Menu page, never as a second visible menu. */
+body[data-coffee-theme] #app .sidebar[aria-hidden="true"] {
+  display:none!important;
+}
+body[data-coffee-theme] #app.coffee-shop-shell {
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(250px,320px)!important;
+  grid-template-rows:auto!important;
+  align-items:start!important;
+  gap:18px 24px!important;
+}
+body[data-coffee-theme] #app>.main.coffee-main {
+  grid-column:1!important;
+  grid-row:1!important;
+  width:100%!important;
+  min-width:0!important;
+}
+body[data-coffee-theme] #app>.cafe-server-card {
+  grid-column:2!important;
+  grid-row:1!important;
+  width:100%!important;
+  min-width:0!important;
+  align-self:start!important;
+}
+body[data-coffee-theme] #app .dashboard-menu-toggle {
+  display:none!important;
+}
+body[data-coffee-theme="dark-roast"] #app .cafe-menu-page-group h3 {
+  color:#f3dfc8!important;
+  border-color:#9b704f!important;
+}
+body[data-coffee-theme="dark-roast"] #app .cafe-menu-page-item {
+  background:#3a281c!important;
+  border-color:#8b6345!important;
+  color:#f4e2cf!important;
+}
+body[data-coffee-theme="dark-roast"] #app .cafe-menu-page-item strong {
+  color:#fff0dd!important;
+}
+body[data-coffee-theme="dark-roast"] #app .cafe-menu-page-item small {
+  color:#d2b59b!important;
+}
+body[data-coffee-theme="dark-roast"] #app .cafe-menu-page-icon {
+  background:#5a3b27!important;
+  color:#f4e2cf!important;
+}
+body[data-coffee-theme="dark-roast"] #app .cafe-menu-page-arrow {
+  color:#e0b88e!important;
+}
+
+
+/* Reassert the stacked layout after the desktop Home grid declaration. */
+@media(max-width:900px){
+  body[data-coffee-theme] #app.coffee-shop-shell{
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:stretch!important;
+    gap:12px!important;
+  }
+  body[data-coffee-theme] #app>.main.coffee-main{
+    display:flex!important;
+    flex-direction:column!important;
+    order:1!important;
+    grid-column:auto!important;
+    grid-row:auto!important;
+    width:100%!important;
+    min-width:0!important;
+  }
+  body[data-coffee-theme] #app>.cafe-server-card{
+    order:2!important;
+    grid-column:auto!important;
+    grid-row:auto!important;
+    width:100%!important;
+    max-width:none!important;
+  }
+}
