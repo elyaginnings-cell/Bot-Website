@@ -617,18 +617,20 @@ body[data-coffee-theme] #app>.main{grid-column:1!important;grid-row:1!important;
 body[data-coffee-theme] #app>.cafe-server-card{display:block!important;grid-column:2!important;grid-row:1!important;position:sticky;top:12px;min-width:0!important}
 body[data-coffee-theme] #app>.main .content{min-width:0!important;width:100%!important;max-width:none!important}
 body[data-coffee-theme] #app>.main .page-section:not(.active){display:none!important}
-body[data-coffee-theme] body[data-dashboard-page="overview"] #app>.main{grid-column:1!important}
-body[data-coffee-theme] body[data-dashboard-page="overview"] #app>.cafe-server-card{display:block!important}
-body[data-coffee-theme] body[data-dashboard-page="menu"] #app>.main,
-body[data-coffee-theme] body[data-dashboard-page]:not([data-dashboard-page="overview"]):not([data-dashboard-page="menu"]) #app>.main{grid-column:1/-1!important}
-body[data-coffee-theme] body[data-dashboard-page="menu"] #app>.cafe-server-card,
-body[data-coffee-theme] body[data-dashboard-page]:not([data-dashboard-page="overview"]):not([data-dashboard-page="menu"]) #app>.cafe-server-card{display:none!important}
+body[data-coffee-theme][data-dashboard-page="overview"] #app>.main{grid-column:1!important}
+body[data-coffee-theme][data-dashboard-page="overview"] #app>.cafe-server-card{display:block!important}
+body[data-coffee-theme][data-dashboard-page="menu"] #app>.main,
+body[data-coffee-theme][data-dashboard-page]:not([data-dashboard-page="overview"]):not([data-dashboard-page="menu"]) #app>.main{grid-column:1/-1!important}
+body[data-coffee-theme][data-dashboard-page="menu"] #app>.cafe-server-card,
+body[data-coffee-theme][data-dashboard-page]:not([data-dashboard-page="overview"]):not([data-dashboard-page="menu"]) #app>.cafe-server-card{display:none!important}
 body[data-coffee-theme] #guest-auth-bar.guest-auth-bar{z-index:10000!important}
 @media(max-width:900px){
  body[data-coffee-theme] #app.coffee-shop-shell{display:flex!important;flex-direction:column!important;gap:12px!important}
  body[data-coffee-theme] #app>.main{width:100%!important;order:1!important}
  body[data-coffee-theme] #app>.cafe-server-card{position:static!important;width:100%!important;order:2!important}
- body[data-coffee-theme] body[data-dashboard-page="overview"] #app>.cafe-server-card{display:block!important}
- body[data-coffee-theme] body[data-dashboard-page="menu"] #app>.cafe-server-card,
- body[data-coffee-theme] body[data-dashboard-page]:not([data-dashboard-page="overview"]):not([data-dashboard-page="menu"]) #app>.cafe-server-card{display:none!important}
+ body[data-coffee-theme][data-dashboard-page="overview"] #app>.cafe-server-card{display:block!important}
+ body[data-coffee-theme][data-dashboard-page="menu"] #app>.cafe-server-card,
+ body[data-coffee-theme][data-dashboard-page]:not([data-dashboard-page="overview"]):not([data-dashboard-page="menu"]) #app>.cafe-server-card{display:none!important}
 }
+
+body[data-coffee-theme] .dashboard-menu-toggle,body[data-coffee-theme] .dashboard-nav-backdrop{display:none!important}
