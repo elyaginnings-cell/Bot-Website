@@ -850,3 +850,30 @@ body[data-coffee-theme="dark-roast"] #app .cafe-menu-page-icon {
 body[data-coffee-theme="dark-roast"] #app .cafe-menu-page-arrow {
   color:#e0b88e!important;
 }
+
+
+/* Reassert the stacked layout after the desktop Home grid declaration. */
+@media(max-width:900px){
+  body[data-coffee-theme] #app.coffee-shop-shell{
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:stretch!important;
+    gap:12px!important;
+  }
+  body[data-coffee-theme] #app>.main.coffee-main{
+    display:flex!important;
+    flex-direction:column!important;
+    order:1!important;
+    grid-column:auto!important;
+    grid-row:auto!important;
+    width:100%!important;
+    min-width:0!important;
+  }
+  body[data-coffee-theme] #app>.cafe-server-card{
+    order:2!important;
+    grid-column:auto!important;
+    grid-row:auto!important;
+    width:100%!important;
+    max-width:none!important;
+  }
+}
