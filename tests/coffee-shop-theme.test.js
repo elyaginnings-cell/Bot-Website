@@ -133,7 +133,7 @@ const legacyThemeCleanup = readText(new URL("../theme-boot.js", import.meta.url)
 test("bootloader loads the shared theme assets after legacy styles", () => {
   assert.match(bootloaderMarkup, /coffee-shop-dashboard\.css\?v=1/);
   assert.match(bootloaderMarkup, /coffee-shop-server-view\.css\?v=1/);
-  assert.match(dashboardMarkup, /coffee-shop-theme\.js\?v=1/);
+  assert.match(dashboardMarkup, /coffee-shop-theme\.js\?v=2/);
   assert.match(bootloaderMarkup, /theme-boot\.js\?v=19/);
   assert.match(bootloaderMarkup, /background:#f5efe5/);
   assert.match(bootloaderMarkup, /background:#fffaf2/);
