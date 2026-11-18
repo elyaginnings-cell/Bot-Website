@@ -798,3 +798,142 @@ body[data-coffee-theme="dark-roast"] #app .cafe-shortcut:hover {
   background:#493020!important;
   border-color:#bd8c64!important;
 }
+
+
+/* Theme parity: palette changes only; every component keeps the shared geometry above. */
+body[data-coffee-theme="cafe"]{
+  --menu-panel:rgba(255,250,241,.58);
+  --menu-card:#fff8ef;
+  --menu-card-hover:#fffdf8;
+  --menu-welcome:#dfc3a5;
+  --menu-welcome-ink:#4b2617;
+  --menu-control:#fff8ed;
+  --menu-control-ink:#3d1e11;
+  --menu-control-border:#c29b78;
+  --menu-stats:#3d1e11;
+  --menu-stat-ink:#fff8ed;
+  --menu-stat-muted:#e8cdb5;
+  --menu-input:#fffdf8;
+  --menu-input-ink:#4b2617;
+  --menu-field-border:#bd9877;
+  --menu-guest:#fff8ef;
+  --menu-guest-ink:#452719;
+  --menu-guest-muted:#80563e;
+}
+body[data-coffee-theme="dark-roast"]{
+  --menu-panel:rgba(30,18,11,.34);
+  --menu-card:#3a281c;
+  --menu-card-hover:#493020;
+  --menu-welcome:#68452f;
+  --menu-welcome-ink:#fff2e2;
+  --menu-control:#3a281c;
+  --menu-control-ink:#f4e2cf;
+  --menu-control-border:#8b6345;
+  --menu-stats:#21130d;
+  --menu-stat-ink:#fff2e2;
+  --menu-stat-muted:#f0d6bd;
+  --menu-input:#26180f;
+  --menu-input-ink:#fff2e2;
+  --menu-field-border:#a77b58;
+  --menu-guest:#3c281d;
+  --menu-guest-ink:#f4e2cf;
+  --menu-guest-muted:#d2b59b;
+}
+
+/* Header controls: identical dimensions, theme-specific paint. */
+body[data-coffee-theme] #app .header-actions .button,
+body[data-coffee-theme] #app .header-actions select{
+  background:var(--menu-control)!important;
+  color:var(--menu-control-ink)!important;
+  border-color:var(--menu-control-border)!important;
+}
+body[data-coffee-theme] #app .cafe-header-identity{
+  background:var(--menu-roast)!important;
+  color:var(--menu-stat-ink)!important;
+}
+body[data-coffee-theme] #app .cafe-header-identity :is(span,strong){
+  color:var(--menu-stat-ink)!important;
+}
+
+/* Main workspace, welcome board, and shortcuts share exactly the same sizing. */
+body[data-coffee-theme] #app .cafe-workspace-board{
+  background:var(--menu-panel)!important;
+  border-color:color-mix(in srgb,var(--menu-rule) 28%,transparent)!important;
+}
+body[data-coffee-theme] #app .coffee-welcome-board{
+  background:var(--menu-welcome)!important;
+}
+body[data-coffee-theme] #app .welcome-board-copy :is(h2,p,span),
+body[data-coffee-theme] #app .welcome-kicker{
+  color:var(--menu-welcome-ink)!important;
+}
+body[data-coffee-theme] #app .cafe-shortcut{
+  background:var(--menu-card)!important;
+  border-color:var(--menu-control-border)!important;
+  color:var(--menu-ink)!important;
+  box-shadow:none!important;
+}
+body[data-coffee-theme] #app .cafe-shortcut strong{
+  color:var(--menu-ink)!important;
+}
+body[data-coffee-theme] #app .cafe-shortcut p{
+  color:var(--menu-muted)!important;
+}
+body[data-coffee-theme] #app .cafe-shortcut .quick-icon{
+  background:var(--menu-paper-light)!important;
+  border-color:var(--menu-control-border)!important;
+  color:var(--menu-ink)!important;
+}
+body[data-coffee-theme] #app .cafe-shortcut:hover{
+  background:var(--menu-card-hover)!important;
+}
+
+/* Server ticket and stats: preserve contrast without changing card geometry. */
+body[data-coffee-theme] #app .cafe-server-card .server-ticket,
+body[data-coffee-theme] #app .cafe-stats-grid{
+  background:var(--menu-stats)!important;
+}
+body[data-coffee-theme] #app .cafe-server-card .server-current strong,
+body[data-coffee-theme] #app .cafe-server-card .label,
+body[data-coffee-theme] #app .cafe-server-card .service-ticket-caption,
+body[data-coffee-theme] #app .cafe-stats-grid .label,
+body[data-coffee-theme] #app .cafe-stats-grid strong{
+  color:var(--menu-stat-ink)!important;
+}
+body[data-coffee-theme="dark-roast"] #app .cafe-stats-grid .label,
+body[data-coffee-theme="dark-roast"] #app .cafe-server-card .label,
+body[data-coffee-theme="dark-roast"] #app .cafe-server-card .service-ticket-caption{
+  color:var(--menu-stat-muted)!important;
+}
+
+/* Forms and authentication surfaces follow the selected palette as well. */
+body[data-coffee-theme] #app .settings-panel,
+body[data-coffee-theme] #app .form-card,
+body[data-coffee-theme] .guest-auth-card{
+  background:var(--menu-guest)!important;
+  border-color:var(--menu-control-border)!important;
+  color:var(--menu-guest-ink)!important;
+}
+body[data-coffee-theme] #app .settings-panel :is(h1,h2,h3,h4,p,span,strong,label,small),
+body[data-coffee-theme] #app .form-card :is(h1,h2,h3,h4,p,span,strong,label,small),
+body[data-coffee-theme] .guest-auth-card :is(h2,p,label,.eyebrow){
+  color:var(--menu-guest-ink)!important;
+}
+body[data-coffee-theme] #app input:not([type=checkbox]):not([type=radio]),
+body[data-coffee-theme] #app select,
+body[data-coffee-theme] #app textarea,
+body[data-coffee-theme] .guest-auth-card input{
+  background:var(--menu-input)!important;
+  color:var(--menu-input-ink)!important;
+  border-color:var(--menu-field-border)!important;
+}
+body[data-coffee-theme] #guest-auth-bar.guest-auth-bar{
+  background:var(--menu-guest)!important;
+  color:var(--menu-guest-ink)!important;
+}
+body[data-coffee-theme] #guest-auth-bar .guest-auth-copy strong{
+  color:var(--menu-guest-ink)!important;
+}
+body[data-coffee-theme] #guest-auth-bar .guest-auth-copy span{
+  color:var(--menu-guest-muted)!important;
+}

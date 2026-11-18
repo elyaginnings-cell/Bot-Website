@@ -164,3 +164,18 @@ test("Dark Roast uses the shared menu stylesheet instead of a separate CSS file"
   assert.ok(!dashboardMarkup.includes("coffee-shop-dark-roast.css"));
   assert.ok(menuRedesignStyles.includes('body[data-coffee-theme="dark-roast"]'));
 });
+
+import { readFileSync as readStyle } from "node:fs";
+const menuRedesignStyles = readStyle(new URL("../coffee-shop-menu-redesign.css", import.meta.url), "utf8");
+
+test("Café au Lait and Dark Roast share the same component geometry and swap palette tokens", () => {
+  assert.ok(menuRedesignStyles.includes('--menu-welcome:#dfc3a5'));
+  assert.ok(menuRedesignStyles.includes('--menu-welcome:#68452f'));
+  assert.ok(menuRedesignStyles.includes('background:var(--menu-welcome)!important'));
+  assert.ok(menuRedesignStyles.includes('background:var(--menu-card)!important'));
+  assert.ok(menuRedesignStyles.includes('color:var(--menu-stat-ink)!important'));
+  const darkStart = menuRedesignStyles.indexOf('/* Dark Roast keeps');
+  const darkEnd = menuRedesignStyles.indexOf('/* Compact board proportions', darkStart);
+  const darkBlock = menuRedesignStyles.slice(darkStart, darkEnd);
+  assert.doesNotMatch(darkBlock, /grid-template-columns|grid-template-rows|padding:|margin:|gap:|font-size:/);
+});
