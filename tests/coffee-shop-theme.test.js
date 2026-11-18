@@ -159,8 +159,8 @@ test("Dark Roast styles the complete menu surface, including shortcuts and page 
   assert.ok(menuRedesignStyles.includes("background-attachment:fixed!important"));
 });
 
-test("Dark Roast is implemented in the shared menu stylesheet", () => {
-  assert.match(menuRedesignStyles, /body\\[data-coffee-theme="dark-roast"\\]/);
+test("Dark Roast uses the shared menu stylesheet instead of a separate CSS file", () => {
   assert.ok(dashboardMarkup.includes("/coffee-shop-menu-redesign.css?v=5"));
   assert.ok(!dashboardMarkup.includes("coffee-shop-dark-roast.css"));
+  assert.ok(menuRedesignStyles.includes('body[data-coffee-theme="dark-roast"]'));
 });
