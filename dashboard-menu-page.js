@@ -49,6 +49,7 @@ window.addEventListener("dashboard:guild-loaded",()=>{if(activeId()==="menu")bui
 document.addEventListener("click",e=>{
  var target=e.target?.closest?.("[data-menu-target]");if(target){var id=target.dataset.menuTarget;if(id==="server-view")$("nav-server-view")?.click();else show(id);return}
  if(e.target?.closest?.("[data-menu-home]")){show("overview");return}
+ if(e.target?.closest?.("[data-open-feature-manager]")){show("systems");return}
  if(e.target?.closest?.('[data-section-link="menu"]')){e.preventDefault();show("menu")}
  if(e.target?.closest?.('[data-tab]'))setTimeout(sync,80)
 },true);
