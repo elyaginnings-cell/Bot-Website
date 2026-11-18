@@ -48,7 +48,7 @@ test("dashboard shell groups navigation without changing tab targets", () => {
 
 test("all dashboard sections have a heading and retain their existing feature controls", () => {
   for (const id of sectionIds) {
-    const section = html.match(new RegExp('<section[^>]*id="' + id + '"[\s\\S]*?<\\/section>'));
+    const section = html.match(new RegExp('<section[^>]*id="' + id + '"[\\s\\S]*?<\\/section>'));
     assert.ok(section, "missing section " + id);
     assert.match(section[0], /class="[^"]*page-heading/, "missing page heading in " + id);
     assert.match(section[0], /<h2[^>]*>/, "missing page title in " + id);
@@ -60,7 +60,7 @@ test("all dashboard sections have a heading and retain their existing feature co
 
 test("configuration workspaces use consistent settings panels", () => {
   for (const id of ["moderation", "invites", "leveling", "currency", "emojis", "shop", "logs", "birthday", "settings", "account", "owner-billing"]) {
-    const section = html.match(new RegExp('<section[^>]*id="' + id + '"[\s\\S]*?<\\/section>'));
+    const section = html.match(new RegExp('<section[^>]*id="' + id + '"[\\s\\S]*?<\\/section>'));
     assert.ok(section && section[0].includes("settings-panel"), "missing settings panel in " + id);
   }
   assert.match(sectionCss, /\.page-heading/);
@@ -334,6 +334,13 @@ test("Tab Manager includes every bot feature, including dashboard-less Chess", (
 
 
 test("Coffee Shop keeps the main workspace as a real container on desktop and mobile", () => {
+  assert.match(menuRedesignCss, /body\\[data-coffee-theme\\] #app>\\.main\\.coffee-main\\{[^}]*display:flex!important/);
+  assert.match(menuRedesignCss, /body\\[data-coffee-theme\\] #app>\\.main\\.coffee-main\\{[^}]*flex-direction:column!important/);
+  assert.match(menuRedesignCss, /@media\\(max-width:900px\\)\\{[\\s\\S]*?body\\[data-coffee-theme\\] #app>\\.main\\.coffee-main\\{[^}]*display:flex!important/);
+  assert.match(menuRedesignCss, /#guest-auth-bar\\.guest-auth-bar\\{[\\s\\S]*?position:fixed!important;left:50%!important[\\s\\S]*?transform:translateX\\(-50%\\)!important/);
+});
+
+test("Coffee Shop keeps the main workspace as a real container on desktop and mobile", () => {
   const desktopMainRule = menuRedesignCss.slice(menuRedesignCss.lastIndexOf("body[data-coffee-theme] #app>.main.coffee-main{"));
   assert.ok(desktopMainRule.startsWith("body[data-coffee-theme] #app>.main.coffee-main{"));
   assert.ok(desktopMainRule.includes("display:flex!important"));
@@ -341,6 +348,7 @@ test("Coffee Shop keeps the main workspace as a real container on desktop and mo
   const mobileLayout = menuRedesignCss.slice(menuRedesignCss.lastIndexOf("@media(max-width:900px)"));
   assert.ok(mobileLayout.includes("body[data-coffee-theme] #app>.main.coffee-main{"));
   assert.ok(mobileLayout.includes("display:flex!important"));
-  assert.ok(menuRedesignCss.includes("position:fixed!important;\\n  left:50%!important;"));
+  assert.ok(menuRedesignCss.includes("position:fixed!important;"));
+  assert.ok(menuRedesignCss.includes("left:50%!important;"));
   assert.ok(menuRedesignCss.includes("transform:translateX(-50%)!important;"));
 });
