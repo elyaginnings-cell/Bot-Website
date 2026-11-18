@@ -344,3 +344,12 @@ test("Coffee Shop keeps the main workspace as a real container on desktop and mo
   assert.ok(menuRedesignCss.includes("left:50%!important;"));
   assert.ok(menuRedesignCss.includes("transform:translateX(-50%)!important;"));
 });
+
+
+test("Home and Menu remove the legacy navigation board from the visible workspace", () => {
+  assert.match(menuPageScript, /side\.setAttribute\(\"aria-hidden\",\"true\"\)/);
+  assert.match(menuRedesignCss, /#app \.sidebar\[aria-hidden=\"true\"\]\s*\{\s*display:none!important;/);
+  assert.match(menuRedesignCss, /#app\.coffee-shop-shell\{[^}]*grid-template-columns:minmax\(0,1fr\) minmax\(250px,320px\)!important/);
+  assert.match(menuRedesignCss, /#app>\.main\.coffee-main\{[^}]*grid-column:1!important/);
+  assert.match(menuRedesignCss, /#app>\.cafe-server-card\{[^}]*grid-column:2!important/);
+});
