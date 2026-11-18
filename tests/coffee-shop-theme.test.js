@@ -19,7 +19,7 @@ function createEnvironment(initial = {}) {
   const document = {
     readyState: "complete",
     body: { dataset: {} },
-    documentElement: { style: {} },
+    documentElement: { style: {}, dataset: {} },
     getElementById(id) { return id === "coffee-shop-theme-toggle" ? button : null; }
   };
   const localStorage = {
