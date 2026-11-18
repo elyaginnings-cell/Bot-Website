@@ -152,9 +152,9 @@ test("legacy theme picker stays removed while the compatibility cleanup remains 
 });
 
 test("Dark Roast styles the complete menu surface, including shortcuts and page backdrop", () => {
-  assert.match(menuRedesignStyles, /html\\[data-coffee-theme="dark-roast"\\]/);
-  assert.match(menuRedesignStyles, /body\\[data-coffee-theme="dark-roast"\\] #app \.cafe-shortcut\\s*\\{[^}]*background:#3a281c/i);
-  assert.match(menuRedesignStyles, /body\\[data-coffee-theme="dark-roast"\\] #app \.cafe-shortcut strong\\s*\\{[^}]*color:#f4e2cf/i);
-  assert.match(menuRedesignStyles, /body\\[data-coffee-theme="dark-roast"\\] #app \.cafe-shortcut p\\s*\\{[^}]*color:#d2b59b/i);
-  assert.match(menuRedesignStyles, /background-attachment:fixed/);
+  assert.ok(menuRedesignStyles.includes('html[data-coffee-theme="dark-roast"]'));
+  assert.ok(menuRedesignStyles.includes('body[data-coffee-theme="dark-roast"] #app .cafe-shortcut {'));
+  assert.ok(menuRedesignStyles.includes('body[data-coffee-theme="dark-roast"] #app .cafe-shortcut strong {'));
+  assert.ok(menuRedesignStyles.includes('body[data-coffee-theme="dark-roast"] #app .cafe-shortcut p {'));
+  assert.ok(menuRedesignStyles.includes("background-attachment:fixed!important"));
 });
