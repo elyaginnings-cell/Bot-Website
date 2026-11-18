@@ -174,6 +174,8 @@ test("Café au Lait and Dark Roast share the same component geometry and swap pa
   assert.ok(menuRedesignStyles.includes('background:var(--menu-welcome)!important'));
   assert.ok(menuRedesignStyles.includes('background:var(--menu-card)!important'));
   assert.ok(menuRedesignStyles.includes('color:var(--menu-stat-ink)!important'));
-  const darkBlock = menuRedesignStyles.slice(menuRedesignStyles.indexOf('/* Dark Roast keeps'));
+  const darkStart = menuRedesignStyles.indexOf('/* Dark Roast keeps');
+  const darkEnd = menuRedesignStyles.indexOf('/* Compact board proportions', darkStart);
+  const darkBlock = menuRedesignStyles.slice(darkStart, darkEnd);
   assert.doesNotMatch(darkBlock, /grid-template-columns|grid-template-rows|padding:|margin:|gap:|font-size:/);
 });
