@@ -331,3 +331,11 @@ test("Tab Manager includes every bot feature, including dashboard-less Chess", (
   assert.match(featureManagerScript, /saveConfig\(\{systems\}\)/);
   assert.match(menuRedesignCss, /\.feature-manager-row/);
 });
+
+
+test("Coffee Shop keeps the main workspace as a real container on desktop and mobile", () => {
+  assert.match(menuRedesignCss, /body\\[data-coffee-theme\\] #app>\\.main\\.coffee-main\\{[^}]*display:flex!important/);
+  assert.match(menuRedesignCss, /body\\[data-coffee-theme\\] #app>\\.main\\.coffee-main\\{[^}]*flex-direction:column!important/);
+  assert.match(menuRedesignCss, /@media\\(max-width:900px\\)\\{[\\s\\S]*?body\\[data-coffee-theme\\] #app>\\.main\\.coffee-main\\{[^}]*display:flex!important/);
+  assert.match(menuRedesignCss, /#guest-auth-bar\\.guest-auth-bar\\{[\\s\\S]*?position:fixed!important;left:50%!important[\\s\\S]*?transform:translateX\\(-50%\\)!important/);
+});
