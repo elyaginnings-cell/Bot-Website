@@ -36,6 +36,6 @@ function mount(){if(!ensure())return;navLink();render();bind();navVisibility()}
 document.addEventListener("click",e=>{if(e.target?.closest?.('[data-tab="systems"]'))setTimeout(mount,30)},true);
 [0,300,1000,2500,6000,12000,20000].forEach(ms=>setTimeout(mount,ms));
 var configPolls=0;var configPoll=setInterval(function(){navVisibility();if(++configPolls>=40)clearInterval(configPoll)},500);
-window.addEventListener("dashboard:config-loaded",navVisibility);window.addEventListener("configLoaded",navVisibility);
+window.addEventListener("dashboard:config-loaded",navVisibility);window.addEventListener("configLoaded",navVisibility);window.addEventListener("dashboard:guild-loading",function(){render();navVisibility()});window.addEventListener("dashboard:guild-loaded",function(){render();navVisibility()});
 console.log("[features-systems] complete feature manager ready")
 })();
