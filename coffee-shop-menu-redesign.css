@@ -634,3 +634,122 @@ body[data-coffee-theme] #guest-auth-bar.guest-auth-bar{z-index:10000!important}
 }
 
 body[data-coffee-theme] .dashboard-menu-toggle,body[data-coffee-theme] .dashboard-nav-backdrop{display:none!important}
+
+
+/* The main element must remain the actual workspace container.
+   display:contents here made its child grid items escape into the shell,
+   placing the content in the narrow stats column and collapsing the page. */
+body[data-coffee-theme] #app>.main.coffee-main{
+  display:flex!important;
+  flex:1 1 auto!important;
+  flex-direction:column!important;
+  grid-column:1!important;
+  grid-row:1!important;
+  align-self:stretch!important;
+  align-items:stretch!important;
+  gap:16px!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  position:relative!important;
+}
+body[data-coffee-theme] #app>.main.coffee-main>.coffee-counter,
+body[data-coffee-theme] #app>.main.coffee-main>.content{
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  box-sizing:border-box!important;
+}
+body[data-coffee-theme] #app>.main.coffee-main>.content{
+  flex:1 1 auto!important;
+  align-self:stretch!important;
+}
+body[data-coffee-theme] #app .cafe-server-card .cafe-stats-grid .label{
+  color:#67432e!important;
+  opacity:1!important;
+}
+body[data-coffee-theme] #app .cafe-server-card .cafe-stats-grid .stat-card strong{
+  color:#3d1e11!important;
+  opacity:1!important;
+}
+body[data-coffee-theme] #guest-auth-bar.guest-auth-bar{
+  position:fixed!important;
+  left:50%!important;
+  right:auto!important;
+  top:auto!important;
+  bottom:max(16px,env(safe-area-inset-bottom))!important;
+  transform:translateX(-50%)!important;
+  width:min(700px,calc(100vw - 36px))!important;
+  max-width:calc(100vw - 36px)!important;
+  z-index:10000!important;
+}
+@media(max-width:900px){
+  body[data-coffee-theme] #app.coffee-shop-shell{
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:stretch!important;
+    gap:12px!important;
+  }
+  body[data-coffee-theme] #app>.main.coffee-main{
+    display:flex!important;
+    flex:0 0 auto!important;
+    flex-direction:column!important;
+    order:1!important;
+    grid-column:auto!important;
+    grid-row:auto!important;
+    width:100%!important;
+    min-width:0!important;
+    gap:12px!important;
+  }
+  body[data-coffee-theme] #app>.main.coffee-main>.coffee-counter{
+    display:flex!important;
+    flex-wrap:wrap!important;
+    align-items:center!important;
+    gap:10px!important;
+    min-width:0!important;
+  }
+  body[data-coffee-theme] #app>.main.coffee-main>.content{
+    display:block!important;
+    flex:0 0 auto!important;
+    width:100%!important;
+    min-width:0!important;
+    padding:14px!important;
+  }
+  body[data-coffee-theme] #app>.cafe-server-card{
+    order:2!important;
+    position:static!important;
+    width:100%!important;
+    min-width:0!important;
+    max-width:none!important;
+    margin:0!important;
+  }
+  body[data-coffee-theme] #guest-auth-bar.guest-auth-bar{
+    left:50%!important;
+    bottom:max(10px,env(safe-area-inset-bottom))!important;
+    width:calc(100vw - 24px)!important;
+    max-width:calc(100vw - 24px)!important;
+    flex-direction:row!important;
+    align-items:center!important;
+    gap:8px!important;
+  }
+}
+@media(max-width:560px){
+  body[data-coffee-theme] #app>.main.coffee-main>.coffee-counter{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) auto!important;
+    align-items:center!important;
+  }
+  body[data-coffee-theme] #app>.main.coffee-main>.coffee-counter .header-actions{
+    grid-column:1/-1!important;
+    width:100%!important;
+    justify-content:flex-start!important;
+  }
+  body[data-coffee-theme] #guest-auth-bar.guest-auth-bar{
+    flex-direction:column!important;
+    align-items:stretch!important;
+  }
+  body[data-coffee-theme] #guest-auth-bar .guest-auth-actions{
+    display:grid!important;
+    grid-template-columns:1fr 1fr!important;
+  }
+}
