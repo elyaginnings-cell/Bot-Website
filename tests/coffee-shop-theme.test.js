@@ -35,6 +35,7 @@ test("theme defaults to Café au Lait when no preference is saved", () => {
   const env = createEnvironment();
   assert.equal(env.window.CoffeeShopTheme.getTheme(), "cafe");
   assert.equal(env.document.body.dataset.coffeeTheme, "cafe");
+  assert.equal(env.document.documentElement.dataset.coffeeTheme, "cafe");
   assert.equal(env.document.documentElement.style.colorScheme, "light");
   assert.equal(env.values.get("coffeeShopTheme"), "cafe");
 });
@@ -43,6 +44,7 @@ test("theme restores a saved Dark Roast preference", () => {
   const env = createEnvironment({ coffeeShopTheme: "dark-roast" });
   assert.equal(env.window.CoffeeShopTheme.getTheme(), "dark-roast");
   assert.equal(env.document.body.dataset.coffeeTheme, "dark-roast");
+  assert.equal(env.document.documentElement.dataset.coffeeTheme, "dark-roast");
   assert.equal(env.document.documentElement.style.colorScheme, "dark");
   assert.equal(env.button.attributes["aria-pressed"], "true");
   assert.match(env.button.textContent, /Dark Roast/);
@@ -58,6 +60,7 @@ test("setTheme updates the document, accessible control, and persistence", () =>
   const env = createEnvironment();
   assert.equal(env.window.CoffeeShopTheme.setTheme("dark-roast"), "dark-roast");
   assert.equal(env.document.body.dataset.coffeeTheme, "dark-roast");
+  assert.equal(env.document.documentElement.dataset.coffeeTheme, "dark-roast");
   assert.equal(env.button.attributes["aria-pressed"], "true");
   assert.match(env.button.attributes["aria-label"], /Café au Lait/);
   assert.equal(env.values.get("coffeeShopTheme"), "dark-roast");
@@ -87,6 +90,7 @@ import { readFileSync as readText } from "node:fs";
 const dashboardMarkup = readText(new URL("../dashboard.html", import.meta.url), "utf8");
 const dashboardStyles = readText(new URL("../coffee-shop-dashboard.css", import.meta.url), "utf8");
 const serverViewStyles = readText(new URL("../coffee-shop-server-view.css", import.meta.url), "utf8");
+const menuRedesignStyles = readText(new URL("../coffee-shop-menu-redesign.css", import.meta.url), "utf8");
 
 test("dashboard exposes exactly one theme toggle and preserves the layout selector", () => {
   assert.equal((dashboardMarkup.match(/id="coffee-shop-theme-toggle"/g) || []).length, 1);
@@ -145,4 +149,12 @@ test("legacy theme picker stays removed while the compatibility cleanup remains 
   assert.ok(!/theme-(?:garden|midnight|ash|blurple|amoled|nord|dracula|catppuccin)/i.test(dashboardMarkup));
   assert.ok(legacyThemeCleanup.includes('server-view-theme-garden'));
   assert.ok(legacyThemeCleanup.includes('server-view-themes-extra'));
+});
+
+test("Dark Roast styles the complete menu surface, including shortcuts and page backdrop", () => {
+  assert.match(menuRedesignStyles, /html\\[data-coffee-theme="dark-roast"\\]/);
+  assert.match(menuRedesignStyles, /body\\[data-coffee-theme="dark-roast"\\] #app \.cafe-shortcut\\s*\\{[^}]*background:#3a281c/i);
+  assert.match(menuRedesignStyles, /body\\[data-coffee-theme="dark-roast"\\] #app \.cafe-shortcut strong\\s*\\{[^}]*color:#f4e2cf/i);
+  assert.match(menuRedesignStyles, /body\\[data-coffee-theme="dark-roast"\\] #app \.cafe-shortcut p\\s*\\{[^}]*color:#d2b59b/i);
+  assert.match(menuRedesignStyles, /background-attachment:fixed/);
 });
