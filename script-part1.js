@@ -123,7 +123,6 @@ function setupEventListeners() {
   document.getElementById("add-shop-item")?.addEventListener("click", addShopItem);
   document.getElementById("shop-type")?.addEventListener("change", updateShopTypeFields);
   document.getElementById("save-birthday")?.addEventListener("click", saveBirthday);
-  document.getElementById("save-dashboard-tabs")?.addEventListener("click", saveDashboardTabs);
   document.getElementById("save-custom-emoji")?.addEventListener("click", saveCustomEmoji);
   document.getElementById("emoji-file")?.addEventListener("change", previewCustomEmojiFile);
   ["lvl-beans-base", "lvl-beans-linear", "lvl-beans-quad"].forEach((id) => {
@@ -142,7 +141,6 @@ const DASHBOARD_DRAFT_FIELDS = {
   shop: ["shop-enabled"],
   logs: ["dashboard-log-channel"],
   birthday: ["bday-channel","bday-ping-role","bday-role","bday-bonus"],
-  settings: ["dashboard-tab-moderation","dashboard-tab-invites","dashboard-tab-leveling","dashboard-tab-currency","dashboard-tab-emojis","dashboard-tab-shop","dashboard-tab-logs","dashboard-tab-birthday","dashboard-tab-account","dashboard-tab-owner-billing"],
   verification: ["verify-enabled","verify-channel","verify-role","verify-log-channel","verify-btn-label","verify-title","verify-desc","verify-monitor-mins"]
 };
 let dashboardDraftSnapshot = "";
