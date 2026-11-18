@@ -565,3 +565,48 @@ body[data-coffee-theme] #systems-status[data-state="success"]{color:#456b3e}
  body[data-coffee-theme] .feature-manager-footer{align-items:stretch;flex-direction:column}
  body[data-coffee-theme] .feature-manager-footer .button{width:100%}
 }
+
+/* A separate menu destination: Home and configuration pages get the whole counter. */
+body[data-coffee-theme] #app.coffee-shop-shell{grid-template-columns:minmax(0,1fr)!important;grid-template-rows:auto minmax(0,1fr)!important;gap:0!important}
+body[data-coffee-theme] #app>.sidebar{display:none!important}
+body[data-coffee-theme] #app>.main{grid-column:1!important;width:100%!important;min-width:0!important}
+body[data-coffee-theme] #app .content.cafe-workspace-board{width:100%!important;max-width:none!important;min-width:0!important;box-sizing:border-box}
+body[data-coffee-theme] #app .cafe-server-card{grid-column:1/-1!important}
+body[data-coffee-theme] #app .cafe-overview{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(260px,.8fr);gap:18px;align-items:start}
+body[data-coffee-theme] #app .cafe-overview>.page-heading,
+body[data-coffee-theme] #app .cafe-overview>.coffee-welcome-board{grid-column:1/-1}
+body[data-coffee-theme] #app .cafe-overview>.cafe-server-card{grid-column:2;grid-row:3}
+body[data-coffee-theme] #app .cafe-overview>.cafe-home-workspace,
+body[data-coffee-theme] #app .cafe-overview>.home-workspace{grid-column:1}
+body[data-coffee-theme] .dashboard-see-menu{min-height:38px;padding:8px 14px!important;white-space:nowrap}
+body[data-coffee-theme] .cafe-menu-page{width:100%;max-width:none}
+body[data-coffee-theme] .cafe-menu-page-groups{display:grid;gap:24px}
+body[data-coffee-theme] .cafe-menu-page-group h3{margin:0 0 12px;padding-bottom:9px;border-bottom:2px solid #75452b;color:#5a321e;font-family:Georgia,serif;font-size:clamp(19px,2.2vw,25px)}
+body[data-coffee-theme] .cafe-menu-page-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+body[data-coffee-theme] .cafe-menu-page-item{display:grid;grid-template-columns:44px minmax(0,1fr) 18px;align-items:center;gap:12px;min-width:0;min-height:74px;padding:13px 14px;border:1px solid #d6b392;border-radius:12px;background:#fff9ef;color:#4c2b1b;text-align:left;cursor:pointer;transition:transform .15s,border-color .15s,box-shadow .15s}
+body[data-coffee-theme] .cafe-menu-page-item:hover{transform:translateY(-2px);border-color:#9c6541;box-shadow:0 8px 18px rgba(74,40,22,.10)}
+body[data-coffee-theme] .cafe-menu-page-icon{display:grid;place-items:center;width:42px;height:42px;border-radius:11px;background:#efddc7;font-size:21px}
+body[data-coffee-theme] .cafe-menu-page-item>span:nth-child(2){display:flex;flex-direction:column;gap:4px;min-width:0}
+body[data-coffee-theme] .cafe-menu-page-item strong{color:#4c2b1b;font-size:14px}
+body[data-coffee-theme] .cafe-menu-page-item small{color:#87664d;font-size:11px;line-height:1.35}
+body[data-coffee-theme] .cafe-menu-page-arrow{color:#9b6b47;font-size:18px}
+body[data-coffee-theme] .cafe-menu-page-footer{display:flex;justify-content:flex-start;margin-top:24px;padding-top:18px;border-top:1px solid #d9b99a}
+body[data-coffee-theme] #app .content>.page-section:not(#overview):not(#menu){width:100%;max-width:none;min-width:0}
+body[data-coffee-theme] #app .content>.page-section:not(#overview):not(#menu)>.card,
+body[data-coffee-theme] #app .content>.page-section:not(#overview):not(#menu)>.form-card{width:100%;max-width:none;box-sizing:border-box}
+@media(max-width:900px){
+ body[data-coffee-theme] #app.coffee-shop-shell{display:block!important;min-height:100dvh!important;height:auto!important}
+ body[data-coffee-theme] #app>.main{width:100%!important;min-height:0!important}
+ body[data-coffee-theme] #app .content.cafe-workspace-board{padding:14px!important}
+ body[data-coffee-theme] #app .cafe-overview{display:flex;flex-direction:column;gap:14px}
+ body[data-coffee-theme] #app .cafe-overview>*{width:100%;max-width:none;box-sizing:border-box}
+ body[data-coffee-theme] #app .cafe-overview>.cafe-server-card{grid-column:auto;grid-row:auto}
+ body[data-coffee-theme] .cafe-menu-page-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ body[data-coffee-theme] .dashboard-see-menu{order:-1}
+}
+@media(max-width:560px){
+ body[data-coffee-theme] .cafe-menu-page-grid{grid-template-columns:minmax(0,1fr)}
+ body[data-coffee-theme] .cafe-menu-page-item{min-height:66px}
+ body[data-coffee-theme] #app .header-actions{flex-wrap:wrap}
+ body[data-coffee-theme] .dashboard-see-menu{flex:1 1 100%}
+}
