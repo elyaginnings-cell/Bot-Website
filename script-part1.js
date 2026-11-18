@@ -273,7 +273,6 @@ async function saveDashboardDraft() {
     leveling: saveLeveling,
     currency: saveCurrency,
     birthday: saveBirthday,
-    settings: saveDashboardTabs,
     verification: () => typeof window.saveVerificationDraft === "function" ? window.saveVerificationDraft() : false,
     logs: async () => {
       if (typeof saveLogChannel !== "function") return false;
