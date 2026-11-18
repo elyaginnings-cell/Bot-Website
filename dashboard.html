@@ -8,6 +8,7 @@
     <link rel="shortcut icon" href="/amazon-favicon.svg?v=2" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/amazon-favicon.svg?v=2">
     <link rel="stylesheet" href="style.css?v=8">
+    <link rel="stylesheet" href="/guest-auth.css?v=2">
     <link rel="stylesheet" href="/dashboard-preferences.css?v=4">
     <link rel="stylesheet" href="mobile-fix.css?v=5">
     <link rel="stylesheet" href="toggle-fix.css?v=1">
@@ -21,19 +22,15 @@
     <link rel="stylesheet" href="/customer-platform.css?v=3">
     <link rel="stylesheet" href="/dashboard-sections.css?v=1">
     <link rel="stylesheet" href="/coffee-shop-mobile.css?v=1">
+    <link rel="stylesheet" href="/coffee-shop-control-center.css?v=3">
+    <link rel="stylesheet" href="/coffee-shop-menu-redesign.css?v=4">
 </head>
 <body class="mode-auto" data-coffee-theme="cafe">
 
-    <div id="app">
-        <aside class="sidebar">
-            <div class="sidebar-brand">
-                <div class="brand-icon">☕</div>
-                <div>
-                    <strong>Coffee Shop</strong>
-                    <span>Bot Control</span>
-                </div>
-            </div>
-            <nav class="navigation" id="dashboard-navigation" aria-label="Dashboard tabs">
+    <div id="app" class="coffee-shop-shell">
+        <aside class="sidebar cafe-wood-rail cafe-menu-board">
+            <div class="cafe-menu-heading"><span class="cafe-menu-kicker">FRESH FROM THE COUNTER</span><strong>THE MENU</strong><span class="cafe-menu-rule"></span></div>
+            <nav class="navigation cafe-rail-section" id="dashboard-navigation" aria-label="Dashboard tabs">
                 <button class="nav-item active" data-tab="overview" type="button" title="Overview"><span>🏠</span><em>Home</em></button>
                 <button class="nav-item" data-tab="moderation" type="button" title="Moderation"><span>⚖️</span><em>Mod</em></button>
                 <button class="nav-item" data-tab="invites" type="button" title="Invites"><span>📨</span><em>Invites</em></button>
@@ -48,7 +45,7 @@
                 <button class="nav-item" id="nav-owner-billing" data-tab="owner-billing" type="button" title="Owner Billing" hidden><span>🧾</span><em>Owner</em></button>
                 <button class="nav-item" id="nav-server-view" type="button" title="Server View"><span>💬</span><em>Chat</em></button>
             </nav>
-            <div class="sidebar-bottom">
+            <div class="sidebar-bottom cafe-rail-footer">
                 <div class="connection-status">
                     <span class="status-dot"></span>
                     <span>Dashboard online</span>
@@ -57,13 +54,18 @@
         </aside>
         <button class="dashboard-nav-backdrop" id="dashboard-nav-backdrop" type="button" aria-label="Close navigation"></button>
 
-        <main class="main">
-            <header class="header card">
-                <div class="header-text">
+        <main class="main coffee-main">
+            <header class="header coffee-counter">
+                <div class="header-text coffee-counter-greeting">
                     <button class="dashboard-menu-toggle" id="dashboard-menu-toggle" type="button" aria-controls="dashboard-navigation" aria-expanded="false" aria-label="Open navigation" title="Open navigation"><span aria-hidden="true">☰</span></button>
-                    <h1 id="page-title">Overview</h1>
-                    <p id="page-description">Manage your Discord server systems.</p>
+                    <div class="coffee-shop-wordmark-wrap">
+                        <h1 class="coffee-shop-wordmark">Coffee Shop</h1>
+                        <p class="coffee-shop-tagline">Your community, your corner table.</p>
+                        <span id="page-title" hidden>Overview</span>
+                        <span id="page-description" hidden>Manage your Discord server systems.</span>
+                    </div>
                 </div>
+                <div class="cafe-header-identity" aria-label="Current account and server"><span>Name: <strong id="cafe-header-name">Guest</strong></span><span>Server: <strong id="cafe-header-server">Not selected</strong></span></div>
                 <div class="header-actions">
                     <button class="button secondary coffee-theme-toggle" id="coffee-shop-theme-toggle" type="button" aria-label="Switch to Dark Roast theme" aria-pressed="false" title="Switch to Dark Roast">☀ Café au Lait</button>
                     <div class="view-mode-wrap">
@@ -90,44 +92,30 @@
                 </div>
             </header>
 
-            <div class="server-bar card service-ticket">
-                <div class="server-current">
-                    <div class="server-icon" id="selected-server-icon">☕</div>
-                    <div>
-                        <span class="label">WORKING IN</span>
-                        <strong id="selected-server-name">No server selected</strong>
-                        <span class="service-ticket-caption">Server configuration</span>
-                    </div>
-                </div>
-                <div class="server-selector">
-                    <button class="button" id="server-button" type="button">Switch server</button>
-                    <div class="server-list" id="server-list" hidden></div>
-                </div>
-            </div>
 
-            <div class="content">
-                <section id="overview" class="page-section active">
-                    <div class="page-heading"><h2>Your server, at a glance</h2><p>A clear view of your community and the tools configured for this server.</p></div>
 
-                    <div class="hero card overview-intro">
-                        <div>
-                            <span class="eyebrow">DASHBOARD</span>
-                            <h2>Welcome back, <span id="welcome-name">...</span>.</h2>
-                            <p>Configure moderation, economy, shop, and more from one place.</p>
+            <div class="content workspace-paper cafe-workspace-board"><div class="workspace-paper-top" aria-hidden="true"><span class="paper-rule"></span><span class="paper-stamp">COFFEE SHOP · COMMUNITY CONTROL</span><span class="paper-rule"></span></div>
+                <section id="overview" class="page-section active cafe-overview">
+                    <div class="page-heading"><span class="eyebrow">THE COUNTER</span><h2>Your community, freshly brewed.</h2><p>A warm little control room for everything happening in your Discord server.</p></div>
+                    <div class="coffee-welcome-board">
+                        <div class="welcome-board-copy">
+                            <span class="welcome-kicker">WELCOME TO YOUR COFFEE SHOP</span>
+                            <h2>Good to see you, <span id="welcome-name">...</span>.</h2>
+                            <p>Your server's essentials, all in one place. Pull up a chair and make yourself at home.</p>
+                            <button class="coffee-board-action" data-section-link="menu" type="button">See Menu <span aria-hidden="true">↗</span></button>
                         </div>
-                        <div class="hero-icon">☕</div>
+                        <div class="welcome-board-art" aria-hidden="true"><span class="coffee-steam steam-one"></span><span class="coffee-steam steam-two"></span><span class="coffee-cup">☕</span><span class="cup-saucer"></span><span class="coffee-bean bean-one">●</span><span class="coffee-bean bean-two">●</span></div>
+                        <div class="board-corner-mark" aria-hidden="true">EST.<br>COFFEE<br>SHOP</div>
                     </div>
-                    <div class="stats-grid">
-                        <div class="stat-card card"><span class="stat-icon">👥</span><div><span class="label">Members</span><strong id="server-member-count">0</strong></div></div>
-                        <div class="stat-card card"><span class="stat-icon">🟢</span><div><span class="label">Online</span><strong id="server-online-count">0</strong></div></div>
-                        <div class="stat-card card"><span class="stat-icon">👑</span><div><span class="label">Role</span><strong id="server-owner-status">-</strong></div></div>
-                        <div class="stat-card card"><span class="stat-icon">💾</span><div><span class="label">Memory</span><strong id="storage-status">…</strong></div></div>
+                    
+                    <div class="cafe-shortcuts">
+                        <div class="ledger-heading"><div><span class="eyebrow">HOUSE SPECIALS</span><h3>Jump back into work</h3></div><span class="ledger-note">Choose a station</span></div>
+                        <div class="quick-grid three">
+                            <button class="quick-card card cafe-shortcut" data-section-link="moderation" type="button"><span class="quick-icon">⚖</span><div><strong>Moderation desk</strong><p>Warning destinations and server safety</p></div><span class="arrow">↗</span></button>
+                            <button class="quick-card card cafe-shortcut" data-section-link="currency" type="button"><span class="quick-icon">☕</span><div><strong>Beans counter</strong><p>Rewards, daily claims, and chat earnings</p></div><span class="arrow">↗</span></button>
+                            <button class="quick-card card cafe-shortcut" data-section-link="shop" type="button"><span class="quick-icon">♙</span><div><strong>Community shop</strong><p>Manage items members can purchase</p></div><span class="arrow">↗</span></button>
+                        </div>
                     </div>
-                    <div class="overview-quick-area"><div class="overview-subheading"><h3>Quick access</h3><p>Jump straight to a commonly used system.</p></div><div class="quick-grid three">
-                        <button class="quick-card card" data-section-link="currency" type="button"><span class="quick-icon">☕</span><div><strong>Currency</strong><p>Beans & rewards</p></div><span class="arrow">→</span></button>
-                        <button class="quick-card card" data-section-link="shop" type="button"><span class="quick-icon">🛒</span><div><strong>Shop</strong><p>Roles, boosts, packs</p></div><span class="arrow">→</span></button>
-                        <button class="quick-card card" data-section-link="logs" type="button"><span class="quick-icon">📋</span><div><strong>Logs</strong><p>Confirm saves</p></div><span class="arrow">→</span></button>
-                    </div></div>
                 </section>
 
                 <section id="moderation" class="page-section">
@@ -221,27 +209,14 @@
                     </div>
 </section>
                 <section id="settings" class="page-section">
-                    <div class="page-heading"><h2>Workspace settings</h2><p>Choose which tools appear and customize your bot's presence.</p></div>
+                    <div class="page-heading"><h2>Workspace settings</h2><p>Customize your bot's presence and workspace preferences.</p></div>
                     <div class="settings-layout">
 
-                    <div class="card form-card wide settings-panel tab-manager-card">
-                        <span class="eyebrow">DASHBOARD LAYOUT</span>
-                        <h2>Manage dashboard tabs</h2>
-                        <p class="form-hint">Choose which tabs appear in the sidebar for this server. Your choices are saved to PostgreSQL and follow this server when you switch between servers. Home and Settings stay available so you can always restore hidden tabs.</p>
-                        <div class="tab-preference-grid">
-                            <label class="toggle" data-tab-pref-row="moderation"><input id="dashboard-tab-moderation" type="checkbox" checked> <span>Moderation</span></label>
-                            <label class="toggle" data-tab-pref-row="invites"><input id="dashboard-tab-invites" type="checkbox" checked> <span>Invites</span></label>
-                            <label class="toggle" data-tab-pref-row="leveling"><input id="dashboard-tab-leveling" type="checkbox" checked> <span>Leveling</span></label>
-                            <label class="toggle" data-tab-pref-row="currency"><input id="dashboard-tab-currency" type="checkbox" checked> <span>Currency</span></label>
-                            <label class="toggle" data-tab-pref-row="emojis"><input id="dashboard-tab-emojis" type="checkbox" checked> <span>Custom Emojis</span></label>
-                            <label class="toggle" data-tab-pref-row="shop"><input id="dashboard-tab-shop" type="checkbox" checked> <span>Shop</span></label>
-                            <label class="toggle" data-tab-pref-row="logs"><input id="dashboard-tab-logs" type="checkbox" checked> <span>Logs</span></label>
-                            <label class="toggle" data-tab-pref-row="birthday"><input id="dashboard-tab-birthday" type="checkbox" checked> <span>Birthday</span></label>
-                            <label class="toggle" data-tab-pref-row="account"><input id="dashboard-tab-account" type="checkbox" checked> <span>Account</span></label>
-                            <label class="toggle" data-tab-pref-row="owner-billing" hidden><input id="dashboard-tab-owner-billing" type="checkbox" checked> <span>Owner Billing</span></label>
-                        </div>
-                        <button class="button" id="save-dashboard-tabs" type="button">Save tab layout</button>
-                        <p class="form-hint" id="dashboard-tabs-status"></p>
+                    <div class="card form-card wide settings-panel">
+                        <span class="eyebrow">FEATURE CONTROLS</span>
+                        <h2>Manage bot features</h2>
+                        <p class="form-hint">Turn complete bot systems on or off — including systems that do not have a website settings page. These controls live together in the Tab Manager.</p>
+                        <button class="button" type="button" data-open-feature-manager>Open Tab Manager</button>
                     </div>
                     <div class="card form-card wide settings-panel">
                         <span class="eyebrow">SETTINGS</span>
@@ -375,7 +350,37 @@
                     </div>
 </section>
             </div>
+            <div id="guest-auth-bar" class="guest-auth-bar" hidden role="region" aria-label="Account access">
+      <div class="guest-auth-copy"><strong>Looking to manage your server?</strong><span>Create an account or log in to unlock your dashboard.</span></div>
+      <div class="guest-auth-actions"><button type="button" class="button secondary" id="guest-login-open">Log in</button><button type="button" class="button" id="guest-signup-open">Create account</button></div>
+    </div>
         </main>
+
+        <aside class="cafe-server-card" aria-label="Selected server details">
+            <div class="cafe-server-card-heading"><span class="cafe-menu-kicker">YOUR CORNER</span><h2>Server stats</h2><span class="cafe-menu-rule"></span></div>
+            <div class="server-bar card service-ticket server-ticket coffee-server-ticket">
+                <div class="server-current">
+                    <div class="server-icon" id="selected-server-icon">☕</div>
+                    <div>
+                        <span class="label">WORKING IN</span>
+                        <strong id="selected-server-name">No server selected</strong>
+                        <span class="service-ticket-caption">Server configuration</span>
+                    </div>
+                </div>
+                <div class="server-selector">
+                    <button class="button" id="server-button" type="button">Switch server</button>
+                    <div class="server-list" id="server-list" hidden></div>
+                </div>
+            </div>
+            <div class="cafe-server-stats-heading">AT A GLANCE</div>
+<div class="stats-grid cafe-stats-grid">
+                            <div class="stat-card card"><span class="stat-icon">♧</span><div><span class="label">Members</span><strong id="server-member-count">0</strong></div></div>
+                            <div class="stat-card card"><span class="stat-icon">◉</span><div><span class="label">Online</span><strong id="server-online-count">0</strong></div></div>
+                            <div class="stat-card card"><span class="stat-icon">✦</span><div><span class="label">Your role</span><strong id="server-owner-status">-</strong></div></div>
+                            <div class="stat-card card"><span class="stat-icon">▤</span><div><span class="label">Storage</span><strong id="storage-status">…</strong></div></div>
+                        </div>
+            <p class="cafe-server-card-note">Details update when you switch servers.</p>
+        </aside>
     </div>
 
     <div id="server-view" class="server-view" hidden>
@@ -445,11 +450,6 @@
     <div id="sv-lightbox" class="sv-lightbox" hidden>
         <img id="sv-lightbox-img" src="" alt="">
     </div>
-
-    <div id="guest-auth-bar" class="guest-auth-bar" hidden role="region" aria-label="Account access">
-      <div class="guest-auth-copy"><strong>Guest preview mode</strong><span>This is a temporary preview, not an account. Log in to connect your server and manage it.</span></div>
-      <div class="guest-auth-actions"><button type="button" class="button discord-auth-button" id="guest-discord-open">Continue with Discord</button><button type="button" class="button secondary" id="guest-login-open">Email login</button><button type="button" class="button" id="guest-signup-open">Create account</button></div>
-    </div>
     <div id="guest-auth-modal" class="guest-auth-modal" hidden>
       <div class="guest-auth-backdrop" data-auth-close></div>
       <section class="guest-auth-card" role="dialog" aria-modal="true" aria-labelledby="guest-auth-title">
@@ -480,7 +480,7 @@
     </div>
 
     <script src="coffee-shop-theme.js?v=1"></script>
-    <script src="/guest-auth.js?v=7"></script>
+    <script src="/guest-auth.js?v=8"></script>
     <script src="branding-ui.js?v=5"></script>
     <script src="branding.js?v=6"></script>
     <script src="script.js?v=19"></script>
@@ -523,5 +523,7 @@
     <script src="sv-members-load.js?v=1"></script>
     <script src="sv-punish-attr-fix.js?v=1"></script>
     <script src="customer-platform.js?v=3"></script>
+    <script src="refined-dashboard.js?v=6"></script>
+    <script src="dashboard-shell.js?v=2"></script>
 </body>
 </html>

@@ -9,8 +9,13 @@ const shellCss = readFileSync(new URL("../coffee-shop-dashboard.css", import.met
 const serverViewCss = readFileSync(new URL("../coffee-shop-server-view.css", import.meta.url), "utf8");
 const sectionCss = (() => { try { return readFileSync(new URL("../dashboard-sections.css", import.meta.url), "utf8"); } catch { return ""; } })();
 const mobileCss = readFileSync(new URL("../coffee-shop-mobile.css", import.meta.url), "utf8");
+const controlCenterCss = readFileSync(new URL("../coffee-shop-control-center.css", import.meta.url), "utf8");
+const menuRedesignCss = readFileSync(new URL("../coffee-shop-menu-redesign.css", import.meta.url), "utf8");
 const navigationScript = readFileSync(new URL("../refined-dashboard.js", import.meta.url), "utf8");
 const featureUiScript = readFileSync(new URL("../features-ui.js", import.meta.url), "utf8");
+const customEmojiScript = readFileSync(new URL("../features-custom-emojis.js", import.meta.url), "utf8");
+const menuPageScript = readFileSync(new URL("../dashboard-menu-page.js", import.meta.url), "utf8");
+const featureManagerScript = readFileSync(new URL("../features-systems.js", import.meta.url), "utf8");
 const shellScript = (() => { try { return readFileSync(new URL("../dashboard-shell.js", import.meta.url), "utf8"); } catch { return ""; } })();
 
 const sectionIds = ["overview", "moderation", "invites", "leveling", "currency", "emojis", "shop", "logs", "birthday", "settings", "account", "owner-billing"];
@@ -21,7 +26,7 @@ const featureIds = [
   "emoji-name", "emoji-category", "emoji-source", "emoji-file", "emoji-import-preview", "save-custom-emoji", "custom-emoji-list",
   "shop-enabled", "shop-type", "shop-name", "shop-price", "shop-role", "shop-items-list", "add-shop-item",
   "dashboard-log-channel", "save-logs", "test-log", "bday-channel", "bday-role", "bday-bonus", "save-birthday",
-  "dashboard-tab-moderation", "site-name", "save-branding", "bot-status", "save-presence"
+  "site-name", "save-branding", "bot-status", "save-presence"
 ];
 
 test("dashboard shell groups navigation without changing tab targets", () => {
@@ -219,4 +224,123 @@ test("mobile drawer stylesheet loads after legacy responsive rules", () => {
   assert.match(mobileCss, /\.guest-auth-actions > button \{[\s\S]*?min-width: 0 !important/);
   assert.match(mobileCss, /#guest-signup-open \{\s*grid-column: 1 \/ -1/);
 
+});
+
+
+test("dashboard uses the new café-counter HTML composition, not only theme CSS", () => {
+  assert.match(html, /class="coffee-shop-shell"/);
+  assert.match(html, /class="cafe-menu-heading"/);
+  assert.match(html, /<nav class="navigation cafe-rail-section" id="dashboard-navigation"/);
+  assert.ok(html.indexOf('<aside class="sidebar cafe-wood-rail cafe-menu-board">') < html.indexOf('<nav class="navigation cafe-rail-section"'));
+  assert.match(html, /class="[^"]*coffee-counter/);
+  assert.match(html, /class="[^"]*coffee-counter-greeting/);
+  assert.match(html, /class="[^"]*server-ticket coffee-server-ticket/);
+  assert.match(html, /class="content workspace-paper cafe-workspace-board"/);
+  assert.match(controlCenterCss, /repeating-linear-gradient\(2deg/);
+  assert.match(controlCenterCss, /\.cafe-wood-rail/);
+  assert.match(controlCenterCss, /\.coffee-welcome-board/);
+  assert.match(controlCenterCss, /\.workspace-paper/);
+  assert.match(html, /class="cafe-server-card"/);
+});
+
+
+test("bootloader loads the dashboard document from the same deployment", () => {
+  assert.match(bootloader, /var url = "\/dashboard\.html"/);
+  assert.doesNotMatch(bootloader, /raw\.githubusercontent\.com\/elyaginnings-cell\/Bot-Website\/main\/dashboard\.html/);
+});
+
+
+test("custom emoji navigation injects into the settings group after menu grouping", () => {
+  assert.match(customEmojiScript, /settings && settings\.parentElement !== nav/);
+  assert.match(customEmojiScript, /destination\.insertBefore\(button/);
+});
+
+
+test("dashboard follows Paisley's café menu blueprint with menu, workspace, and server card", () => {
+  assert.match(html, /class="[^"]*cafe-menu-board/);
+  assert.match(html, /class="[^"]*cafe-workspace-board/);
+  assert.match(html, /class="[^"]*cafe-server-card/);
+  assert.match(html, /class="[^"]*coffee-shop-wordmark/);
+  assert.match(html, /id="dashboard-navigation"/);
+  assert.match(html, /id="selected-server-name"/);
+  assert.match(html, /id="server-member-count"/);
+  assert.match(html, /id="server-online-count"/);
+  assert.match(html, /id="server-owner-status"/);
+  assert.match(html, /id="storage-status"/);
+  assert.match(controlCenterCss, /\.coffee-shop-shell/);
+  assert.match(controlCenterCss, /\.cafe-menu-board/);
+  assert.match(controlCenterCss, /\.cafe-workspace-board/);
+  assert.match(controlCenterCss, /\.cafe-server-card/);
+  assert.match(controlCenterCss, /#guest-auth-bar/);
+  assert.match(bootloader, /coffee-shop-control-center\.css\?v=3/);
+});
+
+
+
+test("Paisley board composition uses three hand-drawn columns and the parchment frame", () => {
+  assert.ok(html.includes('class="cafe-header-identity"'));
+  assert.ok(html.includes('id="cafe-header-name"'));
+  assert.ok(html.includes('id="cafe-header-server"'));
+  assert.ok(menuRedesignCss.includes("grid-template-columns:minmax(340px,1.32fr) minmax(280px,1fr) minmax(220px,.72fr)"));
+  assert.ok(menuRedesignCss.includes("border:12px solid var(--menu-edge)"));
+  assert.ok(menuRedesignCss.includes('ds-nav-group[data-group="systems"]{grid-column:1;grid-row:5}'));
+  assert.ok(menuRedesignCss.includes('ds-nav-group[data-group="workspace"]{grid-column:2;grid-row:2}'));
+  assert.ok(menuRedesignCss.includes('ds-nav-group[data-group="server"]{grid-column:2;grid-row:3}'));
+  assert.ok(menuRedesignCss.includes("grid-column:3;grid-row:2/span 5"));
+  assert.ok(menuRedesignCss.includes("Comic Sans MS"));
+});
+
+test("menu board stylesheet loads after legacy styles in both entry paths", () => {
+  assert.ok(html.includes('coffee-shop-menu-redesign.css?v=4'));
+  assert.ok(html.includes('guest-auth.css?v=2'));
+  assert.ok(bootloader.indexOf('loadCss("/coffee-shop-menu-redesign.css?v=4")') > bootloader.indexOf('loadCss("/coffee-shop-control-center.css?v=3")'));
+  assert.ok(menuRedesignCss.includes('.guest-auth-modal[hidden]{display:none!important}'));
+  assert.ok(menuRedesignCss.includes(".guest-auth-card"));
+});
+
+test("guest preview account bar floats independently of the server stats panel", () => {
+  const mainStart = html.indexOf('<main class="main coffee-main">');
+  const mainEnd = html.indexOf("</main>", mainStart);
+  const bannerStart = html.indexOf('id="guest-auth-bar"');
+  assert.ok(mainStart >= 0 && bannerStart > mainStart && bannerStart < mainEnd);
+  assert.match(menuRedesignCss, /#guest-auth-bar\.guest-auth-bar[\s\S]*?position:fixed!important/);
+});
+
+test("header plaque follows the live account and selected server labels", () => {
+  assert.ok(shellScript.includes("cafe-header-name"));
+  assert.ok(shellScript.includes("cafe-header-server"));
+  assert.ok(shellScript.includes("MutationObserver(syncBoardIdentity)"));
+});
+
+test("Home and Menu are separate destinations with a full-width mobile workspace", () => {
+  assert.ok(html.includes('data-section-link="menu"'));
+  assert.ok(menuPageScript.includes('section.id="menu"'));
+  assert.ok(menuPageScript.includes('id="dashboard-see-menu"'));
+  assert.ok(menuPageScript.includes('data-menu-target'));
+  assert.ok(menuRedesignCss.includes('body[data-coffee-theme][data-dashboard-page="menu"]'));
+  assert.ok(menuRedesignCss.includes("@media(max-width:900px)"));
+  assert.ok(menuRedesignCss.includes("grid-template-columns:minmax(0,1fr)"));
+});
+
+test("Tab Manager includes every bot feature, including dashboard-less Chess", () => {
+  for (const key of ["achievements","activitycheck","ai","analytics","applications","auditLog","automod","birthday","bump","chess","currency","customEmojis","fishing","giveaways","help","invites","leveling","loa","logging","memberPresence","moderation","profile","punishment","qotd","selfroles","shop","suggestions","tickets","verification"]) {
+    assert.ok(featureManagerScript.includes('"'+key+'"'), "missing feature switch "+key);
+  }
+  assert.match(featureManagerScript, /Enable all/);
+  assert.match(featureManagerScript, /Disable all/);
+  assert.match(featureManagerScript, /saveConfig\(\{systems\}\)/);
+  assert.match(menuRedesignCss, /\.feature-manager-row/);
+});
+
+test("Coffee Shop keeps the main workspace as a real container on desktop and mobile", () => {
+  const desktopMainRule = menuRedesignCss.slice(menuRedesignCss.lastIndexOf("body[data-coffee-theme] #app>.main.coffee-main{"));
+  assert.ok(desktopMainRule.startsWith("body[data-coffee-theme] #app>.main.coffee-main{"));
+  assert.ok(desktopMainRule.includes("display:flex!important"));
+  assert.ok(desktopMainRule.includes("flex-direction:column!important"));
+  const mobileLayout = menuRedesignCss.slice(menuRedesignCss.lastIndexOf("@media(max-width:900px)"));
+  assert.ok(mobileLayout.includes("body[data-coffee-theme] #app>.main.coffee-main{"));
+  assert.ok(mobileLayout.includes("display:flex!important"));
+  assert.ok(menuRedesignCss.includes("position:fixed!important;"));
+  assert.ok(menuRedesignCss.includes("left:50%!important;"));
+  assert.ok(menuRedesignCss.includes("transform:translateX(-50%)!important;"));
 });

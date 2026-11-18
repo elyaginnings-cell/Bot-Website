@@ -44,10 +44,10 @@
     document.body.classList.remove("account-authenticated");
     document.body.classList.add("guest-preview");
     var bar=$("guest-auth-bar");
-    if(bar){bar.hidden=false;var copy=bar.querySelector(".guest-auth-copy");if(copy){var heading=copy.querySelector("strong"),description=copy.querySelector("span");if(heading)heading.textContent="Guest preview mode";if(description)description.textContent="This is a temporary preview, not an account. Log in to connect your server and manage it.";}}
+    if(bar){bar.hidden=false;var copy=bar.querySelector(".guest-auth-copy");if(copy){var heading=copy.querySelector("strong"),description=copy.querySelector("span");if(heading)heading.textContent="Looking to manage your server?";if(description)description.textContent="Create an account or log in to unlock your dashboard.";}}
     var loginButton=$("guest-login-open"),signupButton=$("guest-signup-open");
-    if(loginButton){loginButton.hidden=false;loginButton.textContent="Email login";}
-    if(signupButton)signupButton.hidden=true;
+    if(loginButton){loginButton.hidden=false;loginButton.textContent="Log in";}
+    if(signupButton){signupButton.hidden=false;signupButton.textContent="Create account";}
     var app=$("app");if(app)app.hidden=false;
     var login=$("login-screen");if(login)login.remove();
     var username=$("username");if(username)username.textContent="Guest";

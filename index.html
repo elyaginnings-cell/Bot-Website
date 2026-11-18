@@ -22,7 +22,7 @@
 <script>
 (async function () {
   try {
-    var url = "https://raw.githubusercontent.com/elyaginnings-cell/Bot-Website/main/dashboard.html";
+    var url = "/dashboard.html";
     var res = await fetch(url + "?t=" + Date.now());
     if (!res.ok) throw new Error("HTTP " + res.status);
     var html = await res.text();
@@ -126,7 +126,9 @@
       loadCss("/coffee-shop-dashboard.css?v=1"),
       loadCss("/coffee-shop-server-view.css?v=1"),
       loadCss("/dashboard-sections.css?v=1"),
-      loadCss("/coffee-shop-mobile.css?v=1")
+      loadCss("/coffee-shop-mobile.css?v=1"),
+      loadCss("/coffee-shop-control-center.css?v=3"),
+      loadCss("/coffee-shop-menu-redesign.css?v=4")
     ]);
     var styleGate=document.getElementById("dashboard-style-gate-overlay");
     if(styleGate)styleGate.remove();
@@ -143,8 +145,9 @@
       "/features-sudo-operator.js?v=1",
       "/features-ai-chat.js?v=2",
       "/features-ai-ignore-roles.js?v=1",
-      "/features-systems.js?v=2",
-      "/features-tab-toggles.js?v=5",
+      "/features-systems.js?v=3",
+      "/dashboard-menu-page.js?v=1",
+      "/features-tab-toggles.js?v=6",
       "/features-audit-logs.js?v=4",
       "/features-logging.js?v=5",
       "/features-loa.js?v=4",
