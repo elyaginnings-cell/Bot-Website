@@ -148,12 +148,12 @@
     return document.querySelector('#dashboard-navigation [data-tab="' + (aliases[id] || id) + '"]');
   }
   function itemMarkup(item) {
-    var id = item[0], button = navItem(id), isDiscordOnly = item[5] === "DISCORD FEATURE";
+    var id = item[0], button = navItem(id), isDiscordOnly = item[4] === "DISCORD FEATURE";
     if (!button && !isDiscordOnly) return "";
     if (button && button.hidden) return "";
     var icon = button ? (button.querySelector("span")?.textContent || item[1]) : item[1];
     var label = button ? (button.querySelector("em")?.textContent || item[2]) : item[2];
-    var tag = item[5] ? '<small class="cafe-menu-item-tag">' + escapeHtml(item[5]) + '</small>' : "";
+    var tag = item[4] ? '<small class="cafe-menu-item-tag">' + escapeHtml(item[4]) + '</small>' : "";
     var inner =
       '<span class="cafe-menu-item-icon">' + escapeHtml(icon) + '</span>' +
       '<span class="cafe-menu-item-copy">' + tag +
