@@ -399,3 +399,45 @@ body[data-coffee-theme] #server-view .sv-settings-row label { color: var(--coffe
 @media (prefers-reduced-motion: reduce) {
   body[data-coffee-theme] #server-view * { transition-duration: .01ms !important; animation-duration: .01ms !important; }
 }
+
+
+/* High-contrast café light mode: all text and controls meet readable contrast. */
+body[data-coffee-theme="cafe"]{
+ --coffee-ink:#2d1b12!important;--coffee-muted:#59402f!important;
+ --coffee-subtle:#654a36!important;--coffee-page:#f3e9dc!important;
+ --coffee-surface:#fffaf3!important;--coffee-raised:#f8efe4!important;
+ --coffee-line:#cbb39b!important;--coffee-line-strong:#96785d!important;
+}
+body[data-coffee-theme="cafe"] #app,
+body[data-coffee-theme="cafe"] #app :is(h1,h2,h3,h4,h5,h6,p,span,strong,label,small,em,a,li,dt,dd){
+ color:#2d1b12!important;
+}
+body[data-coffee-theme="cafe"] #app :is(.eyebrow,.form-hint,.description,.help-text,.muted,.subhead,.page-heading p,.connection-status,.account-info span,.view-mode-label){
+ color:#59402f!important;
+}
+body[data-coffee-theme="cafe"] #app :is(input,select,textarea){
+ color:#24170f!important;background:#fffdf9!important;border-color:#92765d!important;
+}
+body[data-coffee-theme="cafe"] #app :is(input,textarea)::placeholder{color:#6b5747!important;opacity:1!important}
+body[data-coffee-theme="cafe"] #app :is(button,.button){color:#2d1b12}
+body[data-coffee-theme="cafe"] #server-view{
+ --sv-text:#2b1a11!important;--sv-text-muted:#5d4634!important;
+ --sv-header:#2b1a11!important;--sv-interactive:#533a28!important;
+ --sv-interactive-hover:#24170f!important;--sv-text-link:#68401f!important;
+ --sv-bg-primary:#fffaf3!important;--sv-bg-secondary:#eee1d2!important;
+ --sv-bg-tertiary:#f7f0e7!important;--sv-input-bg:#fffdf9!important;
+ --sv-embed-bg:#fffaf3!important;--sv-scrollbar:#bca58d!important;
+}
+body[data-coffee-theme="cafe"] #server-view :is(.sv-cat,.sv-time,.sv-edited,.sv-empty,.sv-member-meta,.sv-settings-row label){
+ color:#5d4634!important;
+}
+body[data-coffee-theme="cafe"] #server-view :is(.sv-ch,.sv-author,.sv-msg-content,.sv-name-wrap label,#sv-channel-title){
+ color:#2b1a11!important;
+}
+body[data-coffee-theme="cafe"] #server-view :is(.sv-composer,.sv-composer input,#sv-input){
+ color:#24170f!important;background:#fffdf9!important;
+}
+body[data-coffee-theme="cafe"] #server-view #sv-input::placeholder{color:#6b5747!important;opacity:1!important}
+body[data-coffee-theme="cafe"] #server-view .sv-send-btn{color:#fffaf3!important;background:#68452f!important}
+body[data-coffee-theme="cafe"] #server-view .sv-side-tab.active{color:#fffaf3!important}
+body[data-coffee-theme="cafe"] #server-view .sv-mention{color:#55351c!important;background:#ead6bd!important}
