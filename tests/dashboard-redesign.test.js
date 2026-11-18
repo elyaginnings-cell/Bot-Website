@@ -14,6 +14,8 @@ const menuRedesignCss = readFileSync(new URL("../coffee-shop-menu-redesign.css",
 const navigationScript = readFileSync(new URL("../refined-dashboard.js", import.meta.url), "utf8");
 const featureUiScript = readFileSync(new URL("../features-ui.js", import.meta.url), "utf8");
 const customEmojiScript = readFileSync(new URL("../features-custom-emojis.js", import.meta.url), "utf8");
+const menuPageScript = readFileSync(new URL("../dashboard-menu-page.js", import.meta.url), "utf8");
+const featureManagerScript = readFileSync(new URL("../features-systems.js", import.meta.url), "utf8");
 const shellScript = (() => { try { return readFileSync(new URL("../dashboard-shell.js", import.meta.url), "utf8"); } catch { return ""; } })();
 
 const sectionIds = ["overview", "moderation", "invites", "leveling", "currency", "emojis", "shop", "logs", "birthday", "settings", "account", "owner-billing"];
@@ -289,19 +291,19 @@ test("Paisley board composition uses three hand-drawn columns and the parchment 
 });
 
 test("menu board stylesheet loads after legacy styles in both entry paths", () => {
-  assert.ok(html.includes('coffee-shop-menu-redesign.css?v=2'));
+  assert.ok(html.includes('coffee-shop-menu-redesign.css?v=3'));
   assert.ok(html.includes('guest-auth.css?v=2'));
-  assert.ok(bootloader.indexOf('loadCss("/coffee-shop-menu-redesign.css?v=2")') > bootloader.indexOf('loadCss("/coffee-shop-control-center.css?v=3")'));
+  assert.ok(bootloader.indexOf('loadCss("/coffee-shop-menu-redesign.css?v=3")') > bootloader.indexOf('loadCss("/coffee-shop-control-center.css?v=3")'));
   assert.ok(menuRedesignCss.includes('.guest-auth-modal[hidden]{display:none!important}'));
   assert.ok(menuRedesignCss.includes(".guest-auth-card"));
 });
 
-test("guest preview access is contained inside the server details station", () => {
-  const serverCard = html.indexOf('class="cafe-server-card"');
+test("guest preview account bar floats independently of the server stats panel", () => {
+  const mainStart = html.indexOf('<main class="main coffee-main">');
+  const mainEnd = html.indexOf("</main>", mainStart);
   const bannerStart = html.indexOf('id="guest-auth-bar"');
-  const serverStats = html.indexOf('class="cafe-server-stats-heading"');
-  assert.ok(serverCard >= 0 && bannerStart > serverCard && bannerStart < serverStats);
-  assert.ok(menuRedesignCss.includes("position:static!important"));
+  assert.ok(mainStart >= 0 && bannerStart > mainStart && bannerStart < mainEnd);
+  assert.match(menuRedesignCss, /#guest-auth-bar\.guest-auth-bar[\s\S]*?position:fixed!important/);
 });
 
 test("header plaque follows the live account and selected server labels", () => {
@@ -310,9 +312,22 @@ test("header plaque follows the live account and selected server labels", () => 
   assert.ok(shellScript.includes("MutationObserver(syncBoardIdentity)"));
 });
 
-test("mobile board retains a working slide-out navigation and stacked stations", () => {
+test("Home and Menu are separate destinations with a full-width mobile workspace", () => {
+  assert.ok(html.includes('data-section-link="menu"'));
+  assert.ok(menuPageScript.includes('section.id="menu"'));
+  assert.ok(menuPageScript.includes('id="dashboard-see-menu"'));
+  assert.ok(menuPageScript.includes('data-menu-target'));
+  assert.ok(menuRedesignCss.includes('body[data-coffee-theme][data-dashboard-page="menu"]'));
   assert.ok(menuRedesignCss.includes("@media(max-width:900px)"));
-  assert.ok(menuRedesignCss.includes("dashboard-nav-open #app .cafe-wood-rail"));
-  assert.ok(menuRedesignCss.includes("order:2;display:flex!important;position:fixed!important"));
-  assert.ok(menuRedesignCss.includes("grid-template-columns:repeat(2,minmax(0,1fr))!important"));
+  assert.ok(menuRedesignCss.includes("grid-template-columns:minmax(0,1fr)"));
+});
+
+test("Tab Manager includes every bot feature, including dashboard-less Chess", () => {
+  for (const key of ["achievements","activitycheck","ai","analytics","applications","auditLog","automod","birthday","bump","chess","currency","customEmojis","fishing","giveaways","help","invites","leveling","loa","logging","memberPresence","moderation","profile","punishment","qotd","selfroles","shop","suggestions","tickets","verification"]) {
+    assert.ok(featureManagerScript.includes('"'+key+'"'), "missing feature switch "+key);
+  }
+  assert.match(featureManagerScript, /Enable all/);
+  assert.match(featureManagerScript, /Disable all/);
+  assert.match(featureManagerScript, /saveConfig\(\{systems\}\)/);
+  assert.match(menuRedesignCss, /\.feature-manager-row/);
 });
