@@ -532,3 +532,36 @@ body[data-coffee-theme] #guest-auth-bar .guest-auth-actions button.secondary{bac
  body[data-coffee-theme] #app .cafe-server-card{grid-column:3!important;grid-row:2/span 3!important}
  body[data-coffee-theme] #app .cafe-rail-footer{grid-column:1!important;grid-row:4!important}
 }
+
+/* Tab Manager — the complete café feature control board */
+body[data-coffee-theme] .coffee-feature-manager{width:100%;max-width:none;box-sizing:border-box;padding:clamp(16px,2.2vw,28px);color:#47291b;background:linear-gradient(145deg,#fff9ef,#f2dfc8);border:1px solid #c99e78;border-radius:18px;box-shadow:0 12px 30px rgba(74,40,22,.10)}
+body[data-coffee-theme] .coffee-feature-manager h2{margin:5px 0 8px;color:#482719;font-family:Georgia,serif;font-size:clamp(25px,3vw,34px)}
+body[data-coffee-theme] .coffee-feature-manager>.form-hint{max-width:850px;color:#78543e;line-height:1.55}
+body[data-coffee-theme] .feature-manager-toolbar{display:flex;align-items:center;gap:12px;justify-content:space-between;flex-wrap:wrap;margin:22px 0 12px}
+body[data-coffee-theme] .feature-manager-search{display:flex;align-items:center;gap:10px;flex:1 1 250px;min-height:42px;padding:0 12px;border:1px solid #caa27f;border-radius:10px;background:#fffaf2;color:#754c32}
+body[data-coffee-theme] .feature-manager-search input{width:100%;min-width:0;border:0!important;outline:0!important;background:transparent!important;color:#47291b!important;box-shadow:none!important}
+body[data-coffee-theme] .feature-manager-actions{display:flex;gap:8px;flex-wrap:wrap}
+body[data-coffee-theme] .feature-manager-summary{margin:8px 0 18px;color:#805b42;font-size:12px;font-weight:800;letter-spacing:.04em}
+body[data-coffee-theme] .feature-manager-groups{display:grid;gap:20px}
+body[data-coffee-theme] .feature-manager-group h3{margin:0 0 9px;padding-bottom:8px;border-bottom:1px solid #d9b99a;color:#6d4229;font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+body[data-coffee-theme] .feature-manager-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+body[data-coffee-theme] .feature-manager-row{display:grid;grid-template-columns:38px minmax(0,1fr) auto 22px;align-items:center;gap:10px;min-width:0;padding:11px 12px;border:1px solid #ddc2a5;border-radius:11px;background:rgba(255,251,244,.88);color:#4a2b1b;cursor:pointer;transition:border-color .15s,background .15s}
+body[data-coffee-theme] .feature-manager-row:hover{border-color:#a96f45;background:#fffdf8}
+body[data-coffee-theme] .feature-manager-row.is-disabled{background:#ead8c4;color:#795b46}
+body[data-coffee-theme] .feature-manager-icon{display:grid;place-items:center;width:36px;height:36px;border-radius:10px;background:#f0dfca;font-size:19px}
+body[data-coffee-theme] .feature-manager-copy{display:flex;flex-direction:column;gap:3px;min-width:0}
+body[data-coffee-theme] .feature-manager-copy strong{overflow-wrap:anywhere;color:inherit;font-size:13px}
+body[data-coffee-theme] .feature-manager-copy small{color:#94745c;font-size:10px}
+body[data-coffee-theme] .feature-manager-state{color:#8b684e;font-size:10px;font-weight:900;letter-spacing:.08em}
+body[data-coffee-theme] .feature-manager-row input{width:18px;height:18px;accent-color:#75452b}
+body[data-coffee-theme] .feature-manager-footer{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:22px;padding-top:16px;border-top:1px solid #d9b99a}
+body[data-coffee-theme] #systems-status[data-state="error"]{color:#a33122}
+body[data-coffee-theme] #systems-status[data-state="success"]{color:#456b3e}
+@media(max-width:760px){
+ body[data-coffee-theme] .feature-manager-grid{grid-template-columns:minmax(0,1fr)}
+ body[data-coffee-theme] .feature-manager-toolbar{align-items:stretch}
+ body[data-coffee-theme] .feature-manager-actions{display:grid;grid-template-columns:1fr 1fr}
+ body[data-coffee-theme] .feature-manager-actions button{width:100%;min-width:0}
+ body[data-coffee-theme] .feature-manager-footer{align-items:stretch;flex-direction:column}
+ body[data-coffee-theme] .feature-manager-footer .button{width:100%}
+}
