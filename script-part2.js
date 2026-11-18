@@ -407,30 +407,6 @@ function applyDashboardTabs() {
 }
 window.applyDashboardTabs = applyDashboardTabs;
 
-async function saveDashboardTabs() {
-  const preferences = {};
-  DASHBOARD_TAB_KEYS.forEach((key) => {
-    const checkbox = document.getElementById("dashboard-tab-" + key);
-    if (checkbox) preferences[key] = checkbox.checked;
-  });
-  const statusNode = document.getElementById("dashboard-tabs-status");
-  if (statusNode) statusNode.textContent = "Saving tab layout…";
-  try {
-    await saveConfig({ dashboardTabs: preferences });
-    applyDashboardTabs();
-    if (statusNode) {
-      statusNode.textContent = "Tab layout saved for this server.";
-      statusNode.style.color = "#57F287";
-      return true;
-    }
-  } catch (error) {
-    if (statusNode) {
-      statusNode.textContent = "Could not save tab layout: " + (error.message || "Unknown error");
-      statusNode.style.color = "#f23f43";
-      return false;
-    }
-  }
-}
 
 function previewCustomEmojiFile() {
   const file = document.getElementById("emoji-file")?.files?.[0];
