@@ -1,0 +1,331 @@
+/* Dark Roast — independent night-shift coffeehouse design.
+   Loaded after the shared layout so this theme owns its own surfaces,
+   typography, controls, texture, and responsive presentation. */
+
+@import url("https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&display=swap");
+
+html[data-coffee-theme="dark-roast"],
+body[data-coffee-theme="dark-roast"] {
+  color-scheme:dark!important;
+  min-height:100%;
+  background-color:#17100c!important;
+  background-image:
+    radial-gradient(ellipse at 50% -18%,rgba(151,94,54,.2),transparent 55%),
+    repeating-linear-gradient(2deg,rgba(255,220,175,.025) 0 1px,rgba(0,0,0,.13) 2px 5px,transparent 6px 14px),
+    linear-gradient(110deg,#1c120d 0%,#302015 47%,#1b110c 100%)!important;
+  background-attachment:fixed!important;
+  color:#f4e8d8!important;
+}
+
+body[data-coffee-theme="dark-roast"] {
+  --roast-canvas:#21160f;
+  --roast-panel:#2b1d14;
+  --roast-panel-raised:#38261a;
+  --roast-panel-inset:#1b120d;
+  --roast-ink:#f4e8d8;
+  --roast-muted:#c5aa8c;
+  --roast-dim:#a18468;
+  --roast-copper:#d39a63;
+  --roast-brass:#b98750;
+  --roast-rule:#62452f;
+  --roast-focus:#f0bd83;
+  --roast-shadow:0 14px 34px rgba(0,0,0,.28);
+  font-family:"DM Sans",system-ui,sans-serif!important;
+}
+
+body[data-coffee-theme="dark-roast"] #app.coffee-shop-shell {
+  background:
+    linear-gradient(145deg,rgba(255,226,190,.035),transparent 24%),
+    repeating-linear-gradient(0deg,rgba(255,220,175,.018) 0 1px,transparent 1px 7px),
+    linear-gradient(145deg,#2a1b12,#21150f 58%,#1a110c)!important;
+  border:7px solid #765438!important;
+  outline:1px solid rgba(224,174,119,.38)!important;
+  box-shadow:0 0 0 3px rgba(10,6,4,.55),0 28px 75px rgba(0,0,0,.48),inset 0 0 0 1px rgba(255,224,186,.1)!important;
+  color:var(--roast-ink)!important;
+}
+body[data-coffee-theme="dark-roast"] #app,
+body[data-coffee-theme="dark-roast"] #app * {
+  font-family:"DM Sans",system-ui,sans-serif!important;
+}
+body[data-coffee-theme="dark-roast"] #app :is(h1,h2,h3,h4,.coffee-shop-wordmark,.cafe-menu-heading strong,.page-heading h2,.ledger-heading h3) {
+  font-family:"Fraunces",Georgia,serif!important;
+  letter-spacing:-.035em!important;
+}
+body[data-coffee-theme="dark-roast"] #app :is(p,span,strong,label,small,li,a,em,dt,dd) {
+  color:var(--roast-ink);
+}
+body[data-coffee-theme="dark-roast"] #app :is(.coffee-shop-tagline,.cafe-menu-kicker,.cafe-rail-label,.eyebrow,.label,.ledger-note,.page-heading p,.cafe-server-card-note,.form-hint,.subhead,.ds-nav-group-meta) {
+  color:var(--roast-muted)!important;
+}
+
+/* Dark stained timber header and brass rule. */
+body[data-coffee-theme="dark-roast"] #app .coffee-counter {
+  border-bottom:1px solid #8b6543!important;
+  background:linear-gradient(90deg,rgba(12,7,4,.28),rgba(112,70,39,.12),rgba(12,7,4,.28))!important;
+  box-shadow:0 5px 0 rgba(0,0,0,.13)!important;
+}
+body[data-coffee-theme="dark-roast"] #app .coffee-shop-wordmark {
+  color:#f8e9d5!important;
+  text-shadow:0 2px 0 #382316,0 5px 18px rgba(0,0,0,.45)!important;
+}
+body[data-coffee-theme="dark-roast"] #app .coffee-shop-tagline {
+  color:#c5a27d!important;
+  letter-spacing:.17em!important;
+}
+body[data-coffee-theme="dark-roast"] #app .cafe-header-identity {
+  background:radial-gradient(circle at 30% 20%,#513522,#24160e 72%)!important;
+  border:1px solid #9b7149!important;
+  box-shadow:inset 0 0 0 4px rgba(224,177,120,.06),0 8px 18px rgba(0,0,0,.3)!important;
+  color:#f8ead8!important;
+}
+body[data-coffee-theme="dark-roast"] #app .cafe-header-identity :is(span,strong) {color:#f8ead8!important}
+
+/* A separate menu aesthetic: dark roast ledger / chalkboard, not pale parchment. */
+body[data-coffee-theme="dark-roast"] #app .cafe-menu-board {
+  background:
+    radial-gradient(ellipse at 50% 0,rgba(255,255,255,.045),transparent 60%),
+    repeating-linear-gradient(1deg,rgba(255,255,255,.012) 0 1px,transparent 1px 8px),
+    linear-gradient(165deg,#302117,#21150f 76%)!important;
+  border:1px solid #805b3b!important;
+  border-radius:12px!important;
+  box-shadow:inset 0 0 0 4px rgba(224,177,120,.035),inset 0 0 32px rgba(0,0,0,.2),var(--roast-shadow)!important;
+  color:var(--roast-ink)!important;
+}
+body[data-coffee-theme="dark-roast"] #app .cafe-menu-heading strong,
+body[data-coffee-theme="dark-roast"] #app .cafe-menu-heading h2 {
+  color:#f7e8d5!important;
+  font-family:"Fraunces",Georgia,serif!important;
+  text-shadow:0 2px 12px rgba(0,0,0,.3);
+}
+body[data-coffee-theme="dark-roast"] #app .cafe-menu-rule,
+body[data-coffee-theme="dark-roast"] #app .paper-rule {
+  border-color:#795638!important;
+  background:#795638!important;
+}
+body[data-coffee-theme="dark-roast"] #app .navigation .nav-item {
+  color:#d8c2a8!important;
+  border:1px solid transparent!important;
+  border-radius:7px!important;
+  background:transparent!important;
+  font-weight:600!important;
+}
+body[data-coffee-theme="dark-roast"] #app .navigation .nav-item:hover {
+  background:#3a281b!important;
+  border-color:#745236!important;
+  color:#fff0dc!important;
+}
+body[data-coffee-theme="dark-roast"] #app .navigation .nav-item.active {
+  color:#fff0dc!important;
+  background:linear-gradient(90deg,#68472d,#4a3020)!important;
+  border:1px solid #a77a4d!important;
+  box-shadow:inset 3px 0 #e0ae70,0 4px 12px rgba(0,0,0,.2)!important;
+}
+body[data-coffee-theme="dark-roast"] #app .ds-nav-group-toggle {
+  color:#e8cfb0!important;
+  border-color:#674a32!important;
+}
+body[data-coffee-theme="dark-roast"] #app .ds-search-field,
+body[data-coffee-theme="dark-roast"] #app .ds-search-field input {
+  color:#f3e5d4!important;
+  background:#1b120d!important;
+  border-color:#765438!important;
+}
+
+/* The worktop becomes a dark timber counter with inset work surfaces. */
+body[data-coffee-theme="dark-roast"] #app .cafe-workspace-board,
+body[data-coffee-theme="dark-roast"] #app .workspace-paper {
+  background:
+    repeating-linear-gradient(0deg,rgba(255,220,175,.012) 0 1px,transparent 1px 8px),
+    linear-gradient(155deg,#2b1d14,#21160f 80%)!important;
+  border:1px solid #745236!important;
+  border-radius:11px!important;
+  box-shadow:inset 0 0 0 3px rgba(231,188,137,.035),0 14px 32px rgba(0,0,0,.24)!important;
+  color:var(--roast-ink)!important;
+}
+body[data-coffee-theme="dark-roast"] #app .page-heading {
+  border-bottom:1px solid #65482f!important;
+}
+body[data-coffee-theme="dark-roast"] #app .page-heading :is(h1,h2,h3,p) {
+  color:#f4e6d5!important;
+}
+body[data-coffee-theme="dark-roast"] #app .coffee-welcome-board {
+  background:
+    radial-gradient(ellipse at 82% 18%,rgba(224,171,111,.17),transparent 40%),
+    linear-gradient(120deg,#51331f,#362216 62%,#28190f)!important;
+  border:1px solid #a5794e!important;
+  border-bottom:4px solid #160e09!important;
+  border-radius:9px!important;
+  box-shadow:inset 0 1px rgba(255,235,210,.12),0 12px 26px rgba(0,0,0,.24)!important;
+}
+body[data-coffee-theme="dark-roast"] #app .welcome-board-copy :is(h1,h2,h3,p,span,strong),
+body[data-coffee-theme="dark-roast"] #app .coffee-welcome-board :is(h1,h2,h3,p,span,strong) {
+  color:#fff0dc!important;
+}
+body[data-coffee-theme="dark-roast"] #app .welcome-kicker {
+  color:#e2b47e!important;
+  letter-spacing:.19em!important;
+}
+body[data-coffee-theme="dark-roast"] #app .cafe-shortcuts {
+  gap:12px!important;
+}
+body[data-coffee-theme="dark-roast"] #app .cafe-shortcut,
+body[data-coffee-theme="dark-roast"] #app .quick-card {
+  background:linear-gradient(145deg,#3b291d,#2a1c13)!important;
+  border:1px solid #795638!important;
+  border-left:3px solid #bd8955!important;
+  border-radius:8px!important;
+  box-shadow:inset 0 1px rgba(255,230,195,.055),0 7px 18px rgba(0,0,0,.2)!important;
+  color:#f5e8d8!important;
+}
+body[data-coffee-theme="dark-roast"] #app .cafe-shortcut :is(strong,p,span),
+body[data-coffee-theme="dark-roast"] #app .quick-card :is(strong,p,span) {
+  color:#f0dfca!important;
+}
+body[data-coffee-theme="dark-roast"] #app .cafe-shortcut p,
+body[data-coffee-theme="dark-roast"] #app .quick-card p {color:#c5a989!important}
+body[data-coffee-theme="dark-roast"] #app .cafe-shortcut .quick-icon,
+body[data-coffee-theme="dark-roast"] #app .quick-card .quick-icon {
+  background:#533821!important;
+  border:1px solid #a47a50!important;
+  color:#f6e7d4!important;
+}
+body[data-coffee-theme="dark-roast"] #app .cafe-shortcut:hover,
+body[data-coffee-theme="dark-roast"] #app .quick-card:hover {
+  background:linear-gradient(145deg,#4b3221,#352216)!important;
+  border-color:#d09a62!important;
+  transform:translateY(-2px);
+}
+
+/* Server status is a brass-trimmed night ledger. */
+body[data-coffee-theme="dark-roast"] #app .cafe-server-card {
+  background:linear-gradient(155deg,#342319,#25170f)!important;
+  border:1px solid #87613e!important;
+  border-radius:11px!important;
+  box-shadow:inset 0 0 0 3px rgba(230,187,135,.035),var(--roast-shadow)!important;
+  color:#f4e8d8!important;
+}
+body[data-coffee-theme="dark-roast"] #app .cafe-server-card :is(h1,h2,h3,h4,strong,span,p,label) {
+  color:#f4e8d8!important;
+}
+body[data-coffee-theme="dark-roast"] #app .cafe-server-card .server-ticket {
+  background:#1b120d!important;
+  border:1px solid #6d4a2f!important;
+  border-left:4px solid #c28c55!important;
+  border-radius:8px!important;
+  color:#f4e8d8!important;
+}
+body[data-coffee-theme="dark-roast"] #app .cafe-server-card .stat-card,
+body[data-coffee-theme="dark-roast"] #app .cafe-stats-grid {
+  background:#21160f!important;
+  border-color:#65482f!important;
+}
+body[data-coffee-theme="dark-roast"] #app .cafe-server-card .stat-card {
+  border-bottom:1px solid #4d3725!important;
+}
+body[data-coffee-theme="dark-roast"] #app .cafe-server-card .label,
+body[data-coffee-theme="dark-roast"] #app .cafe-server-card-note {
+  color:#c6a889!important;
+}
+
+/* Every settings panel and form is dark by design; no stray white cards. */
+body[data-coffee-theme="dark-roast"] #app :is(.settings-panel,.form-card,.feature-summary-panel,.account,.customer-plan-card,.customer-row,.stat-card,.card,.modal-content,.modal-card,.guest-auth-card) {
+  background:linear-gradient(145deg,#38271b,#2a1c13)!important;
+  border:1px solid #745236!important;
+  border-radius:9px!important;
+  box-shadow:0 8px 20px rgba(0,0,0,.19)!important;
+  color:#f3e5d4!important;
+}
+body[data-coffee-theme="dark-roast"] #app :is(.settings-panel,.form-card,.feature-summary-panel,.account,.customer-plan-card,.customer-row,.stat-card,.card,.modal-content,.modal-card,.guest-auth-card) :is(h1,h2,h3,h4,p,span,strong,label,small,li) {
+  color:#f1e2d0!important;
+}
+body[data-coffee-theme="dark-roast"] #app :is(.settings-panel,.form-card,.feature-summary-panel,.account,.customer-plan-card,.customer-row,.stat-card,.card,.modal-content,.modal-card,.guest-auth-card) :is(.form-hint,.subhead,.muted,.description) {
+  color:#c4a88a!important;
+}
+body[data-coffee-theme="dark-roast"] #app :is(input:not([type=checkbox]):not([type=radio]),select,textarea,.input-group input,.input-group select) {
+  color:#f5e8d8!important;
+  background:#1b120d!important;
+  border:1px solid #76563a!important;
+  border-radius:6px!important;
+  box-shadow:inset 0 2px 5px rgba(0,0,0,.22)!important;
+}
+body[data-coffee-theme="dark-roast"] #app :is(input,select,textarea)::placeholder {color:#a88b6e!important}
+body[data-coffee-theme="dark-roast"] #app :is(input,select,textarea):focus {
+  outline:2px solid #e0ad72!important;
+  outline-offset:2px!important;
+  border-color:#e0ad72!important;
+}
+body[data-coffee-theme="dark-roast"] #app :is(button,.button,[role=button]) {
+  border-radius:6px!important;
+}
+body[data-coffee-theme="dark-roast"] #app .button:not(.secondary),
+body[data-coffee-theme="dark-roast"] #app button.button:not(.secondary) {
+  color:#fff1df!important;
+  background:linear-gradient(180deg,#9a6a40,#684326)!important;
+  border:1px solid #c09260!important;
+  box-shadow:inset 0 1px rgba(255,239,215,.17),0 4px 10px rgba(0,0,0,.2)!important;
+}
+body[data-coffee-theme="dark-roast"] #app .button.secondary,
+body[data-coffee-theme="dark-roast"] #app button.secondary {
+  color:#ecd9c1!important;
+  background:#352419!important;
+  border:1px solid #76563a!important;
+}
+body[data-coffee-theme="dark-roast"] #app :is(.guest-auth-bar,#guest-auth-bar) {
+  background:linear-gradient(135deg,#352419,#24170f)!important;
+  border:1px solid #a47a50!important;
+  color:#f5e8d8!important;
+  box-shadow:0 12px 28px rgba(0,0,0,.35)!important;
+}
+body[data-coffee-theme="dark-roast"] #app :is(.guest-auth-bar,#guest-auth-bar) * {
+  color:#f5e8d8!important;
+}
+
+/* Drafts, notices, dropdowns, and overlays must not flash back to light mode. */
+body[data-coffee-theme="dark-roast"] #app :is(.dashboard-draft-bar,.dropdown-menu,.popover,.tooltip,.toast,.notice,.alert,.feature-empty-state,.empty-state) {
+  background:#302116!important;
+  border-color:#795638!important;
+  color:#f2e2cf!important;
+}
+body[data-coffee-theme="dark-roast"] #app :is(.dashboard-draft-bar,.dropdown-menu,.popover,.tooltip,.toast,.notice,.alert,.feature-empty-state,.empty-state) * {
+  color:#f2e2cf!important;
+}
+body[data-coffee-theme="dark-roast"] #app :is(table,th,td) {
+  border-color:#60452f!important;
+}
+body[data-coffee-theme="dark-roast"] #app th {
+  color:#e4c9a9!important;
+  background:#261910!important;
+}
+body[data-coffee-theme="dark-roast"] #app td {
+  color:#efdfcb!important;
+  background:#302116!important;
+}
+body[data-coffee-theme="dark-roast"] #app :is(hr,.divider,.paper-rule) {border-color:#60452f!important;background-color:#60452f!important}
+body[data-coffee-theme="dark-roast"] #app :focus-visible {
+  outline:2px solid #efbd83!important;
+  outline-offset:3px!important;
+}
+
+/* Keep the independent theme intentional on narrow screens too. */
+@media(max-width:768px) {
+  body[data-coffee-theme="dark-roast"] #app.coffee-shop-shell {
+    border-width:5px!important;
+    border-radius:15px!important;
+    background:linear-gradient(155deg,#2a1b12,#1c120d)!important;
+    box-shadow:0 0 0 2px rgba(10,6,4,.5),0 12px 32px rgba(0,0,0,.4)!important;
+  }
+  body[data-coffee-theme="dark-roast"] #app .cafe-menu-board {
+    background:linear-gradient(165deg,#302015,#1e130d)!important;
+    border-color:#805b3b!important;
+    box-shadow:12px 0 32px rgba(0,0,0,.42)!important;
+  }
+  body[data-coffee-theme="dark-roast"] #app .cafe-workspace-board {
+    padding:15px!important;
+  }
+  body[data-coffee-theme="dark-roast"] #app .cafe-shortcuts {
+    grid-template-columns:minmax(0,1fr)!important;
+  }
+}
+@media(prefers-reduced-motion:reduce) {
+  body[data-coffee-theme="dark-roast"] #app * {transition:none!important;animation:none!important}
+}
