@@ -353,3 +353,13 @@ test("Home and Menu remove the legacy navigation board from the visible workspac
   assert.match(menuRedesignCss, /#app>\.main\.coffee-main\s*\{[^}]*grid-column:1!important/);
   assert.match(menuRedesignCss, /#app>\.cafe-server-card\s*\{[^}]*grid-column:2!important/);
 });
+
+
+test("mobile layout overrides the final desktop Home grid", () => {
+  const desktopGrid = menuRedesignCss.lastIndexOf("body[data-coffee-theme] #app.coffee-shop-shell {");
+  const mobileOverride = menuRedesignCss.lastIndexOf("@media(max-width:900px)");
+  assert.ok(mobileOverride > desktopGrid, "mobile shell rules must come after desktop Home grid rules");
+  const mobileLayout = menuRedesignCss.slice(mobileOverride);
+  assert.match(mobileLayout, /#app\\.coffee-shop-shell\\s*\\{[^}]*display:flex!important/);
+  assert.match(mobileLayout, /#app>\\.main\\.coffee-main\\s*\\{[^}]*display:flex!important/);
+});
