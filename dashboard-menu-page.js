@@ -54,5 +54,6 @@ document.addEventListener("click",e=>{
 var original=window.showSection;
 if(typeof original==="function"&&!original.__coffeeMenuWrapped){window.showSection=function(){var r=original.apply(this,arguments);setTimeout(sync,25);return r};window.showSection.__coffeeMenuWrapped=true}
 function mount(){ensureButton();ensureSection();sync()}
-[0,250,800,1800,4000].forEach(ms=>setTimeout(mount,ms));
+[0,250,800,1800,4000,8000].forEach(ms=>setTimeout(mount,ms));
+var menuPolls=0;var menuPoll=setInterval(()=>{if(activeId()==="menu")buildMenu();if(++menuPolls>=40)clearInterval(menuPoll)},500);
 })();
