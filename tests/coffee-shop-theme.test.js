@@ -160,7 +160,7 @@ test("Dark Roast styles the complete menu surface, including shortcuts and page 
 });
 
 test("Dark Roast uses the shared menu stylesheet instead of a separate CSS file", () => {
-  assert.ok(dashboardMarkup.includes("/coffee-shop-menu-redesign.css?v=6"));
+  assert.ok(dashboardMarkup.includes("/coffee-shop-menu-redesign.css?v=7"));
   assert.ok(!dashboardMarkup.includes("coffee-shop-dark-roast.css"));
   assert.ok(menuRedesignStyles.includes('body[data-coffee-theme="dark-roast"]'));
 });
