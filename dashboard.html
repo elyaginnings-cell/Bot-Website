@@ -209,27 +209,14 @@
                     </div>
 </section>
                 <section id="settings" class="page-section">
-                    <div class="page-heading"><h2>Workspace settings</h2><p>Choose which tools appear and customize your bot's presence.</p></div>
+                    <div class="page-heading"><h2>Workspace settings</h2><p>Customize your bot's presence and workspace preferences.</p></div>
                     <div class="settings-layout">
 
-                    <div class="card form-card wide settings-panel tab-manager-card">
-                        <span class="eyebrow">DASHBOARD LAYOUT</span>
-                        <h2>Manage dashboard tabs</h2>
-                        <p class="form-hint">Choose which tabs appear in the sidebar for this server. Your choices are saved to PostgreSQL and follow this server when you switch between servers. Home and Settings stay available so you can always restore hidden tabs.</p>
-                        <div class="tab-preference-grid">
-                            <label class="toggle" data-tab-pref-row="moderation"><input id="dashboard-tab-moderation" type="checkbox" checked> <span>Moderation</span></label>
-                            <label class="toggle" data-tab-pref-row="invites"><input id="dashboard-tab-invites" type="checkbox" checked> <span>Invites</span></label>
-                            <label class="toggle" data-tab-pref-row="leveling"><input id="dashboard-tab-leveling" type="checkbox" checked> <span>Leveling</span></label>
-                            <label class="toggle" data-tab-pref-row="currency"><input id="dashboard-tab-currency" type="checkbox" checked> <span>Currency</span></label>
-                            <label class="toggle" data-tab-pref-row="emojis"><input id="dashboard-tab-emojis" type="checkbox" checked> <span>Custom Emojis</span></label>
-                            <label class="toggle" data-tab-pref-row="shop"><input id="dashboard-tab-shop" type="checkbox" checked> <span>Shop</span></label>
-                            <label class="toggle" data-tab-pref-row="logs"><input id="dashboard-tab-logs" type="checkbox" checked> <span>Logs</span></label>
-                            <label class="toggle" data-tab-pref-row="birthday"><input id="dashboard-tab-birthday" type="checkbox" checked> <span>Birthday</span></label>
-                            <label class="toggle" data-tab-pref-row="account"><input id="dashboard-tab-account" type="checkbox" checked> <span>Account</span></label>
-                            <label class="toggle" data-tab-pref-row="owner-billing" hidden><input id="dashboard-tab-owner-billing" type="checkbox" checked> <span>Owner Billing</span></label>
-                        </div>
-                        <button class="button" id="save-dashboard-tabs" type="button">Save tab layout</button>
-                        <p class="form-hint" id="dashboard-tabs-status"></p>
+                    <div class="card form-card wide settings-panel">
+                        <span class="eyebrow">FEATURE CONTROLS</span>
+                        <h2>Manage bot features</h2>
+                        <p class="form-hint">Turn complete bot systems on or off — including systems that do not have a website settings page. These controls live together in the Tab Manager.</p>
+                        <button class="button" type="button" data-open-feature-manager>Open Tab Manager</button>
                     </div>
                     <div class="card form-card wide settings-panel">
                         <span class="eyebrow">SETTINGS</span>
