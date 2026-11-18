@@ -291,9 +291,9 @@ test("Paisley board composition uses three hand-drawn columns and the parchment 
 });
 
 test("menu board stylesheet loads after legacy styles in both entry paths", () => {
-  assert.ok(html.includes('coffee-shop-menu-redesign.css?v=3'));
+  assert.ok(html.includes('coffee-shop-menu-redesign.css?v=4'));
   assert.ok(html.includes('guest-auth.css?v=2'));
-  assert.ok(bootloader.indexOf('loadCss("/coffee-shop-menu-redesign.css?v=3")') > bootloader.indexOf('loadCss("/coffee-shop-control-center.css?v=3")'));
+  assert.ok(bootloader.indexOf('loadCss("/coffee-shop-menu-redesign.css?v=4")') > bootloader.indexOf('loadCss("/coffee-shop-control-center.css?v=3")'));
   assert.ok(menuRedesignCss.includes('.guest-auth-modal[hidden]{display:none!important}'));
   assert.ok(menuRedesignCss.includes(".guest-auth-card"));
 });
