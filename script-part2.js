@@ -400,39 +400,10 @@ async function refreshStorageStatus() {
 }
 
 
-const DASHBOARD_TAB_KEYS = [
-  "moderation", "invites", "leveling", "currency", "emojis",
-  "shop", "logs", "birthday", "account", "owner-billing"
-];
-
 function applyDashboardTabs() {
-  const preferences = currentConfig && currentConfig.dashboardTabs || {};
   const ownerNav = document.getElementById("nav-owner-billing");
   const ownerAvailable = !!(ownerNav && ownerNav.dataset.ownerAvailable === "true");
-
-  DASHBOARD_TAB_KEYS.forEach((key) => {
-    const enabled = preferences[key] !== false;
-    const nav = document.querySelector('.nav-item[data-tab="' + key + '"]');
-    const row = document.querySelector('[data-tab-pref-row="' + key + '"]');
-    const checkbox = document.getElementById("dashboard-tab-" + key);
-
-    if (checkbox) checkbox.checked = enabled;
-    if (key === "owner-billing") {
-      if (row) row.hidden = !ownerAvailable;
-      if (nav) nav.hidden = !ownerAvailable || !enabled;
-    } else if (nav) {
-      nav.hidden = !enabled;
-    }
-
-    document.querySelectorAll('.quick-card[data-section-link="' + key + '"]').forEach((card) => {
-      card.hidden = !enabled;
-    });
-  });
-
-  const active = document.querySelector(".page-section.active");
-  if (active && preferences[active.id] === false && typeof window.showSection === "function") {
-    window.showSection("overview");
-  }
+  if (ownerNav) ownerNav.hidden = !ownerAvailable;
 }
 window.applyDashboardTabs = applyDashboardTabs;
 
