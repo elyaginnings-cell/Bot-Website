@@ -90,7 +90,7 @@ import { readFileSync as readText } from "node:fs";
 const dashboardMarkup = readText(new URL("../dashboard.html", import.meta.url), "utf8");
 const dashboardStyles = readText(new URL("../coffee-shop-dashboard.css", import.meta.url), "utf8");
 const serverViewStyles = readText(new URL("../coffee-shop-server-view.css", import.meta.url), "utf8");
-const menuRedesignStyles = readText(new URL("../coffee-shop-menu-redesign.css", import.meta.url), "utf8");
+const menuRedesignStyles = readText(new URL("../coffee-shop-menu-redesign.css", import.meta.url), "utf8");\nconst darkRoastStyles = readText(new URL("../coffee-shop-dark-roast.css", import.meta.url), "utf8");
 
 test("dashboard exposes exactly one theme toggle and preserves the layout selector", () => {
   assert.equal((dashboardMarkup.match(/id="coffee-shop-theme-toggle"/g) || []).length, 1);
@@ -157,4 +157,18 @@ test("Dark Roast styles the complete menu surface, including shortcuts and page 
   assert.ok(menuRedesignStyles.includes('body[data-coffee-theme="dark-roast"] #app .cafe-shortcut strong {'));
   assert.ok(menuRedesignStyles.includes('body[data-coffee-theme="dark-roast"] #app .cafe-shortcut p {'));
   assert.ok(menuRedesignStyles.includes("background-attachment:fixed!important"));
+});
+
+test("Dark Roast has its own stylesheet and a distinct night-shift design system", () => {
+  assert.ok(dashboardMarkup.indexOf("/coffee-shop-menu-redesign.css?v=4") < dashboardMarkup.indexOf("/coffee-shop-dark-roast.css?v=1"));
+  for (const design in {"--roast-canvas":1,"--roast-panel":1,"--roast-ink":1,"--roast-copper":1}) {
+    assert.ok(darkRoastStyles.includes(design), "missing independent Dark Roast token " + design);
+  }
+  for (const surface of [".cafe-menu-board",".cafe-workspace-board",".cafe-shortcut",".cafe-server-card",".settings-panel",".guest-auth-bar"]) {
+    assert.ok(darkRoastStyles.includes(surface), "Dark Roast does not independently style " + surface);
+  }
+  assert.match(darkRoastStyles, /Fraunces/);
+  assert.match(darkRoastStyles, /DM Mono/);
+  assert.match(darkRoastStyles, /@media\(max-width:768px\)/);
+  assert.ok(!darkRoastStyles.includes("filter:invert"));
 });
