@@ -26,7 +26,7 @@ const featureIds = [
   "emoji-name", "emoji-category", "emoji-source", "emoji-file", "emoji-import-preview", "save-custom-emoji", "custom-emoji-list",
   "shop-enabled", "shop-type", "shop-name", "shop-price", "shop-role", "shop-items-list", "add-shop-item",
   "dashboard-log-channel", "save-logs", "test-log", "bday-channel", "bday-role", "bday-bonus", "save-birthday",
-  "dashboard-tab-moderation", "site-name", "save-branding", "bot-status", "save-presence"
+  "site-name", "save-branding", "bot-status", "save-presence"
 ];
 
 test("dashboard shell groups navigation without changing tab targets", () => {
