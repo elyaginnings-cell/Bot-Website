@@ -45,6 +45,7 @@ function sync(){
  if(id==="menu")buildMenu();
  var side=document.querySelector(".sidebar");if(side)side.setAttribute("aria-hidden","true")
 }
+window.addEventListener("dashboard:guild-loaded",()=>{if(activeId()==="menu")buildMenu()});
 document.addEventListener("click",e=>{
  var target=e.target?.closest?.("[data-menu-target]");if(target){var id=target.dataset.menuTarget;if(id==="server-view")$("nav-server-view")?.click();else show(id);return}
  if(e.target?.closest?.("[data-menu-home]")){show("overview");return}
