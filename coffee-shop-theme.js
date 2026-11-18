@@ -32,6 +32,7 @@
   function applyTheme(theme) {
     var selected = isTheme(theme) ? theme : "cafe";
     if (document.body) document.body.dataset.coffeeTheme = selected;
+    if (document.documentElement) document.documentElement.dataset.coffeeTheme = selected;
     if (document.documentElement && document.documentElement.style) {
       document.documentElement.style.colorScheme = selected === "dark-roast" ? "dark" : "light";
     }
