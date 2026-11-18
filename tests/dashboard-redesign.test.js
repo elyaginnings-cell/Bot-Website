@@ -360,6 +360,6 @@ test("mobile layout overrides the final desktop Home grid", () => {
   const mobileOverride = menuRedesignCss.lastIndexOf("@media(max-width:900px)");
   assert.ok(mobileOverride > desktopGrid, "mobile shell rules must come after desktop Home grid rules");
   const mobileLayout = menuRedesignCss.slice(mobileOverride);
-  assert.match(mobileLayout, /#app\\.coffee-shop-shell\\s*\\{[^}]*display:flex!important/);
-  assert.match(mobileLayout, /#app>\\.main\\.coffee-main\\s*\\{[^}]*display:flex!important/);
+  assert.match(mobileLayout, /#app\.coffee-shop-shell\s*\{[^}]*display:flex!important/);
+  assert.match(mobileLayout, /#app>\.main\.coffee-main\s*\{[^}]*display:flex!important/);
 });
