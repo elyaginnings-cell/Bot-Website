@@ -162,6 +162,9 @@
     var filterOpts = CATS.map(function (c) {
       return '<option value="' + c + '">' + c + "</option>";
     }).join("");
+    var eventOpts = ["config.website_change","member.update","member.join","member.leave","channel.update","channel.create","channel.delete","role.update","role.create","role.delete","guild.update","message.edit","message.delete","moderation.ban","moderation.kick","moderation.timeout"].map(function (e) {
+      return '<option value="' + e + '">' + e.split(".").join(" · ").replace(/[_-]/g, " ") + '</option>';
+    }).join("");
 
     return (
       '<div class="card form-card wide" id="central-logging-root" data-central-logs="1">' +
@@ -202,6 +205,7 @@
       '<select id="log-filter-cat"><option value="">All categories</option>' +
       filterOpts +
       "</select>" +
+      '<select id="log-filter-event"><option value="">All event types</option>' + eventOpts + '</select>' +
       '<button type="button" class="button" id="log-refresh">Refresh</button>' +
       "</div>" +
       '<div id="log-list" style="display:flex;flex-direction:column;gap:8px;max-height:420px;overflow:auto"></div>' +
@@ -389,12 +393,14 @@
     try {
       var q = $("log-search") ? $("log-search").value : "";
       var cat = $("log-filter-cat") ? $("log-filter-cat").value : "";
+      var eventType = $("log-filter-event") ? $("log-filter-event").value : "";
       var url =
         "/api/logs?guildId=" +
         encodeURIComponent(gid) +
         "&view=list&limit=40" +
         (q ? "&q=" + encodeURIComponent(q) : "") +
-        (cat ? "&category=" + encodeURIComponent(cat) : "");
+        (cat ? "&category=" + encodeURIComponent(cat) : "") +
+        (eventType ? "&eventType=" + encodeURIComponent(eventType) : "");
       var res = await fetch(url, { credentials: "include" });
       var data = await res.json().catch(function () {
         return {};
@@ -472,20 +478,20 @@
       }
       if (data.contentAvailable) {
         if (log.before_content != null || log.after_content != null) {
-          contentHtml =
+          contentHtml +=
             "<p><strong>Before</strong></p><pre style=\"white-space:pre-wrap\">" +
             escapeHtml(log.before_content || "") +
             "</pre><p><strong>After</strong></p><pre style=\"white-space:pre-wrap\">" +
             escapeHtml(log.after_content || "") +
             "</pre>";
         } else if (log.content != null) {
-          contentHtml =
+          contentHtml +=
             "<p><strong>Content</strong></p><pre style=\"white-space:pre-wrap\">" +
             escapeHtml(log.content) +
             "</pre>";
         }
       } else if (log.message_id) {
-        contentHtml =
+        contentHtml +=
           '<p class="form-hint">Message content expired or was not stored.</p>';
       }
       box.innerHTML =
@@ -547,6 +553,11 @@
     if (fc && !fc.__bound) {
       fc.__bound = true;
       fc.addEventListener("change", loadList);
+    }
+    var fe = $("log-filter-event");
+    if (fe && !fe.__bound) {
+      fe.__bound = true;
+      fe.addEventListener("change", loadList);
     }
   }
 
