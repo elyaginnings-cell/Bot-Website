@@ -8,8 +8,8 @@
       document.head.appendChild(s);
     });
   }
-  load("script-part1.js?v=fix12")
-    .then(function(){ return load("script-part2.js?v=fix7"); })
+  load("script-part1.js?v=fix13")
+    .then(function(){ return load("script-part2.js?v=fix8"); })
     .then(function(){
       if (typeof bootDashboard === "function") bootDashboard();
       else if (typeof setupEventListeners === "function") {
