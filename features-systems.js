@@ -10,10 +10,9 @@ var $=function(id){return document.getElementById(id)};
 function cfg(){if(!window.currentConfig)window.currentConfig={};if(!window.currentConfig.systems||typeof window.currentConfig.systems!=="object")window.currentConfig.systems={};return window.currentConfig.systems}
 function on(k){return cfg()[k]!==false}
 function ensure(){
-var content=document.querySelector(".content");if(!content)return false;if($("systems"))return true;
-var sec=document.createElement("section");sec.id="systems";sec.className="page-section cafe-menu-page cafe-system-controls-page";
+var content=document.querySelector(".content");if(!content)return false;var sec=$("systems");if(sec&&sec.dataset.systemControlsV4==="true")return true;if(!sec){sec=document.createElement("section");sec.id="systems";content.appendChild(sec)}sec.className="page-section cafe-menu-page cafe-system-controls-page";sec.dataset.systemControlsV4="true";
 sec.innerHTML='<div class="page-heading"><span class="eyebrow">THE WHOLE COFFEE SHOP</span><h2>System Controls</h2><p>Every system in your server, arranged just like the Café Menu. Flip a switch to enable or disable it for this server.</p></div><div class="system-menu-toolbar"><label class="feature-manager-search"><span>⌕</span><input id="feature-manager-search" type="search" placeholder="Find a system..."></label><div class="feature-manager-actions"><button class="button secondary" id="feature-manager-all-on" type="button">Enable all</button><button class="button secondary" id="feature-manager-all-off" type="button">Disable all</button></div></div><div id="feature-manager-summary" class="feature-manager-summary" aria-live="polite"></div><div class="cafe-menu-page-groups" id="systems-list"></div><div class="cafe-menu-page-footer system-menu-footer"><p id="systems-status" class="form-hint" role="status"></p><button class="button" id="save-systems" type="button">Save Changes</button><button class="button secondary" type="button" data-menu-home>← Back to Menu</button></div>';
-content.appendChild(sec);return true
+return true
 }
 function summary(){var el=$("feature-manager-summary");if(el)el.textContent=S.filter(x=>on(x[0])).length+" of "+S.length+" systems enabled"}
 function render(){
