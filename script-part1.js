@@ -174,8 +174,13 @@ function dashboardDraftValue() {
       values.push(["collection:" + node.id, (node.innerText || node.textContent || "").replace(/\\s+/g, " ").trim()]);
     });
   }
-  const systemToggle = activeSection?.querySelector("[data-system-toggle] input[data-sys-key]");
-  if (systemToggle) values.push(["system:" + systemToggle.dataset.sysKey, systemToggle.checked]);
+  // System Controls switches are dynamically rendered and intentionally have no
+  // DOM IDs. Include every key explicitly so dirty-state detection sees them.
+  if (activeSection) {
+    activeSection.querySelectorAll("input[data-sys-key]").forEach((toggle) => {
+      values.push(["system:" + toggle.dataset.sysKey, !!toggle.checked]);
+    });
+  }
   return JSON.stringify(values);
 }
 function dashboardDraftSection() {
