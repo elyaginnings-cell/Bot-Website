@@ -507,3 +507,53 @@ img, video, canvas, svg { max-width: 100%; }
     font-size: clamp(23px, 7.1vw, 27px) !important;
   }
 }
+
+
+/* Mobile control separation + low-cost navigation rendering. */
+@media (max-width: 900px) {
+  #app .header-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    align-items: stretch !important;
+  }
+  #app .header-actions > .account {
+    grid-column: 1 / -1 !important;
+    justify-self: stretch !important;
+    width: 100% !important;
+    margin: 0 !important;
+  }
+  #app .header-actions > .account .account-profile-button {
+    justify-content: flex-start !important;
+    padding-inline: 12px !important;
+    text-align: left !important;
+  }
+  #app .sidebar {
+    will-change: transform;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    box-shadow: 8px 0 24px rgba(25,16,10,.18) !important;
+    transition: transform .18s ease-out !important;
+  }
+  #app .dashboard-nav-backdrop {
+    transition: opacity .18s linear !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  #app .navigation,
+  #app .ds-nav-group,
+  #app .ds-nav-group-items,
+  #app .cafe-menu-page-groups {
+    contain: layout style;
+  }
+  #app .navigation .nav-item,
+  #app .ds-nav-group-toggle {
+    box-shadow: none !important;
+    filter: none !important;
+    transition: background-color .12s linear, color .12s linear !important;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #app .sidebar, #app .dashboard-nav-backdrop,
+  #app .navigation .nav-item, #app .ds-nav-group-toggle {
+    transition: none !important;
+  }
+}
