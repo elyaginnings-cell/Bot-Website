@@ -87,6 +87,7 @@ async function saveConfig(body) {
   }
   return data;
 }
+window.saveConfig = saveConfig;
 
 function applyConfigToForms() {
   if (!currentConfig) return;
