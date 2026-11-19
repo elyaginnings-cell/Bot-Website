@@ -29,7 +29,7 @@ function bind(){
 var list=$("systems-list");if(list&&!list.__managerBound){list.__managerBound=true;list.addEventListener("change",e=>{if(!e.target.matches("[data-sys-key]"))return;var next=collect();window.currentConfig=window.currentConfig||{};window.currentConfig.systems=next;render();status("Unsaved changes — save to apply them.",true)})}
 var search=$("feature-manager-search");if(search&&!search.__managerBound){search.__managerBound=true;search.addEventListener("input",render)}
 var saveBtn=$("save-systems");if(saveBtn&&!saveBtn.__managerBound){saveBtn.__managerBound=true;saveBtn.addEventListener("click",save)}
-[["feature-manager-all-on",true],["feature-manager-all-off",false]].forEach(([id,value])=>{var b=$(id);if(b&&!b.__managerBound){b.__managerBound=true;b.addEventListener("click",()=>{var next=Object.assign({},cfg());S.forEach(x=>next[x[0]]=value);window.currentConfig.systems=next;render();status("Unsaved changes — save to apply them.",true)})}})
+[["feature-manager-all-on",true],["feature-manager-all-off",false]].forEach(([id,value])=>{var b=$(id);if(b&&!b.__managerBound){b.__managerBound=true;b.addEventListener("click",()=>{var next=Object.assign({},cfg());S.forEach(x=>next[x[0]]=value);window.currentConfig.systems=next;render();status("Unsaved changes — save to apply them.",true);if(typeof window.updateDashboardDraftBar==="function")window.updateDashboardDraftBar()})}})
 }
 function mount(){if(!ensure())return;render();bind();navVisibility()}
 document.addEventListener("click",e=>{if(e.target?.closest?.('[data-tab="systems"]'))setTimeout(mount,30)},true);
