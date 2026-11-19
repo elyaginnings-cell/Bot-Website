@@ -327,6 +327,11 @@ export default async function handler(req, res) {
       }
 
       const pushBody = buildFullPushBody(mirrored);
+      const dashboardSession = guildAccess.session || {};
+      pushBody._auditContext = {
+        actorId: dashboardSession.discordId || dashboardSession.userId || null,
+        actorName: dashboardSession.username || dashboardSession.discordUsername || dashboardSession.displayName || null,
+      };
 
       let botOk = false;
       let botData = {};
