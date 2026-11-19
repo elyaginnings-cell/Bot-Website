@@ -248,7 +248,15 @@ function initDashboardDrafts() {
   });
   const dashboardContent = document.querySelector(".content");
   if (dashboardContent) collectionObserver.observe(dashboardContent, { childList: true, subtree: true, characterData: true });
-  document.getElementById("dashboard-draft-save")?.addEventListener("click", saveDashboardDraft);
+  // Capture the floating Save click at document level so it still works if
+  // another dashboard script replaces/rebuilds the button after initialization.
+  document.addEventListener("click", (event) => {
+    const button = event.target && event.target.closest ? event.target.closest("#dashboard-draft-save") : null;
+    if (!button) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    saveDashboardDraft();
+  }, true);
   document.getElementById("dashboard-draft-cancel")?.addEventListener("click", cancelDashboardDraft);
   document.addEventListener("dashboard:guild-loaded", () => {
     dashboardDraftSnapshots = Object.create(null);
@@ -284,7 +292,7 @@ async function cancelDashboardDraft() {
   captureDashboardDraft();
 }
 async function saveDashboardDraft() {
-  if (dashboardDraftSaving || !dashboardDraftIsDirty()) return;
+  if (dashboardDraftSaving) return;
   const section = document.querySelector(".page-section.active")?.id || "overview";
   const actions = {
     systems: async () => typeof window.saveSystemControls === "function" ? (await window.saveSystemControls()) === true : false,
