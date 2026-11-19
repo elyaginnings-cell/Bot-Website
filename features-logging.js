@@ -58,7 +58,7 @@
       "message.delete": "Message Deleted"
     };
     if (known[value]) return known[value];
-    return String(value || "Unknown event").split(".").join(" · ").replace(/[_-]/g, " ").replace(/\\b\\w/g, function (c) { return c.toUpperCase(); });
+    return String(value || "Unknown event").split(".").join(" · ").replace(/[_-]/g, " ").replace(/\b\w/g, function (c) { return c.toUpperCase(); });
   }
 
   function channels() {
