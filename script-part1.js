@@ -393,6 +393,7 @@ function showSection(section, force) {
   });
   const titles = {
     overview: ["Overview", "Manage your Discord server systems."],
+    systems: ["System Controls", "Enable or disable the systems available to this server."],
     moderation: ["Moderation", "Warn logs."],
     verification: ["Verification", "Configure the verification button, role, and channels."],
     invites: ["Invites", "Leaderboard channel."],
