@@ -268,6 +268,7 @@ async function saveDashboardDraft() {
   if (dashboardDraftSaving || !dashboardDraftIsDirty()) return;
   const section = document.querySelector(".page-section.active")?.id || "overview";
   const actions = {
+    systems: async () => typeof window.saveSystemControls === "function" ? (await window.saveSystemControls()) === true : false,
     moderation: saveModeration,
     invites: saveInvites,
     leveling: saveLeveling,
@@ -282,14 +283,15 @@ async function saveDashboardDraft() {
     }
   };
   const action = actions[section];
-  const hasSystemToggle = !!document.querySelector(".page-section.active [data-system-toggle] input[data-sys-key]");
+  const hasSystemToggle = !!document.querySelector(".page-section.active input[data-sys-key]");
   if (typeof action !== "function" && !hasSystemToggle && typeof window.saveFeatureDraft !== "function") return;
   dashboardDraftSaving = true;
   updateDashboardDraftBar();
   const saveButton = document.getElementById("dashboard-draft-save");
-  if (saveButton) saveButton.disabled = true;
+  const saveButtonLabel = saveButton ? saveButton.textContent : "";
+  if (saveButton) { saveButton.disabled = true; saveButton.classList.add("is-saving"); saveButton.innerHTML = '<span class="dashboard-draft-spinner" aria-hidden="true"></span> Saving…'; }
   try {
-    const systemToggle = document.querySelector(".page-section.active [data-system-toggle] input[data-sys-key]");
+    const systemToggle = document.querySelector(".page-section.active input[data-sys-key]");
     const desiredSystemState = systemToggle ? systemToggle.checked : null;
     let saved = true;
     if (typeof action === "function") saved = (await action()) === true;
@@ -307,7 +309,7 @@ async function saveDashboardDraft() {
     showDashboardDraftNotice();
   } finally {
     dashboardDraftSaving = false;
-    if (saveButton) saveButton.disabled = false;
+    if (saveButton) { saveButton.disabled = false; saveButton.classList.remove("is-saving"); saveButton.textContent = saveButtonLabel || "Save changes"; }
     updateDashboardDraftBar();
   }
 }

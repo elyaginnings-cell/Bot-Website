@@ -4,7 +4,7 @@
   window.__featureSummaryV1 = true;
 
   var FEATURE_TABS = [
-    "moderation","invites","leveling","currency","shop","logs","birthday","systems","custom-emojis",
+    "moderation","invites","leveling","currency","shop","logs","birthday","custom-emojis",
     "bump","verification","suggestions","tickets","qotd","selfroles",
     "applications","analytics","aichat","automod","aistaff","activitycheck","loa"
   ];
@@ -18,7 +18,6 @@
   };
   var SAVE = {
     "custom-emojis":["custom-emoji-import","custom-emoji-status"],
-    systems:["save-systems","systems-status"],
     bump:["save-bump","bump-status"],
     suggestions:["save-suggestions","suggest-status"],
     tickets:["save-tickets","ticket-status"],
@@ -154,7 +153,6 @@
   window.refreshFeatureSummary=refresh;
 
   var DIRECT_SAVE = {
-    systems:"saveSystemsDraft",
     bump:"saveBumpDraft",
     suggestions:"saveSuggestionsDraft",
     tickets:"saveTicketsDraft",
