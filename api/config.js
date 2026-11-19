@@ -10,6 +10,7 @@ import {
 } from "../lib/guildConfig.js";
 import { normalizeLoa } from "../lib/loaConfig.js";
 import { normalizeActivityCheck } from "../lib/activityCheckConfig.js";
+import { diffConfig } from "../lib/configChangeDiff.js";
 
 const RAILWAY_API =
   process.env.BOT_API_URL ||
@@ -240,6 +241,13 @@ export default async function handler(req, res) {
       }
 
       let mirrored = null;
+      let previousConfig = {};
+      try {
+        const prior = await loadGuildConfig(guildId);
+        previousConfig = prior ? JSON.parse(JSON.stringify(prior)) : {};
+      } catch (readErr) {
+        console.warn("Could not load prior config for audit diff:", readErr.message);
+      }
       try {
         mirrored = await mergeGuildConfig(guildId, body);
         const extraKeys = [
@@ -331,6 +339,7 @@ export default async function handler(req, res) {
       pushBody._auditContext = {
         actorId: dashboardSession.discordId || dashboardSession.userId || null,
         actorName: dashboardSession.username || dashboardSession.discordUsername || dashboardSession.displayName || null,
+        changes: diffConfig(previousConfig, mirrored)
       };
 
       let botOk = false;
