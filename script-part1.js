@@ -160,25 +160,21 @@ function dashboardDraftValue() {
   const activeSection = document.querySelector(".page-section.active");
   if (activeSection) {
     activeSection.querySelectorAll("input,select,textarea").forEach((el, index) => {
-      if (!el.id || seen.has(el.id) || ["button","submit","hidden"].includes(el.type)) return;
-      seen.add(el.id);
+      if (["button","submit","hidden"].includes(el.type)) return;
+      const key = el.id || (el.dataset && el.dataset.sysKey ? "system:" + el.dataset.sysKey :
+        el.name ? "name:" + el.name : "field:" + index);
+      if (seen.has(key)) return;
+      seen.add(key);
       const value = el.type === "checkbox" || el.type === "radio" ? el.checked :
         el.type === "file" ? Array.from(el.files || []).map((file) => file.name) :
         el.multiple ? Array.from(el.selectedOptions).map((option) => option.value) : el.value;
-      values.push([el.id || "field-" + index, value]);
+      values.push([key, value]);
     });
   }
   if (activeSection) {
     activeSection.querySelectorAll(".level-roles-list,[id$='-list'],[id$='-cats']").forEach((node) => {
       if (!node.id || node.closest(".feature-summary-panel")) return;
       values.push(["collection:" + node.id, (node.innerText || node.textContent || "").replace(/\\s+/g, " ").trim()]);
-    });
-  }
-  // System Controls switches are dynamically rendered and intentionally have no
-  // DOM IDs. Include every key explicitly so dirty-state detection sees them.
-  if (activeSection) {
-    activeSection.querySelectorAll("input[data-sys-key]").forEach((toggle) => {
-      values.push(["system:" + toggle.dataset.sysKey, !!toggle.checked]);
     });
   }
   return JSON.stringify(values);
