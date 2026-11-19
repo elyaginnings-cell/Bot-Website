@@ -337,8 +337,8 @@ export default async function handler(req, res) {
       const pushBody = buildFullPushBody(mirrored);
       const dashboardSession = guildAccess.session || {};
       pushBody._auditContext = {
-        actorId: dashboardSession.discordId || dashboardSession.userId || null,
-        actorName: dashboardSession.username || dashboardSession.discordUsername || dashboardSession.displayName || null,
+        actorId: guildAccess.account?.discord_id || dashboardSession.discordId || dashboardSession.userId || null,
+        actorName: guildAccess.account?.global_name || dashboardSession.globalName || guildAccess.account?.username || dashboardSession.username || dashboardSession.discordUsername || null,
         changes: diffConfig(previousConfig, mirrored)
       };
 
