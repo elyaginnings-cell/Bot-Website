@@ -371,6 +371,7 @@ export default async function handler(req, res) {
         .join(", ");
 
       let warning = null;
+      const commandSync = botData.commandSync || null;
       if (!botOk) {
         if (secretMismatch) {
           warning =
@@ -379,6 +380,10 @@ export default async function handler(req, res) {
           warning =
             "Saved on the website (Postgres). Live bot push failed — check BOT_API_URL / Railway.";
         }
+      } else if (commandSync && commandSync.ok === false) {
+        warning =
+          "Settings reached the bot, but Discord could not refresh this server's slash commands: " +
+          (commandSync.reason || "unknown command registration error");
       }
 
       return res.status(200).json({
@@ -389,6 +394,7 @@ export default async function handler(req, res) {
         botHttpStatus: botStatus,
         secretMismatch,
         systemsPushed: systemsInPush || null,
+        commandSync,
         logResult: botData.logResult || null,
         changes: botData.changes || null,
         warning,
