@@ -839,3 +839,9 @@ body[data-coffee-theme] #guest-auth-bar .guest-auth-actions>button{min-width:0;m
  body[data-coffee-theme] #guest-auth-bar .guest-auth-actions{display:grid;grid-template-columns:1fr;width:100%}
  body[data-coffee-theme] #guest-auth-bar .guest-auth-actions>button{width:100%}
 }
+
+
+/* Floating draft-save loading state */
+.dashboard-draft-bar #dashboard-draft-save.is-saving { cursor: progress; opacity: .9; }
+.dashboard-draft-spinner { display: inline-block; width: 0.85em; height: 0.85em; margin-right: .45em; vertical-align: -0.08em; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: dashboardDraftSpin .7s linear infinite; }
+@keyframes dashboardDraftSpin { to { transform: rotate(360deg); } }
