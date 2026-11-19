@@ -32,6 +32,12 @@ var saveBtn=$("save-systems");if(saveBtn&&!saveBtn.__managerBound){saveBtn.__man
 [["feature-manager-all-on",true],["feature-manager-all-off",false]].forEach(([id,value])=>{var b=$(id);if(b&&!b.__managerBound){b.__managerBound=true;b.addEventListener("click",()=>{var next=Object.assign({},cfg());S.forEach(x=>next[x[0]]=value);window.currentConfig.systems=next;render();status("Unsaved changes — save to apply them.",true);if(typeof window.updateDashboardDraftBar==="function")window.updateDashboardDraftBar()})}})
 }
 function mount(){if(!ensure())return;render();bind();navVisibility()}
+// Capture Save Changes reliably even if a later render replaces its button.
+document.addEventListener("click",function(e){
+var button=e.target&&e.target.closest?e.target.closest("#save-systems"):null;
+if(!button)return;
+e.preventDefault();e.stopImmediatePropagation();save();
+},true);
 document.addEventListener("click",e=>{if(e.target?.closest?.('[data-tab="systems"]'))setTimeout(mount,30)},true);
 [0,300,1000,2500,6000,12000,20000].forEach(ms=>setTimeout(mount,ms));
 var configPolls=0;var configPoll=setInterval(function(){navVisibility();if(++configPolls>=40)clearInterval(configPoll)},500);
