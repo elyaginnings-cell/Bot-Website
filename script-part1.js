@@ -143,7 +143,8 @@ const DASHBOARD_DRAFT_FIELDS = {
   birthday: ["bday-channel","bday-ping-role","bday-role","bday-bonus"],
   verification: ["verify-enabled","verify-channel","verify-role","verify-log-channel","verify-btn-label","verify-title","verify-desc","verify-monitor-mins"]
 };
-let dashboardDraftSnapshot = "";
+let dashboardDraftSnapshots = Object.create(null);
+let dashboardDraftActiveSection = "";
 let dashboardDraftSaving = false;
 
 function dashboardDraftValue() {
@@ -177,16 +178,29 @@ function dashboardDraftValue() {
   if (systemToggle) values.push(["system:" + systemToggle.dataset.sysKey, systemToggle.checked]);
   return JSON.stringify(values);
 }
+function dashboardDraftSection() {
+  return document.querySelector(".page-section.active")?.id || "overview";
+}
 function dashboardDraftIsDirty() {
-  const section = document.querySelector(".page-section.active")?.id || "overview";
+  const section = dashboardDraftSection();
   const activeSection = document.querySelector(".page-section.active");
-  const hasSystemToggle = !!activeSection?.querySelector("[data-system-toggle] input[data-sys-key]");
+  const hasSystemToggle = !!activeSection?.querySelector("input[data-sys-key]");
   const hasEditableFields = !!activeSection?.querySelector("input:not([type=button]):not([type=submit]):not([type=hidden]),select,textarea");
   if (!DASHBOARD_DRAFT_FIELDS[section] && !hasSystemToggle && !hasEditableFields) return false;
-  return dashboardDraftValue() !== dashboardDraftSnapshot;
+  const current = dashboardDraftValue();
+  // Keep a separate baseline per tab so changing tabs cannot look like an edit.
+  if (!Object.prototype.hasOwnProperty.call(dashboardDraftSnapshots, section)) {
+    dashboardDraftSnapshots[section] = current;
+    dashboardDraftActiveSection = section;
+    return false;
+  }
+  dashboardDraftActiveSection = section;
+  return current !== dashboardDraftSnapshots[section];
 }
 function captureDashboardDraft() {
-  dashboardDraftSnapshot = dashboardDraftValue();
+  const section = dashboardDraftSection();
+  dashboardDraftSnapshots[section] = dashboardDraftValue();
+  dashboardDraftActiveSection = section;
   updateDashboardDraftBar();
 }
 function showDashboardDraftNotice() {
@@ -235,6 +249,10 @@ function initDashboardDrafts() {
   if (dashboardContent) collectionObserver.observe(dashboardContent, { childList: true, subtree: true, characterData: true });
   document.getElementById("dashboard-draft-save")?.addEventListener("click", saveDashboardDraft);
   document.getElementById("dashboard-draft-cancel")?.addEventListener("click", cancelDashboardDraft);
+  document.addEventListener("dashboard:guild-loaded", () => {
+    dashboardDraftSnapshots = Object.create(null);
+    captureDashboardDraft();
+  });
   captureDashboardDraft();
 }
 async function cancelDashboardDraft() {
