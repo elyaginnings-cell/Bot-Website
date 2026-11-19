@@ -398,6 +398,8 @@ export default async function handler(req, res) {
         warning =
           "Settings reached the bot, but Discord could not refresh this server's slash commands: " +
           (commandSync.reason || "unknown command registration error");
+      } else if (botData.logResult && botData.logResult.discord === false && botData.logResult.discordFallback === false) {
+        warning = "Settings were saved, but the audit entry could not be delivered to Discord. Check the configured log channels and the bot's channel permissions.";
       }
 
       return res.status(200).json({
