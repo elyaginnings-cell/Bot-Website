@@ -71,7 +71,7 @@
           });
         });
       });
-      observer.observe(content, { childList: true, subtree: true });
+      observer.observe(content, { childList: true });
     }
   }
 
