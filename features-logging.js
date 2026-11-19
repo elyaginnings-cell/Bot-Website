@@ -39,6 +39,28 @@
     return document.getElementById(id);
   }
 
+  function escapeHtml(value) {
+    return String(value == null ? "" : value).replace(/[&<>"']/g, function (ch) {
+      return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[ch];
+    });
+  }
+
+  function prettyEvent(value) {
+    var known = {
+      "config.website_change": "Website Configuration Changed",
+      "member.update": "Member Updated",
+      "member.join": "Member Joined",
+      "member.leave": "Member Left",
+      "channel.update": "Channel Updated",
+      "role.update": "Role Updated",
+      "guild.update": "Server Settings Updated",
+      "message.edit": "Message Edited",
+      "message.delete": "Message Deleted"
+    };
+    if (known[value]) return known[value];
+    return String(value || "Unknown event").split(".").join(" · ").replace(/[_-]/g, " ").replace(/\\b\\w/g, function (c) { return c.toUpperCase(); });
+  }
+
   function channels() {
     try {
       if (typeof channelsCache !== "undefined" && channelsCache && channelsCache.length)
@@ -389,19 +411,21 @@
       }
       list.innerHTML = rows
         .map(function (r) {
-          var who = r.target_name || r.actor_name || "—";
+          var who = r.target_name || r.actor_name || "Unknown actor";
           var ch = r.channel_name ? "#" + r.channel_name : "";
+          var meta = r.metadata && typeof r.metadata === "object" ? r.metadata : {};
+          var changes = Array.isArray(meta.changes) ? meta.changes : [];
+          var preview = changes.slice(0, 2).map(function (c) {
+            return String(c.path || "Setting").replace(/[._]/g, " ") + ": " + String(c.before || "—") + " → " + String(c.after || "—");
+          }).join(" · ");
           return (
-            '<button type="button" class="button secondary" data-log-id="' +
-            r.id +
-            '" style="text-align:left;width:100%;justify-content:flex-start">' +
-            "<strong>" +
-            String(r.event_type) +
-            "</strong> · " +
-            who +
-            (ch ? " → " + ch : "") +
-            " · " +
-            timeAgo(r.created_at) +
+            '<button type="button" class="button secondary log-event-row" data-log-id="' +
+            escapeHtml(r.id) +
+            '" style="text-align:left;width:100%;justify-content:flex-start;display:block;padding:12px">' +
+            '<strong>' + escapeHtml(prettyEvent(r.event_type)) + '</strong>' +
+            '<span style="display:block;opacity:.8;margin-top:4px">' + escapeHtml(who) +
+            (ch ? " · " + escapeHtml(ch) : "") + " · " + escapeHtml(timeAgo(r.created_at)) + '</span>' +
+            (preview ? '<span style="display:block;opacity:.72;font-size:.9em;margin-top:5px">' + escapeHtml(preview) + '</span>' : '') +
             "</button>"
           );
         })
@@ -433,18 +457,31 @@
       if (!box) return;
       box.style.display = "block";
       var contentHtml = "";
+      var meta = log.metadata && typeof log.metadata === "object" ? log.metadata : {};
+      if (Array.isArray(meta.changes) && meta.changes.length) {
+        contentHtml += '<h4>Configuration changes (' + meta.changes.length + ')</h4><div class="log-change-list">';
+        contentHtml += meta.changes.map(function (change) {
+          return '<div style="padding:8px 10px;margin:6px 0;border-left:3px solid var(--accent,#8b5cf6);background:rgba(127,127,127,.08)">' +
+            '<strong>' + escapeHtml(String(change.path || "Setting").replace(/[._]/g, " ")) + '</strong>' +
+            '<div style="margin-top:4px"><span style="opacity:.75">' + escapeHtml(change.before || "—") + '</span> <span aria-hidden="true">→</span> <strong>' + escapeHtml(change.after || "—") + '</strong></div></div>';
+        }).join("");
+        contentHtml += '</div>';
+      }
+      if (Array.isArray(meta.securityReasons) && meta.securityReasons.length) {
+        contentHtml += '<h4>Security notes</h4><ul>' + meta.securityReasons.map(function (x) { return '<li>' + escapeHtml(x) + '</li>'; }).join("") + '</ul>';
+      }
       if (data.contentAvailable) {
         if (log.before_content != null || log.after_content != null) {
           contentHtml =
             "<p><strong>Before</strong></p><pre style=\"white-space:pre-wrap\">" +
-            String(log.before_content || "") +
+            escapeHtml(log.before_content || "") +
             "</pre><p><strong>After</strong></p><pre style=\"white-space:pre-wrap\">" +
-            String(log.after_content || "") +
+            escapeHtml(log.after_content || "") +
             "</pre>";
         } else if (log.content != null) {
           contentHtml =
             "<p><strong>Content</strong></p><pre style=\"white-space:pre-wrap\">" +
-            String(log.content) +
+            escapeHtml(log.content) +
             "</pre>";
         }
       } else if (log.message_id) {
@@ -452,27 +489,14 @@
           '<p class="form-hint">Message content expired or was not stored.</p>';
       }
       box.innerHTML =
-        "<h3>" +
-        String(log.event_type || "") +
-        "</h3>" +
-        "<p>Log ID: <code>" +
-        (log.id || "") +
-        "</code></p>" +
-        "<p>Actor: " +
-        (log.actor_name || log.actor_id || "—") +
-        "</p>" +
-        "<p>Target: " +
-        (log.target_name || log.target_id || "—") +
-        "</p>" +
-        "<p>Channel: " +
-        (log.channel_name || log.channel_id || "—") +
-        "</p>" +
-        "<p>Reason: " +
-        (log.reason || "—") +
-        "</p>" +
-        "<p>Time: " +
-        (log.created_at || "") +
-        "</p>" +
+        "<h3>" + escapeHtml(prettyEvent(log.event_type)) + "</h3>" +
+        '<p><strong>Category:</strong> ' + escapeHtml(log.category || "—") + '</p>' +
+        "<p><strong>Log ID:</strong> <code>" + escapeHtml(log.id || "") + "</code></p>" +
+        "<p><strong>Actor:</strong> " + escapeHtml(log.actor_name || log.actor_id || "—") + "</p>" +
+        "<p><strong>Target:</strong> " + escapeHtml(log.target_name || log.target_id || "—") + "</p>" +
+        "<p><strong>Channel:</strong> " + escapeHtml(log.channel_name || log.channel_id || "—") + "</p>" +
+        "<p><strong>Reason:</strong> " + escapeHtml(log.reason || "—") + "</p>" +
+        "<p><strong>Time:</strong> " + escapeHtml(log.created_at ? new Date(log.created_at).toLocaleString() : "—") + "</p>" +
         contentHtml;
     } catch (e) {
       setBrowseStatus("❌ " + (e.message || "Detail failed"), false);
