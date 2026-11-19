@@ -250,12 +250,12 @@ function initDashboardDrafts() {
   if (dashboardContent) collectionObserver.observe(dashboardContent, { childList: true, subtree: true, characterData: true });
   // Capture the floating Save click at document level so it still works if
   // another dashboard script replaces/rebuilds the button after initialization.
-  document.addEventListener("click", (event) => {
+  window.addEventListener("click", (event) => {
     const button = event.target && event.target.closest ? event.target.closest("#dashboard-draft-save") : null;
     if (!button) return;
     event.preventDefault();
-    event.stopImmediatePropagation();
-    saveDashboardDraft();
+    event.stopPropagation();
+    void saveDashboardDraft();
   }, true);
   document.getElementById("dashboard-draft-cancel")?.addEventListener("click", cancelDashboardDraft);
   document.addEventListener("dashboard:guild-loaded", () => {
@@ -340,6 +340,7 @@ async function saveDashboardDraft() {
     updateDashboardDraftBar();
   }
 }
+window.saveDashboardDraft = saveDashboardDraft;
 window.dashboardDraftIsDirty = dashboardDraftIsDirty;
 window.captureDashboardDraft = captureDashboardDraft;
 window.updateDashboardDraftBar = updateDashboardDraftBar;
