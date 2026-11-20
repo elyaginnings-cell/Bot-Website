@@ -78,3 +78,21 @@
     transition-duration: .01ms !important;
   }
 }
+
+
+/* Keep the floating draft controls above mobile navigation layers and
+   make the full-width touch target activate immediately. */
+@media (max-width: 768px) {
+  #app .dashboard-draft-bar {
+    z-index: 13000 !important;
+    pointer-events: auto !important;
+    touch-action: manipulation;
+  }
+  #app .dashboard-draft-bar button {
+    position: relative;
+    z-index: 1;
+    pointer-events: auto !important;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
