@@ -888,3 +888,29 @@ body[data-coffee-theme] #app .log-embed-snapshot p {
   color: var(--coffee-muted) !important;
   overflow-wrap: anywhere;
 }
+
+
+body[data-coffee-theme] #app .log-snapshot-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 8px 0 14px;
+}
+body[data-coffee-theme] #app .log-snapshot-grid section {
+  min-width: 0;
+  padding: 11px;
+  border: 1px solid var(--coffee-line);
+  border-radius: 10px;
+  background: var(--coffee-raised);
+}
+body[data-coffee-theme] #app .log-snapshot-grid pre {
+  max-height: 320px;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: var(--coffee-muted);
+  font: 12px/1.55 ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+@media (max-width: 700px) {
+  body[data-coffee-theme] #app .log-snapshot-grid { grid-template-columns: 1fr; }
+}
