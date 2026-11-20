@@ -914,3 +914,59 @@ body[data-coffee-theme] #app .log-snapshot-grid pre {
 @media (max-width: 700px) {
   body[data-coffee-theme] #app .log-snapshot-grid { grid-template-columns: 1fr; }
 }
+
+
+body[data-coffee-theme] #app .log-event-toggle {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) minmax(0, auto);
+  align-items: center;
+  gap: 12px;
+  padding: 9px 11px;
+  border-bottom: 1px solid var(--coffee-line);
+  cursor: default;
+}
+body[data-coffee-theme] #app .log-event-toggle > label,
+body[data-coffee-theme] #app .log-event-row-config > label {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  cursor: pointer;
+}
+body[data-coffee-theme] #app .log-event-toggle strong {
+  font-size: 13px;
+  font-weight: 700;
+}
+body[data-coffee-theme] #app .log-event-row-config {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 9px;
+}
+body[data-coffee-theme] #app .log-event-row-config select {
+  width: 180px;
+  min-width: 140px;
+  max-width: 100%;
+  min-height: 34px;
+  border: 1px solid var(--coffee-line-strong);
+  border-radius: 8px;
+  background: var(--coffee-raised);
+  color: var(--coffee-ink);
+  font-size: 12px;
+}
+body[data-coffee-theme] #app .log-event-toggle:hover {
+  background: var(--coffee-accent-wash);
+}
+@media (max-width: 700px) {
+  body[data-coffee-theme] #app .log-event-toggle {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  body[data-coffee-theme] #app .log-event-row-config {
+    justify-content: flex-start;
+  }
+  body[data-coffee-theme] #app .log-event-row-config select {
+    flex: 1 1 150px;
+  }
+}
