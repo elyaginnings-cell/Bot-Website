@@ -165,7 +165,7 @@
       "moderation.warn","moderation.warn_removed","moderation.ban","moderation.unban","moderation.kick","moderation.timeout","moderation.timeout_remove","moderation.purge",
       "automod.message_deleted","automod.warn","automod.timeout",
       "member.join","member.leave","member.update","member.verify","member.ban","member.unban","member.voice",
-      "message.delete","message.edit","message.bulk_delete",
+      "message.delete","message.edit","message.bulk_delete","message.reaction_add","message.reaction_remove","message.reaction_clear","message.reaction_emoji_clear",
       "channel.create","channel.update","channel.delete","channel.pins_update","channel.webhook_update",
       "thread.create","thread.update","thread.delete",
       "role.create","role.update","role.delete",
