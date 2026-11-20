@@ -765,3 +765,98 @@ body[data-coffee-theme] #app #owner-billing .settings-panel:nth-child(2) { grid-
   body[data-coffee-theme] #app #owner-billing .settings-panel { grid-column: 1 !important; }
   body[data-coffee-theme] #app .overview-subheading { align-items: flex-start; flex-direction: column; gap: 4px; }
 }
+
+
+/* Coffee Shop logging workspace */
+body[data-coffee-theme] #app #central-logging-root,
+body[data-coffee-theme] #app #central-logging-browser {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--coffee-line-strong) !important;
+  background:
+    radial-gradient(ellipse at 92% 0%, var(--coffee-accent-wash), transparent 38%),
+    var(--coffee-surface) !important;
+}
+body[data-coffee-theme] #app #central-logging-root > .eyebrow,
+body[data-coffee-theme] #app #central-logging-browser > .eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 9px;
+  border: 1px solid var(--coffee-line);
+  border-radius: 999px;
+  background: var(--coffee-soft);
+  color: var(--coffee-accent) !important;
+  font-size: 10px;
+  letter-spacing: .13em;
+  font-weight: 800;
+}
+body[data-coffee-theme] #app #central-logging-root h2,
+body[data-coffee-theme] #app #central-logging-browser h2 {
+  margin-top: 12px;
+  font-size: clamp(21px, 2vw, 27px);
+}
+body[data-coffee-theme] #app .log-category-row {
+  background: color-mix(in srgb, var(--coffee-raised) 78%, transparent);
+  border-color: var(--coffee-line) !important;
+}
+body[data-coffee-theme] #app .log-category-row > label {
+  text-transform: capitalize;
+  font-weight: 700;
+}
+body[data-coffee-theme] #app .log-category-row select,
+body[data-coffee-theme] #app #log-event-search,
+body[data-coffee-theme] #app #central-logging-root input:not([type="checkbox"]),
+body[data-coffee-theme] #app #central-logging-browser input {
+  min-height: 40px;
+  border: 1px solid var(--coffee-line-strong);
+  border-radius: 10px;
+  background: var(--coffee-raised);
+  color: var(--coffee-ink);
+}
+body[data-coffee-theme] #app #log-event-controls {
+  background: var(--coffee-raised);
+  border-color: var(--coffee-line) !important;
+}
+body[data-coffee-theme] #app .log-event-toggle {
+  cursor: pointer;
+  transition: background .15s ease;
+}
+body[data-coffee-theme] #app .log-event-toggle:hover {
+  background: var(--coffee-accent-wash);
+}
+body[data-coffee-theme] #app .log-event-toggle span {
+  font-size: 13px;
+}
+body[data-coffee-theme] #app #central-logging-browser .log-event-row {
+  border: 1px solid var(--coffee-line) !important;
+  border-radius: 11px;
+  background: var(--coffee-raised) !important;
+  color: var(--coffee-ink) !important;
+  box-shadow: none !important;
+  transition: border-color .15s ease, background .15s ease;
+}
+body[data-coffee-theme] #app #central-logging-browser .log-event-row:hover {
+  border-color: var(--coffee-line-strong) !important;
+  background: var(--coffee-soft) !important;
+}
+body[data-coffee-theme] #app #log-detail {
+  padding: 16px;
+  border: 1px solid var(--coffee-line);
+  border-radius: 14px;
+  background: var(--coffee-raised);
+}
+body[data-coffee-theme] #app #log-config-status,
+body[data-coffee-theme] #app #log-browse-status {
+  min-height: 20px;
+  margin-top: 10px;
+  font-weight: 600;
+}
+@media (max-width: 700px) {
+  body[data-coffee-theme] #app .log-category-row > div {
+    gap: 9px !important;
+  }
+  body[data-coffee-theme] #app #log-event-controls {
+    max-height: 260px !important;
+  }
+}
