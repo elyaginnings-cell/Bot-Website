@@ -141,7 +141,8 @@
       securityAlertRoleId: c.securityAlertRoleId || "",
       messageContentRetentionDays: c.messageContentRetentionDays || 30,
       categories: c.categories || {},
-      events: c.events || {}
+      events: c.events || {},
+      ignore: c.ignore || { actors: [], targets: [], roles: [], channels: [], messages: [], bots: false }
     };
   }
 
@@ -214,6 +215,14 @@
       '<div id="log-cat-channels">' +
       catRows +
       "</div>" +
+      '<h3 style="margin-top:18px">Ignore rules</h3>' +
+      '<p class="form-hint">Keep noisy activity out of the log stream. Actors are people performing actions; targets are people affected by actions. Enter IDs separated by commas.</p>' +
+      '<div class="input-group"><label for="log-ignore-actors">Ignore actors (executors)</label><input id="log-ignore-actors" placeholder="Discord user IDs, comma separated"></div>' +
+      '<div class="input-group"><label for="log-ignore-targets">Ignore targets</label><input id="log-ignore-targets" placeholder="Discord user IDs, comma separated"></div>' +
+      '<div class="input-group"><label for="log-ignore-roles">Ignore roles (actor or target)</label><input id="log-ignore-roles" placeholder="Discord role IDs, comma separated"></div>' +
+      '<div class="input-group"><label for="log-ignore-channels">Ignore channels</label><input id="log-ignore-channels" placeholder="Discord channel IDs, comma separated"></div>' +
+      '<div class="input-group"><label for="log-ignore-messages">Ignore messages</label><input id="log-ignore-messages" placeholder="Discord message IDs, comma separated"></div>' +
+      '<label class="toggle" style="display:flex;gap:8px;align-items:center;margin:8px 0"><input type="checkbox" id="log-ignore-bots"> <span>Ignore bot-generated activity</span></label>' +
       '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px">' +
       '<button type="button" class="button" id="log-save-config">Save log settings</button>' +
       "</div>" +
@@ -298,6 +307,13 @@
     );
     if ($("log-security-role") && document.activeElement !== $("log-security-role"))
       $("log-security-role").value = cfg.securityAlertRoleId || "";
+    var ignore = cfg.ignore || {};
+    [["actors", "log-ignore-actors"], ["targets", "log-ignore-targets"], ["roles", "log-ignore-roles"], ["channels", "log-ignore-channels"], ["messages", "log-ignore-messages"]].forEach(function (pair) {
+      var el = $(pair[1]);
+      if (el && document.activeElement !== el) el.value = Array.isArray(ignore[pair[0]]) ? ignore[pair[0]].join(", ") : "";
+    });
+    if ($("log-ignore-bots") && document.activeElement !== $("log-ignore-bots"))
+      $("log-ignore-bots").checked = ignore.bots === true;
     CATS.forEach(function (cat) {
       fillChannelSelect(
         $("log-cat-" + cat),
@@ -305,6 +321,12 @@
         "— Default —"
       );
     });
+  }
+
+  function parseIdList(el) {
+    return String(el && el.value || "").split(",").map(function (value) {
+      return value.trim();
+    }).filter(Boolean);
   }
 
   function collectConfig() {
@@ -336,6 +358,14 @@
       ),
       categories: categories,
       events: (getLoggingCfg().events) || {},
+      ignore: {
+        actors: parseIdList($("log-ignore-actors")),
+        targets: parseIdList($("log-ignore-targets")),
+        roles: parseIdList($("log-ignore-roles")),
+        channels: parseIdList($("log-ignore-channels")),
+        messages: parseIdList($("log-ignore-messages")),
+        bots: !!($("log-ignore-bots") && $("log-ignore-bots").checked)
+      },
       replaceCategories: true
     };
   }
