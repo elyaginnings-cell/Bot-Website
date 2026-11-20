@@ -576,6 +576,31 @@
       if (Array.isArray(meta.securityReasons) && meta.securityReasons.length) {
         contentHtml += '<h4>Security notes</h4><ul>' + meta.securityReasons.map(function (x) { return '<li>' + escapeHtml(x) + '</li>'; }).join("") + '</ul>';
       }
+      var attachments = Array.isArray(log.attachments) ? log.attachments : [];
+      if (attachments.length) {
+        contentHtml += '<h4>Attachments (' + attachments.length + ')</h4><ul class="log-attachment-list">';
+        contentHtml += attachments.map(function (attachment) {
+          var name = escapeHtml(attachment.name || attachment.filename || "Attachment");
+          var url = String(attachment.url || "");
+          var safeUrl = /^https:\/\//i.test(url) ? url : "";
+          var size = Number(attachment.size) > 0 ? " · " + Math.max(1, Math.round(Number(attachment.size) / 1024)) + " KB" : "";
+          return '<li>' + (safeUrl ? '<a href="' + escapeHtml(safeUrl) + '" target="_blank" rel="noopener noreferrer">' + name + '</a>' : name) + escapeHtml(size) + '</li>';
+        }).join("");
+        contentHtml += '</ul>';
+      }
+      var embeds = Array.isArray(log.embeds_snapshot) ? log.embeds_snapshot : [];
+      if (embeds.length) {
+        contentHtml += '<h4>Embeds (' + embeds.length + ')</h4>';
+        contentHtml += embeds.map(function (embed) {
+          var title = embed.title ? '<strong>' + escapeHtml(embed.title) + '</strong>' : '<strong>Embed</strong>';
+          var description = embed.description ? '<p>' + escapeHtml(embed.description) + '</p>' : '';
+          var link = /^https:\/\//i.test(String(embed.url || "")) ? '<p><a href="' + escapeHtml(embed.url) + '" target="_blank" rel="noopener noreferrer">Open embed link</a></p>' : '';
+          var fields = Array.isArray(embed.fields) ? embed.fields.slice(0, 10).map(function (field) {
+            return '<p><strong>' + escapeHtml(field.name || "Field") + ':</strong> ' + escapeHtml(field.value || "") + '</p>';
+          }).join("") : '';
+          return '<div class="log-embed-snapshot">' + title + description + fields + link + '</div>';
+        }).join("");
+      }
       if (data.contentAvailable) {
         if (log.before_content != null || log.after_content != null) {
           contentHtml +=
