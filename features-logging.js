@@ -238,6 +238,7 @@
       "</select>" +
       '<select id="log-filter-event"><option value="">All event types</option>' + eventOpts + '</select>' +
       '<button type="button" class="button" id="log-refresh">Refresh</button>' +
+      '<button type="button" class="button secondary" id="log-export">Export CSV</button>' +
       "</div>" +
       '<div id="log-list" style="display:flex;flex-direction:column;gap:8px;max-height:420px;overflow:auto"></div>' +
       '<div id="log-detail" style="margin-top:12px;display:none"></div>' +
@@ -581,6 +582,42 @@
       ref.onclick = function (e) {
         e.preventDefault();
         loadList();
+      };
+    }
+    var exportButton = $("log-export");
+    if (exportButton && !exportButton.__bound) {
+      exportButton.__bound = true;
+      exportButton.onclick = async function (e) {
+        e.preventDefault();
+        var gid = guildId();
+        if (!gid) return setBrowseStatus("Select a server first.", false);
+        try {
+          setBrowseStatus("Preparing CSV export…", true);
+          var params = new URLSearchParams({
+            guildId: gid,
+            view: "export",
+            q: $("log-search") ? $("log-search").value : "",
+            category: $("log-filter-cat") ? $("log-filter-cat").value : "",
+            eventType: $("log-filter-event") ? $("log-filter-event").value : ""
+          });
+          var response = await fetch("/api/logs?" + params.toString(), { credentials: "include" });
+          if (!response.ok) {
+            var errorData = await response.json().catch(function () { return {}; });
+            throw new Error(errorData.error || "Export failed (HTTP " + response.status + ")");
+          }
+          var blob = await response.blob();
+          var url = URL.createObjectURL(blob);
+          var link = document.createElement("a");
+          link.href = url;
+          link.download = "coffee-shop-logs.csv";
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+          setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+          setBrowseStatus("CSV export ready.", true);
+        } catch (error) {
+          setBrowseStatus("❌ " + (error.message || "Export failed"), false);
+        }
       };
     }
     var list = $("log-list");
