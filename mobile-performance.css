@@ -1,0 +1,80 @@
+/* Mobile interaction performance layer.
+   Preserve the Coffee Shop look while reducing expensive paint/compositing on phones. */
+@media (max-width: 768px) {
+  /* Blur and layered shadows are disproportionately expensive on mobile GPUs. */
+  #app .dashboard-nav-backdrop,
+  #app .guest-auth-backdrop,
+  #app .sv-lightbox,
+  #app .modal-backdrop {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+
+  #app .card,
+  #app .form-card,
+  #app .settings-panel,
+  #app .settings-group,
+  #app .quick-card,
+  #app .coffee-welcome-board,
+  #app .coffee-feature-manager,
+  #app .feature-manager-row,
+  #app .cafe-menu-page-item,
+  #app .stat-card {
+    box-shadow: 0 2px 8px rgba(55, 32, 18, .07) !important;
+  }
+
+  #app .card::before,
+  #app .card::after,
+  #app .form-card::before,
+  #app .form-card::after {
+    filter: none !important;
+    animation: none !important;
+  }
+
+  /* Avoid repeatedly compositing decorative texture layers while scrolling. */
+  body[data-coffee-theme] {
+    background-attachment: scroll !important;
+  }
+
+  #app .coffee-welcome-board,
+  #app .workspace-paper,
+  #app .cafe-menu-page-item,
+  #app .coffee-feature-manager {
+    background-attachment: scroll !important;
+  }
+
+  /* Keep interactions snappy without animating large paint-heavy properties. */
+  #app .card,
+  #app .form-card,
+  #app .settings-panel,
+  #app .settings-group,
+  #app .quick-card,
+  #app .cafe-menu-page-item,
+  #app button,
+  #app a {
+    transition-property: color, background-color, border-color, opacity, transform !important;
+    transition-duration: .12s !important;
+  }
+
+  #app .quick-card:hover,
+  #app .cafe-menu-page-item:hover,
+  #app .card:hover {
+    transform: none !important;
+  }
+
+  /* Reduce paint work from decorative shadows on nested controls. */
+  #app :is(input, select, textarea, button, .button, .toggle, .nav-item) {
+    text-shadow: none !important;
+  }
+}
+
+@media (max-width: 768px) and (prefers-reduced-motion: reduce) {
+  #app *,
+  #app *::before,
+  #app *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+  }
+}
