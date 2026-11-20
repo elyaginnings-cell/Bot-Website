@@ -860,3 +860,31 @@ body[data-coffee-theme] #app #log-browse-status {
     max-height: 260px !important;
   }
 }
+
+
+body[data-coffee-theme] #app .log-attachment-list {
+  display: grid;
+  gap: 6px;
+  padding-left: 20px;
+  color: var(--coffee-muted);
+}
+body[data-coffee-theme] #app .log-attachment-list a,
+body[data-coffee-theme] #app .log-embed-snapshot a {
+  color: var(--coffee-accent) !important;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+body[data-coffee-theme] #app .log-embed-snapshot {
+  margin: 8px 0;
+  padding: 12px;
+  border: 1px solid var(--coffee-line);
+  border-left: 3px solid var(--coffee-accent);
+  border-radius: 10px;
+  background: var(--coffee-soft);
+}
+body[data-coffee-theme] #app .log-embed-snapshot p {
+  margin: 6px 0;
+  color: var(--coffee-muted) !important;
+  overflow-wrap: anywhere;
+}
