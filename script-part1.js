@@ -248,15 +248,20 @@ function initDashboardDrafts() {
   });
   const dashboardContent = document.querySelector(".content");
   if (dashboardContent) collectionObserver.observe(dashboardContent, { childList: true, subtree: true, characterData: true });
-  // Capture the floating Save click at document level so it still works if
-  // another dashboard script replaces/rebuilds the button after initialization.
-  window.addEventListener("click", (event) => {
+  // Delegate both touch-pointer and click activation. Some mobile browsers
+  // occasionally lose the synthetic click on fixed bottom controls after a
+  // scroll; pointerup keeps the Save action reliable without double-saving.
+  const handleDraftSaveActivation = (event) => {
     const button = event.target && event.target.closest ? event.target.closest("#dashboard-draft-save") : null;
-    if (!button) return;
+    if (!button || button.disabled || dashboardDraftSaving) return;
     event.preventDefault();
     event.stopPropagation();
     void saveDashboardDraft();
+  };
+  window.addEventListener("pointerup", (event) => {
+    if (event.pointerType === "touch") handleDraftSaveActivation(event);
   }, true);
+  window.addEventListener("click", handleDraftSaveActivation, true);
   document.getElementById("dashboard-draft-cancel")?.addEventListener("click", cancelDashboardDraft);
   document.addEventListener("dashboard:guild-loaded", () => {
     dashboardDraftSnapshots = Object.create(null);
