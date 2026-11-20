@@ -17,4 +17,4 @@ jobs:
       - run: npm install --no-audit --no-fund
       - run: node --check features-logging.js
       - run: node --check api/logs.js
-      - run: node --test tests/log-export.test.js tests/responsive-experience.test.js
+      - run: node --test tests/log-export.test.js tests/logging-ui.test.js tests/responsive-experience.test.js
