@@ -186,6 +186,10 @@
     var eventOpts = eventTypes.map(function (e) {
       return '<option value="' + e + '">' + e.split(".").join(" · ").replace(/[_-]/g, " ") + '</option>';
     }).join("");
+    var eventRows = eventTypes.map(function (eventType) {
+      return '<label class="toggle log-event-toggle" data-log-event-row="' + eventType + '" style="display:flex;gap:8px;align-items:center;padding:7px 9px;border-bottom:1px solid var(--border,rgba(255,255,255,.08))">' +
+        '<input type="checkbox" data-log-event="' + eventType + '" checked> <span>' + escapeHtml(prettyEvent(eventType)) + '</span></label>';
+    }).join("");
 
     return (
       '<div class="card form-card wide" id="central-logging-root" data-central-logs="1">' +
@@ -213,6 +217,10 @@
       '<div id="log-cat-channels">' +
       catRows +
       "</div>" +
+      '<h3 style="margin-top:18px">Individual event controls</h3>' +
+      '<p class="form-hint">Switch off specific events without disabling the rest of their category.</p>' +
+      '<input id="log-event-search" placeholder="Find an event…" aria-label="Find a log event" style="width:100%;margin-bottom:8px">' +
+      '<div id="log-event-controls" style="max-height:320px;overflow:auto;border:1px solid var(--border,rgba(255,255,255,.12));border-radius:10px">' + eventRows + '</div>' +
       '<h3 style="margin-top:18px">Ignore rules</h3>' +
       '<p class="form-hint">Keep noisy activity out of the log stream. Actors are people performing actions; targets are people affected by actions. Enter IDs separated by commas.</p>' +
       '<div class="input-group"><label for="log-ignore-actors">Ignore actors (executors)</label><input id="log-ignore-actors" placeholder="Discord user IDs, comma separated"></div>' +
@@ -327,12 +335,39 @@
       if (discordToggle && document.activeElement !== discordToggle)
         discordToggle.checked = category.discord === undefined ? cfg.defaultDiscord : category.discord !== false;
     });
+    var eventControls = $("log-event-controls");
+    if (eventControls) {
+      eventControls.querySelectorAll("[data-log-event]").forEach(function (el) {
+        if (document.activeElement === el) return;
+        var saved = cfg.events[el.getAttribute("data-log-event")];
+        el.checked = !(saved && saved.enabled === false);
+      });
+    }
   }
 
   function parseIdList(el) {
     return String(el && el.value || "").split(",").map(function (value) {
       return value.trim();
     }).filter(Boolean);
+  }
+
+  function collectEventSettings() {
+    var events = Object.assign({}, getLoggingCfg().events || {});
+    var controls = $("log-event-controls");
+    if (!controls) return events;
+    controls.querySelectorAll("[data-log-event]").forEach(function (el) {
+      var eventType = el.getAttribute("data-log-event");
+      var saved = Object.assign({}, events[eventType] || {});
+      if (el.checked) {
+        delete saved.enabled;
+        if (Object.keys(saved).length) events[eventType] = saved;
+        else delete events[eventType];
+      } else {
+        saved.enabled = false;
+        events[eventType] = saved;
+      }
+    });
+    return events;
   }
 
   function collectConfig() {
@@ -369,7 +404,8 @@
         )
       ),
       categories: categories,
-      events: (getLoggingCfg().events) || {},
+      events: collectEventSettings(),
+      replaceEvents: true,
       ignore: {
         actors: parseIdList($("log-ignore-actors")),
         targets: parseIdList($("log-ignore-targets")),
@@ -658,6 +694,18 @@
     if (fe && !fe.__bound) {
       fe.__bound = true;
       fe.addEventListener("change", loadList);
+    }
+    var eventSearch = $("log-event-search");
+    if (eventSearch && !eventSearch.__bound) {
+      eventSearch.__bound = true;
+      eventSearch.addEventListener("input", function () {
+        var query = String(eventSearch.value || "").toLowerCase();
+        var controls = $("log-event-controls");
+        if (!controls) return;
+        controls.querySelectorAll("[data-log-event-row]").forEach(function (row) {
+          row.style.display = row.textContent.toLowerCase().indexOf(query) >= 0 ? "flex" : "none";
+        });
+      });
     }
   }
 
