@@ -1,5 +1,6 @@
 import { requireManagedGuild } from "../lib/customerAuth.js";
 import { listAuditLogs, getAuditLog } from "../lib/auditLogs.js";
+import { buildLogCsv } from "../lib/logExport.js";
 
 export default async function handler(req, res) {
   try {
@@ -71,20 +72,7 @@ export default async function handler(req, res) {
         offset += pageRows.length;
       } while (offset < total && offset < 10000);
 
-      const columns = [
-        "id", "created_at", "event_type", "category", "action",
-        "actor_name", "actor_id", "target_name", "target_id",
-        "channel_name", "channel_id", "reason", "metadata"
-      ];
-      const csvCell = (value) => {
-        let text = value == null ? "" : typeof value === "object" ? JSON.stringify(value) : String(value);
-        if (/^[=+\-@\t\r]/.test(text)) text = "'" + text;
-        return '"' + text.replace(/"/g, '""') + '"';
-      };
-      const csv = [
-        columns.map(csvCell).join(","),
-        ...allRows.map((row) => columns.map((key) => csvCell(row[key])).join(","))
-      ].join("\r\n");
+      const csv = buildLogCsv(allRows);
       res.setHeader("Content-Type", "text/csv; charset=utf-8");
       res.setHeader("Content-Disposition", 'attachment; filename="coffee-shop-logs.csv"');
       res.setHeader("Cache-Control", "private, no-store");
