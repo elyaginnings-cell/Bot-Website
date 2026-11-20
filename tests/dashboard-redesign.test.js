@@ -363,3 +363,13 @@ test("mobile layout overrides the final desktop Home grid", () => {
   assert.match(mobileLayout, /#app\.coffee-shop-shell\s*\{[^}]*display:flex!important/);
   assert.match(mobileLayout, /#app>\.main\.coffee-main\s*\{[^}]*display:flex!important/);
 });
+
+test("floating draft save supports mobile pointer activation and stays above mobile overlays", () => {
+  const draftScript = readFileSync(new URL("../script-part1.js", import.meta.url), "utf8");
+  const performanceCss = readFileSync(new URL("../mobile-performance.css", import.meta.url), "utf8");
+  assert.match(draftScript, /addEventListener\("pointerup"/);
+  assert.match(draftScript, /event\.pointerType === "touch"/);
+  assert.match(draftScript, /addEventListener\("click", handleDraftSaveActivation/);
+  assert.match(performanceCss, /\.dashboard-draft-bar\s*\{[^}]*z-index:\s*13000/s);
+  assert.match(performanceCss, /touch-action:\s*manipulation/);
+});
