@@ -9,9 +9,9 @@ const [css, dashboard, boot] = await Promise.all([
 ]);
 
 test("responsive experience is loaded after the legacy dashboard styles", () => {
-  assert.match(dashboard, /responsive-experience\.css\?v=1/);
+  assert.match(dashboard, /responsive-experience\\.css\\?v=3/);
   assert.ok(dashboard.indexOf("responsive-experience.css") > dashboard.indexOf("coffee-shop-menu-redesign.css"));
-  assert.match(boot, /loadCss\("\/responsive-experience\.css\?v=1"\)/);
+  assert.match(boot, /loadCss\("\/responsive-experience\\.css\\?v=3"\)/);
 });
 
 test("mobile layout has dedicated tablet and phone breakpoints", () => {
