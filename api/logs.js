@@ -22,10 +22,14 @@ export default async function handler(req, res) {
       const row = await getAuditLog(guildId, id);
       if (!row) return res.status(404).json({ error: "Not found" });
 
+      const hasStoredAttachments = Array.isArray(row.attachments) && row.attachments.length > 0;
+      const hasStoredEmbeds = Array.isArray(row.embeds_snapshot) && row.embeds_snapshot.length > 0;
       const contentExpired =
         !row.content &&
         !row.before_content &&
         !row.after_content &&
+        !hasStoredAttachments &&
+        !hasStoredEmbeds &&
         !!row.message_id;
 
       return res.status(200).json({
