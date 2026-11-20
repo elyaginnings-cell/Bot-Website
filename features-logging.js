@@ -149,15 +149,13 @@
   function sectionHtml() {
     var catRows = CATS.map(function (cat) {
       return (
-        '<div class="input-group" style="margin-bottom:8px">' +
-        "<label>" +
-        cat +
-        "</label>" +
-        '<select id="log-cat-' +
-        cat +
-        '" data-log-cat="' +
-        cat +
-        '"></select></div>'
+        '<div class="input-group log-category-row" style="margin-bottom:12px;padding:10px;border:1px solid var(--border,rgba(255,255,255,.12));border-radius:10px">' +
+        '<label style="display:block;margin-bottom:6px">' + cat + '</label>' +
+        '<select id="log-cat-' + cat + '" data-log-cat="' + cat + '"></select>' +
+        '<div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:7px">' +
+        '<label class="toggle"><input type="checkbox" id="log-cat-db-' + cat + '" data-log-cat-db="' + cat + '"> Database</label>' +
+        '<label class="toggle"><input type="checkbox" id="log-cat-discord-' + cat + '" data-log-cat-discord="' + cat + '"> Discord</label>' +
+        '</div></div>'
       );
     }).join("");
     var filterOpts = CATS.map(function (c) {
@@ -316,11 +314,18 @@
     if ($("log-ignore-bots") && document.activeElement !== $("log-ignore-bots"))
       $("log-ignore-bots").checked = ignore.bots === true;
     CATS.forEach(function (cat) {
+      var category = cfg.categories[cat] || {};
       fillChannelSelect(
         $("log-cat-" + cat),
-        (cfg.categories[cat] && cfg.categories[cat].channelId) || "",
+        category.channelId || "",
         "— Default —"
       );
+      var dbToggle = $("log-cat-db-" + cat);
+      var discordToggle = $("log-cat-discord-" + cat);
+      if (dbToggle && document.activeElement !== dbToggle)
+        dbToggle.checked = category.database === undefined ? cfg.defaultDatabase : category.database !== false;
+      if (discordToggle && document.activeElement !== discordToggle)
+        discordToggle.checked = category.discord === undefined ? cfg.defaultDiscord : category.discord !== false;
     });
   }
 
@@ -332,10 +337,18 @@
 
   function collectConfig() {
     var categories = {};
+    var defaultDatabase = $("log-default-db") ? $("log-default-db").checked : true;
+    var defaultDiscord = $("log-default-discord") ? $("log-default-discord").checked : true;
     CATS.forEach(function (cat) {
       var el = $("log-cat-" + cat);
       var ch = el && el.value ? el.value : null;
-      if (ch) categories[cat] = { channelId: ch, database: true, discord: true };
+      var dbToggle = $("log-cat-db-" + cat);
+      var discordToggle = $("log-cat-discord-" + cat);
+      var database = dbToggle ? dbToggle.checked : defaultDatabase;
+      var discord = discordToggle ? discordToggle.checked : defaultDiscord;
+      if (ch || database !== defaultDatabase || discord !== defaultDiscord) {
+        categories[cat] = { channelId: ch, database: database, discord: discord };
+      }
     });
     var def =
       $("log-default-channel") && $("log-default-channel").value
@@ -343,10 +356,8 @@
         : null;
     return {
       enabled: $("log-enabled") ? $("log-enabled").checked : true,
-      defaultDatabase: $("log-default-db") ? $("log-default-db").checked : true,
-      defaultDiscord: $("log-default-discord")
-        ? $("log-default-discord").checked
-        : true,
+      defaultDatabase: defaultDatabase,
+      defaultDiscord: defaultDiscord,
       defaultChannelId: def,
       securityChannelId: $("log-security-channel") && $("log-security-channel").value ? $("log-security-channel").value : null,
       securityAlertRoleId: $("log-security-role") && $("log-security-role").value ? $("log-security-role").value : null,
