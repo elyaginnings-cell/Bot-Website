@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [main]
   push:
-    branches: [feature/coffee-shop-control-center]
+    branches: [main, feature/coffee-shop-control-center]
 
 jobs:
   test:
@@ -15,4 +15,6 @@ jobs:
         with:
           node-version: 24
       - run: npm install --no-audit --no-fund
+      - run: node --check features-logging.js
+      - run: node --check api/logs.js
       - run: npm test
