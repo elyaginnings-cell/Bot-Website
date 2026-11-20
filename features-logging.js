@@ -443,12 +443,15 @@
     try {
       setCfgStatus("Saving…", true);
       var logging = collectConfig();
-      if (!logging.defaultChannelId && logging.defaultDiscord) {
+      var hasCategoryDestination = Object.keys(logging.categories || {}).some(function (category) {
+        var route = logging.categories[category];
+        return !!(route && route.discord !== false && route.channelId);
+      });
+      if (!logging.defaultChannelId && logging.defaultDiscord && !hasCategoryDestination) {
         setCfgStatus(
-          "Pick a default log channel (or turn off Discord logging).",
-          false
+          "No Discord destination selected. Logs will still be saved to the database.",
+          true
         );
-        return;
       }
       var payload = {
         logging: logging,
