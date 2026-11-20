@@ -447,12 +447,7 @@
         var route = logging.categories[category];
         return !!(route && route.discord !== false && route.channelId);
       });
-      if (!logging.defaultChannelId && logging.defaultDiscord && !hasCategoryDestination) {
-        setCfgStatus(
-          "No Discord destination selected. Logs will still be saved to the database.",
-          true
-        );
-      }
+      var routingWarning = !logging.defaultChannelId && logging.defaultDiscord && !hasCategoryDestination;
       var payload = {
         logging: logging,
         dashboardLogChannelId: logging.defaultChannelId || null
@@ -464,7 +459,11 @@
       var warn =
         result && (result.warning || (result.data && result.data.warning));
       setCfgStatus(
-        warn ? "⚠ Saved, but: " + warn : "✅ Log settings saved.",
+        warn
+          ? "⚠ Saved, but: " + warn
+          : routingWarning
+            ? "✅ Saved. Logs will be database-only until a Discord destination is selected."
+            : "✅ Log settings saved.",
         !warn
       );
       setTimeout(loadList, 400);
