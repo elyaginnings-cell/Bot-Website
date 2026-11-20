@@ -576,6 +576,16 @@
       if (Array.isArray(meta.securityReasons) && meta.securityReasons.length) {
         contentHtml += '<h4>Security notes</h4><ul>' + meta.securityReasons.map(function (x) { return '<li>' + escapeHtml(x) + '</li>'; }).join("") + '</ul>';
       }
+      if (meta.before !== undefined || meta.after !== undefined) {
+        contentHtml += '<h4>Change snapshots</h4><div class="log-snapshot-grid">';
+        if (meta.before !== undefined) {
+          contentHtml += '<section><strong>Before</strong><pre>' + escapeHtml(JSON.stringify(meta.before, null, 2).slice(0, 12000)) + '</pre></section>';
+        }
+        if (meta.after !== undefined) {
+          contentHtml += '<section><strong>After</strong><pre>' + escapeHtml(JSON.stringify(meta.after, null, 2).slice(0, 12000)) + '</pre></section>';
+        }
+        contentHtml += '</div>';
+      }
       var attachments = Array.isArray(log.attachments) ? log.attachments : [];
       if (attachments.length) {
         contentHtml += '<h4>Attachments (' + attachments.length + ')</h4><ul class="log-attachment-list">';
