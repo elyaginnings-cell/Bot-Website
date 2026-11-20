@@ -30,7 +30,13 @@ export default async function handler(req, res) {
       return res.status(200).json({
         log: row,
         contentExpired,
-        contentAvailable: !!(row.content || row.before_content || row.after_content),
+        contentAvailable: !!(
+          row.content ||
+          row.before_content ||
+          row.after_content ||
+          (Array.isArray(row.attachments) && row.attachments.length) ||
+          (Array.isArray(row.embeds_snapshot) && row.embeds_snapshot.length)
+        ),
       });
     }
 
