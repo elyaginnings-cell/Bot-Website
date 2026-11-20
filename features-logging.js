@@ -10,6 +10,8 @@
   window.__featuresAuditLogsV3 = true;
   window.__featuresAuditLogsV4 = true;
 
+  var currentLogOffset = 0;
+
   var CATS = [
     "moderation",
     "automod",
@@ -245,6 +247,7 @@
       '<select id="log-filter-event"><option value="">All event types</option>' + eventOpts + '</select>' +
       '<button type="button" class="button" id="log-refresh">Refresh</button>' +
       '<button type="button" class="button secondary" id="log-export">Export CSV</button>' +
+      '<button type="button" class="button secondary" id="log-load-more" hidden>Load older events</button>' +
       "</div>" +
       '<div id="log-list" style="display:flex;flex-direction:column;gap:8px;max-height:420px;overflow:auto"></div>' +
       '<div id="log-detail" style="margin-top:12px;display:none"></div>' +
@@ -483,7 +486,9 @@
     }
   }
 
-  async function loadList() {
+  async function loadList(append) {
+    append = append === true;
+    if (!append) currentLogOffset = 0;
     var gid = guildId();
     if (!gid) {
       setBrowseStatus("Select a server first.", false);
@@ -497,7 +502,7 @@
       var url =
         "/api/logs?guildId=" +
         encodeURIComponent(gid) +
-        "&view=list&limit=40" +
+        "&view=list&limit=40&offset=" + currentLogOffset +
         (q ? "&q=" + encodeURIComponent(q) : "") +
         (cat ? "&category=" + encodeURIComponent(cat) : "") +
         (eventType ? "&eventType=" + encodeURIComponent(eventType) : "");
@@ -509,13 +514,15 @@
       var list = $("log-list");
       if (!list) return;
       var rows = data.rows || [];
+      var loadMore = $("log-load-more");
       if (!rows.length) {
-        list.innerHTML =
-          '<p class="form-hint">No events yet. Save settings, then delete a message or toggle a system.</p>';
-        setBrowseStatus("0 events", true);
+        if (!append) list.innerHTML =
+          '<p class="form-hint">No events yet. Save settings, then wait for a server event to be recorded.</p>';
+        if (loadMore) loadMore.hidden = true;
+        setBrowseStatus(append ? "No older events." : "0 events", true);
         return;
       }
-      list.innerHTML = rows
+      var rowsHtml = rows
         .map(function (r) {
           var who = r.target_name || r.actor_name || "Unknown actor";
           var ch = r.channel_name ? "#" + r.channel_name : "";
@@ -536,6 +543,10 @@
           );
         })
         .join("");
+      if (append) list.insertAdjacentHTML("beforeend", rowsHtml);
+      else list.innerHTML = rowsHtml;
+      currentLogOffset += rows.length;
+      if (loadMore) loadMore.hidden = currentLogOffset >= Number(data.total || 0);
       setBrowseStatus((data.total || rows.length) + " total", true);
     } catch (e) {
       setBrowseStatus(
@@ -664,6 +675,14 @@
       ref.onclick = function (e) {
         e.preventDefault();
         loadList();
+      };
+    }
+    var loadMoreButton = $("log-load-more");
+    if (loadMoreButton && !loadMoreButton.__bound) {
+      loadMoreButton.__bound = true;
+      loadMoreButton.onclick = function (e) {
+        e.preventDefault();
+        loadList(true);
       };
     }
     var exportButton = $("log-export");
