@@ -65,8 +65,10 @@ export default async function handler(req, res) {
       do {
         const page = await listAuditLogs(guildId, { ...filters, limit: 100, offset });
         total = page.total || 0;
-        allRows.push(...(page.rows || []));
-        offset += (page.rows || []).length;
+        const pageRows = page.rows || [];
+        if (!pageRows.length) break;
+        allRows.push(...pageRows);
+        offset += pageRows.length;
       } while (offset < total && offset < 10000);
 
       const columns = [
