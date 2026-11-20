@@ -785,7 +785,7 @@
         var controls = $("log-event-controls");
         if (!controls) return;
         controls.querySelectorAll("[data-log-event-row]").forEach(function (row) {
-          row.style.display = row.textContent.toLowerCase().indexOf(query) >= 0 ? "flex" : "none";
+          row.style.display = row.textContent.toLowerCase().indexOf(query) >= 0 ? "" : "none";
         });
       });
     }
