@@ -70,13 +70,13 @@ export default async function handler(req, res) {
       ];
       const csvCell = (value) => {
         let text = value == null ? "" : typeof value === "object" ? JSON.stringify(value) : String(value);
-        if (/^[=+\\-@\\t\\r]/.test(text)) text = "'" + text;
+        if (/^[=+\-@\t\r]/.test(text)) text = "'" + text;
         return '"' + text.replace(/"/g, '""') + '"';
       };
       const csv = [
         columns.map(csvCell).join(","),
         ...allRows.map((row) => columns.map((key) => csvCell(row[key])).join(","))
-      ].join("\\r\\n");
+      ].join("\r\n");
       res.setHeader("Content-Type", "text/csv; charset=utf-8");
       res.setHeader("Content-Disposition", 'attachment; filename="coffee-shop-logs.csv"');
       res.setHeader("Cache-Control", "private, no-store");
