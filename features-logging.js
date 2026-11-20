@@ -189,8 +189,13 @@
       return '<option value="' + e + '">' + e.split(".").join(" · ").replace(/[_-]/g, " ") + '</option>';
     }).join("");
     var eventRows = eventTypes.map(function (eventType) {
-      return '<label class="toggle log-event-toggle" data-log-event-row="' + eventType + '" style="display:flex;gap:8px;align-items:center;padding:7px 9px;border-bottom:1px solid var(--border,rgba(255,255,255,.08))">' +
-        '<input type="checkbox" data-log-event="' + eventType + '" checked> <span>' + escapeHtml(prettyEvent(eventType)) + '</span></label>';
+      return '<div class="log-event-toggle" data-log-event-row="' + eventType + '">' +
+        '<label><input type="checkbox" data-log-event="' + eventType + '" checked> <strong>' + escapeHtml(prettyEvent(eventType)) + '</strong></label>' +
+        '<div class="log-event-row-config">' +
+        '<label><input type="checkbox" data-log-event-db="' + eventType + '"> DB</label>' +
+        '<label><input type="checkbox" data-log-event-discord="' + eventType + '"> Discord</label>' +
+        '<select data-log-event-channel="' + eventType + '" aria-label="Discord destination for ' + escapeHtml(prettyEvent(eventType)) + '"><option value="">Use category/default</option></select>' +
+        '</div></div>';
     }).join("");
 
     return (
@@ -341,9 +346,19 @@
     var eventControls = $("log-event-controls");
     if (eventControls) {
       eventControls.querySelectorAll("[data-log-event]").forEach(function (el) {
-        if (document.activeElement === el) return;
-        var saved = cfg.events[el.getAttribute("data-log-event")];
-        el.checked = !(saved && saved.enabled === false);
+        var eventType = el.getAttribute("data-log-event");
+        var saved = cfg.events[eventType] || {};
+        if (document.activeElement !== el) el.checked = saved.enabled !== false;
+        var categoryName = eventType.split(".")[0];
+        var category = cfg.categories[categoryName] || {};
+        var dbToggle = eventControls.querySelector('[data-log-event-db="' + eventType + '"]');
+        var discordToggle = eventControls.querySelector('[data-log-event-discord="' + eventType + '"]');
+        var channelSelect = eventControls.querySelector('[data-log-event-channel="' + eventType + '"]');
+        if (dbToggle && document.activeElement !== dbToggle)
+          dbToggle.checked = saved.database === undefined ? (category.database === undefined ? cfg.defaultDatabase : category.database !== false) : saved.database !== false;
+        if (discordToggle && document.activeElement !== discordToggle)
+          discordToggle.checked = saved.discord === undefined ? (category.discord === undefined ? cfg.defaultDiscord : category.discord !== false) : saved.discord !== false;
+        if (channelSelect) fillChannelSelect(channelSelect, saved.channelId || "", "Use category/default");
       });
     }
   }
@@ -355,20 +370,29 @@
   }
 
   function collectEventSettings() {
-    var events = Object.assign({}, getLoggingCfg().events || {});
+    var cfg = getLoggingCfg();
+    var events = Object.assign({}, cfg.events || {});
     var controls = $("log-event-controls");
     if (!controls) return events;
     controls.querySelectorAll("[data-log-event]").forEach(function (el) {
       var eventType = el.getAttribute("data-log-event");
       var saved = Object.assign({}, events[eventType] || {});
-      if (el.checked) {
-        delete saved.enabled;
-        if (Object.keys(saved).length) events[eventType] = saved;
-        else delete events[eventType];
-      } else {
-        saved.enabled = false;
-        events[eventType] = saved;
-      }
+      var category = cfg.categories[eventType.split(".")[0]] || {};
+      var dbToggle = controls.querySelector('[data-log-event-db="' + eventType + '"]');
+      var discordToggle = controls.querySelector('[data-log-event-discord="' + eventType + '"]');
+      var channelSelect = controls.querySelector('[data-log-event-channel="' + eventType + '"]');
+      var defaultDb = category.database === undefined ? cfg.defaultDatabase : category.database !== false;
+      var defaultDiscord = category.discord === undefined ? cfg.defaultDiscord : category.discord !== false;
+      if (el.checked) delete saved.enabled;
+      else saved.enabled = false;
+      if (dbToggle && dbToggle.checked !== defaultDb) saved.database = dbToggle.checked;
+      else delete saved.database;
+      if (discordToggle && discordToggle.checked !== defaultDiscord) saved.discord = discordToggle.checked;
+      else delete saved.discord;
+      if (channelSelect && channelSelect.value) saved.channelId = channelSelect.value;
+      else delete saved.channelId;
+      if (Object.keys(saved).length) events[eventType] = saved;
+      else delete events[eventType];
     });
     return events;
   }
