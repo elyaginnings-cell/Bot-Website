@@ -162,7 +162,29 @@
     var filterOpts = CATS.map(function (c) {
       return '<option value="' + c + '">' + c + "</option>";
     }).join("");
-    var eventOpts = ["config.website_change","member.update","member.join","member.leave","channel.update","channel.create","channel.delete","role.update","role.create","role.delete","guild.update","message.edit","message.delete","moderation.ban","moderation.kick","moderation.timeout"].map(function (e) {
+    var eventTypes = [
+      "moderation.warn","moderation.warn_removed","moderation.ban","moderation.unban","moderation.kick","moderation.timeout","moderation.timeout_remove","moderation.purge",
+      "automod.message_deleted","automod.warn","automod.timeout",
+      "member.join","member.leave","member.update","member.verify","member.ban","member.unban","member.voice",
+      "message.delete","message.edit","message.bulk_delete",
+      "channel.create","channel.update","channel.delete","channel.pins_update","channel.webhook_update",
+      "thread.create","thread.update","thread.delete",
+      "role.create","role.update","role.delete",
+      "guild.update","guild.boost_start","guild.boost_stop",
+      "invite.create","invite.delete",
+      "emoji.create","emoji.update","emoji.delete",
+      "sticker.create","sticker.update","sticker.delete",
+      "event.create","event.update","event.delete",
+      "integration.create","integration.update","integration.delete",
+      "voice.update","webhook.create","webhook_update",
+      "economy.transaction","economy.work","economy.purchase","economy.fishing.catch","level.up",
+      "tickets.open","tickets.close","tickets.escalate",
+      "staff.loa_created","staff.activity_check",
+      "config.website_change","config.system_toggle","config.setting_change","config.logging_updated",
+      "config.automod_rule_create","config.automod_rule_update","config.automod_rule_delete",
+      "bot.change","bot.command","bot.error","qotd.post","verification.complete","security.alert"
+    ];
+    var eventOpts = eventTypes.map(function (e) {
       return '<option value="' + e + '">' + e.split(".").join(" · ").replace(/[_-]/g, " ") + '</option>';
     }).join("");
 
