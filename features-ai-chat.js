@@ -125,6 +125,8 @@
       '<p class="form-hint">Member mode keeps the existing friendly chat behavior. Staff mode monitors eligible messages independently of whether CoffeeBot replies.</p>' +
       '<div class="input-group"><label>AI personality</label><select id="aichat-mode"><option value="member">Member — friendly community member</option><option value="staff">Staff — relaxed, approachable staff</option></select></div>' +
       '<label class="toggle"><input type="checkbox" id="aichat-monitoring" checked> <span>Enable background message monitoring in Staff mode</span></label>' +
+      '<label class="toggle"><input type="checkbox" id="aichat-full-ai"> <span>Full AI evaluation for every non-empty message</span></label>' +
+      '<p class="form-hint">Hybrid is the default: every eligible message is checked locally, with AI used when deeper analysis is warranted. Full AI sends every non-empty message to the AI classifier and uses more API capacity.</p>' +
       '<label class="toggle"><input type="checkbox" id="aichat-exempt-staff" checked> <span>Exempt staff from automatic moderation</span></label>' +
       '<p class="form-hint">Staff detection uses Discord moderator/admin permissions and the configured Staff Operator roles/users. The server owner and bots are always exempt.</p>' +
       '<h3 class="subhead">Monitoring exclusions</h3>' +
@@ -269,6 +271,7 @@
       : [];
     if ($("aichat-mode")) $("aichat-mode").value = s.mode === "staff" ? "staff" : "member";
     if ($("aichat-monitoring")) $("aichat-monitoring").checked = s.monitoringEnabled !== false;
+    if ($("aichat-full-ai")) $("aichat-full-ai").checked = s.fullAiEvaluation === true;
     if ($("aichat-exempt-staff")) $("aichat-exempt-staff").checked = s.exemptStaff !== false;
     var actions = s.autonomousActions || {};
     if ($("aichat-auto-warn")) $("aichat-auto-warn").checked = actions.warn !== false;
@@ -310,6 +313,7 @@
           enabledChannels: enabledChannels.slice(),
           mode: $("aichat-mode") ? $("aichat-mode").value : "member",
           monitoringEnabled: $("aichat-monitoring") ? $("aichat-monitoring").checked : true,
+          fullAiEvaluation: $("aichat-full-ai") ? $("aichat-full-ai").checked : false,
           excludedChannelIds: excludedChannels.slice(),
           exemptStaff: $("aichat-exempt-staff") ? $("aichat-exempt-staff").checked : true,
           autonomousActions: {
