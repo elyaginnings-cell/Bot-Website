@@ -19,5 +19,6 @@ jobs:
       - run: node --check api/logs.js
       - run: node --check features-ai-chat.js
       - run: node --check features-systems.js
+      - run: node --check dashboard-menu-page.js
       - run: node --check feature-summary.js
-      - run: node --test tests/log-export.test.js tests/logging-ui.test.js tests/responsive-experience.test.js tests/ai-chat-settings.test.js
+      - run: node --test tests/log-export.test.js tests/logging-ui.test.js tests/responsive-experience.test.js tests/ai-chat-settings.test.js tests/menu-page.test.js
