@@ -6,14 +6,14 @@
   var FEATURE_TABS = [
     "moderation","invites","leveling","currency","shop","logs","birthday","custom-emojis",
     "bump","verification","suggestions","tickets","qotd","selfroles",
-    "applications","analytics","aichat","automod","aistaff","activitycheck","loa"
+    "applications","analytics","aichat","staffai","automod","aistaff","activitycheck","loa"
   ];
   var TITLES = {
     moderation:"Moderation", invites:"Invites", leveling:"Leveling", currency:"Currency", emojis:"Custom Emojis", systems:"System Settings", "custom-emojis":"Custom Emoji Library",
     shop:"Shop", logs:"Logging", birthday:"Birthday", bump:"Bump rewards",
     verification:"Verification", suggestions:"Suggestions", tickets:"Tickets",
     qotd:"Question of the Day", selfroles:"Self Roles", applications:"Applications",
-    analytics:"Analytics", aichat:"AI Chat", automod:"Automod", aistaff:"AI Staff",
+    analytics:"Analytics", aichat:"AI Chat", staffai:"Staff AI", automod:"Automod", aistaff:"Staff Operator",
     activitycheck:"Activity Check", loa:"Leave of Absence"
   };
   var SAVE = {
@@ -159,6 +159,7 @@
     qotd:"saveQotdDraft",
     analytics:"saveAnalyticsDraft",
     aichat:"saveAiChatDraft",
+    staffai:"saveStaffAiModerationDraft",
     automod:"saveAutomodDraft",
     aistaff:"saveAiStaffDraft",
     activitycheck:"saveActivityCheckDraft",
