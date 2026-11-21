@@ -59,97 +59,110 @@
   function ensureNav() {
     var nav = document.querySelector(".navigation");
     if (!nav) return false;
-    if (nav.querySelector('[data-tab="aichat"]')) return true;
-    var settingsBtn = nav.querySelector('[data-tab="settings"]');
-    var btn = document.createElement("button");
-    btn.className = "nav-item";
-    btn.type = "button";
-    btn.setAttribute("data-tab", "aichat");
-    btn.title = "Public AI chat";
-    btn.innerHTML = "<span>☕</span><em>AI Chat</em>";
-    btn.addEventListener("click", function () {
-      if (typeof window.showSection === "function") window.showSection("aichat");
-      else {
-        document.querySelectorAll(".page-section").forEach(function (el) {
-          el.classList.remove("active");
-        });
-        var sec = $("aichat");
-        if (sec) sec.classList.add("active");
-        document.querySelectorAll(".nav-item").forEach(function (b) {
-          b.classList.toggle("active", b.getAttribute("data-tab") === "aichat");
-        });
-      }
-      try {
-        applyFromConfig();
-      } catch (_) {}
-    });
-    if (settingsBtn) nav.insertBefore(btn, settingsBtn);
-    else nav.appendChild(btn);
+    function addTab(tab, icon, label, title) {
+      if (nav.querySelector('[data-tab="' + tab + '"]')) return;
+      var settingsBtn = nav.querySelector('[data-tab="settings"]');
+      var btn = document.createElement("button");
+      btn.className = "nav-item";
+      btn.type = "button";
+      btn.setAttribute("data-tab", tab);
+      btn.title = title;
+      btn.innerHTML = "<span>" + icon + "</span><em>" + label + "</em>";
+      btn.addEventListener("click", function () {
+        if (typeof window.showSection === "function") window.showSection(tab);
+        else {
+          document.querySelectorAll(".page-section").forEach(function (el) { el.classList.remove("active"); });
+          var sec = $(tab);
+          if (sec) sec.classList.add("active");
+          document.querySelectorAll(".nav-item").forEach(function (b) {
+            b.classList.toggle("active", b.getAttribute("data-tab") === tab);
+          });
+        }
+        try { applyFromConfig(); } catch (_) {}
+      });
+      if (settingsBtn) nav.insertBefore(btn, settingsBtn);
+      else nav.appendChild(btn);
+    }
+    addTab("aichat", "☕", "AI Chat", "Public AI chat");
+    addTab("staffai", "🛡️", "Staff AI", "Staff AI monitoring and moderation");
     return true;
   }
 
   function ensureSection() {
     var content = document.querySelector(".content");
     if (!content) return false;
-    if ($("aichat")) return true;
 
-    var html =
-      '<section id="aichat" class="page-section"><div class="card form-card wide">' +
-      '<span class="eyebrow">AI CHAT</span>' +
-      "<h2>Public AI (laid-back)</h2>" +
-      '<p class="form-hint">This is the friendly chat AI — not the Staff Operator. Anyone can @mention for help. Optionally the bot also joins normal chat at random based on reply chance.</p>' +
-      '<label class="toggle"><input type="checkbox" id="aichat-enabled" checked> <span>Public AI enabled</span></label>' +
-      "<h3 class=\"subhead\">How often it replies</h3>" +
-      '<div class="config-grid">' +
-      '<div class="input-group" style="grid-column:1/-1">' +
-      '<label>Reply chance in normal chat <span id="aichat-chance-label">8%</span></label>' +
-      '<input id="aichat-reply-chance" type="range" min="0" max="100" step="1" value="8" style="width:100%">' +
-      '<p class="form-hint">0% = only when @mentioned or replied to. 100% = tries to join almost every message (still respects cooldown & limits).</p>' +
-      "</div></div>" +
-      '<label class="toggle"><input type="checkbox" id="aichat-mention-always" checked> <span>Always reply when @mentioned</span></label>' +
-      '<label class="toggle"><input type="checkbox" id="aichat-reply-always" checked> <span>Always reply when someone replies to the bot</span></label>' +
-      "<h3 class=\"subhead\">Limits</h3>" +
-      '<div class="config-grid">' +
-      '<div class="input-group"><label>Cooldown (seconds)</label><input id="aichat-cooldown" type="number" min="0" max="3600" value="12"></div>' +
-      '<div class="input-group"><label>Max replies / hour</label><input id="aichat-max-hour" type="number" min="0" max="500" value="40"></div>' +
-      '<div class="input-group"><label>Max replies / day</label><input id="aichat-max-day" type="number" min="0" max="5000" value="400"></div>' +
-      '<div class="input-group"><label>Context messages</label><input id="aichat-context" type="number" min="0" max="25" value="12"></div>' +
-      "</div>" +
-      "<h3 class=\"subhead\">Channels (optional)</h3>" +
-      '<p class="form-hint">Leave empty = all text channels. Add channel IDs to restrict where public AI can talk.</p>' +
-      '<div class="input-group"><label>Restrict to channels</label>' +
-      '<select id="aichat-channel-pick"><option value="">Select a channel…</option></select></div>' +
-      '<button class="button" id="aichat-add-channel" type="button">Add channel</button>' +
-      '<div id="aichat-channels-list" class="level-roles-list" style="margin-top:0.75rem"></div>' +
-      "<h3 class=\"subhead\">Staff AI mode</h3>" +
-      '<p class="form-hint">Member mode keeps the existing friendly chat behavior. Staff mode monitors eligible messages independently of whether CoffeeBot replies.</p>' +
-      '<div class="input-group"><label>AI personality</label><select id="aichat-mode"><option value="member">Member — friendly community member</option><option value="staff">Staff — relaxed, approachable staff</option></select></div>' +
-      '<label class="toggle"><input type="checkbox" id="aichat-monitoring" checked> <span>Enable background message monitoring in Staff mode</span></label>' +
-      '<label class="toggle"><input type="checkbox" id="aichat-full-ai"> <span>Full AI evaluation for every non-empty message</span></label>' +
-      '<p class="form-hint">Hybrid is the default: every eligible message is checked locally, with AI used when deeper analysis is warranted. Full AI sends every non-empty message to the AI classifier and uses more API capacity.</p>' +
-      '<label class="toggle"><input type="checkbox" id="aichat-exempt-staff" checked> <span>Exempt staff from automatic moderation</span></label>' +
-      '<p class="form-hint">Staff detection uses Discord moderator/admin permissions and the configured Staff Operator roles/users. The server owner and bots are always exempt.</p>' +
-      '<h3 class="subhead">Monitoring exclusions</h3>' +
-      '<p class="form-hint">These channels are ignored by Staff AI monitoring and Staff AI conversation. Empty = all accessible text channels, threads, and forum posts.</p>' +
-      '<div class="config-grid"><div class="input-group"><label>Exclude channel</label><select id="aichat-excluded-channel-pick"><option value="">Select a channel…</option></select></div><div class="input-group"><label>&nbsp;</label><button class="button secondary" type="button" id="aichat-excluded-channel-add">Add exclusion</button></div></div>' +
-      '<div id="aichat-excluded-channels-list" class="level-roles-list" style="margin-top:0.75rem"></div>' +
-      '<h3 class="subhead">Automatic moderation</h3>' +
-      '<label class="toggle"><input type="checkbox" id="aichat-auto-warn" checked> <span>Allow automatic warnings</span></label>' +
-      '<label class="toggle"><input type="checkbox" id="aichat-auto-delete" checked> <span>Allow automatic message deletion</span></label>' +
-      '<label class="toggle"><input type="checkbox" id="aichat-auto-timeout" checked> <span>Allow automatic timeouts</span></label>' +
-      '<div class="input-group"><label>Default timeout duration</label><input id="aichat-timeout-duration" type="text" value="10m" placeholder="10m"></div>' +
-      '<h3 class="subhead">Kick / ban approval</h3>' +
-      '<p class="form-hint">Kicks and bans always require human approval. This safeguard cannot be disabled.</p>' +
-      '<div class="config-grid"><div class="input-group"><label>Staff review channel</label><select id="aichat-review-channel"><option value="">Select a channel…</option></select></div>' +
-      '<div class="input-group"><label>High-staff approval role</label><select id="aichat-highstaff-role"><option value="">Select a role…</option></select></div>' +
-      '<div class="input-group"><label>Approval expires after (hours)</label><input id="aichat-approval-expiry" type="number" min="1" max="168" value="24"></div></div>' +
-      '<button class="button" id="save-aichat" type="button" style="margin-top:1.25rem">Save AI Chat Settings</button>' +
-      '<p class="form-hint" id="aichat-status"></p>' +
-      "</div></section>";
+    if (!$("aichat")) {
+      var chatHtml =
+        '<section id="aichat" class="page-section"><div class="card form-card wide">' +
+        '<span class="eyebrow">AI CHAT</span>' +
+        "<h2>Public AI (laid-back)</h2>" +
+        '<p class="form-hint">This is the friendly chat AI — not Staff AI or the Staff Operator. Anyone can @mention for help. Optionally the bot also joins normal chat at random based on reply chance.</p>' +
+        '<label class="toggle"><input type="checkbox" id="aichat-enabled" checked> <span>Public AI enabled</span></label>' +
+        "<h3 class=\"subhead\">How often it replies</h3>" +
+        '<div class="config-grid">' +
+        '<div class="input-group" style="grid-column:1/-1">' +
+        '<label>Reply chance in normal chat <span id="aichat-chance-label">8%</span></label>' +
+        '<input id="aichat-reply-chance" type="range" min="0" max="100" step="1" value="8" style="width:100%">' +
+        '<p class="form-hint">0% = only when @mentioned or replied to. 100% = tries to join almost every message (still respects cooldown & limits).</p>' +
+        "</div></div>" +
+        '<label class="toggle"><input type="checkbox" id="aichat-mention-always" checked> <span>Always reply when @mentioned</span></label>' +
+        '<label class="toggle"><input type="checkbox" id="aichat-reply-always" checked> <span>Always reply when someone replies to the bot</span></label>' +
+        "<h3 class=\"subhead\">Limits</h3>" +
+        '<div class="config-grid">' +
+        '<div class="input-group"><label>Cooldown (seconds)</label><input id="aichat-cooldown" type="number" min="0" max="3600" value="12"></div>' +
+        '<div class="input-group"><label>Max replies / hour</label><input id="aichat-max-hour" type="number" min="0" max="500" value="40"></div>' +
+        '<div class="input-group"><label>Max replies / day</label><input id="aichat-max-day" type="number" min="0" max="5000" value="400"></div>' +
+        '<div class="input-group"><label>Context messages</label><input id="aichat-context" type="number" min="0" max="25" value="12"></div>' +
+        "</div>" +
+        "<h3 class=\"subhead\">Channels (optional)</h3>" +
+        '<p class="form-hint">Leave empty = all text channels. Add channel IDs to restrict where public AI can talk.</p>' +
+        '<div class="input-group"><label>Restrict to channels</label>' +
+        '<select id="aichat-channel-pick"><option value="">Select a channel…</option></select></div>' +
+        '<button class="button" id="aichat-add-channel" type="button">Add channel</button>' +
+        '<div id="aichat-channels-list" class="level-roles-list" style="margin-top:0.75rem"></div>' +
+        '<button class="button" id="save-aichat" type="button" style="margin-top:1.25rem">Save AI Chat Settings</button>' +
+        '<p class="form-hint" id="aichat-status"></p>' +
+        "</div></section>";
+      var chatWrap = document.createElement("div");
+      chatWrap.innerHTML = chatHtml;
+      while (chatWrap.firstChild) content.appendChild(chatWrap.firstChild);
+    }
 
-    var wrap = document.createElement("div");
-    wrap.innerHTML = html;
-    while (wrap.firstChild) content.appendChild(wrap.firstChild);
+    if (!$("staffai")) {
+      var staffHtml =
+        '<section id="staffai" class="page-section"><div class="card form-card wide">' +
+        '<span class="eyebrow">STAFF AI</span>' +
+        "<h2>Staff AI monitoring & moderation</h2>" +
+        '<p class="form-hint">Staff AI independently monitors eligible server messages, evaluates potential rule violations, and can take configured routine moderation actions. It does not need to reply in chat to monitor a message.</p>' +
+        "<h3 class=\"subhead\">AI mode</h3>" +
+        '<div class="input-group"><label>AI personality</label><select id="aichat-mode"><option value="member">Member — friendly community member</option><option value="staff">Staff — relaxed, approachable staff</option></select></div>' +
+        '<label class="toggle"><input type="checkbox" id="aichat-monitoring" checked> <span>Enable background message monitoring in Staff mode</span></label>' +
+        '<label class="toggle"><input type="checkbox" id="aichat-full-ai"> <span>Full AI evaluation for every non-empty message</span></label>' +
+        '<p class="form-hint">Hybrid is the default: every eligible message is checked locally, with AI used when deeper analysis is warranted. Full AI sends every non-empty message to the AI classifier and uses more API capacity.</p>' +
+        '<label class="toggle"><input type="checkbox" id="aichat-exempt-staff" checked> <span>Exempt staff from automatic moderation</span></label>' +
+        '<p class="form-hint">Staff detection uses Discord moderator/admin permissions and the configured Staff Operator roles/users. The server owner and bots are always exempt.</p>' +
+        '<h3 class="subhead">Monitoring exclusions</h3>' +
+        '<p class="form-hint">These channels are ignored by Staff AI monitoring and Staff AI conversation. Empty = all accessible text channels, threads, and forum posts.</p>' +
+        '<div class="config-grid"><div class="input-group"><label>Exclude channel</label><select id="aichat-excluded-channel-pick"><option value="">Select a channel…</option></select></div><div class="input-group"><label>&nbsp;</label><button class="button secondary" type="button" id="aichat-excluded-channel-add">Add exclusion</button></div></div>' +
+        '<div id="aichat-excluded-channels-list" class="level-roles-list" style="margin-top:0.75rem"></div>' +
+        '<h3 class="subhead">Automatic moderation</h3>' +
+        '<label class="toggle"><input type="checkbox" id="aichat-auto-warn" checked> <span>Allow automatic warnings</span></label>' +
+        '<label class="toggle"><input type="checkbox" id="aichat-auto-delete" checked> <span>Allow automatic message deletion</span></label>' +
+        '<label class="toggle"><input type="checkbox" id="aichat-auto-timeout" checked> <span>Allow automatic timeouts</span></label>' +
+        '<div class="input-group"><label>Default timeout duration</label><input id="aichat-timeout-duration" type="text" value="10m" placeholder="10m"></div>' +
+        '<h3 class="subhead">Kick / ban approval</h3>' +
+        '<p class="form-hint">Kicks and bans always require human approval. This safeguard cannot be disabled.</p>' +
+        '<div class="config-grid"><div class="input-group"><label>Staff review channel</label><select id="aichat-review-channel"><option value="">Select a channel…</option></select></div>' +
+        '<div class="input-group"><label>High-staff approval role</label><select id="aichat-highstaff-role"><option value="">Select a role…</option></select></div>' +
+        '<div class="input-group"><label>Approval expires after (hours)</label><input id="aichat-approval-expiry" type="number" min="1" max="168" value="24"></div></div>' +
+        '<button class="button" id="save-staffai" type="button" style="margin-top:1.25rem">Save Staff AI Settings</button>' +
+        '<p class="form-hint" id="staffai-status"></p>' +
+        "</div></section>";
+      var staffWrap = document.createElement("div");
+      staffWrap.innerHTML = staffHtml;
+      while (staffWrap.firstChild) content.appendChild(staffWrap.firstChild);
+    }
     return true;
   }
 
@@ -285,16 +298,17 @@
     renderExcludedChannels();
   }
 
-  function setStatus(t, ok) {
-    var el = $("aichat-status");
+  function setStatus(t, ok, target) {
+    var el = $(target === "staffai" ? "staffai-status" : "aichat-status");
     if (!el) return;
     el.textContent = t || "";
     el.style.color = ok === false ? "#f87171" : ok ? "#4ade80" : "";
   }
 
-  async function save() {
+  async function save(target) {
+    target = target === "staffai" ? "staffai" : "aichat";
     try {
-      setStatus("Saving…", true);
+      setStatus("Saving…", true, target);
       var pct = Number($("aichat-reply-chance") && $("aichat-reply-chance").value) || 0;
       var payload = {
         ai: {
@@ -331,20 +345,22 @@
       setStatus(
         d && d.savedToBot === false
           ? "Saved on website. Bot offline — will sync when online."
-          : "✅ AI Chat settings saved.",
-        true
+          : (target === "staffai" ? "✅ Staff AI settings saved." : "✅ AI Chat settings saved."),
+        true,
+        target
       );
       if (window.loadGuildData) await window.loadGuildData();
       else applyFromConfig();
     return true;
     } catch (e) {
-      setStatus("❌ " + (e.message || "Failed"), false);
+      setStatus("❌ " + (e.message || "Failed"), false, target);
     }
   
       return false;
     }
 
-  window.saveAiChatDraft = save;
+  window.saveAiChatDraft = function () { return save("aichat"); };
+  window.saveStaffAiModerationDraft = function () { return save("staffai"); };
 
   function wire() {
     ensureNav();
@@ -388,7 +404,14 @@
     if (saveBtn && !saveBtn.__wired) {
       saveBtn.__wired = true;
       saveBtn.addEventListener("click", function () {
-        save();
+        save("aichat");
+      });
+    }
+    var staffSaveBtn = $("save-staffai");
+    if (staffSaveBtn && !staffSaveBtn.__wired) {
+      staffSaveBtn.__wired = true;
+      staffSaveBtn.addEventListener("click", function () {
+        save("staffai");
       });
     }
   }
