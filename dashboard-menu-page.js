@@ -39,18 +39,22 @@ function buildMenu(){
  };
  var categoryByTab={
   moderation:"Moderation & Safety",automod:"Moderation & Safety",punishment:"Moderation & Safety",verification:"Moderation & Safety",
-  invites:"Community",birthday:"Community",achievements:"Community",emojis:"Community",selfroles:"Community",suggestions:"Community",qotd:"Community",bump:"Community",profile:"Community",analytics:"Community",
+  invites:"Community",birthday:"Community",achievements:"Community",emojis:"Community","custom-emojis":"Community",selfroles:"Community",suggestions:"Community",qotd:"Community",bump:"Community",profile:"Community",analytics:"Community",
   leveling:"Economy & Games",currency:"Economy & Games",shop:"Economy & Games",fishing:"Economy & Games",chess:"Economy & Games",giveaways:"Economy & Games",
-  applications:"Staff & Support",tickets:"Staff & Support",loa:"Staff & Support",activitycheck:"Staff & Support",logs:"Staff & Support",
-  ai:"AI & Automation",help:"AI & Automation",
+  applications:"Staff & Support",tickets:"Staff & Support",loa:"Staff & Support",activitycheck:"Staff & Support",logs:"Staff & Support",logging:"Staff & Support",
+  ai:"AI & Automation",aichat:"AI & Automation",staffai:"AI & Automation",aistaff:"AI & Automation",help:"AI & Automation",
   settings:"Workspace",account:"Workspace","owner-billing":"Workspace"
  };
  nav.querySelectorAll("[data-tab]").forEach(button=>{
-  if(button.hidden)return;
   var id=button.getAttribute("data-tab");
   if(!id||id==="overview"||id==="systems")return;
+  // Feature tabs disappear from the rail when their system is disabled.
+  // Keep them discoverable here so owners can still open and configure them.
+  if(id==="owner-billing"&&button.hidden)return;
+  if(!document.getElementById(id))return;
   var category=categoryByTab[id]||"Community";
-  var item={id:id,label:button.querySelector("em")?.textContent||button.title||id,icon:button.querySelector("span")?.textContent||"☕",desc:"Open "+(button.title||id)+" settings"};
+  var label=button.querySelector("em")?.textContent||button.title||id;
+  var item={id:id,label:label,icon:button.querySelector("span")?.textContent||"☕",desc:button.hidden?"Currently disabled · open to configure":"Open "+(button.title||label)+" settings"};
   groups[category].push(item);
  });
  groups["Workspace"].push({id:"systems",label:"System Controls",icon:"⚙️",desc:"Enable or disable every server system"});
