@@ -7,6 +7,9 @@ const source = readFileSync(new URL("../features-ai-chat.js", import.meta.url), 
 test("AI Chat exposes the Member/Staff mode and independent monitoring controls", () => {
   assert.match(source, /id="aichat-mode"/);
   assert.match(source, /id="aichat-monitoring"/);
+  assert.match(source, /id="aichat-full-ai"/);
+  assert.match(source, /fullAiEvaluation:.*aichat-full-ai/);
+  assert.match(source, /Hybrid is the default/);
   assert.match(source, /id="aichat-excluded-channel-pick"/);
   assert.match(source, /excludedChannelIds: excludedChannels\.slice\(\)/);
   assert.match(source, /enabledChannels: enabledChannels\.slice\(\)/);
