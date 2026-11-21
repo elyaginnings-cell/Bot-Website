@@ -1037,3 +1037,25 @@ body[data-coffee-theme="dark-roast"] #app .feature-manager-row.is-disabled{backg
 body[data-coffee-theme="dark-roast"] #app .feature-manager-copy strong,
 body[data-coffee-theme="dark-roast"] #app .feature-manager-group h3{color:#f5e8da}
 body[data-coffee-theme="dark-roast"] #app .feature-manager-copy small{color:#c5ad99}
+
+
+/* Full café menu board: seven distinct sections, balanced across two columns. */
+@media(min-width:901px){
+  body[data-coffee-theme] #app.coffee-shop-shell{
+    grid-template-rows:78px auto auto auto auto minmax(0,1fr)!important;
+    align-content:start!important;
+  }
+  body[data-coffee-theme] #app .ds-nav-group[data-group="moderation"]{grid-column:1!important;grid-row:2!important}
+  body[data-coffee-theme] #app .ds-nav-group[data-group="community"]{grid-column:1!important;grid-row:3!important}
+  body[data-coffee-theme] #app .ds-nav-group[data-group="economy"]{grid-column:1!important;grid-row:4!important}
+  body[data-coffee-theme] #app .ds-nav-group[data-group="staff"]{grid-column:1!important;grid-row:5!important}
+  body[data-coffee-theme] #app .ds-nav-group[data-group="ai"]{grid-column:2!important;grid-row:2!important}
+  body[data-coffee-theme] #app .ds-nav-group[data-group="workspace"]{grid-column:2!important;grid-row:3!important}
+  body[data-coffee-theme] #app .ds-nav-group[data-group="server"]{grid-column:2!important;grid-row:4!important}
+  body[data-coffee-theme] #app .cafe-workspace-board{grid-column:2!important;grid-row:5/span 2!important}
+  body[data-coffee-theme] #app .cafe-server-card{grid-column:3!important;grid-row:2/span 5!important}
+  body[data-coffee-theme] #app .cafe-rail-footer{grid-column:1!important;grid-row:6!important}
+}
+body[data-coffee-theme] #app .ds-nav-group-label{letter-spacing:-.025em}
+body[data-coffee-theme] #app .ds-nav-group-items{align-content:start}
+body[data-coffee-theme="dark-roast"] #app .ds-nav-group-meta{color:#d2b59b!important}
