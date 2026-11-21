@@ -29,6 +29,28 @@
     });
   }
 
+  function roles() {
+    try {
+      if (typeof rolesCache !== "undefined" && rolesCache && rolesCache.length) return rolesCache;
+    } catch (_) {}
+    return window.rolesCache || [];
+  }
+
+  function fillRolePick() {
+    var sel = $("aichat-highstaff-role");
+    if (!sel) return;
+    var cur = sel.value;
+    sel.innerHTML = '<option value="">Select a role…</option>';
+    roles().forEach(function (r) {
+      if (!r || r.name === "@everyone") return;
+      var o = document.createElement("option");
+      o.value = r.id;
+      o.textContent = r.name || r.id;
+      sel.appendChild(o);
+    });
+    if (cur) sel.value = cur;
+  }
+
   function ensureNav() {
     var nav = document.querySelector(".navigation");
     if (!nav) return false;
@@ -94,6 +116,25 @@
       '<select id="aichat-channel-pick"><option value="">Select a channel…</option></select></div>' +
       '<button class="button" id="aichat-add-channel" type="button">Add channel</button>' +
       '<div id="aichat-channels-list" class="level-roles-list" style="margin-top:0.75rem"></div>' +
+      "<h3 class=\"subhead\">Staff AI mode</h3>" +
+      '<p class="form-hint">Member mode keeps the existing friendly chat behavior. Staff mode monitors eligible messages independently of whether CoffeeBot replies.</p>' +
+      '<div class="input-group"><label>AI personality</label><select id="aichat-mode"><option value="member">Member — friendly community member</option><option value="staff">Staff — relaxed, approachable staff</option></select></div>' +
+      '<label class="toggle"><input type="checkbox" id="aichat-monitoring" checked> <span>Enable background message monitoring in Staff mode</span></label>' +
+      '<label class="toggle"><input type="checkbox" id="aichat-exempt-staff" checked> <span>Exempt staff from automatic moderation</span></label>' +
+      '<h3 class="subhead">Monitoring exclusions</h3>' +
+      '<p class="form-hint">These channels are ignored by Staff AI monitoring and Staff AI conversation. Empty = all accessible text channels, threads, and forum posts.</p>' +
+      '<div class="config-grid"><div class="input-group"><label>Exclude channel</label><select id="aichat-excluded-channel-pick"><option value="">Select a channel…</option></select></div><div class="input-group"><label>&nbsp;</label><button class="button secondary" type="button" id="aichat-excluded-channel-add">Add exclusion</button></div></div>' +
+      '<div id="aichat-excluded-channels-list" class="level-roles-list" style="margin-top:0.75rem"></div>' +
+      '<h3 class="subhead">Automatic moderation</h3>' +
+      '<label class="toggle"><input type="checkbox" id="aichat-auto-warn" checked> <span>Allow automatic warnings</span></label>' +
+      '<label class="toggle"><input type="checkbox" id="aichat-auto-delete" checked> <span>Allow automatic message deletion</span></label>' +
+      '<label class="toggle"><input type="checkbox" id="aichat-auto-timeout" checked> <span>Allow automatic timeouts</span></label>' +
+      '<div class="input-group"><label>Default timeout duration</label><input id="aichat-timeout-duration" type="text" value="10m" placeholder="10m"></div>' +
+      '<h3 class="subhead">Kick / ban approval</h3>' +
+      '<p class="form-hint">Kicks and bans always require human approval. This safeguard cannot be disabled.</p>' +
+      '<div class="config-grid"><div class="input-group"><label>Staff review channel</label><select id="aichat-review-channel"><option value="">Select a channel…</option></select></div>' +
+      '<div class="input-group"><label>High-staff approval role</label><select id="aichat-highstaff-role"><option value="">Select a role…</option></select></div>' +
+      '<div class="input-group"><label>Approval expires after (hours)</label><input id="aichat-approval-expiry" type="number" min="1" max="168" value="24"></div></div>' +
       '<button class="button" id="save-aichat" type="button" style="margin-top:1.25rem">Save AI Chat Settings</button>' +
       '<p class="form-hint" id="aichat-status"></p>' +
       "</div></section>";
@@ -105,12 +146,33 @@
   }
 
   var enabledChannels = [];
+  var excludedChannels = [];
 
   function chName(id) {
     var c = channels().find(function (x) {
       return String(x.id) === String(id);
     });
     return c ? "#" + c.name : id;
+  }
+
+  function renderExcludedChannels() {
+    var el = $("aichat-excluded-channels-list");
+    if (!el) return;
+    if (!excludedChannels.length) {
+      el.innerHTML = '<p class="form-hint">No monitoring exclusions. Staff AI can monitor all accessible text channels.</p>';
+      return;
+    }
+    el.innerHTML = excludedChannels.map(function (id) {
+      return '<div class="level-role-row">' + chName(id) +
+        ' <button type="button" data-excluded-rm="' + id + '">Remove</button></div>';
+    }).join("");
+    el.querySelectorAll("[data-excluded-rm]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var id = btn.getAttribute("data-excluded-rm");
+        excludedChannels = excludedChannels.filter(function (x) { return String(x) !== String(id); });
+        renderExcludedChannels();
+      });
+    });
   }
 
   function renderChannels() {
@@ -143,17 +205,20 @@
   }
 
   function fillChannelPick() {
-    var sel = $("aichat-channel-pick");
-    if (!sel) return;
-    var cur = sel.value;
-    sel.innerHTML = '<option value="">Select a channel…</option>';
-    textChannels().forEach(function (c) {
-      var o = document.createElement("option");
-      o.value = c.id;
-      o.textContent = "#" + (c.name || c.id);
-      sel.appendChild(o);
+    ["aichat-channel-pick", "aichat-excluded-channel-pick", "aichat-review-channel"].forEach(function (id) {
+      var sel = $(id);
+      if (!sel) return;
+      var cur = sel.value;
+      sel.innerHTML = '<option value="">Select a channel…</option>';
+      textChannels().forEach(function (c) {
+        var o = document.createElement("option");
+        o.value = c.id;
+        o.textContent = "#" + (c.name || c.id);
+        sel.appendChild(o);
+      });
+      if (cur) sel.value = cur;
     });
-    if (cur) sel.value = cur;
+    fillRolePick();
   }
 
   function readAiSettings(c) {
@@ -193,7 +258,22 @@
     enabledChannels = Array.isArray(s.enabledChannels)
       ? s.enabledChannels.map(String).filter(Boolean)
       : [];
+    excludedChannels = Array.isArray(s.excludedChannelIds)
+      ? s.excludedChannelIds.map(String).filter(Boolean)
+      : [];
+    if ($("aichat-mode")) $("aichat-mode").value = s.mode === "staff" ? "staff" : "member";
+    if ($("aichat-monitoring")) $("aichat-monitoring").checked = s.monitoringEnabled !== false;
+    if ($("aichat-exempt-staff")) $("aichat-exempt-staff").checked = s.exemptStaff !== false;
+    var actions = s.autonomousActions || {};
+    if ($("aichat-auto-warn")) $("aichat-auto-warn").checked = actions.warn !== false;
+    if ($("aichat-auto-delete")) $("aichat-auto-delete").checked = actions.delete !== false;
+    if ($("aichat-auto-timeout")) $("aichat-auto-timeout").checked = actions.timeout !== false;
+    if ($("aichat-timeout-duration")) $("aichat-timeout-duration").value = s.timeoutDuration || "10m";
+    if ($("aichat-review-channel")) $("aichat-review-channel").value = s.reviewChannelId || "";
+    if ($("aichat-highstaff-role")) $("aichat-highstaff-role").value = s.highStaffRoleId || "";
+    if ($("aichat-approval-expiry")) $("aichat-approval-expiry").value = s.approvalExpiryHours || 24;
     renderChannels();
+    renderExcludedChannels();
   }
 
   function setStatus(t, ok) {
@@ -222,6 +302,19 @@
           maxResponsesPerDay: Number($("aichat-max-day") && $("aichat-max-day").value) || 0,
           contextMessages: Number($("aichat-context") && $("aichat-context").value) || 12,
           enabledChannels: enabledChannels.slice(),
+          mode: $("aichat-mode") ? $("aichat-mode").value : "member",
+          monitoringEnabled: $("aichat-monitoring") ? $("aichat-monitoring").checked : true,
+          excludedChannelIds: excludedChannels.slice(),
+          exemptStaff: $("aichat-exempt-staff") ? $("aichat-exempt-staff").checked : true,
+          autonomousActions: {
+            warn: $("aichat-auto-warn") ? $("aichat-auto-warn").checked : true,
+            delete: $("aichat-auto-delete") ? $("aichat-auto-delete").checked : true,
+            timeout: $("aichat-auto-timeout") ? $("aichat-auto-timeout").checked : true
+          },
+          timeoutDuration: $("aichat-timeout-duration") ? $("aichat-timeout-duration").value : "10m",
+          reviewChannelId: $("aichat-review-channel") && $("aichat-review-channel").value ? $("aichat-review-channel").value : null,
+          highStaffRoleId: $("aichat-highstaff-role") && $("aichat-highstaff-role").value ? $("aichat-highstaff-role").value : null,
+          approvalExpiryHours: Number($("aichat-approval-expiry") && $("aichat-approval-expiry").value) || 24
         },
       };
       var d = await window.saveConfig(payload);
@@ -254,6 +347,18 @@
       range.addEventListener("input", function () {
         if ($("aichat-chance-label"))
           $("aichat-chance-label").textContent = range.value + "%";
+      });
+    }
+
+    var excludedAddBtn = $("aichat-excluded-channel-add");
+    if (excludedAddBtn && !excludedAddBtn.__wired) {
+      excludedAddBtn.__wired = true;
+      excludedAddBtn.addEventListener("click", function () {
+        var sel = $("aichat-excluded-channel-pick");
+        var id = sel && sel.value;
+        if (!id) return;
+        if (excludedChannels.indexOf(String(id)) === -1) excludedChannels.push(String(id));
+        renderExcludedChannels();
       });
     }
 
