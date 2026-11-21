@@ -41,3 +41,10 @@ test("Staff AI has its own menu destination and dedicated settings section", () 
   assert.doesNotMatch(chatSection, /aichat-mode|aichat-monitoring|aichat-full-ai/);
   assert.match(source.split("var staffHtml =")[1], /aichat-mode/);
 });
+
+test("dashboard loader cache-busts the Staff AI navigation and feature-summary scripts", () => {
+  const index = readFileSync(new URL("../index.html", import.meta.url), "utf8");
+  assert.match(index, /features-ai-chat\.js\?v=3/);
+  assert.match(index, /features-systems\.js\?v=11/);
+  assert.match(index, /feature-summary\.js\?v=4/);
+});
