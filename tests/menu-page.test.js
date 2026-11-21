@@ -3,21 +3,26 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
 const menu = readFileSync(new URL("../dashboard-menu-page.js", import.meta.url), "utf8");
+const shell = readFileSync(new URL("../index.html", import.meta.url), "utf8");
 
-test("menu includes configurable tabs even when disabled tabs are hidden from the sidebar", () => {
-  assert.match(menu, /nav\.querySelectorAll\("\[data-tab\]"\)\.forEach\(button=>\{/);
-  assert.doesNotMatch(menu, /if\(button\.hidden\)return/);
-  assert.match(menu, /if\(id==="owner-billing"&&button\.hidden\)return/);
-  assert.match(menu, /if\(!document\.getElementById\(id\)\)return/);
+test("menu is generated from every configuration section, not just sidebar buttons", () => {
+  assert.match(menu, /host\.querySelectorAll\("\.page-section"\)/);
+  assert.match(menu, /sectionLabel\(section,button\)/);
+  assert.doesNotMatch(menu, /nav\.querySelectorAll\("\[data-tab\]"\)\.forEach\(button=>\{/);
+  assert.match(menu, /Other Configuration/);
+});
+
+test("menu retains disabled sidebar tabs and only hides restricted owner billing", () => {
+  assert.match(menu, /button&&button\.hidden/);
   assert.match(menu, /Currently disabled · open to configure/);
+  assert.match(menu, /id==="owner-billing"&&\(!button\|\|button\.hidden\)/);
 });
 
-test("menu categorizes all current configurable feature families", () => {
-  for (const id of ["automod", "punishment", "verification", "applications", "tickets", "loa", "activitycheck", "aichat", "staffai", "aistaff", "help", "logging"]) {
-    assert.match(menu, new RegExp(id + ':"'));
-  }
+test("menu refreshes when dynamically-created configuration sections appear", () => {
+  assert.match(menu, /contentObserver\.observe\(host,\{childList:true,subtree:true\}\)/);
+  assert.match(menu, /if\(activeId\(\)==="menu"\)buildMenu\(\)/);
 });
 
-test("menu signature changes when a feature is enabled or disabled", () => {
-  assert.match(menu, /b\.hidden\?"hidden":"visible"/);
+test("dashboard loads the current menu script version", () => {
+  assert.match(shell, /dashboard-menu-page\.js\?v=4/);
 });
