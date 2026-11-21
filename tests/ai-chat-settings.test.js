@@ -37,5 +37,7 @@ test("Staff AI has its own menu destination and dedicated settings section", () 
   assert.match(source, /saveStaffAiModerationDraft/);
   assert.match(source, /id="aichat"/);
   assert.match(source, /id="save-aichat"/);
-  assert.doesNotMatch(source, /id="aichat"[\s\S]*?id="aichat-mode"/);
+  const chatSection = source.split("var chatHtml =")[1].split("var staffHtml =")[0];
+  assert.doesNotMatch(chatSection, /aichat-mode|aichat-monitoring|aichat-full-ai/);
+  assert.match(source.split("var staffHtml =")[1], /aichat-mode/);
 });
