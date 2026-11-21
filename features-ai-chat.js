@@ -126,6 +126,7 @@
       '<div class="input-group"><label>AI personality</label><select id="aichat-mode"><option value="member">Member — friendly community member</option><option value="staff">Staff — relaxed, approachable staff</option></select></div>' +
       '<label class="toggle"><input type="checkbox" id="aichat-monitoring" checked> <span>Enable background message monitoring in Staff mode</span></label>' +
       '<label class="toggle"><input type="checkbox" id="aichat-exempt-staff" checked> <span>Exempt staff from automatic moderation</span></label>' +
+      '<p class="form-hint">Staff detection uses Discord moderator/admin permissions and the configured Staff Operator roles/users. The server owner and bots are always exempt.</p>' +
       '<h3 class="subhead">Monitoring exclusions</h3>' +
       '<p class="form-hint">These channels are ignored by Staff AI monitoring and Staff AI conversation. Empty = all accessible text channels, threads, and forum posts.</p>' +
       '<div class="config-grid"><div class="input-group"><label>Exclude channel</label><select id="aichat-excluded-channel-pick"><option value="">Select a channel…</option></select></div><div class="input-group"><label>&nbsp;</label><button class="button secondary" type="button" id="aichat-excluded-channel-add">Add exclusion</button></div></div>' +
