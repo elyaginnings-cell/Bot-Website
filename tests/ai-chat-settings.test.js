@@ -29,3 +29,13 @@ test("AI Chat exposes configurable routine moderation and fixed kick/ban approva
   assert.doesNotMatch(source, /autonomousActions:\s*\{[^}]*kick\s*:/s);
   assert.doesNotMatch(source, /autonomousActions:\s*\{[^}]*ban\s*:/s);
 });
+
+test("Staff AI has its own menu destination and dedicated settings section", () => {
+  assert.match(source, /addTab\("staffai", "🛡️", "Staff AI"/);
+  assert.match(source, /id="staffai"/);
+  assert.match(source, /id="save-staffai"/);
+  assert.match(source, /saveStaffAiModerationDraft/);
+  assert.match(source, /id="aichat"/);
+  assert.match(source, /id="save-aichat"/);
+  assert.doesNotMatch(source, /id="aichat"[\s\S]*?id="aichat-mode"/);
+});
