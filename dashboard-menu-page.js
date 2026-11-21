@@ -26,7 +26,7 @@ function ensureSection(){
 }
 function buildMenu(){
  var root=$("cafe-menu-page-groups"),nav=$("dashboard-navigation");if(!root||!nav)return;
- var signature=Array.from(nav.querySelectorAll("[data-tab]")).filter(b=>!b.hidden).map(b=>[b.dataset.tab,b.title,b.querySelector("em")?.textContent||"",b.querySelector("span")?.textContent||""].join("|")).join("~")+"|"+!!($("nav-server-view")&&!$("nav-server-view").hidden);
+ var signature=Array.from(nav.querySelectorAll("[data-tab]")).filter(b=>b.dataset.tab!=="owner-billing"||!b.hidden).map(b=>[b.dataset.tab,b.hidden?"hidden":"visible",b.title,b.querySelector("em")?.textContent||"",b.querySelector("span")?.textContent||""].join("|")).join("~")+"|"+!!($("nav-server-view")&&!$("nav-server-view").hidden);
  if(root.dataset.signature===signature)return;
  var groups={
   "Moderation & Safety":[],
