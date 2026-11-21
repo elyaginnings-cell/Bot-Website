@@ -5,24 +5,27 @@ import { readFileSync } from "node:fs";
 const menu = readFileSync(new URL("../dashboard-menu-page.js", import.meta.url), "utf8");
 const shell = readFileSync(new URL("../index.html", import.meta.url), "utf8");
 
-test("menu is generated from every configuration section, not just sidebar buttons", () => {
-  assert.match(menu, /host\.querySelectorAll\("\.page-section"\)/);
-  assert.match(menu, /sectionLabel\(section,button\)/);
-  assert.doesNotMatch(menu, /nav\.querySelectorAll\("\[data-tab\]"\)\.forEach\(button=>\{/);
-  assert.match(menu, /Other Configuration/);
+test("menu injects a dedicated page and a header navigation control", () => {
+  assert.match(menu, /function ensureButton\(\)/);
+  assert.match(menu, /function ensureSection\(\)/);
+  assert.match(menu, /id="menu"/);
+  assert.match(menu, /id="dashboard-see-menu"/);
 });
 
-test("menu retains disabled sidebar tabs and only hides restricted owner billing", () => {
-  assert.match(menu, /button&&button\.hidden/);
-  assert.match(menu, /Currently disabled · open to configure/);
-  assert.match(menu, /id==="owner-billing"&&\(!button\|\|button\.hidden\)/);
+test("menu builds its categories from the existing dashboard navigation", () => {
+  assert.match(menu, /nav\.querySelectorAll\("\[data-tab\]"\)/);
+  assert.match(menu, /Moderation & Safety/);
+  assert.match(menu, /Staff & Support/);
+  assert.match(menu, /AI & Automation/);
+  assert.match(menu, /System Controls/);
 });
 
-test("menu refreshes when dynamically-created configuration sections appear", () => {
-  assert.match(menu, /contentObserver\.observe\(host,\{childList:true,subtree:true\}\)/);
-  assert.match(menu, /if\(activeId\(\)==="menu"\)buildMenu\(\)/);
+test("menu navigation preserves the existing showSection handler", () => {
+  assert.match(menu, /original\.apply\(this,arguments\)/);
+  assert.match(menu, /data-menu-target/);
+  assert.match(menu, /data-menu-home/);
 });
 
-test("dashboard loads the current menu script version", () => {
-  assert.match(shell, /dashboard-menu-page\.js\?v=4/);
+test("dashboard loads the restored menu script with a fresh cache version", () => {
+  assert.match(shell, /dashboard-menu-page\.js\?v=5/);
 });
