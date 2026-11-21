@@ -101,26 +101,6 @@ function init(){
   });
   navObserver.observe(nav,{childList:true,subtree:true,attributes:true,attributeFilter:["hidden","title"]});
  }
-var original=window.showSection;
-if(typeof original==="function"&&!original.__coffeeMenuWrapped){window.showSection=function(){var result=original.apply(this,arguments);setTimeout(sync,25);return result};window.showSection.__coffeeMenuWrapped=true}
-function mount(){ensureButton();ensureSection();sync()}
-function init(){
- mount();
- var host=contentHost();
- if(host&&window.MutationObserver){
-  var contentObserver=new MutationObserver(function(records){
-   var changed=records.some(record=>record.type==="childList"&&(record.addedNodes.length||record.removedNodes.length));
-   if(changed){var root=$("cafe-menu-page-groups");if(root)delete root.dataset.signature;if(activeId()==="menu")buildMenu()}
-  });
-  contentObserver.observe(host,{childList:true,subtree:true});
- }
- var nav=$("dashboard-navigation");
- if(nav&&window.MutationObserver){
-  var navObserver=new MutationObserver(function(){
-   var root=$("cafe-menu-page-groups");if(root)delete root.dataset.signature;if(activeId()==="menu")buildMenu();
-  });
-  navObserver.observe(nav,{childList:true,subtree:true,attributes:true,attributeFilter:["hidden","title"]});
- }
 }
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
 })();
