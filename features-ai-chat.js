@@ -25,7 +25,12 @@
 
   function textChannels() {
     return channels().filter(function (c) {
-      return c && (c.type === 0 || c.type === 5 || c.type == null || c.type === "GUILD_TEXT");
+      return c && (
+        c.type === 0 || c.type === 5 || c.type === 10 || c.type === 11 ||
+        c.type === 12 || c.type === 15 || c.type === 16 || c.type == null ||
+        ["GUILD_TEXT", "GUILD_NEWS", "GUILD_NEWS_THREAD", "GUILD_PUBLIC_THREAD",
+          "GUILD_PRIVATE_THREAD", "GUILD_FORUM", "GUILD_MEDIA"].includes(c.type)
+      );
     });
   }
 
