@@ -1039,23 +1039,49 @@ body[data-coffee-theme="dark-roast"] #app .feature-manager-group h3{color:#f5e8d
 body[data-coffee-theme="dark-roast"] #app .feature-manager-copy small{color:#c5ad99}
 
 
-/* Full café menu board: seven distinct sections, balanced across two columns. */
+/* Menu is a real workspace page, not a shell grid item. Keep it below the header
+   and let it use the full content width on every desktop size. */
+body[data-coffee-theme][data-dashboard-page="menu"] #app>.main.coffee-main>.content>.cafe-menu-page{
+  display:block!important;
+  position:relative!important;
+  inset:auto!important;
+  grid-column:auto!important;
+  grid-row:auto!important;
+  order:initial!important;
+  float:none!important;
+  clear:both!important;
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  margin:18px 0 0!important;
+  z-index:1!important;
+  box-sizing:border-box!important;
+}
+body[data-coffee-theme][data-dashboard-page="menu"] #app>.main.coffee-main{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:stretch!important;
+  width:100%!important;
+  min-width:0!important;
+}
+body[data-coffee-theme][data-dashboard-page="menu"] #app>.main.coffee-main>.coffee-counter{
+  position:relative!important;
+  z-index:2!important;
+  width:100%!important;
+  min-width:0!important;
+}
 @media(min-width:901px){
   body[data-coffee-theme] #app.coffee-shop-shell{
-    grid-template-rows:78px auto auto auto auto minmax(0,1fr)!important;
-    align-content:start!important;
+    grid-template-columns:minmax(0,1fr) 300px!important;
+    grid-template-rows:auto!important;
   }
-  body[data-coffee-theme] #app .ds-nav-group[data-group="moderation"]{grid-column:1!important;grid-row:2!important}
-  body[data-coffee-theme] #app .ds-nav-group[data-group="community"]{grid-column:1!important;grid-row:3!important}
-  body[data-coffee-theme] #app .ds-nav-group[data-group="economy"]{grid-column:1!important;grid-row:4!important}
-  body[data-coffee-theme] #app .ds-nav-group[data-group="staff"]{grid-column:1!important;grid-row:5!important}
-  body[data-coffee-theme] #app .ds-nav-group[data-group="ai"]{grid-column:2!important;grid-row:2!important}
-  body[data-coffee-theme] #app .ds-nav-group[data-group="workspace"]{grid-column:2!important;grid-row:3!important}
-  body[data-coffee-theme] #app .ds-nav-group[data-group="server"]{grid-column:2!important;grid-row:4!important}
-  body[data-coffee-theme] #app .cafe-workspace-board{grid-column:2!important;grid-row:5/span 2!important}
-  body[data-coffee-theme] #app .cafe-server-card{grid-column:3!important;grid-row:2/span 5!important}
-  body[data-coffee-theme] #app .cafe-rail-footer{grid-column:1!important;grid-row:6!important}
+  body[data-coffee-theme] #app>.main.coffee-main{
+    grid-column:1!important;
+    grid-row:1!important;
+    min-width:0!important;
+  }
+  body[data-coffee-theme] #app>.cafe-server-card{
+    grid-column:2!important;
+    grid-row:1!important;
+  }
 }
-body[data-coffee-theme] #app .ds-nav-group-label{letter-spacing:-.025em}
-body[data-coffee-theme] #app .ds-nav-group-items{align-content:start}
-body[data-coffee-theme="dark-roast"] #app .ds-nav-group-meta{color:#d2b59b!important}
