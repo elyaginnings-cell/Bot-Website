@@ -38,7 +38,7 @@ var button=e.target&&e.target.closest?e.target.closest("#save-systems"):null;
 if(!button)return;
 e.preventDefault();e.stopPropagation();void save();
 },true);
-document.addEventListener("click",e=>{if(e.target?.closest?.('[data-tab="systems"],[data-menu-target="systems"]'))setTimeout(mount,30)},true);
+document.addEventListener("click",e=>{if(e.target?.closest?.('[data-tab="systems"],[data-menu-target="systems"]'))setTimeout(function(){mount();if(typeof window.showSection==="function")window.showSection("systems")},30)},true);
 // Do not auto-create the full controls panel beneath the Features menu.
 // It is mounted only when the System Controls menu item is opened.
 var configPolls=0;var configPoll=setInterval(function(){navVisibility();if(++configPolls>=40)clearInterval(configPoll)},500);
