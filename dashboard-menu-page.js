@@ -54,7 +54,6 @@ function buildMenu(){
   groups[category].push(item);
  });
 
- groups["Workspace"].push({id:"systems",label:"System Controls",icon:"🎛️",desc:"Open the clean system toggle menu"});
  var serverView=$("nav-server-view");
  if(serverView&&!serverView.hidden)groups["Server View"].push({id:"server-view",label:"Chat",icon:"💬",desc:"Open your live server view"});
  root.innerHTML=Object.keys(groups).map(category=>{
