@@ -48,12 +48,13 @@ function buildMenu(){
  nav.querySelectorAll("[data-tab]").forEach(button=>{
   if(button.hidden)return;
   var id=button.getAttribute("data-tab");
-  if(!id||id==="overview"||id==="systems")return;
+  if(!id||id==="overview")return;
   var category=categoryByTab[id]||"Community";
   var item={id:id,label:button.querySelector("em")?.textContent||button.title||id,icon:button.querySelector("span")?.textContent||"☕",desc:"Open "+(button.title||id)+" settings"};
   groups[category].push(item);
  });
 
+ groups["Workspace"].push({id:"systems",label:"System Controls",icon:"🎛️",desc:"Open the clean system toggle menu"});
  var serverView=$("nav-server-view");
  if(serverView&&!serverView.hidden)groups["Server View"].push({id:"server-view",label:"Chat",icon:"💬",desc:"Open your live server view"});
  root.innerHTML=Object.keys(groups).map(category=>{
