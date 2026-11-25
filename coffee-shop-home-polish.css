@@ -1,0 +1,55 @@
+/* Small landing-page polish: keep the Coffee Shop identity, add clear grouping. */
+.coffee-community-links {
+  margin-top: 18px;
+  padding: 15px 16px;
+  border: 1px solid rgba(216, 180, 139, .28);
+  border-radius: 16px;
+  background: rgba(35, 21, 15, .24);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.coffee-community-links-label {
+  color: var(--text-soft, #e8e0f5);
+  font-size: .72rem;
+  font-weight: 750;
+  letter-spacing: .12em;
+}
+.coffee-community-links-actions {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+.coffee-community-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 40px;
+  padding: 0 15px;
+  border: 1px solid rgba(226, 198, 167, .36);
+  border-radius: 12px;
+  color: inherit;
+  text-decoration: none;
+  font: inherit;
+  font-weight: 700;
+  background: rgba(255, 255, 255, .035);
+  transition: border-color .18s ease, background .18s ease, transform .18s ease;
+}
+.coffee-community-link:hover {
+  border-color: rgba(226, 198, 167, .7);
+  background: rgba(255, 255, 255, .075);
+  transform: translateY(-1px);
+}
+.coffee-community-link-primary {
+  border-color: rgba(180, 126, 76, .58);
+  background: linear-gradient(135deg, rgba(166, 111, 65, .22), rgba(111, 69, 43, .18));
+}
+@media (max-width: 620px) {
+  .coffee-community-links { align-items: stretch; }
+  .coffee-community-links-actions { width: 100%; }
+  .coffee-community-link { flex: 1 1 140px; }
+}
