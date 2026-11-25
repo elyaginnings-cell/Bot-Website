@@ -38,7 +38,7 @@ var button=e.target&&e.target.closest?e.target.closest("#save-systems"):null;
 if(!button)return;
 e.preventDefault();e.stopPropagation();void save();
 },true);
-document.addEventListener("click",e=>{if(e.target?.closest?.('[data-tab="systems"]'))setTimeout(mount,30)},true);
+document.addEventListener("click",e=>{if(e.target?.closest?.('[data-tab="systems"],[data-menu-target="systems"]'))setTimeout(mount,30)},true);
 [0,300,1000,2500,6000,12000,20000].forEach(ms=>setTimeout(mount,ms));
 var configPolls=0;var configPoll=setInterval(function(){navVisibility();if(++configPolls>=40)clearInterval(configPoll)},500);
 window.addEventListener("dashboard:config-loaded",navVisibility);window.addEventListener("configLoaded",navVisibility);window.addEventListener("dashboard:guild-loading",function(){render();navVisibility()});window.addEventListener("dashboard:guild-loaded",function(){render();navVisibility()});
