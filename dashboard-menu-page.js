@@ -54,6 +54,8 @@ function buildMenu(){
   groups[category].push(item);
  });
 
+ // System Controls belongs in the Workspace menu, not the sidebar rail.
+ groups["Workspace"].push({id:"systems",label:"System Controls",icon:"🎛️",desc:"Open System Controls"});
  var serverView=$("nav-server-view");
  if(serverView&&!serverView.hidden)groups["Server View"].push({id:"server-view",label:"Chat",icon:"💬",desc:"Open your live server view"});
  root.innerHTML=Object.keys(groups).map(category=>{
